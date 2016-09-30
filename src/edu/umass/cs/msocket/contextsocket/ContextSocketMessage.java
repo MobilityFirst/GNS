@@ -24,9 +24,8 @@ package edu.umass.cs.msocket.contextsocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.MSocket;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 public class ContextSocketMessage 
 {
@@ -41,7 +40,6 @@ public class ContextSocketMessage
 	final byte[]                 msg;
 	  
 	private final int arrayCopyOffset;
-	private static Logger  log            = Logger.getLogger(ContextSocketMessage.class.getName());
 	
 	  /*
 	   * If the byte[] argument b is null or longer than the specified length
@@ -80,7 +78,7 @@ public class ContextSocketMessage
 	    	buf.put(msg, arrayCopyOffset, length);
 	    	if(length>0)
 	    	{
-	    		log.trace("DataMessage: msg[0] "+msg[0]);
+	    		MSocketLogger.getLogger().fine("DataMessage: msg[0] "+msg[0]);
 	    	}
 	      }
 	    buf.flip();
@@ -155,6 +153,6 @@ public class ContextSocketMessage
 	
 	    ContextSocketMessage dec = ContextSocketMessage.getDataMessage(enc);
 	    enc[11] = 98;
-	    log.debug(dec);
+	    MSocketLogger.getLogger().fine(dec.toString());
 	  }
 }

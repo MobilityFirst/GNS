@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.json.JSONArray;
 
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 import edu.umass.cs.msocket.proxy.location.ProxyStatusInfo;
@@ -79,26 +80,40 @@ public class RandomProxyPolicy extends ProxySelectionPolicy
   {
     List<InetSocketAddress> result = new LinkedList<InetSocketAddress>();
     //final GuidEntry guidEntry = gnsCredentials.getGuidEntry();
-
+    
     // Lookup proxies in proxy group list
-    //UniversalTcpClient gnsClient = gnsCredentials.getGnsClient();
-    String groupGuid = DefaultGNSClient.getGnsClient().lookupGuid(proxyGroupName);
-    JSONArray members = DefaultGNSClient.getGnsClient().groupGetMembers
-    		(groupGuid, DefaultGNSClient.getMyGuidEntry());
-
+    GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute
+    								(GNSCommand.lookupGUID(proxyGroupName));
+    
+    String groupGuid = commandRes.getResultString();
+    
+    commandRes = DefaultGNSClient.getGnsClient().execute(GNSCommand.groupGetMembers
+    		(groupGuid, DefaultGNSClient.getMyGuidEntry()));
+    
+    JSONArray members = commandRes.getResultJSONArray();
+    
+    
     for (int i = 0; i < members.length(); i++)
     { // Add each proxy to the list
       String proxyGuid = members.getString(i);
-
+      
+      commandRes = DefaultGNSClient.getGnsClient().execute( GNSCommand.fieldReadArray
+    		  (proxyGuid, Constants.SERVICE_TYPE_FIELD, DefaultGNSClient.getMyGuidEntry()) );
+      
       // Check first that this member is a proxy and not another service
-      String serviceType = DefaultGNSClient.getGnsClient().fieldReadArray
-    		  (proxyGuid, Constants.SERVICE_TYPE_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
+      String serviceType = commandRes.getResultJSONArray().getString(0);
+      
       if (!Constants.PROXY_SERVICE.equals(serviceType))
         continue; // This is not a proxy, ignore
-
+      
+      
+      commandRes = DefaultGNSClient.getGnsClient().execute(
+    		  GNSCommand.fieldReadArray(proxyGuid, 
+    		   Constants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()) );
+      
       // Grab the proxy IP address
-      String proxyIp = DefaultGNSClient.getGnsClient().fieldReadArray
-    		  (proxyGuid, Constants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
+      String proxyIp = commandRes.getResultJSONArray().getString(0);
+      
       String[] parsed = proxyIp.split(":");
       InetSocketAddress addr = new InetSocketAddress(parsed[0], Integer.parseInt(parsed[1]));
       result.add(addr);
@@ -107,7 +122,7 @@ public class RandomProxyPolicy extends ProxySelectionPolicy
       if (result.size() == numProxy)
         break;
     }
-
+    
     return result;
   }
 
@@ -127,6 +142,7 @@ public class RandomProxyPolicy extends ProxySelectionPolicy
   @Override
   public List<String> getProxyIPs(List<ProxyStatusInfo> proxies, Socket acceptedSocket)
   {
-    throw new IllegalAccessError("Random proxy policies should not be sent to the location service");
+    throw new IllegalAccessError
+    	("Random proxy policies should not be sent to the location service");
   }
 }

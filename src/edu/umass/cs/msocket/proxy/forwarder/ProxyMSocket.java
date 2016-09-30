@@ -28,10 +28,9 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.SetupControlMessage;
 import edu.umass.cs.msocket.common.CommonMethods;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * Proxy creates a ProxyMSocket to setup the connection and forward the setup
@@ -48,7 +47,6 @@ public class ProxyMSocket extends Socket
   public static final int SET            		= 2;
 
   private SocketChannel   TCPChannel     			= null;
-  private static Logger   log            			= Logger.getLogger(ProxyMSocket.class.getName());
   private int             SocketType     			= -1;                                           // denotes
                                                                                            		// the
                                                                                            		// return
@@ -219,18 +217,18 @@ public class ProxyMSocket extends Socket
       {
         // setting GUID
         System.arraycopy(scm.GUID, 0, GUID, 0, SetupControlMessage.SIZE_OF_GUID);
-        log.trace("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
+        MSocketLogger.getLogger().fine("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
 
         String stringGUID = CommonMethods.bytArrayToHex(scm.GUID);
         
 
-        log.trace("GUID used for querying, should be same as real hex rep of GUID " + stringGUID);
+        MSocketLogger.getLogger().fine("GUID used for querying, should be same as real hex rep of GUID " + stringGUID);
 
         ProxyMSocket CtrlSocket = PForwarder.ProxyControlChannelMap(ProxyForwarder.GET, stringGUID, null);
         int ProxyId = (Integer) PForwarder.SpliceMapOperations(-1, ProxyTCPSplicer.PUT, ProxyTCPSplicer.CLIENT_SIDE,
             this);
         SocketChannel ControlChannel = CtrlSocket.getUnderlyingChannel();
-        log.trace("Control Skt Remote IP" + ControlChannel.socket().getInetAddress() + " Remote Port "
+        MSocketLogger.getLogger().fine("Control Skt Remote IP" + ControlChannel.socket().getInetAddress() + " Remote Port "
             + ControlChannel.socket().getPort());
 
         // sending client's IP and port to the server, so the server opens a
@@ -238,19 +236,19 @@ public class ProxyMSocket extends Socket
         int OutMesgType = -1;
         if (scm.MesgType == SetupControlMessage.NEW_CON_MESG)
         {
-          log.trace("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
+          MSocketLogger.getLogger().fine("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
               + " mesg type NEW_CON_MESG");
           OutMesgType = SetupControlMessage.NEW_CON_REQ;
         }
         else if (scm.MesgType == SetupControlMessage.MIGRATE_SOCKET)
         {
-          log.trace("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
+          MSocketLogger.getLogger().fine("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
               + " mesg type MIGRATE_SOCKET");
           OutMesgType = SetupControlMessage.MIGRATE_SOCKET_REQ;
         }
         else if (scm.MesgType == SetupControlMessage.ADD_SOCKET)
         {
-          log.trace("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
+          MSocketLogger.getLogger().fine("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
               + " mesg type ADD_SOCKET");
           OutMesgType = SetupControlMessage.ADD_SOCKET_REQ;
         }
@@ -259,7 +257,7 @@ public class ProxyMSocket extends Socket
         CtrlSocket.setupControlWrite(scm.iaddr, scm.port, scm.flowID, scm.ackSeq, OutMesgType,
             scm.SocketId, ProxyId, scm.GUID, ControlChannel);
 
-        log.trace("setupControl write done");
+        MSocketLogger.getLogger().fine("setupControl write done");
 
         SocketType = ProxyForwarder.DATA_SOC;
         break;
@@ -271,7 +269,7 @@ public class ProxyMSocket extends Socket
       {
         // setting GUID
         System.arraycopy(scm.GUID, 0, GUID, 0, SetupControlMessage.SIZE_OF_GUID);
-        log.trace("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
+        MSocketLogger.getLogger().fine("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
 
         // storing server ProxyMSOcekt in the splicer
         PForwarder.SpliceMapOperations(scm.ProxyId, ProxyForwarder.PUT, ProxyTCPSplicer.SERVER_SIDE, this);
@@ -298,14 +296,14 @@ public class ProxyMSocket extends Socket
       {
         // setting GUID
         System.arraycopy(scm.GUID, 0, GUID, 0, SetupControlMessage.SIZE_OF_GUID);
-        log.trace("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
+        MSocketLogger.getLogger().fine("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
 
-        log.trace("proxy sending CONTROL_SOCKET_REPLY");
+        MSocketLogger.getLogger().fine("proxy sending CONTROL_SOCKET_REPLY");
         this.setupControlWrite(NewChannel.socket().getLocalAddress(), -1, -1, -1,
             SetupControlMessage.CONTROL_SOCKET_REPLY, -1, -1, scm.GUID, NewChannel);
         SocketType = ProxyForwarder.CONTROL_SOC;
 
-        log.trace("Control channel with GUID " + GUID + " registered with proxy Server reigisters with proxy");
+        MSocketLogger.getLogger().fine("Control channel with GUID " + GUID + " registered with proxy Server reigisters with proxy");
         break;
       }
     }
@@ -338,18 +336,18 @@ public class ProxyMSocket extends Socket
       {
         // setting GUID
         System.arraycopy(scm.GUID, 0, GUID, 0, SetupControlMessage.SIZE_OF_GUID);
-        log.trace("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
+        MSocketLogger.getLogger().fine("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
 
         String stringGUID = CommonMethods.bytArrayToHex(scm.GUID);
         
 
-        log.trace("GUID used for querying, should be same as real hex rep of GUID " + stringGUID);
+        MSocketLogger.getLogger().fine("GUID used for querying, should be same as real hex rep of GUID " + stringGUID);
 
         ProxyMSocket CtrlSocket = PForwarder.ProxyControlChannelMap(ProxyForwarder.GET, stringGUID, null);
         int ProxyId = (Integer) PForwarder.SpliceMapOperations(-1, ProxyTCPSplicer.PUT, ProxyTCPSplicer.CLIENT_SIDE,
             this);
         SocketChannel ControlChannel = CtrlSocket.getUnderlyingChannel();
-        log.trace("Control Skt Remote IP" + ControlChannel.socket().getInetAddress() + " Remote Port "
+        MSocketLogger.getLogger().fine("Control Skt Remote IP" + ControlChannel.socket().getInetAddress() + " Remote Port "
             + ControlChannel.socket().getPort());
 
         // sending client's IP and port to the server, so the server opens a
@@ -357,19 +355,19 @@ public class ProxyMSocket extends Socket
         int OutMesgType = -1;
         if (scm.MesgType == SetupControlMessage.NEW_CON_MESG)
         {
-          log.trace("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
+          MSocketLogger.getLogger().fine("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
               + " mesg type NEW_CON_MESG");
           OutMesgType = SetupControlMessage.NEW_CON_REQ;
         }
         else if (scm.MesgType == SetupControlMessage.MIGRATE_SOCKET)
         {
-          log.trace("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
+          MSocketLogger.getLogger().fine("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
               + " mesg type MIGRATE_SOCKET");
           OutMesgType = SetupControlMessage.MIGRATE_SOCKET_REQ;
         }
         else if (scm.MesgType == SetupControlMessage.ADD_SOCKET)
         {
-          log.trace("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
+          MSocketLogger.getLogger().fine("GUID sent by client " + scm.GUID + " Client registered with proxy socketId " + scm.SocketId
               + " mesg type ADD_SOCKET");
           OutMesgType = SetupControlMessage.ADD_SOCKET_REQ;
         }
@@ -378,7 +376,7 @@ public class ProxyMSocket extends Socket
         CtrlSocket.setupControlWrite(scm.iaddr, scm.port, scm.flowID, scm.ackSeq, OutMesgType,
             scm.SocketId, ProxyId, scm.GUID, ControlChannel);
 
-        log.trace("setupControl write done");
+        MSocketLogger.getLogger().fine("setupControl write done");
 
         SocketType = ProxyForwarder.DATA_SOC;
         break;
@@ -390,7 +388,7 @@ public class ProxyMSocket extends Socket
       {
         // setting GUID
         System.arraycopy(scm.GUID, 0, GUID, 0, SetupControlMessage.SIZE_OF_GUID);
-        log.trace("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
+        MSocketLogger.getLogger().fine("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
 
         // storing server ProxyMSOcekt in the splicer
         PForwarder.SpliceMapOperations(scm.ProxyId, ProxyForwarder.PUT, ProxyTCPSplicer.SERVER_SIDE, this);
@@ -417,14 +415,14 @@ public class ProxyMSocket extends Socket
       {
         // setting GUID
         System.arraycopy(scm.GUID, 0, GUID, 0, SetupControlMessage.SIZE_OF_GUID);
-        log.trace("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
+        MSocketLogger.getLogger().fine("Sent GUID " + scm.GUID + " String form " + CommonMethods.bytArrayToHex(scm.GUID));
 
-        log.trace("proxy sending CONTROL_SOCKET_REPLY");
+        MSocketLogger.getLogger().fine("proxy sending CONTROL_SOCKET_REPLY");
         this.setupControlWrite(NewChannel.socket().getLocalAddress(), -1, -1, -1,
             SetupControlMessage.CONTROL_SOCKET_REPLY, -1, -1, scm.GUID, NewChannel);
         SocketType = ProxyForwarder.CONTROL_SOC;
 
-        log.trace("Control channel with GUID " + GUID + " registered with proxy Server reigisters with proxy");
+        MSocketLogger.getLogger().fine("Control channel with GUID " + GUID + " registered with proxy Server reigisters with proxy");
         break;
       }
     }

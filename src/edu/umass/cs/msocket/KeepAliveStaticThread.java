@@ -26,7 +26,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * 
@@ -52,8 +52,6 @@ public class KeepAliveStaticThread implements Runnable
 	
 	private static long                     				localClock				= 0;
 	
-	private static Logger log         												= Logger.getLogger(KeepAliveStaticThread.class.getName());
-	
 	/**
 	 * MSockets register for keep alives
 	 * 
@@ -63,8 +61,8 @@ public class KeepAliveStaticThread implements Runnable
 	{
 		createSingleton();
 		TimerTaskClass timertask = new TimerTaskClass(cinfo.getMSocket());
-		StoreInfo storeinfo = new StoreInfo(cinfo, timertask);
-		log.trace("cinfo registered to registerForKeepAlive "+cinfo.getFlowID());
+		StoreInfo storeinfo = new StoreInfo( timertask);
+		MSocketLogger.getLogger().fine("cinfo registered to registerForKeepAlive "+cinfo.getFlowID());
 		
 		if( cinfo.getServerOrClient() == MSocketConstants.SERVER )
 		{
@@ -181,24 +179,19 @@ public class KeepAliveStaticThread implements Runnable
 		registeredClientMSockets.clear();
 		registeredServerMSockets.clear();
 		keepAliveObj = null;
-		log.info("Keep alive static thread exits");
+		MSocketLogger.getLogger().fine("Keep alive static thread exits");
 	}
 	
 	private static class StoreInfo
 	{
-		private final ConnectionInfo cinfo;
 		private final TimerTaskClass timertask;
 		
-		public StoreInfo(ConnectionInfo cinfo, TimerTaskClass timertask)
+		public StoreInfo(TimerTaskClass timertask)
 		{
-			this.cinfo = cinfo;
 			this.timertask = timertask;
 		}
 		
-		public ConnectionInfo getConnectionInfo()
-		{
-			return cinfo;
-		}
+		
 		
 		public TimerTaskClass getTimerTask()
 		{

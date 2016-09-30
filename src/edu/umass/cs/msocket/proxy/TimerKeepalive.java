@@ -27,10 +27,7 @@ import java.util.logging.Logger;
 
 import org.json.JSONArray;
 
-
-
-
-
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.msocket.common.Constants;
@@ -63,13 +60,26 @@ public class TimerKeepalive extends Thread
     this.publishFrequency = publishFrequency;
     logger.fine("Publishing start time");
     final long now = System.currentTimeMillis();
-    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.START_TIME, new JSONArray().put(now), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.START_TIME, null);
-    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.TIME_REFRESH_INTERVAL,
-        new JSONArray().put(publishFrequency), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.TIME_REFRESH_INTERVAL, null);
-    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(guid.getGuid(), Constants.CURRENT_TIME, new JSONArray().put(now), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.CURRENT_TIME, null);
+    
+    DefaultGNSClient.getGnsClient().execute
+    	(GNSCommand.fieldReplaceOrCreateList(myGuid.getGuid(), Constants.START_TIME, 
+    			new JSONArray().put(now), myGuid));
+    
+    DefaultGNSClient.getGnsClient().execute(GNSCommand.aclAdd
+    		(AclAccessType.READ_WHITELIST, myGuid, Constants.START_TIME, null));
+    
+    DefaultGNSClient.getGnsClient().execute( GNSCommand.fieldReplaceOrCreateList(myGuid.getGuid(), Constants.TIME_REFRESH_INTERVAL,
+            new JSONArray().put(publishFrequency), myGuid) );
+    		
+    
+    DefaultGNSClient.getGnsClient().execute( GNSCommand.aclAdd
+    		(AclAccessType.READ_WHITELIST, myGuid, Constants.TIME_REFRESH_INTERVAL, null) );
+    
+    DefaultGNSClient.getGnsClient().execute( GNSCommand.fieldReplaceOrCreateList
+    		(guid.getGuid(), Constants.CURRENT_TIME, new JSONArray().put(now), myGuid) );
+    
+    DefaultGNSClient.getGnsClient().execute( GNSCommand.aclAdd
+    		(AclAccessType.READ_WHITELIST, myGuid, Constants.CURRENT_TIME, null) );
     logger.setLevel(Level.FINE);
   }
 
@@ -103,8 +113,10 @@ public class TimerKeepalive extends Thread
       last = System.currentTimeMillis();
       try
       {
-    	  DefaultGNSClient.getGnsClient().fieldReplaceList(guid.getGuid(), Constants.CURRENT_TIME,
-            new JSONArray().put(last), guid);
+    	  DefaultGNSClient.getGnsClient().execute(GNSCommand.fieldReplaceList
+    			  ( guid.getGuid(), Constants.CURRENT_TIME,
+    	            new JSONArray().put(last), guid) );
+    	  
         logger.fine("Updated current time to " + last);
       }
       catch (Exception e)

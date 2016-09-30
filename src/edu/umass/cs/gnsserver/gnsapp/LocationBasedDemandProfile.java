@@ -510,8 +510,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    */
   public static void main(String[] args) throws UnknownHostException {
     LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
-    LOG.info(dp.toString());
-    LOG.info(dp.clone().toString());
+    LOG.fine(dp.toString());
+    LOG.fine(dp.clone().toString());
     testThings(dp);
   }
 

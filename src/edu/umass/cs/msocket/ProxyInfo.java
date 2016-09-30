@@ -27,8 +27,6 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
-import org.apache.log4j.Logger;
-
 /**
  * This class keeps the information about each proxy at the server side. It
  * stores the proxy listening address and last keep alive recvd from the proxy.
@@ -44,8 +42,6 @@ public class ProxyInfo
   private boolean       active        = true;
 
   private SelectionKey  selectorKey   = null;
-
-  private static Logger log           = Logger.getLogger(ProxyInfo.class.getName());
 
   public ProxyInfo(String proxyName, int proxyPort)
   {

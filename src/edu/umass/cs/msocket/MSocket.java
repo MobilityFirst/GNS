@@ -41,10 +41,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.common.CommonMethods;
 import edu.umass.cs.msocket.gns.Integration;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 import edu.umass.cs.msocket.mobility.MobilityManagerClient;
 
 /**
@@ -119,11 +118,6 @@ public class MSocket extends Socket implements MultipathInterface
    * Maximum number of flowpath (0= no limit)
    */
   private int                 maxFlowPath               = 0;
-
-  /**
-   * Logger for traces
-   */
-  protected static Logger     log                       = Logger.getLogger(MSocket.class.getName());
 
   /**
    * Creates an unconnected MSocket.
@@ -228,7 +222,7 @@ public class MSocket extends Socket implements MultipathInterface
 		  }
 		  catch (Exception ex)
 		  {
-			  log.trace(ex.getMessage());
+			  MSocketLogger.getLogger().fine(ex.getMessage());
 		    //ex.printStackTrace();
 		    connectSucc = false;
 		  }
@@ -278,10 +272,10 @@ public class MSocket extends Socket implements MultipathInterface
 		
 		if(fp == null)
 		{
-			log.trace("addFlowPath failed "+localBindAdd);
+			MSocketLogger.getLogger().fine("addFlowPath failed "+localBindAdd);
 		} else
 		{
-			log.trace("addFlowPath succeded"+localBindAdd);
+			MSocketLogger.getLogger().fine("addFlowPath succeded"+localBindAdd);
 		}
 	}
   }
@@ -312,10 +306,10 @@ public class MSocket extends Socket implements MultipathInterface
 		
 		if(fp == null)
 		{
-			log.trace("addFlowPath failed "+localBindAdd);
+			MSocketLogger.getLogger().fine("addFlowPath failed "+localBindAdd);
 		} else
 		{
-			log.trace("addFlowPath succeded"+localBindAdd);
+			MSocketLogger.getLogger().fine("addFlowPath succeded"+localBindAdd);
 		}
 	}
   }
@@ -395,10 +389,10 @@ public class MSocket extends Socket implements MultipathInterface
 		
 		if(fp == null)
 		{
-			log.trace("addFlowPath failed "+localBindAdd);
+			MSocketLogger.getLogger().fine("addFlowPath failed "+localBindAdd);
 		} else
 		{
-			log.trace("addFlowPath succeded"+localBindAdd);
+			MSocketLogger.getLogger().fine("addFlowPath succeded"+localBindAdd);
 		}
 	}
 	}*/
@@ -439,15 +433,15 @@ public class MSocket extends Socket implements MultipathInterface
         cinfo.setMSocketState(MSocketConstants.LAST_ACK);
       }
 
-      log.trace("close() called");
+      MSocketLogger.getLogger().fine("close() called");
       sendCloseControlmesg();
-      log.trace("sendCloseControlmesg() done MSocket state " + cinfo.getMSocketState());
+      MSocketLogger.getLogger().fine("sendCloseControlmesg() done MSocket state " + cinfo.getMSocketState());
 
       while (cinfo.getMSocketState() != MSocketConstants.CLOSED)
       {
         try
         {
-          // log.debug("MSocket type " + cinfo.getServerOrClient() +
+          // MSocketLogger.getLogger().fine("MSocket type " + cinfo.getServerOrClient() +
           // "cinfo.getMSocketState() " + cinfo.getMSocketState());
           // for synchronization, so that migration setup control read and this
           // input stream read does not go hand in hand
@@ -467,7 +461,7 @@ public class MSocket extends Socket implements MultipathInterface
           cinfo.setState(ConnectionInfo.ALL_READY, true);
           if (cinfo.getMSocketState() != MSocketConstants.CLOSED)
           {
-            log.trace("Exception during recv ACV, trying again, state changed to "
+            MSocketLogger.getLogger().fine("Exception during recv ACV, trying again, state changed to "
                 + "ALL_READY for migration to happen. cinfo.getMSocketState() " + cinfo.getMSocketState());
             ex.printStackTrace();
           }
@@ -508,7 +502,7 @@ public class MSocket extends Socket implements MultipathInterface
 	    int typeOfCon = MSocketConstants.CON_TO_IP;
 	    
 	
-	    log.info("Connected to server at " + socket.getInetAddress() + ":" + socket.getPort() + " - local port "
+	    MSocketLogger.getLogger().fine("Connected to server at " + socket.getInetAddress() + ":" + socket.getPort() + " - local port "
 	        + socket.getLocalPort() + " - local IP " + socket.getLocalAddress());
 	    setupControlClient("", serverIP, serverPort, typeOfCon, "", legacyChannel, socket, connectTime);
 	
@@ -1128,7 +1122,7 @@ public class MSocket extends Socket implements MultipathInterface
 	    if (mstype == SetupControlMessage.NEW_CON_MESG || mstype == SetupControlMessage.ADD_SOCKET)
 	    {
 	      DataAckSeq = (int) connectTime;
-	      log.debug("Connect time " + DataAckSeq);
+	      MSocketLogger.getLogger().fine("Connect time " + DataAckSeq);
 	    }
 
 	    SetupControlMessage scm = new SetupControlMessage(ControllerAddress, ControllerPort, lfid, DataAckSeq, mstype,
@@ -1140,7 +1134,7 @@ public class MSocket extends Socket implements MultipathInterface
 	      SCToUse.write(buf);
 	    }
 
-	    log.trace("Sent IP:port " + ControllerPort + "; ackSeq = " + (cinfo != null ? DataAckSeq : 0));
+	    MSocketLogger.getLogger().fine("Sent IP:port " + ControllerPort + "; ackSeq = " + (cinfo != null ? DataAckSeq : 0));
 	  }
 
 	  protected SetupControlMessage setupControlRead(SocketChannel scToUse) throws IOException
@@ -1151,12 +1145,12 @@ public class MSocket extends Socket implements MultipathInterface
 	    int ret = 0;
 	    while (ret < SetupControlMessage.SIZE)
 	    {
-	      log.trace("setup control read happening");
+	      MSocketLogger.getLogger().fine("setup control read happening");
 	      InputStream is = scToUse.socket().getInputStream();
 	      try
 	      {
 	        int currRead = is.read(buf.array(), ret, SetupControlMessage.SIZE - ret);
-	        log.trace("read " + ret + " bytes");
+	        MSocketLogger.getLogger().fine("read " + ret + " bytes");
 	        if (currRead == -1)
 	        {
 	          if (ret < SetupControlMessage.SIZE)
@@ -1172,7 +1166,7 @@ public class MSocket extends Socket implements MultipathInterface
 	        throw new SocketTimeoutException("Timeout while establishing connection with MServerSocket.");
 	      }
 	    }
-	    log.trace("setup control read complete");
+	    MSocketLogger.getLogger().fine("setup control read complete");
 	
 	    SetupControlMessage scm = SetupControlMessage.getSetupControlMessage(buf.array());
 	    return scm;
@@ -1208,7 +1202,7 @@ public class MSocket extends Socket implements MultipathInterface
     //bind(new InetSocketAddress(Interfaces.get(1 % Interfaces.size()), 0));
     bind(new InetSocketAddress(localIP, localPort));
 
-    log.debug("connecting to server " + new InetSocketAddress(serverIP, serverPort));
+    MSocketLogger.getLogger().fine("connecting to server " + new InetSocketAddress(serverIP, serverPort));
 
     long connectStart = System.currentTimeMillis();
     legacyChannel.connect(new InetSocketAddress(serverIP, serverPort));
@@ -1219,7 +1213,7 @@ public class MSocket extends Socket implements MultipathInterface
 
     Socket socket = legacyChannel.socket();
 
-    log.info("Connected to server at " + socket.getInetAddress() + ":" + socket.getPort() + "local port "
+    MSocketLogger.getLogger().fine("Connected to server at " + socket.getInetAddress() + ":" + socket.getPort() + "local port "
         + socket.getLocalPort() + "local IP " + socket.getLocalAddress());
     setupControlClient(serverAlias, serverIP, serverPort, typeOfCon, stringGUID, legacyChannel, socket,
         connectTime);
@@ -1269,7 +1263,7 @@ public class MSocket extends Socket implements MultipathInterface
 
     if (UDPControllerPort == -1)
     {
-      log.debug("New connection UDPControllerPort " + UDPControllerPort);
+      MSocketLogger.getLogger().fine("New connection UDPControllerPort " + UDPControllerPort);
     }
 
     SetupControlMessage scm = null;
@@ -1277,9 +1271,9 @@ public class MSocket extends Socket implements MultipathInterface
 
     if (stringGUID.length() > 0)
     {
-      log.trace("serverGuid: " + stringGUID);
+      MSocketLogger.getLogger().fine("serverGuid: " + stringGUID);
       GUID = CommonMethods.hexStringToByteArray(stringGUID);
-      log.trace("GUID to be sent: " + GUID + " length " + GUID.length);
+      MSocketLogger.getLogger().fine("GUID to be sent: " + GUID + " length " + GUID.length);
     }
 
     setupControlWrite(controllerIP, flowID, SetupControlMessage.NEW_CON_MESG, UDPControllerPort,
@@ -1291,7 +1285,7 @@ public class MSocket extends Socket implements MultipathInterface
     {
       // flowID is computed as average of both proposals for new connections
       flowID = (localFlowID + scm.flowID) / 2;
-      log.trace("Created new flow ID " + flowID);
+      MSocketLogger.getLogger().fine("Created new flow ID " + flowID);
 
       cinfo = new ConnectionInfo(this);
 
@@ -1427,7 +1421,7 @@ public class MSocket extends Socket implements MultipathInterface
     int typeOfCon = MSocketConstants.CON_TO_IP;
     int numberOfSockets = numSockets;
 
-    log.info("Connected to server at " + socket.getInetAddress() + ":" + socket.getPort() + " - local port "
+    MSocketLogger.getLogger().fine("Connected to server at " + socket.getInetAddress() + ":" + socket.getPort() + " - local port "
         + socket.getLocalPort() + " - local IP " + socket.getLocalAddress());
     setupControlClient("", serverIP, serverPort, typeOfCon, "", legacyChannel, socket, connectTime);
 

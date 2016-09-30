@@ -40,8 +40,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.apache.log4j.Logger;
 import edu.umass.cs.msocket.AcceptConnectionQueue;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class is for accepting connections at the proxy, It implements the
@@ -80,8 +80,6 @@ public class ProxyServerSocket extends ServerSocket
                                                                                                   // infinite
                                                                                                   // timeout
   private ProxyForwarder        PForwarder 			= null;
-
-  private static Logger         log        = Logger.getLogger(ProxyServerSocket.class.getName());
 
   /**
    * @param ServerName
@@ -217,7 +215,7 @@ public class ProxyServerSocket extends ServerSocket
     {
       // read and service request on socket
       // FIXME: check for how to handle exceptions here
-      log.trace("new connection accepted by socket channel");
+      MSocketLogger.getLogger().fine("new connection accepted by socket channel");
 
       ProxyMSocket ms = null;
       try
@@ -233,7 +231,7 @@ public class ProxyServerSocket extends ServerSocket
         // transitoion into all ready state as well
       }
 
-      log.trace("Accepted connection from " + ms.getInetAddress() + ":" + ms.getPort());
+      MSocketLogger.getLogger().fine("Accepted connection from " + ms.getInetAddress() + ":" + ms.getPort());
 
       AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, ms);
       synchronized (monitor)
@@ -246,7 +244,7 @@ public class ProxyServerSocket extends ServerSocket
 
   private void BlockForAccept()
   {
-    log.trace("accept called");
+    MSocketLogger.getLogger().fine("accept called");
     synchronized (monitor)
     {
       while ((Integer) AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.GET_SIZE, null) == 0)
@@ -261,7 +259,7 @@ public class ProxyServerSocket extends ServerSocket
         }
       }
     }
-    log.trace("new connection socket ready");
+    MSocketLogger.getLogger().fine("new connection socket ready");
   }
 
   /**
@@ -331,7 +329,7 @@ public class ProxyServerSocket extends ServerSocket
             }
             else
             {
-              log.trace("Interface IP " + IP);
+              MSocketLogger.getLogger().fine("Interface IP " + IP);
               CurrentInterfaceIPs.add(inetAddress);
             }
           }

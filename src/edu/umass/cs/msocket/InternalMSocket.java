@@ -23,7 +23,8 @@ package edu.umass.cs.msocket;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.util.Timer;
+
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class defines an InternalMSocket used by MServerSocket for its
@@ -88,7 +89,7 @@ public class InternalMSocket extends MSocket
    */
   protected void setupServerController(SetupControlMessage scm)
   {
-    log.trace("Received IP:port " + scm.port + ":" + scm.iaddr + " for flowID " + flowID + "; ackSeq = " + scm.ackSeq);
+    MSocketLogger.getLogger().fine("Received IP:port " + scm.port + ":" + scm.iaddr + " for flowID " + flowID + "; ackSeq = " + scm.ackSeq);
     cinfo.setRemoteControlAddress(scm.iaddr);
     cinfo.setRemoteControlPort(scm.port);
   }
@@ -121,7 +122,7 @@ public class InternalMSocket extends MSocket
       case SetupControlMessage.NEW_CON_MESG :
       case SetupControlMessage.NEW_CON_REQ :
       {
-        log.debug("NEW_CON_MESG recv at server from " + newChannel.socket().getInetAddress() + " scm.ackSeq "
+        MSocketLogger.getLogger().fine("NEW_CON_MESG recv at server from " + newChannel.socket().getInetAddress() + " scm.ackSeq "
             + scm.ackSeq);
         setupControlWrite(serverController.getLocalAddress(), localFlowID, SetupControlMessage.NEW_CON_MESG_REPLY,
             serverController.getLocalPort(), newChannel, scm.SocketId, scm.ProxyId, scm.GUID, 0);
@@ -130,7 +131,7 @@ public class InternalMSocket extends MSocket
         // connections
         flowID = (localFlowID + scm.flowID) / 2;
         serverController.setConnectionInfo(this);
-        log.trace("Created new flow ID " + flowID);
+        MSocketLogger.getLogger().fine("Created new flow ID " + flowID);
         cinfo = serverController.getConnectionInfo(flowID);
         setupServerController(scm);
 
@@ -151,7 +152,7 @@ public class InternalMSocket extends MSocket
         
         cinfo.setMSocketState(MSocketConstants.ACTIVE);
         serverController.getConnectionInfo(flowID).setState(ConnectionInfo.ALL_READY, true);
-        log.trace("Set server state to ALL_READY");
+        MSocketLogger.getLogger().fine("Set server state to ALL_READY");
 
         //localTimer = new Timer();
         //startLocalTimer();
@@ -165,7 +166,7 @@ public class InternalMSocket extends MSocket
       case SetupControlMessage.ADD_SOCKET :
       case SetupControlMessage.ADD_SOCKET_REQ :
       {
-        log.debug("ADD_SOCKET recv at server from " + newChannel.socket().getInetAddress() + " scm.ackSeq "
+        MSocketLogger.getLogger().fine("ADD_SOCKET recv at server from " + newChannel.socket().getInetAddress() + " scm.ackSeq "
             + scm.ackSeq);
 
         setupControlWrite(serverController.getLocalAddress(), flowID, SetupControlMessage.ADD_SOCKET_REPLY,
@@ -190,7 +191,7 @@ public class InternalMSocket extends MSocket
         // migrate a previous connection. send reset.
         if (cinfo == null)
         {
-          log.debug("sending MIGRATE_SOCKET_RESET");
+          MSocketLogger.getLogger().fine("sending MIGRATE_SOCKET_RESET");
           setupControlWrite(serverController.getLocalAddress(), scm.flowID, SetupControlMessage.MIGRATE_SOCKET_RESET,
               serverController.getLocalPort(), newChannel, scm.SocketId, scm.ProxyId, scm.GUID, 0);
           isNew = false;

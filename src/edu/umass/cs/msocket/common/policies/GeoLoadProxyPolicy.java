@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
@@ -104,8 +105,11 @@ public class GeoLoadProxyPolicy extends ProxySelectionPolicy
     JSONArray guids;
     try
     {
-      guids = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGroupName, Constants.ACTIVE_LOCATION_FIELD,
-    		  DefaultGNSClient.getMyGuidEntry());
+    	GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute( 
+    			GNSCommand.fieldReadArray(proxyGroupName, 
+    					Constants.ACTIVE_LOCATION_FIELD, DefaultGNSClient.getMyGuidEntry()) );
+    	
+    	guids = commandRes.getResultJSONArray();
     }
     catch (Exception e)
     {
@@ -117,8 +121,13 @@ public class GeoLoadProxyPolicy extends ProxySelectionPolicy
     {
       // Retrieve the location service IP and connect to it
       String locationGuid = guids.getString(i);
-      String locationIP = DefaultGNSClient.getGnsClient().fieldReadArray
-    		  (locationGuid, Constants.LOCATION_SERVICE_IP, DefaultGNSClient.getMyGuidEntry()).getString(0);
+      
+      GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute
+      	(GNSCommand.fieldReadArray(locationGuid, 
+      		Constants.LOCATION_SERVICE_IP, DefaultGNSClient.getMyGuidEntry()));
+
+      String locationIP = commandRes.getResultJSONArray().getString(0);
+      
       logger.fine("Contacting location service " + locationIP + " to request " + numProxies + " proxies");
 
       // Location IP is stored as host:port

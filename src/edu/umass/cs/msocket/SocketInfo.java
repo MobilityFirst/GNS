@@ -28,7 +28,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class keeps the information about each flowpath. It stores the socket,
@@ -125,8 +125,6 @@ public class SocketInfo
   private int numCloseFPRecvd								   = 0;
   
   private int numCloseFPRecvdOtherSide						   = 0;
-  
-  private static Logger         log                            = Logger.getLogger(SocketInfo.class.getName());
   
   public SocketInfo(SocketChannel dataChannel, Socket socket, int SocketIdentifier)
   {
@@ -313,7 +311,7 @@ public class SocketInfo
   public synchronized void setStatus(boolean status)
   {
     active = status;
-    log.trace("inside set status");
+    MSocketLogger.getLogger().fine("inside set status");
     if (status == false)
     {
       try
@@ -324,7 +322,7 @@ public class SocketInfo
       catch (Exception ex)
       {
         ex.printStackTrace();
-        log.trace("exceptio in closing during status set");
+        MSocketLogger.getLogger().fine("exceptio in closing during status set");
       }
     }
   }
@@ -386,7 +384,7 @@ public class SocketInfo
   public synchronized void updateSentBytes(long toBeAdded)
   {
     numBytesSent += toBeAdded;
-    log.trace("SentBytes Updated " + numBytesSent + " SocketID " + SocketIdentifier);
+    MSocketLogger.getLogger().fine("SentBytes Updated " + numBytesSent + " SocketID " + SocketIdentifier);
   }
 
   public synchronized void updateRecvdBytes(long toBeAdded)

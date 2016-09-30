@@ -28,15 +28,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.common.CommonMethods;
 import edu.umass.cs.msocket.gns.Integration;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 class TimerTaskClass
 {
   private final MSocket    mSocket;
-  private static Logger    log                 = Logger.getLogger(MSocket.class.getName());
 
   /**
    * Proxy failure timeout in seconds (default is 15 seconds)
@@ -55,16 +53,16 @@ class TimerTaskClass
 
   private void proxyFailureCheck() throws Exception
   {
-    log.trace("inside proxyFailureCheck");
+    MSocketLogger.getLogger().fine("inside proxyFailureCheck");
     Vector<SocketInfo> vect = new Vector<SocketInfo>();
     vect.addAll(mSocket.cinfo.getAllSocketInfo());
-    log.trace("vect size " + vect.size());
+    MSocketLogger.getLogger().fine("vect size " + vect.size());
     int i = 0;
     while ( i < vect.size() )
     {
       SocketInfo value = vect.get(i);
 
-      log.trace("proxyFailureCheck running " + value.getLastKeepAlive() + " " + KeepAliveStaticThread.getLocalClock());
+      MSocketLogger.getLogger().fine("proxyFailureCheck running " + value.getLastKeepAlive() + " " + KeepAliveStaticThread.getLocalClock());
       {
         if (((KeepAliveStaticThread.getLocalClock() - value.getLastKeepAlive()) > proxyFailureTimeout))
         /*
@@ -104,11 +102,11 @@ class TimerTaskClass
       {
         if (proxyAddress != null)
         {
-          log.trace(" migrateSocketwithId called with proxy address " + proxyAddress.getAddress() + ":"
+          MSocketLogger.getLogger().fine(" migrateSocketwithId called with proxy address " + proxyAddress.getAddress() + ":"
               + proxyAddress.getPort() + " socketId " + SocketObj.getSocketIdentifer() );
 
           mSocket.cinfo.closeAll(SocketObj.getSocketIdentifer());
-          log.trace("close done");
+          MSocketLogger.getLogger().fine("close done");
           mSocket.cinfo.migrateSocketwithId(proxyAddress.getAddress(), proxyAddress.getPort(),
               SocketObj.getSocketIdentifer(), MSocketConstants.SERVER_MIG);
         }
@@ -134,7 +132,7 @@ class TimerTaskClass
     }
     catch (Exception ex)
     {
-      log.trace("GnsIntegration.getSocketAddressFromGNS exception");
+      MSocketLogger.getLogger().fine("GnsIntegration.getSocketAddressFromGNS exception");
     }
     return sockAdd;
   }
@@ -178,7 +176,7 @@ class TimerTaskClass
 			  
 			  this.mSocket.cinfo.setState(ConnectionInfo.ALL_READY, false);
 			}
-			MSocket.log.trace("client reading keep alive complete");
+			MSocketLogger.getLogger().fine("client reading keep alive complete");
             
 			try
 			{
@@ -194,7 +192,7 @@ class TimerTaskClass
 			}
 			catch (Exception e)
 			{
-				MSocket.log.trace("Mostly GNS connectivity failure, or migration failure");
+				MSocketLogger.getLogger().fine("Mostly GNS connectivity failure, or migration failure");
 				e.printStackTrace();
 			}		
 			break;
@@ -211,7 +209,7 @@ class TimerTaskClass
       {
         case MSocketConstants.SERVER :
         {
-          MSocket.log.trace("Timer acquiring READ_WRITE at SERVER " + this.mSocket.cinfo.getMSocketState());
+          MSocket.MSocketLogger.getLogger().fine("Timer acquiring READ_WRITE at SERVER " + this.mSocket.cinfo.getMSocketState());
           boolean ret = this.mSocket.cinfo.setState(ConnectionInfo.READ_WRITE, false); // timer
           																			   // cannot
           																			   // block
@@ -231,14 +229,14 @@ class TimerTaskClass
         }
         case MSocketConstants.CLIENT :
         {
-	        MSocket.log.trace("clienttt reading keep alive");
+	        MSocket.MSocketLogger.getLogger().fine("clienttt reading keep alive");
 			boolean ret = this.mSocket.cinfo.setState(ConnectionInfo.READ_WRITE, false); // timer
 			//
 			// cannot block to read keep alives
 			//
 			if (ret)
 			{
-			  MSocket.log.trace("got the lock");
+			  MSocket.MSocketLogger.getLogger().fine("got the lock");
 			  
 			  this.mSocket.cinfo.multiSocketKeepAliveRead();
 			  
@@ -246,7 +244,7 @@ class TimerTaskClass
 			  
 			  this.mSocket.cinfo.setState(ConnectionInfo.ALL_READY, false);
 			}
-			MSocket.log.trace("client reading keep alive complete");
+			MSocket.MSocketLogger.getLogger().fine("client reading keep alive complete");
             
 			try
 			{
@@ -262,7 +260,7 @@ class TimerTaskClass
 			}
 			catch (Exception e)
 			{
-				MSocket.log.trace("Mostly GNS connectivity failure, or migration failure");
+				MSocket.MSocketLogger.getLogger().fine("Mostly GNS connectivity failure, or migration failure");
 				e.printStackTrace();
 			}
 			

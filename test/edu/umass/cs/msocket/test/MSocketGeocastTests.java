@@ -109,12 +109,12 @@ public class MSocketGeocastTests
 	  {
 	    sleepFor(ms);
 	    int value = new Random().nextInt(255);
-	    log.info("MSocket writing " + value);
+	    MSocketLogger.getLogger().fine("MSocket writing " + value);
 	    os.write(value);
 	    os.flush();
 	    sleepFor(ms);
 	    int read = is.read();
-	    log.info("MSocket read " + read);
+	    MSocketLogger.getLogger().fine("MSocket read " + read);
 	    if (read != value)
 	      fail("Wrong value returned by echo server. Expected " + value + " but got " + read);
 	  }

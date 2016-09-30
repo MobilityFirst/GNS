@@ -47,7 +47,6 @@
 	<classpathentry kind="lib" path="lib/joda-time-2.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.51.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.11.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="lib/mongo-java-driver-2.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/SizeOf.jar"/>
 	<classpathentry kind="lib" path="lib/spring-beans-3.0.7.RELEASE.jar"/>

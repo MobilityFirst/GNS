@@ -21,6 +21,9 @@
 
 package edu.umass.cs.msocket.gns;
 
+import java.util.Properties;
+
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -42,8 +45,8 @@ public class DefaultGNSClient
 	private static DefaultGNSClient defualtObj    	= null;
 	private static final Object lockObj 	      	= new Object();
 	
-	private static String 	gnsHostPort					    = null;
-	private static GNSClientCommands gnsClient    	= null;
+	//private static String 	gnsHostPort				= null;
+	private static GNSClient gnsClient    			= null;
 	
 	private static GuidEntry myGuidEntry 	      	= null;
 	
@@ -52,16 +55,22 @@ public class DefaultGNSClient
 	{
 		try
 		{
-                  System.out.println("USING HOST AND PORT WITH A CLIENT IS NOW OBSOLETE!! "
-                          + "See the gigapaxos.properties file.");
-			String gnsString = KeyPairUtils.getDefaultGns();
-			String[] parsed = gnsString.split(":");
-			gnsHostPort = parsed[0]+":"+parsed[1];
-			System.out.println("gnsHostPort "+gnsHostPort);
-                        
-			gnsClient = new GNSClientCommands();
-			myGuidEntry = KeyPairUtils.getDefaultGuidEntry(gnsHostPort);
-			System.out.println("myGuidEntry "+myGuidEntry.getEntityName()+ " "+myGuidEntry.getGuid());
+			// setting the properties
+			Properties props = System.getProperties();
+			props.setProperty("gigapaxosConfig", "gnsclient.msocket.properties");
+			
+			props.setProperty("javax.net.ssl.trustStorePassword", "qwerty");
+			props.setProperty("javax.net.ssl.trustStore", "trustStore.jks");
+			props.setProperty("javax.net.ssl.keyStorePassword", "qwerty");
+			props.setProperty("javax.net.ssl.keyStore", "keyStore.jks");
+			
+			//System.out.println("gnsHostPort "+gnsHostPort);
+			gnsClient = new GNSClient();
+			
+			myGuidEntry = KeyPairUtils.getDefaultGuidEntry(gnsClient.getGNSProvider());
+			// FIXME: Need tp change it to log statements, after fixing logging in msocket.
+			System.out.println("myGuidEntry "+myGuidEntry.getEntityName()
+													+ " "+myGuidEntry.getGuid());
 		}
 		catch(Exception ex)
 		{
@@ -75,15 +84,17 @@ public class DefaultGNSClient
 		{
 			createSingleton();	
 		}
-		return gnsHostPort;
+		assert(gnsClient != null);
+		return gnsClient.getGNSProvider();
 	}
 	
-	public static GNSClientCommands getGnsClient()
+	public static GNSClient getGnsClient()
 	{
 		if(defualtObj == null)
 		{
 			createSingleton();	
 		}
+		assert(gnsClient != null);
 		return gnsClient;
 	}
 	
@@ -93,6 +104,7 @@ public class DefaultGNSClient
 		{
 			createSingleton();	
 		}
+		assert(myGuidEntry != null);
 		return myGuidEntry;
 	}
 	

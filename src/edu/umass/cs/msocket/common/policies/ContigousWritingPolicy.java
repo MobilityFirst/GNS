@@ -25,22 +25,18 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.ConnectionInfo;
 import edu.umass.cs.msocket.DataMessage;
 import edu.umass.cs.msocket.MSocketConstants;
 import edu.umass.cs.msocket.MWrappedOutputStream;
 import edu.umass.cs.msocket.MultipathPolicy;
 import edu.umass.cs.msocket.SocketInfo;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 public class ContigousWritingPolicy extends MultipathWritingPolicy {
 
 	// represents the current SocketID on which data is being written into.
 	private int currSocketID				= -1;
-	
-	
-	private static Logger log = Logger.getLogger(ContigousWritingPolicy.class.getName());
 	
 	
 	public ContigousWritingPolicy(ConnectionInfo cinfo)
@@ -130,7 +126,7 @@ public class ContigousWritingPolicy extends MultipathWritingPolicy {
 		        cinfo.attemptSocketWrite(Obj);
 		        if (cinfo.getServerOrClient() == MSocketConstants.CLIENT)
 		        {
-		          log.debug("Using socketID " + Obj.getSocketIdentifer() + "Remote IP " + Obj.getSocket().getInetAddress()
+		          MSocketLogger.getLogger().fine("Using socketID " + Obj.getSocketIdentifer() + "Remote IP " + Obj.getSocket().getInetAddress()
 		              + "for writing " + "" + "tempDataSendSeqNum " + tempDataSendSeqNum);
 		        }
 	          
@@ -143,7 +139,7 @@ public class ContigousWritingPolicy extends MultipathWritingPolicy {
 	        }
 	        catch (IOException ex)
 	        {
-	          log.trace("Write exception caused");
+	          MSocketLogger.getLogger().fine("Write exception caused");
 	          Obj.setStatus(false);
 	          Obj.setneedToReqeustACK(true);
 
@@ -195,7 +191,7 @@ public class ContigousWritingPolicy extends MultipathWritingPolicy {
 		          + " RecvdBytesOtherSide " + Obj.getRecvdBytesOtherSide() + " ";
 		    }
 		  }
-		  // log.debug(print);
+		  // MSocketLogger.getLogger().fine(print);
 		
 		  // need to empty the write queues here, can't return
 		  // before that, otherwise it would desynchronize the output stream

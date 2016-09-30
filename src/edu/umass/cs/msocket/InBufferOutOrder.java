@@ -24,7 +24,8 @@ package edu.umass.cs.msocket;
 
 import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
+
 
 /**
  * This class implements the Inbuffer of the MSocket. Out of order data is read
@@ -52,8 +53,6 @@ public class InBufferOutOrder
                                                                                                            // case
                                                                                                            // of
                                                                                                            // multipath
-
-  private static Logger           log                = Logger.getLogger(InBufferOutOrder.class.getName());
 
   InBufferOutOrder()
   {
@@ -183,7 +182,7 @@ public class InBufferOutOrder
 	{
 		if(chunkLen > 0)
 		{
-			log.trace("copyOrderedDataToAppBuffer: "+" startSeqNum "+startSeqNum+" chunkLen "+chunkLen+
+			MSocketLogger.getLogger().fine("copyOrderedDataToAppBuffer: "+" startSeqNum "+startSeqNum+" chunkLen "+chunkLen+
 				" offset "+offset+" appLen "+appLen+" readFromStream[0] "+readFromStream[0]);
 		}
 		int actualCopied =0;

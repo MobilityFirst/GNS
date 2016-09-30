@@ -34,10 +34,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.common.CommonMethods;
 import edu.umass.cs.msocket.gns.Integration;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class implements the internals of MServerSocket. It implements the UDP
@@ -99,9 +98,6 @@ public class MServerSocketController implements Runnable
 
   private final Object                  cinfoMapOprMonitor      = new Object();
 
-  private static Logger                 log                     = Logger.getLogger(MServerSocketController.class
-                                                                    .getName());
-
   /**
    * Creates a new <code>MServerSocketController</code> object
    * 
@@ -111,7 +107,7 @@ public class MServerSocketController implements Runnable
   public MServerSocketController(MServerSocket ms) throws SocketException
   {
     mserversocket = ms;
-    log.trace(mserversocket.getInetAddress());
+    MSocketLogger.getLogger().fine(mserversocket.getInetAddress().toString());
     ctrlSocket = new DatagramSocket(0, mserversocket.getInetAddress());
     cinfoMap = new HashMap<Long, ConnectionInfo>();
     kat = new KeepAliveThread(this);
@@ -195,7 +191,7 @@ public class MServerSocketController implements Runnable
     }
     catch (IOException ex)
     {
-      log.trace("IO Exception caused while sending udp keep alive");
+      MSocketLogger.getLogger().fine("IO Exception caused while sending udp keep alive");
     }
   }
 
@@ -208,7 +204,7 @@ public class MServerSocketController implements Runnable
     {
 
       ConnectionInfo ci = allConnections.get(i);
-      log.trace("Initiating migrate for flow " + ci.getFlowID());
+      MSocketLogger.getLogger().fine("Initiating migrate for flow " + ci.getFlowID());
       // Prepare control message
 
       initMigrate(iaddr, port, ci.getFlowID(), UDPPort);
@@ -225,7 +221,7 @@ public class MServerSocketController implements Runnable
     for (int i = 0; i < allConnections.size(); i++)
     {
       ConnectionInfo ci = allConnections.get(i);
-      log.trace("closing prev socket for flow " + ci.getFlowID());
+      MSocketLogger.getLogger().fine("closing prev socket for flow " + ci.getFlowID());
       this.suspendIO(ci.getFlowID());
     }
   }
@@ -252,7 +248,7 @@ public class MServerSocketController implements Runnable
       {
         ControlMessage cmsg = new ControlMessage(cinfo.getCtrlSendSeq(), cinfo.getCtrlAckSeq(),
             ControlMessage.REBIND_ADDRESS_PORT, flowID, port, UDPPort, iaddr);
-        log.trace("Sending control message " + cmsg.toString() + " to " + cinfo.getRemoteControlAddress() + ":"
+        MSocketLogger.getLogger().fine("Sending control message " + cmsg.toString() + " to " + cinfo.getRemoteControlAddress() + ":"
             + cinfo.getRemoteControlPort());
         send(cmsg);
         cinfo.setCtrlSendSeq(cinfo.getCtrlSendSeq() + 1);
@@ -326,7 +322,7 @@ public class MServerSocketController implements Runnable
     {
       e.printStackTrace();
     }
-    log.trace("MServerSocketController UDP thread exits");
+    MSocketLogger.getLogger().fine("MServerSocketController UDP thread exits");
   }
 
   long getLocalClock()
@@ -359,17 +355,17 @@ public class MServerSocketController implements Runnable
     // resend that message. but here just ACK needs to be sent
     if (msg.sendseq > cinfo.getCtrlAckSeq())
     {
-      log.trace("Received out-of-order message " + msg + "; expecting ackseq=" + cinfo.getCtrlAckSeq());
+      MSocketLogger.getLogger().fine("Received out-of-order message " + msg + "; expecting ackseq=" + cinfo.getCtrlAckSeq());
       return;
     }
     else
     {
-      log.trace("Received in-order message " + msg);
+      MSocketLogger.getLogger().fine("Received in-order message " + msg);
     }
 
     if (msg.type == ControlMessage.ACK_ONLY)
     {
-      log.trace("ACK recv " + msg.getAckseq());
+      MSocketLogger.getLogger().fine("ACK recv " + msg.getAckseq());
       // changed added this condition
       if (msg.getAckseq() > cinfo.getCtrlBaseSeq())
       {
@@ -384,7 +380,7 @@ public class MServerSocketController implements Runnable
       {
       }
 
-      log.trace("sending ACK msg.sendseq" + msg.sendseq);
+      MSocketLogger.getLogger().fine("sending ACK msg.sendseq" + msg.sendseq);
       cinfo.setCtrlAckSeq(msg.sendseq + 1);
       sendControllerMesg(msg.getFlowID(), ControlMessage.ACK_ONLY, 0, 0, null);
     }
@@ -439,7 +435,7 @@ public class MServerSocketController implements Runnable
       {
         if (((localClock - value.getLastKeepAlive()) > proxyFailureTimeout) && value.getActive())
         {
-          log.trace("proxy Name" + value.getProxyName() + "proxy Port " + value.getProxyPort() + "last Keep alive "
+          MSocketLogger.getLogger().fine("proxy Name" + value.getProxyName() + "proxy Port " + value.getProxyPort() + "last Keep alive "
               + value.getLastKeepAlive() + "current clock " + localClock);
           value.setActive(false);
           proxyFailure = true;
@@ -546,7 +542,7 @@ public class MServerSocketController implements Runnable
       ConnectionInfo cinfo = getConnectionInfo(msg.getFlowID());
       if (cinfo == null)
       {
-        log.debug("cinfo for flowID " + msg.getFlowID() + " not found, " + "behold the nullpointer expception");
+        MSocketLogger.getLogger().fine("cinfo for flowID " + msg.getFlowID() + " not found, " + "behold the nullpointer expception");
         return null;
       }
       InetAddress KnownIP = cinfo.getRemoteControlAddress();
@@ -557,14 +553,14 @@ public class MServerSocketController implements Runnable
       }
       else
       {
-        log.trace("Remote UDP IP set to " + NATedAddress.getHostAddress() + " port set to" + NATedPort);
+        MSocketLogger.getLogger().fine("Remote UDP IP set to " + NATedAddress.getHostAddress() + " port set to" + NATedPort);
         cinfo.setRemoteControlAddress(NATedAddress);
         cinfo.setRemoteControlPort(NATedPort);
       }
     }
     catch (IOException e)
     {
-      log.trace("IOException while processing received message; discarding message");
+      MSocketLogger.getLogger().fine("IOException while processing received message; discarding message");
       e.printStackTrace();
     }
     return msg;
@@ -597,7 +593,7 @@ public class MServerSocketController implements Runnable
   {
     synchronized (cinfoMapOprMonitor)
     {
-      log.debug(" flowID " + flowID + " removed from cinfoMap");
+      MSocketLogger.getLogger().fine(" flowID " + flowID + " removed from cinfoMap");
       ConnectionInfo removed = cinfoMap.remove(flowID);
       return removed;
     }
@@ -633,7 +629,7 @@ public class MServerSocketController implements Runnable
           e.printStackTrace();
         }
       }
-      log.trace("MServerSocketController KeepAliveThread exits");
+      MSocketLogger.getLogger().fine("MServerSocketController KeepAliveThread exits");
     }
   }
 

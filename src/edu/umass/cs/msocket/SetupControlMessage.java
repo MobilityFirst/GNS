@@ -268,7 +268,7 @@ public class SetupControlMessage
       // byte[] enc = scm.getBytes();
       // SetupControlMessage dec =
       // SetupControlMessage.getSetupControlMessage(enc);
-      // log.debug(dec);
+      // MSocketLogger.getLogger().fine(dec);
     }
     catch (Exception e)
     {

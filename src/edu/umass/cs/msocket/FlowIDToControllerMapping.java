@@ -30,7 +30,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class implements a UDP controller for an interface on the client side.
@@ -56,9 +56,6 @@ public class FlowIDToControllerMapping implements Runnable
 
   private boolean                       isClosed                = false;
   private KeepAliveThread               kat                     = null;
-
-  private static Logger                 log                     = Logger.getLogger(FlowIDToControllerMapping.class
-                                                                    .getName());
 
   public class KeepAliveThread implements Runnable
   {
@@ -88,7 +85,7 @@ public class FlowIDToControllerMapping implements Runnable
           e.printStackTrace();
         }
       }
-      log.trace("FlowIDToControllerMapping KeepAliveThread threads exits");
+      MSocketLogger.getLogger().fine("FlowIDToControllerMapping KeepAliveThread threads exits");
     }
   }
 
@@ -174,7 +171,7 @@ public class FlowIDToControllerMapping implements Runnable
     }
     catch (IOException ex)
     {
-      log.trace("Exception in DatagramSend");
+      MSocketLogger.getLogger().fine("Exception in DatagramSend");
     }
   }
 
@@ -189,7 +186,7 @@ public class FlowIDToControllerMapping implements Runnable
     ConnectionInfo cinfo = connectionInfoMap.get(flowID);
     if (cinfo == null)
     {
-      log.trace("Unregistered flowID message recv ");
+      MSocketLogger.getLogger().fine("Unregistered flowID message recv ");
       return 0;
     }
 
@@ -230,7 +227,7 @@ public class FlowIDToControllerMapping implements Runnable
   {
     try
     {
-      log.trace("Controller: " + "[ " + getLocalPort() + ", " + getLocalAddress() + "]");
+      MSocketLogger.getLogger().fine("Controller: " + "[ " + getLocalPort() + ", " + getLocalAddress() + "]");
       while (true)
       {
         process(receiveControlMessage());
@@ -240,9 +237,9 @@ public class FlowIDToControllerMapping implements Runnable
     }
     catch (Exception e)
     {
-      log.trace(e.toString());
+      MSocketLogger.getLogger().fine(e.toString());
     }
-    log.trace("FlowIDToControllerMapping UDP recv thread exits");
+    MSocketLogger.getLogger().fine("FlowIDToControllerMapping UDP recv thread exits");
   }
 
   /**
@@ -303,7 +300,7 @@ public class FlowIDToControllerMapping implements Runnable
     }
     catch (IOException e)
     {
-      log.trace("IOException while processing received message; discarding message");
+      MSocketLogger.getLogger().fine("IOException while processing received message; discarding message");
       e.printStackTrace();
     }
     return msg;
@@ -325,23 +322,23 @@ public class FlowIDToControllerMapping implements Runnable
     ConnectionInfo cinfo = connectionInfoMap.get(msg.getFlowID());
     if (cinfo == null)
     {
-      log.trace("Unregistered flowID message recv ");
+      MSocketLogger.getLogger().fine("Unregistered flowID message recv ");
       return;
     }
 
     if (msg.sendseq > cinfo.getCtrlAckSeq())
     {
-      log.trace("Received out-of-order message " + msg + "; expecting ackseq=" + cinfo.getCtrlAckSeq());
+      MSocketLogger.getLogger().fine("Received out-of-order message " + msg + "; expecting ackseq=" + cinfo.getCtrlAckSeq());
       return;
     }
     else
     {
-      log.trace("Received in-order message " + msg);
+      MSocketLogger.getLogger().fine("Received in-order message " + msg);
     }
 
     if (msg.type == ControlMessage.REBIND_ADDRESS_PORT)
     {
-      log.trace("Got Rebind");
+      MSocketLogger.getLogger().fine("Got Rebind");
       if (msg.sendseq == cinfo.getCtrlAckSeq()) // for the case when ACK of
                                                 // rebind gets lost, so the
                                                 // server will send rebind
@@ -353,7 +350,7 @@ public class FlowIDToControllerMapping implements Runnable
         // changed during serve migration
         cinfo.setRemoteControlAddress(msg.getInetAddress());
         cinfo.setRemoteControlPort(msg.getRemoteUDPControlPort());
-        log.trace("REBIND_ADDRESS_PORT UDP port is " + msg.getRemoteUDPControlPort());
+        MSocketLogger.getLogger().fine("REBIND_ADDRESS_PORT UDP port is " + msg.getRemoteUDPControlPort());
 
         boolean domigrate = true;
 
@@ -363,7 +360,7 @@ public class FlowIDToControllerMapping implements Runnable
 
           if (currSockAddr.equals(new InetSocketAddress(msg.getInetAddress(), msg.getPort())))
           {
-            log.trace("Already connected to new address, no need for server intiated mig");
+            MSocketLogger.getLogger().fine("Already connected to new address, no need for server intiated mig");
           }
           else
           {
@@ -377,7 +374,7 @@ public class FlowIDToControllerMapping implements Runnable
     }
     else if (msg.type == ControlMessage.ACK_ONLY)
     {
-      log.trace("ACK recv " + msg.getAckseq());
+      MSocketLogger.getLogger().fine("ACK recv " + msg.getAckseq());
       if (msg.getAckseq() > cinfo.getCtrlBaseSeq())
       {
         cinfo.setCtrlBaseSeq(msg.getAckseq());
@@ -387,7 +384,7 @@ public class FlowIDToControllerMapping implements Runnable
     { // FIXME: need to find that if this message had previously arrived and our
       // ACK just got lost so that we don't do REBINDING again
 
-      log.trace("sending ACK msg.sendseq" + msg.sendseq);
+      MSocketLogger.getLogger().fine("sending ACK msg.sendseq" + msg.sendseq);
       cinfo.setCtrlAckSeq(msg.sendseq + 1);
       sendControllerMesg(msg.getFlowID(), ControlMessage.ACK_ONLY);
     }
