@@ -431,9 +431,8 @@ public class AccountAccess {
   private static final String EMAIL_BODY
           = "Hi %2$s,\n\n"
           + "This is an automated message informing you that %1$s has created\n"
-          + "an account for %2$s on the GNS server. You were sent this message\n"
-          + "to insure that the person that created this account actually has\n"
-          + "access to this email address.\n\n"
+          + "an account for %2$s. You were sent this message to insure that the\n"
+          + "person that created this account actually has access to this email address.\n\n"
           + "To verify this is your email address you can click on the link below.\n"
           + "If you are unable to click on the link, you can complete your email address\n"
           + "verification by copying and pasting the URL into your web browser:\n\n"
@@ -1550,31 +1549,12 @@ public class AccountAccess {
   }
 
   // test code
-  private static final String EMAIL_BODY_TEST
-          = "Hi %2$s,\n\n"
-          + "This is an automated message informing you that %1$s has created\n"
-          + "an account for %2$s on the GNS server. You were sent this message\n"
-          + "to insure that the person that created this account actually has\n"
-          + "access to this email address.\n\n"
-          + "To verify this is your email address you can click on the link below.\n"
-          + "If you are unable to click on the link, you can complete your email address\n"
-          + "verification by copying and pasting the URL into your web browser:\n\n"
-          + "http://%3$s/"
-          + GNSConfig.GNS_URL_PATH
-          + "/VerifyAccount?guid=%4$s&code=%5$s\n\n"
-          //+ "For GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
-          //+ VERIFY_COMMAND
-          //+ " %2$s %5$s\n\n"
-          + "If you did not create this account you can just ignore this email and nothing bad will happen.\n\n"
-          + "Thank you,\nThe CASA Team.";
-
-  // test code
   public static void main(String[] args) {
     String name = "westy@cs.umass.edu";
     String verifyCode = "000000";
     String hostPortString = "128.119.44.108:8080";
     String guid = "0FC2D9931712BCF6B7FEC5E6B09CF03483068DE";
-    String emailBody = String.format(EMAIL_BODY_TEST,
+    String emailBody = String.format(EMAIL_BODY,
             GNSConfig.GNSC.getApplicationName(), //1$
             name, //2$
             hostPortString, //3$
