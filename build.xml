@@ -239,7 +239,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
   </target>
 
   <target name="startServer" depends="compile" description="Forceclears and (re)starts a server for testing purposes.">
-	<property name="gigapaxosConfig" value="conf/gnsserver.3local.properties"/>
+	<property name="gigapaxosConfig" value="conf/gnsserver.1local.properties"/>
       <property name="javax.net.ssl.trustStorePassword" value="qwerty"/>
       <property name="javax.net.ssl.trustStore" value="conf/trustStore/node100.jks"/>
       <property name="javax.net.ssl.keyStorePassword" value="qwerty"/>
@@ -345,7 +345,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
     <property name="alias" value=""/>
     <property name="password" value=""/>
     <property name="count" value=""/>
-    <property name="gigapaxosConfig" value="conf/gnsclient.3local.properties"/>
+    <property name="gigapaxosConfig" value="conf/gnsclient.1local.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.junit.properties"/>
     <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
       <jvmarg value="-ea"/>
