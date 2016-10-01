@@ -1,15 +1,18 @@
-//ant.importBuild 'build.xml' 
 
+// We want the standard java conventions for everything.
 apply plugin: 'java'
 
+// Set the name of the gar to something other than GNS.
 archivesBaseName = 'gnsserver'
 
+// Load our numbers from the build.properties files.
 Properties properties = new Properties()
 properties.load(project.file('build.properties').newDataInputStream())
 def buildMajorNumber = properties.getProperty('build.major.number')
 def buildMinorNumber = properties.getProperty('build.minor.number')
 def buildRevisionNumber = properties.getProperty('build.revision.number')
 
+// Change the locations of the srcs - we're gradle has sdifferent standard locations.
 sourceSets {
   main{
     java {
@@ -65,15 +68,18 @@ dependencies {
   compile group: 'org.springframework', name: 'spring-core', version: '3.0.7.RELEASE'
   compile group: 'org.springframework', name: 'spring-test', version: '3.0.7.RELEASE'
     
+  // Use android for compling, but not runtime
   compileOnly group: 'com.google.android', name: 'android', version: '4.1.1.4'
   //compileOnly files('lib/android.jar')
   
+  // Use these jars for unit testing
   testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
   testCompile group: 'org.hamcrest', name: 'hamcrest-core', version: '1.3'
   testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
-// builds a fat jar with all jars included
+// This isn't strictly needed to make a jar, but it 
+// builds a fat jar with all jars included like we're using.
 task serverfatjar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   from files(sourceSets.main.output.classesDir)
   from configurations.runtime.asFileTree.files.collect { zipTree(it) }
@@ -96,15 +102,15 @@ task serverfatjar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   }
 }
 
-
+// Along with the one below this updates the build.number whenever a jar is created.
+// We might want to trigger off a different task though, like releasing an artifact.
 task('increaseBuildNumber') << {
     Properties properties2 = new Properties()
     properties2.load(project.file('build.number').newDataInputStream())
     def buildNumber = Integer.parseInt(properties2.getProperty('build.number')) + 1
     System.out.println("buildNumber: ${buildNumber}")
     properties2.setProperty('build.number', Integer.toString(buildNumber))
-    properties2.store(project.file('build.number').newWriter(), null)
-    
+    properties2.store(project.file('build.number').newWriter(), null) 
 }
 
 tasks.whenTaskAdded { task ->
