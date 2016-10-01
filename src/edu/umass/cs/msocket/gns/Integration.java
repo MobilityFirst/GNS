@@ -244,7 +244,8 @@ public class Integration
 	  if( CommonMethods.isServerBehindNAT() )
 	  {
 		  InetSocketAddress sockAddr = 
-				  new InetSocketAddress(DefaultGNSClient.proxyName, DefaultGNSClient.proxyPort);
+				  new InetSocketAddress(DefaultGNSClient.PROXY_NAME, 
+						  DefaultGNSClient.PROXY_PORT);
 		  LinkedList<InetSocketAddress> proxyList = new LinkedList<InetSocketAddress>();
 		  proxyList.add(sockAddr);
 		  return new FixedProxyPolicy(proxyList);

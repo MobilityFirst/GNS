@@ -174,11 +174,11 @@ public class ProxyForwarder
 
     ProxyForwarderThread List_Thr = new ProxyForwarderThread(pServerSocket, LISTEN_THREAD, this);
     (new Thread(List_Thr)).start();
-    MSocketLogger.getLogger().fine("Proxy listen thread started");
+    System.out.println("Proxy listen thread started");
 
     ProxyForwarderThread Splice_Thr = new ProxyForwarderThread(pServerSocket, SPLICING_THREAD, this);
     (new Thread(Splice_Thr)).start();
-    MSocketLogger.getLogger().fine("Proxy splicing thread started");
+    System.out.println("Proxy splicing thread started");
   }
 
   /**

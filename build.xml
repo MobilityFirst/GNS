@@ -675,6 +675,11 @@ integration tests sequentially"
       <!--<fileset dir="${conf.dir}/msocketFiles">
         <include name="contextServiceNodeSetup.txt" />
       </fileset>-->
+
+      <fileset dir="${conf.dir}">
+        <include name="trustStore.jks" />
+        <include name="keyStore.jks" />
+      </fileset>
 			
       <fileset dir="${src.dir}">
         <include name="edu/umass/cs/msocket/proxy/console/console.ini" />
