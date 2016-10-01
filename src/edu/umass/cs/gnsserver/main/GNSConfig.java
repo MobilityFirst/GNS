@@ -128,6 +128,10 @@ public class GNSConfig {
      * If enabled, email verfication will be used when account guids are created.
      */
     ENABLE_EMAIL_VERIFICATION(true),
+     /**
+     * The amount of time an email verification code is valid.
+     */
+    EMAIL_VERIFICATION_TIMEOUT_IN_HOURS(24),
     /**
      * If enabled, email salt will be added to the EMAIL_VERIFICATION code.
      * This is needed so we can disable salting in the case where we're using email verification and

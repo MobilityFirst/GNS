@@ -445,7 +445,7 @@ public class AccountAccess {
           //+ " %2$s %5$s\n\n"
           + "If you did not create this account you can just ignore this email and nothing bad will happen.\n\n"
           + "Thank you,\nThe CASA Team.";
-  
+
 //  private static final String EMAIL_BODY_OLD = "This is an automated message informing you "
 //          + "that %s has created an account for %s on the GNS server.\n\n"
 //          + "This is your verification code: %s\n\n"
@@ -457,7 +457,6 @@ public class AccountAccess {
 //          + VERIFY_COMMAND
 //          + " %s %s\n\n"
 //          + "If you did not create this account please ignore this message.";
-  
   private static final String SUCCESS_NOTICE = "A confirmation email has been sent to %s. "
           + "Please follow the instructions in that email to verify your account.\n";
   private static final String PROBLEM_NOTICE = "There is some system problem in sending "
@@ -547,8 +546,7 @@ public class AccountAccess {
 
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
-  private static final String SECRET = Config
-          .getGlobalString(GNSConfig.GNSC.VERIFICATION_SECRET);
+  private static final String SECRET = Config.getGlobalString(GNSConfig.GNSC.VERIFICATION_SECRET);
 
   private static String createVerificationCode(String name) {
     return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
@@ -561,8 +559,6 @@ public class AccountAccess {
                             : "")),
             VERIFICATION_CODE_LENGTH));
   }
-
-  private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
 
   /**
    * Performs the account verification for a given guid using the verification
@@ -587,7 +583,7 @@ public class AccountAccess {
               GNSResponseCode.ALREADY_VERIFIED_EXCEPTION,
               GNSCommandProtocol.BAD_RESPONSE + " "
               + GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION
-              + " " + GNSCommandProtocol.ACCOUNT_ALREADY_VERIFIED);
+              + " Account already verified");
     }
     if (accountInfo.getVerificationCode() == null && code == null) {
       return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR,
@@ -595,7 +591,8 @@ public class AccountAccess {
               + GNSCommandProtocol.VERIFICATION_ERROR + " "
               + "Bad verification code");
     }
-    if ((new Date()).getTime() - accountInfo.getCreated().getTime() > TWO_HOURS_IN_MILLESECONDS) {
+    if ((new Date()).getTime() - accountInfo.getCreated().getTime()
+            > Config.getGlobalInt(GNSConfig.GNSC.VERIFICATION_SECRET.EMAIL_VERIFICATION_TIMEOUT_IN_HOURS) * 60 * 60 * 1000) {
       return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR,
               GNSCommandProtocol.BAD_RESPONSE + " "
               + GNSCommandProtocol.VERIFICATION_ERROR + " "
