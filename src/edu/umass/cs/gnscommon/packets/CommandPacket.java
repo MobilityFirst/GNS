@@ -177,7 +177,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	 * This being a separate method allows AdminCommandPacket to override it to change its validation while still reusing the constructor code here.
 	 */
 	protected void validateCommandType(){
-		assert(this.getCommandType().isMutualAuth());
+		assert(!this.getCommandType().isMutualAuth());
 	}
 
   private static JSONObject fromBytesStringerHack(ByteBuffer buf)
@@ -490,30 +490,39 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return -1;
   }
 
-  /**
-   * @return CommandType
-   */
-  public CommandType getCommandType() {
-    try {
-      if (command != null) {
-        if (command.has(GNSCommandProtocol.COMMAND_INT)) {
-          return CommandType.getCommandType(command
-                  .getInt(GNSCommandProtocol.COMMAND_INT));
-        }
-        if (command.has(GNSCommandProtocol.COMMANDNAME)) {
-          return CommandType.valueOf(command
-                  .getString(GNSCommandProtocol.COMMANDNAME));
-        }
-      }
-    } catch (IllegalArgumentException | JSONException e) {
-    }
-    return CommandType.Unknown;
-  }
 
   @Override
   public boolean needsCoordination() {
     return this.forceCoordination || getCommandType().isUpdate();
   }
+  
+  /**
+	 * @return CommandType
+	 */
+	public CommandType getCommandType() {
+		return getJSONCommandType(command);
+	}
+	
+	/**
+	 * Used to determine the type of a JSONObject formatted command.
+	 * @return CommandType
+	 */
+	public static CommandType getJSONCommandType(JSONObject command) {
+		try {
+			if (command != null) {
+				if (command.has(GNSCommandProtocol.COMMAND_INT)) {
+					return CommandType.getCommandType(command
+							.getInt(GNSCommandProtocol.COMMAND_INT));
+				}
+				if (command.has(GNSCommandProtocol.COMMANDNAME)) {
+					return CommandType.valueOf(command
+							.getString(GNSCommandProtocol.COMMANDNAME));
+				}
+			}
+		} catch (IllegalArgumentException | JSONException e) {
+		}
+		return CommandType.Unknown;
+	}
 
   /**
    * @param force
@@ -743,7 +752,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public boolean hasResult() {
     return this.result != null;
   }
-
+  
   /* ********************** End of result-related methods **************** */
   @Override
   public Object getSummary() {
