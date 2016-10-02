@@ -97,7 +97,7 @@ public class AccountVerify extends ConsoleCommand {
         // this happens if it was already verified, but we didn't notice
       } catch (VerificationException e) {
         module.setAccountVerified(true);
-        printString(GNSCommandProtocol.ACCOUNT_ALREADY_VERIFIED+"\n");
+        printString("Account already verified"+"\n");
         return;
       } catch (Exception e) {
         printString("Account not verified: " + e + "\n");

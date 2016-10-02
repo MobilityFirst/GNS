@@ -24,6 +24,7 @@ import edu.umass.cs.utils.Util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1279,12 +1280,17 @@ public enum CommandType {
 
   }
 
-  public static Class<?>[] getCommandClassesArray() {
-    return (Class<?>[]) Stream.of(values()).map(CommandType::getCommandClass).toArray();
-  }
-
+//  public static Class<?>[] getCommandClassesArray() {
+//    return (Class<?>[]) Stream.of(values()).map(CommandType::getCommandClass).toArray();
+//  }
   public static List<Class<?>> getCommandClasses() {
-    return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
+    List<Class<?>> result = new ArrayList<>();
+    for (CommandType commandType : values()) {
+      result.add(commandType.getCommandClass());
+    }
+    return result;
+    // Android doesn't like Lambdas (there's one hidden here) - 9/16
+    //return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
   }
 
   private static String insertUnderScoresBeforeCapitals(String str) {

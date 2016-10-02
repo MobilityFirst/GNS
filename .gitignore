@@ -60,3 +60,4 @@ build.number
 /bin/gpClient.sh
 /bin/gpServer.sh
 .paxos_logs
+.gradle

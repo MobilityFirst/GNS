@@ -6,7 +6,6 @@ import java.util.Set;
 
 import edu.umass.cs.gnsclient.client.http.UniversalHttpClient;
 import edu.umass.cs.gnsclient.client.http.UniversalHttpClientExtended;
-import edu.umass.cs.gnscommon.exceptions.GNSException;
 
 /**
  * @author arun

@@ -20,8 +20,6 @@
 package edu.umass.cs.gnsclient.client.deprecated;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -30,29 +28,24 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.interfaces.Callback;
 import edu.umass.cs.gigapaxos.interfaces.Request;
-import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
-import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnscommon.CommandType;
 
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 /**
  * The base for all GNS clients.
- * 
+ *
  * This class is almost useless and will be completely removed soon.
  *
  */
@@ -65,7 +58,6 @@ public abstract class AbstractGNSClient {
   public static final boolean IS_ANDROID
           = System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik");
 
-
   /**
    * The length of time we will wait for a command response from the server
    * before giving up.
@@ -75,22 +67,21 @@ public abstract class AbstractGNSClient {
   /* Keeps track of requests that are sent out and the reponses to them */
   private final ConcurrentMap<Long, Request> resultMap = new ConcurrentHashMap<Long, Request>(
           10, 0.75f, 3);
- 
+
   /* Used by the wait/notify calls */
   private final Object monitor = new Object();
-
 
   /**
    * Check that the connectivity with the host:port can be established
    *
    * @throws IOException throws exception if a communication error occurs
    */
-   abstract void checkConnectivity() throws IOException;
+  abstract void checkConnectivity() throws IOException;
 
   /**
    * Closes the underlying messenger.
    */
-   abstract void close();
+  abstract void close();
 
   /**
    * Sends a command to the server and returns a response.
@@ -99,8 +90,8 @@ public abstract class AbstractGNSClient {
    * @return Result as CommandValueReturnPacket; or String if Android (FIXME)
    * @throws IOException if an error occurs
    */
-   @Deprecated
-   ResponsePacket sendCommandAndWait(JSONObject command) throws IOException {
+  @Deprecated
+  ResponsePacket sendCommandAndWait(JSONObject command) throws IOException {
     if (IS_ANDROID) {
       return androidSendCommandAndWait(command);
     } else {
@@ -180,14 +171,14 @@ public abstract class AbstractGNSClient {
   private CommandPacket desktopSendCommmandNoWait(JSONObject command) throws IOException {
     return this.desktopSendCommmandNoWait(command, generateNextRequestID());
   }
-  
+
   protected abstract boolean isForceCoordinatedReads();
 
   private CommandPacket desktopSendCommmandNoWait(JSONObject command, long id) throws IOException {
     long startTime = System.currentTimeMillis();
     CommandPacket packet = new CommandPacket(
-    		id, 
-    				command);
+            id,
+            command);
     /* arun: moved this here from createCommand. This is the right place to
 		 * put it because it is not easy to change "command" once it has been
 		 * signed, and the command creation methods are and should be static. */
@@ -212,7 +203,7 @@ public abstract class AbstractGNSClient {
     final AndroidNIOTask sendTask = new AndroidNIOTask();
     sendTask.setId(generateNextRequestID()); // so we can get it back from the task later
     sendTask.execute(command, sendTask.getId(), monitor,
-             resultMap, readTimeout);
+            resultMap, readTimeout);
     return sendTask;
   }
 
@@ -230,7 +221,7 @@ public abstract class AbstractGNSClient {
    * @throws JSONException
    */
   private void handleCommandValueReturnPacket(Request response
-  )  {
+  ) {
     long methodStartTime = System.currentTimeMillis();
     ResponsePacket packet = response instanceof ResponsePacket ? (ResponsePacket) response
             : null;
@@ -282,13 +273,12 @@ public abstract class AbstractGNSClient {
   private synchronized long generateNextRequestID() {
     long id;
     do {
-      id = (long)(Math.random()*Long.MAX_VALUE);
+      id = (long) (Math.random() * Long.MAX_VALUE);
       // this is actually wrong because we can still generate duplicate keys
       // because the resultMap doesn't contain pending requests until they come back
     } while (resultMap.containsKey(id));
     return id;
   }
-
 
 // ASYNCHRONUS OPERATIONS
   /**
@@ -297,24 +287,32 @@ public abstract class AbstractGNSClient {
    */
   private final ConcurrentHashMap<Long, CommandPacket> pendingAsynchPackets
           = new ConcurrentHashMap<>();
-  
-	// arun: Made sendAsync abstract instead of sendCommandPacket
-	protected abstract RequestFuture<CommandPacket> sendAsync(CommandPacket packet,
-			Callback<Request,CommandPacket> callback) throws IOException;
 
-	/**
-	 * Overrides older implementation of
-	 * {@link #sendCommandPacket(CommandPacket)} with simpler async
-	 * implementation.
-	 *
-	 * @param packet
-	 * @throws IOException
-	 */
-	private void sendCommandPacket(CommandPacket packet) throws IOException {
-		this.sendAsync(packet, (response) -> {
-			this.handleCommandValueReturnPacket(response);
-			return packet;
-		});
-	}
+  // arun: Made sendAsync abstract instead of sendCommandPacket
+  protected abstract RequestFuture<CommandPacket> sendAsync(CommandPacket packet,
+          Callback<Request, CommandPacket> callback) throws IOException;
+
+  /**
+   * Overrides older implementation of
+   * {@link #sendCommandPacket(CommandPacket)} with simpler async
+   * implementation.
+   *
+   * @param packet
+   * @throws IOException
+   */
+  private void sendCommandPacket(CommandPacket commandPacket) throws IOException {
+    this.sendAsync(commandPacket, new Callback<Request, CommandPacket>() {
+      @Override
+      public CommandPacket processResponse(Request response) {
+        handleCommandValueReturnPacket(response);
+        return commandPacket;
+      }
+    });
+// Lambdas were causing issues in Andriod - 9/16
+//    this.sendAsync(packet, (response) -> {
+//      this.handleCommandValueReturnPacket(response);
+//      return packet;
+//    });
+  }
 
 }

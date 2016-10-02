@@ -13,6 +13,8 @@ import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
+import edu.umass.cs.gnsserver.localnameserver.LNSPacketDemultiplexer;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.io.IOException;
 import java.util.logging.Level;
 
@@ -31,11 +33,16 @@ public class ClientAsynchTest {
   private static final long READ_TIMEOUT = 10000;
   private static final Object MONITOR = new Object();
   // make a call back that notifys any waits and records the response
-  private static final RequestCallback CALLBACK = (Request response) -> {
-    synchronized (MONITOR) {
-      MONITOR.notifyAll();
+
+  private static final RequestCallback CALLBACK = new RequestCallback() {
+
+    @Override
+    public void handleResponse(Request response) {
+      synchronized (MONITOR) {
+        MONITOR.notifyAll();
+      }
+      receivedResponse = response;
     }
-    receivedResponse = response;
   };
 
   public static void main(String args[]) {
