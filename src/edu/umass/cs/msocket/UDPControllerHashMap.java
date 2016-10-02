@@ -60,12 +60,13 @@ public class UDPControllerHashMap
     // UDP socket already there
     if (ControllerSocketMap.containsKey(ControllerIPAddress))
     {
-      ControllerSocketMap.get(ControllerIPAddress).addControllerMapping(cinfo.getFlowID(), cinfo);
+      ControllerSocketMap.get(ControllerIPAddress).addControllerMapping
+      		(cinfo.getConnID(), cinfo);
     }
     else
     {
       FlowIDToControllerMapping Obj = new FlowIDToControllerMapping(ControllerIPAddress);
-      Obj.addControllerMapping(cinfo.getFlowID(), cinfo);
+      Obj.addControllerMapping(cinfo.getConnID(), cinfo);
       ControllerSocketMap.put(ControllerIPAddress, Obj);
       // start UDP listening thread
       (new Thread(Obj)).start();
@@ -88,7 +89,8 @@ public class UDPControllerHashMap
       // UDP socekt already there
       if (ControllerSocketMap.containsKey(ControllerIPAddress))
       {
-        ControllerSocketMap.get(ControllerIPAddress).removeControllerMapping(cinfo.getFlowID());
+        ControllerSocketMap.get(ControllerIPAddress).removeControllerMapping
+        		(cinfo.getConnID());
       }
       else
       {

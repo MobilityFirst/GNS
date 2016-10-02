@@ -42,8 +42,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import edu.umass.cs.msocket.common.CommonMethods;
-import edu.umass.cs.msocket.common.policies.NoProxyPolicy;
-import edu.umass.cs.msocket.common.policies.ProxySelectionPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.NoProxyPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.ProxySelectionPolicy;
 import edu.umass.cs.msocket.gns.Integration;
 import edu.umass.cs.msocket.logger.MSocketLogger;
 import edu.umass.cs.msocket.mobility.MobilityManagerServer;
@@ -773,65 +773,69 @@ public class MServerSocket extends ServerSocket
    */
   private class Handler implements Runnable
   {
-    private final SocketChannel connectionSocketChannel;
-    private final MSocket proxyMSocket;
+	  private final SocketChannel connectionSocketChannel;
+	  private final MSocket proxyMSocket;
+	  
+	  public Handler(SocketChannel connectionSocketChannel, MSocket proxyMSocket)
+	  {
+		  this.connectionSocketChannel = connectionSocketChannel;
+		  this.proxyMSocket = proxyMSocket;
+	  }
+	  
+	  public void run()
+	  {
+		  if (!proxySelection.hasAvailableProxies())
+		  {
+			  	// read and service request on socket
+			  	// FIXME: check for how to handle exceptions here
+			  	MSocketLogger.getLogger().fine("new connection accepted by socket channel");
 
-    Handler(SocketChannel connectionSocketChannel, MSocket proxyMSocket)
-    {
-      this.connectionSocketChannel = connectionSocketChannel;
-      this.proxyMSocket = proxyMSocket;
-    }
-
-    public void run()
-    {
-    	if (!proxySelection.hasAvailableProxies())
-    	{
-    		// read and service request on socket
-    		// FIXME: check for how to handle exceptions here
-    		MSocketLogger.getLogger().fine("new connection accepted by socket channel");
-
-    		InternalMSocket ms = null;
-    		try
-    		{
-    			ms = new InternalMSocket(connectionSocketChannel, controller, null);
-    		}
-    		catch (IOException e)
-    		{
-    			e.printStackTrace();
-    			// FIXME: exception for newly accepted socket
-    			// close and reject socket so that client reconnects again
-    			// do not put in active queue as currently done
-    			// transition into all ready state as well
-    			MSocketLogger.getLogger().fine("Failed to accept new connection"+ e.getMessage());
-    			return;
-    		}
-
-    		MSocketLogger.getLogger().fine("Accepted connection from " + ms.getInetAddress() + ":" + ms.getPort());
-		      if (ms.isNew())
-		      {
-		
-		        // FIXME: what to do here for exception
-		        controller.setConnectionInfo(ms);
-		
-		        AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, ms);
-		        synchronized (monitor)
-		        {
-		          monitor.notifyAll();
-		        }
-		      }
-		      MSocketLogger.getLogger().fine("MServerSocket Handler thread exits");
-    	} else
-    	{
-    		if(proxyMSocket != null)
-    		{
-    			AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, proxyMSocket);
-		        synchronized (monitor)
-		        {
-		          monitor.notifyAll();
-		        }
-    		}
-    	}
-    }
+				ServerMSocket ms = null;
+				try
+				{
+					ms = new ServerMSocket(connectionSocketChannel, controller, null);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+					// FIXME: exception for newly accepted socket
+					// close and reject socket so that client reconnects again
+					// do not put in active queue as currently done
+					// transition into all ready state as well
+					MSocketLogger.getLogger().fine("Failed to accept new connection"
+									+ e.getMessage());
+					return;
+				}
+			
+				MSocketLogger.getLogger().fine("Accepted connection from " 
+							+ ms.getInetAddress() + ":" + ms.getPort());
+			      if (ms.isNew())
+			      {
+			
+			        // FIXME: what to do here for exception
+			        controller.setConnectionInfo(ms.getConnID());
+			
+			        AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, ms);
+			        synchronized (monitor)
+			        {
+			          monitor.notifyAll();
+			        }
+			      }
+			      MSocketLogger.getLogger().fine("MServerSocket Handler thread exits");
+		  } 
+		  else
+		  {
+	    		if(proxyMSocket != null)
+	    		{
+	    			AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, 
+	    					proxyMSocket);
+			        synchronized (monitor)
+			        {
+			          monitor.notifyAll();
+			        }
+	    		}
+	      }
+	   }
   }
 
   /**

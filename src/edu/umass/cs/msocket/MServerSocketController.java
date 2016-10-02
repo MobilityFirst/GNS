@@ -142,14 +142,14 @@ public class MServerSocketController implements Runnable
     }
   }
 
-  void setConnectionInfo(InternalMSocket ms)
+  void setConnectionInfo(long connID)
   {
-    ConnectionInfo cinfo = getConnectionInfo(ms.getFlowID());
-
+    ConnectionInfo cinfo = getConnectionInfo(connID);
+    
     if (cinfo == null)
     {
-      cinfo = new ConnectionInfo(ms);
-      setConnectionInfo(ms.getFlowID(), cinfo);
+      cinfo = new ConnectionInfo(connID, this);
+      setConnectionInfo(connID, cinfo);
     }
   }
 
@@ -204,10 +204,10 @@ public class MServerSocketController implements Runnable
     {
 
       ConnectionInfo ci = allConnections.get(i);
-      MSocketLogger.getLogger().fine("Initiating migrate for flow " + ci.getFlowID());
+      MSocketLogger.getLogger().fine("Initiating migrate for flow " + ci.getConnID());
       // Prepare control message
 
-      initMigrate(iaddr, port, ci.getFlowID(), UDPPort);
+      initMigrate(iaddr, port, ci.getConnID(), UDPPort);
 
       // Thread.sleep(10);
       // ci.notifyAll();
@@ -221,34 +221,37 @@ public class MServerSocketController implements Runnable
     for (int i = 0; i < allConnections.size(); i++)
     {
       ConnectionInfo ci = allConnections.get(i);
-      MSocketLogger.getLogger().fine("closing prev socket for flow " + ci.getFlowID());
-      this.suspendIO(ci.getFlowID());
+      MSocketLogger.getLogger().fine("closing prev socket for flow " + ci.getConnID());
+      this.suspendIO(ci.getConnID());
     }
   }
 
-  private void initMigrate(InetAddress iaddr, int port, long flowID, int udpPort) throws IOException
+  private void initMigrate(InetAddress iaddr, int port, long connID, int udpPort) 
+		  throws IOException
   {
-    this.sendControllerMesg(flowID, ControlMessage.REBIND_ADDRESS_PORT, udpPort, port, iaddr);
+    this.sendControllerMesg(connID, ControlMessage.REBIND_ADDRESS_PORT, udpPort, port, iaddr);
   }
 
-  private synchronized int sendControllerMesg(long flowID, int Mesg_Type, int UDPPort, int port, InetAddress iaddr)
+  private synchronized int sendControllerMesg
+  	(long connID, int Mesg_Type, int UDPPort, int port, InetAddress iaddr)
       throws IOException
   {
-    ConnectionInfo cinfo = getConnectionInfo(flowID);
+    ConnectionInfo cinfo = getConnectionInfo(connID);
     switch (Mesg_Type)
     {
       case ControlMessage.ACK_ONLY :
       {
-        ControlMessage ack = new ControlMessage(cinfo.getCtrlSendSeq(), cinfo.getCtrlAckSeq(), ControlMessage.ACK_ONLY,
-            flowID);
+        ControlMessage ack = new ControlMessage(cinfo.getCtrlSendSeq(), 
+        		cinfo.getCtrlAckSeq(), ControlMessage.ACK_ONLY, connID);
         send(ack);
         break;
       }
       case ControlMessage.REBIND_ADDRESS_PORT :
       {
         ControlMessage cmsg = new ControlMessage(cinfo.getCtrlSendSeq(), cinfo.getCtrlAckSeq(),
-            ControlMessage.REBIND_ADDRESS_PORT, flowID, port, UDPPort, iaddr);
-        MSocketLogger.getLogger().fine("Sending control message " + cmsg.toString() + " to " + cinfo.getRemoteControlAddress() + ":"
+            ControlMessage.REBIND_ADDRESS_PORT, connID, port, UDPPort, iaddr);
+        MSocketLogger.getLogger().fine("Sending control message " + cmsg.toString() 
+        	+ " to " + cinfo.getRemoteControlAddress() + ":"
             + cinfo.getRemoteControlPort());
         send(cmsg);
         cinfo.setCtrlSendSeq(cinfo.getCtrlSendSeq() + 1);
@@ -581,20 +584,20 @@ public class MServerSocketController implements Runnable
     }
   }
 
-  private void setConnectionInfo(Long flowId, ConnectionInfo ci)
+  private void setConnectionInfo(Long connID, ConnectionInfo ci)
   {
     synchronized (cinfoMapOprMonitor)
     {
-      cinfoMap.put(flowId, ci);
+      cinfoMap.put(connID, ci);
     }
   }
 
-  ConnectionInfo removeConnectionInfo(Long flowID)
+  ConnectionInfo removeConnectionInfo(Long connID)
   {
     synchronized (cinfoMapOprMonitor)
     {
-      MSocketLogger.getLogger().fine(" flowID " + flowID + " removed from cinfoMap");
-      ConnectionInfo removed = cinfoMap.remove(flowID);
+      MSocketLogger.getLogger().fine(" flowID " + connID + " removed from cinfoMap");
+      ConnectionInfo removed = cinfoMap.remove(connID);
       return removed;
     }
   }
@@ -662,7 +665,8 @@ public class MServerSocketController implements Runnable
         continue;
       }
 
-      ControlMessage cmsg = new ControlMessage(-1, -1, ControlMessage.KEEP_ALIVE, ci.getFlowID());
+      ControlMessage cmsg = new ControlMessage(-1, -1, ControlMessage.KEEP_ALIVE, 
+    		  ci.getConnID());
 
       DatagramPacket p = new DatagramPacket(cmsg.getBytes(), 0, cmsg.getBytes().length);
       InetSocketAddress sockaddr = new InetSocketAddress(ci.getRemoteControlAddress(), ci.getRemoteControlPort());

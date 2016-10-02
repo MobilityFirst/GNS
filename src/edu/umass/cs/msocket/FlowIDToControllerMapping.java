@@ -213,10 +213,14 @@ public class FlowIDToControllerMapping implements Runnable
       // UDP keep alive for NAT bindings
       ConnectionInfo ci = (ConnectionInfo) obj;
 
-      ControlMessage cmsg = new ControlMessage(-1, -1, ControlMessage.KEEP_ALIVE, ci.getFlowID());
+      ControlMessage cmsg = new ControlMessage
+    		  (-1, -1, ControlMessage.KEEP_ALIVE, ci.getConnID());
 
-      DatagramPacket p = new DatagramPacket(cmsg.getBytes(), 0, cmsg.getBytes().length);
-      InetSocketAddress sockaddr = new InetSocketAddress(ci.getRemoteControlAddress(), ci.getRemoteControlPort());
+      DatagramPacket p = new DatagramPacket(cmsg.getBytes(), 0, 
+    		  	cmsg.getBytes().length);
+      
+      InetSocketAddress sockaddr = new InetSocketAddress(ci.getRemoteControlAddress(), 
+    		  ci.getRemoteControlPort());
       p.setSocketAddress(sockaddr);
       datagramSend(p);
     }
@@ -356,11 +360,13 @@ public class FlowIDToControllerMapping implements Runnable
 
         if (domigrate)
         {
-          InetSocketAddress currSockAddr = cinfo.getMSocket().getServerAddress();
+          InetSocketAddress currSockAddr = new InetSocketAddress(cinfo.getServerIP(), 
+      											cinfo.getServerPort());;
 
           if (currSockAddr.equals(new InetSocketAddress(msg.getInetAddress(), msg.getPort())))
           {
-            MSocketLogger.getLogger().fine("Already connected to new address, no need for server intiated mig");
+            MSocketLogger.getLogger().fine
+            	("Already connected to new address, no need for server intiated mig");
           }
           else
           {

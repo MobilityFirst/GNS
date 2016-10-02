@@ -20,7 +20,7 @@
  *
  *******************************************************************************/
 
-package edu.umass.cs.msocket.common.policies;
+package edu.umass.cs.msocket.common.proxy.policies;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -94,7 +94,7 @@ public class GeoLoadProxyPolicy extends ProxySelectionPolicy
 
   /**
    * @throws Exception if a GNS error occurs
-   * @see edu.umass.cs.msocket.common.policies.ProxySelectionPolicy#getNewProxy()
+   * @see edu.umass.cs.msocket.common.proxy.policies.ProxySelectionPolicy#getNewProxy()
    */
   @Override
   public List<InetSocketAddress> getNewProxy() throws Exception

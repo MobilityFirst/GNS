@@ -38,7 +38,7 @@ public class MWrappedInputStream extends InputStream
 {
   private ConnectionInfo cinfo = null;
 
-  MWrappedInputStream(ConnectionInfo cinfo, long fid) throws IOException
+  MWrappedInputStream(ConnectionInfo cinfo) throws IOException
   {
     this.cinfo = cinfo;
   }

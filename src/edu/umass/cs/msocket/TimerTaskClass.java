@@ -34,8 +34,8 @@ import edu.umass.cs.msocket.logger.MSocketLogger;
 
 class TimerTaskClass
 {
-  private final MSocket    mSocket;
-
+  //private final MSocket    			mSocket;
+  private final ConnectionInfo 		cinfo;
   /**
    * Proxy failure timeout in seconds (default is 15 seconds)
    */
@@ -46,16 +46,17 @@ class TimerTaskClass
    * 
    * @param mSocket
    */
-  TimerTaskClass(MSocket mSocket)
+  TimerTaskClass(ConnectionInfo cinfo)
   {
-    this.mSocket = mSocket;
+	  //this.mSocket = mSocket;
+	  this.cinfo = cinfo;
   }
 
   private void proxyFailureCheck() throws Exception
   {
     MSocketLogger.getLogger().fine("inside proxyFailureCheck");
     Vector<SocketInfo> vect = new Vector<SocketInfo>();
-    vect.addAll(mSocket.cinfo.getAllSocketInfo());
+    vect.addAll(cinfo.getAllSocketInfo());
     MSocketLogger.getLogger().fine("vect size " + vect.size());
     int i = 0;
     while ( i < vect.size() )
@@ -72,7 +73,7 @@ class TimerTaskClass
          * if GNS has same proxy address, then do not migrate
          */
         {
-          System.out.println(this.mSocket.cinfo.getServerOrClient()+" Inside handleProxyFailure getLocalClock " + KeepAliveStaticThread.getLocalClock() + 
+          System.out.println(cinfo.getServerOrClient()+" Inside handleProxyFailure getLocalClock " + KeepAliveStaticThread.getLocalClock() + 
         		  " getLastKeepAlive " + value.getLastKeepAlive() + "Socket Id " + value.getSocketIdentifer());
           if (CommonMethods.getActiveInterfaceInetAddresses().size() > 0)
             handleProxyFailure(value);
@@ -89,13 +90,13 @@ class TimerTaskClass
    */
   private void handleProxyFailure(SocketInfo SocketObj) throws Exception
   {
-      System.out.println(this.mSocket.cinfo.getServerOrClient()+ " Inside handleProxyFailure getLocalClock " + KeepAliveStaticThread.getLocalClock() + 
+      System.out.println(cinfo.getServerOrClient()+ " Inside handleProxyFailure getLocalClock " + KeepAliveStaticThread.getLocalClock() + 
     		  " getLastKeepAlive " + SocketObj.getLastKeepAlive());
 
       InetSocketAddress proxyAddress = getActiveProxyAddress();
       if (proxyAddress == null)
       {
-        proxyAddress = new InetSocketAddress(mSocket.cinfo.getServerIP(), mSocket.cinfo.getServerPort());
+    	  proxyAddress = new InetSocketAddress(cinfo.getServerIP(), cinfo.getServerPort());
       }
       Vector<InetAddress> activeInterfaces = CommonMethods.getActiveInterfaceInetAddresses();
       if (activeInterfaces.size() > 0)
@@ -105,9 +106,9 @@ class TimerTaskClass
           MSocketLogger.getLogger().fine(" migrateSocketwithId called with proxy address " + proxyAddress.getAddress() + ":"
               + proxyAddress.getPort() + " socketId " + SocketObj.getSocketIdentifer() );
 
-          mSocket.cinfo.closeAll(SocketObj.getSocketIdentifer());
+          cinfo.closeAll(SocketObj.getSocketIdentifer());
           MSocketLogger.getLogger().fine("close done");
-          mSocket.cinfo.migrateSocketwithId(proxyAddress.getAddress(), proxyAddress.getPort(),
+          cinfo.migrateSocketwithId(proxyAddress.getAddress(), proxyAddress.getPort(),
               SocketObj.getSocketIdentifer(), MSocketConstants.SERVER_MIG);
         }
       }
@@ -126,7 +127,7 @@ class TimerTaskClass
     try
     {
       List<InetSocketAddress> socketAddressFromGNS = Integration.getSocketAddressFromGNS(
-          mSocket.cinfo.getServerAlias());
+          cinfo.getServerAlias());
 
       sockAdd = socketAddressFromGNS.get(rand.nextInt(socketAddressFromGNS.size()));
     }
@@ -140,11 +141,11 @@ class TimerTaskClass
   
   public void run()
   {
-      switch (this.mSocket.cinfo.getServerOrClient())
+      switch (cinfo.getServerOrClient())
       {
         case MSocketConstants.SERVER :
         {
-          boolean ret = this.mSocket.cinfo.setState(ConnectionInfo.READ_WRITE, false); // timer
+          boolean ret = cinfo.setState(ConnectionInfo.READ_WRITE, false); // timer
           																			   // cannot
           																			   // block
           																			   // to
@@ -153,28 +154,28 @@ class TimerTaskClass
           																			   // alives
           if (ret)
           {
-            this.mSocket.cinfo.multiSocketKeepAliveRead();
+            cinfo.multiSocketKeepAliveRead();
 			  
-			this.mSocket.cinfo.sendKeepAliveOnAllPaths();
+			cinfo.sendKeepAliveOnAllPaths();
 			  
-            this.mSocket.cinfo.setState(ConnectionInfo.ALL_READY, false);
+            cinfo.setState(ConnectionInfo.ALL_READY, false);
           }
           break;
         }
         case MSocketConstants.CLIENT :
         {
-			boolean ret = this.mSocket.cinfo.setState(ConnectionInfo.READ_WRITE, false); // timer
+			boolean ret = cinfo.setState(ConnectionInfo.READ_WRITE, false); // timer
 			//
 			// cannot block to read keep alives
 			//
 			if (ret)
 			{
 			  
-			  this.mSocket.cinfo.multiSocketKeepAliveRead();
+			  cinfo.multiSocketKeepAliveRead();
 			  
-			  this.mSocket.cinfo.sendKeepAliveOnAllPaths();
+			  cinfo.sendKeepAliveOnAllPaths();
 			  
-			  this.mSocket.cinfo.setState(ConnectionInfo.ALL_READY, false);
+			  cinfo.setState(ConnectionInfo.ALL_READY, false);
 			}
 			MSocketLogger.getLogger().fine("client reading keep alive complete");
             

@@ -37,7 +37,7 @@ import org.junit.Test;
 import edu.umass.cs.msocket.FlowPath;
 import edu.umass.cs.msocket.MServerSocket;
 import edu.umass.cs.msocket.MSocket;
-import edu.umass.cs.msocket.common.policies.NoProxyPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.NoProxyPolicy;
 
 /**
  * This class defines a MSocket multipaths tests. We assume that the GNS is

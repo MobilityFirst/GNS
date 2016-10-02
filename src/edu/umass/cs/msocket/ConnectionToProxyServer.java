@@ -202,45 +202,54 @@ public class ConnectionToProxyServer
               // increment keep alive
               ProxyObj.setLastKeepAlive(serverController.getLocalClock());
               scm = SetupControlMessage.getSetupControlMessage(buf.array());
-              if (scm.MesgType == SetupControlMessage.NEW_CON_REQ)
+              if (scm.mesgType == SetupControlMessage.NEW_CON_REQ)
               {
                 MSocketLogger.getLogger().fine("NEW_CON_REQ mesg recv from proxy");
                 SocketChannel newChannel = SocketChannel.open();
-                newChannel.connect(new InetSocketAddress(ProxyObj.getProxyName(), ProxyObj.getProxyPort()));
-                while (!newChannel.finishConnect())
-                  ;
-                MSocketLogger.getLogger().fine("Server's data channel port " + newChannel.socket().getLocalPort());
-                ms = new InternalMSocket(newChannel, serverController, scm);
+                newChannel.connect(new InetSocketAddress(ProxyObj.getProxyName(), 
+                		ProxyObj.getProxyPort()));
+                
+                while (!newChannel.finishConnect());
+                
+                MSocketLogger.getLogger().fine("Server's data channel port " 
+                					+ newChannel.socket().getLocalPort());
+                ms = new ServerMSocket(newChannel, serverController, scm);
                 keyIterator.remove(); // imp bug: important to remove the
                                       // current key here, so that it can be
                                       // again returned by the selector,
                 return ms;
               }
-              else if (scm.MesgType == SetupControlMessage.MIGRATE_SOCKET_REQ)
+              else if (scm.mesgType == SetupControlMessage.MIGRATE_SOCKET_REQ)
               {
                 MSocketLogger.getLogger().fine("MIGRATE_SOCKET_REQ mesg recv from proxy");
                 SocketChannel newChannel = SocketChannel.open();
-                newChannel.connect(new InetSocketAddress(ProxyObj.getProxyName(), ProxyObj.getProxyPort()));
-                while (!newChannel.finishConnect())
-                  ;
-                MSocketLogger.getLogger().fine("Server's data channel port " + newChannel.socket().getLocalPort());
-                ms = new InternalMSocket(newChannel, serverController, scm);
+                
+                newChannel.connect(new InetSocketAddress(ProxyObj.getProxyName(), 
+                					ProxyObj.getProxyPort()));
+                
+                while (!newChannel.finishConnect());
+                
+                MSocketLogger.getLogger().fine("Server's data channel port " 
+                					+ newChannel.socket().getLocalPort());
+                ms = new ServerMSocket(newChannel, serverController, scm);
                 exit = false;
               }
-              else if (scm.MesgType == SetupControlMessage.ADD_SOCKET_REQ)
+              else if (scm.mesgType == SetupControlMessage.ADD_SOCKET_REQ)
               {
                 MSocketLogger.getLogger().fine("ADD_SOCKET_REQ mesg recv from proxy");
                 SocketChannel newChannel = SocketChannel.open();
-                newChannel.connect(new InetSocketAddress(ProxyObj.getProxyName(), ProxyObj.getProxyPort()));
-                while (!newChannel.finishConnect())
-                  ;
+                newChannel.connect(new InetSocketAddress(ProxyObj.getProxyName(), 
+                		ProxyObj.getProxyPort()));
+                
+                while (!newChannel.finishConnect());
 
-                MSocketLogger.getLogger().fine("Server's data channel port " + newChannel.socket().getLocalPort());
-                ms = new InternalMSocket(newChannel, serverController, scm);
+                MSocketLogger.getLogger().fine("Server's data channel port " 
+                							+ newChannel.socket().getLocalPort());
+                ms = new ServerMSocket(newChannel, serverController, scm);
                 exit = false;
 
               }
-              else if (scm.MesgType == SetupControlMessage.KEEP_ALIVE)
+              else if (scm.mesgType == SetupControlMessage.KEEP_ALIVE)
               {
             	MSocketLogger.getLogger().fine("KEEP ALIVE mesg recv from proxy");
                 //ProxyObj.setLastKeepAlive(serverController.getLocalClock());

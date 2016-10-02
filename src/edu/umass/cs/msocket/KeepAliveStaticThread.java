@@ -60,19 +60,20 @@ public class KeepAliveStaticThread implements Runnable
 	public synchronized static void registerForKeepAlive(ConnectionInfo cinfo)
 	{
 		createSingleton();
-		TimerTaskClass timertask = new TimerTaskClass(cinfo.getMSocket());
+		TimerTaskClass timertask = new TimerTaskClass(cinfo);
 		StoreInfo storeinfo = new StoreInfo( timertask);
-		MSocketLogger.getLogger().fine("cinfo registered to registerForKeepAlive "+cinfo.getFlowID());
+		MSocketLogger.getLogger().fine("cinfo registered to registerForKeepAlive "
+					+cinfo.getConnID());
 		
 		if( cinfo.getServerOrClient() == MSocketConstants.SERVER )
 		{
 			//System.out.println("\n\n\n server registered \n\n\n");
-			registeredServerMSockets.put(cinfo.getFlowID(), storeinfo);
+			registeredServerMSockets.put(cinfo.getConnID(), storeinfo);
 		}
 		else if( cinfo.getServerOrClient() == MSocketConstants.CLIENT )
 		{
 			//System.out.println("\n\n\n client registered \n\n\n");
-			registeredClientMSockets.put(cinfo.getFlowID(), storeinfo);
+			registeredClientMSockets.put(cinfo.getConnID(), storeinfo);
 		}
 		//registeredMSockets.add(storeinfo);
 	}
@@ -83,11 +84,11 @@ public class KeepAliveStaticThread implements Runnable
 		
 		if( cinfo.getServerOrClient() == MSocketConstants.SERVER )
 		{
-			registeredServerMSockets.remove(cinfo.getFlowID());
+			registeredServerMSockets.remove(cinfo.getConnID());
 		}
 		else if( cinfo.getServerOrClient() == MSocketConstants.CLIENT )
 		{
-			registeredClientMSockets.remove(cinfo.getFlowID());
+			registeredClientMSockets.remove(cinfo.getConnID());
 		}
 		//registeredMSockets.remove(cinfo.getFlowID());
 	}

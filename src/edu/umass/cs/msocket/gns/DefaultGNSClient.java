@@ -24,13 +24,17 @@ package edu.umass.cs.msocket.gns;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
+import java.util.Random;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 
 
@@ -79,7 +83,20 @@ public class DefaultGNSClient
 			gnsClient = new GNSClient();
 			
 			myGuidEntry = KeyPairUtils.getDefaultGuidEntry(gnsClient.getGNSProvider());
-			// FIXME: Need tp change it to log statements, after fixing logging in msocket.
+			
+			if( myGuidEntry == null )
+			{
+				Random rand = new Random(System.currentTimeMillis());
+				int randInt = Math.abs(rand.nextInt());
+				String accountAlias = "admin"+randInt+"@gns.name";
+				
+				// create a random account GUID;
+				myGuidEntry = GuidUtils.lookupOrCreateAccountGuid
+						(gnsClient, accountAlias, "password", true);
+				
+				KeyPairUtils.setDefaultGuidEntry(gnsClient.getGNSProvider(), accountAlias);
+			}
+			
 //			System.out.println("myGuidEntry "+myGuidEntry.getEntityName()
 //													+ " "+myGuidEntry.getGuid());
 		}
@@ -99,17 +116,18 @@ public class DefaultGNSClient
             {
             	// gnsclient.msocket.properties
             	String gigapaxosPropFile = "gnsclient.msocket.properties";
-            	writeAFileFromJarToLocalDir(gigapaxosPropFile);
+         
+            	writeAFileFromJarToLocalDirByteSteam(gigapaxosPropFile);
             	
             	
             	// keystore.jks file
             	String keyStoreFile = "keyStore.jks";
-            	writeAFileFromJarToLocalDir(keyStoreFile);
+            	writeAFileFromJarToLocalDirByteSteam(keyStoreFile);
             	
             	
             	// trustStore.jks file
             	String trustStoreFile = "trustStore.jks";
-            	writeAFileFromJarToLocalDir(trustStoreFile);
+            	writeAFileFromJarToLocalDirByteSteam(trustStoreFile);
             }
             else
             {
@@ -145,8 +163,11 @@ public class DefaultGNSClient
 			bw = new BufferedWriter(fw);
 			
 			
-	    	reader = new BufferedReader( new InputStreamReader(
-	    		    this.getClass().getResourceAsStream(fileName)) );
+			InputStream in = getClass().getResourceAsStream("/"+fileName);
+			reader = new BufferedReader(new InputStreamReader(in));
+			
+//	    	reader = new BufferedReader( new InputStreamReader(
+//	    		    this.getClass().getResourceAsStream(fileName)) );
 	    	
 	    	String sCurrentLine;
 	    	
@@ -197,6 +218,73 @@ public class DefaultGNSClient
     	
 	}
 	
+	
+	private void writeAFileFromJarToLocalDirByteSteam(String fileName)
+	{	
+    	FileOutputStream writerOut = null;
+    	
+    	InputStream readerIn = null;
+    	
+    	byte[] byteArrayBuf = new byte[1000];
+    	
+    	try
+    	{
+	    	// if file doesn't exists, then create it
+//			if ( !configFile.exists() )
+//			{
+//				configFile.createNewFile();
+//			}
+			
+			writerOut = new FileOutputStream(GNS_CONFIG_DIRNAME+"/"+fileName);
+			
+			
+			readerIn = getClass().getResourceAsStream("/"+fileName);
+			//reader = new BufferedReader(new InputStreamReader(in));
+			
+//	    	reader = new BufferedReader( new InputStreamReader(
+//	    		    this.getClass().getResourceAsStream(fileName)) );
+	    	int numRead = -1;
+			do
+	    	{
+				numRead = readerIn.read(byteArrayBuf);
+				if(numRead > 0)
+				{
+					writerOut.write(byteArrayBuf);
+				}
+	    		
+	    	}while(numRead != -1);
+    	}
+    	catch(IOException ioex)
+    	{
+    		ioex.printStackTrace();
+    	}
+    	finally
+    	{
+    		if( writerOut != null)
+    		{
+    			try 
+    			{
+    				writerOut.close();
+				} catch (IOException e) 
+    			{
+					e.printStackTrace();
+				}
+    		}
+    		
+    		if( writerOut != null )
+    		{
+    			try 
+    			{
+    				writerOut.close();
+				} catch (IOException e) 
+    			{
+					e.printStackTrace();
+				}
+    		}
+    	}
+    	
+	}
+	
 	public static String getDefaultGNSName()
 	{
 		if(defualtObj == null)
@@ -239,4 +327,9 @@ public class DefaultGNSClient
 	}
 	
 	
+	public static void main(String [] args)
+	{
+		GNSClient gnsClient = DefaultGNSClient.getGnsClient();
+		System.out.println("GNS name "+gnsClient.getGNSProvider());
+	}
 }

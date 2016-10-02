@@ -55,7 +55,7 @@ public class MWrappedOutputStream extends OutputStream
    * @param cinfo
    * @param fid
    */
-  MWrappedOutputStream(ConnectionInfo cinfo, long fid)
+  MWrappedOutputStream(ConnectionInfo cinfo)
   {
 	  this.cinfo = cinfo;
 	    

@@ -629,10 +629,11 @@ integration tests sequentially"
       </fileset>
 	
       <fileset dir="${conf.dir}">
+        <include name="gnsclient.msocket.properties" />
         <include name="trustStore.jks" />
         <include name="keyStore.jks" />
       </fileset>
-	  
+
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Implementation-Vendor"
@@ -677,6 +678,7 @@ integration tests sequentially"
       </fileset>-->
 
       <fileset dir="${conf.dir}">
+        <include name="gnsclient.msocket.properties" />
         <include name="trustStore.jks" />
         <include name="keyStore.jks" />
       </fileset>

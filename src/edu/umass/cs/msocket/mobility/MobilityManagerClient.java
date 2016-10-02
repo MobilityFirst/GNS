@@ -98,7 +98,7 @@ public class MobilityManagerClient implements Runnable
     try
     {
       createSingleton();
-      removeFlowId(cInfo.getFlowID());
+      removeConnID(cInfo.getConnID());
       MSocketLogger.getLogger().fine("number of socket reg " + getConnectionStateSize());
     }
     catch (Exception ex)
@@ -191,7 +191,7 @@ public class MobilityManagerClient implements Runnable
     return managerConnectionStateMap.remove(key);
   }
 
-  private synchronized static void removeFlowId(Long flowId)
+  private synchronized static void removeConnID(Long connID)
   {
     for (Entry<String, Vector<ConnectionState>> entry : managerConnectionStateMap.entrySet())
     {
@@ -201,7 +201,7 @@ public class MobilityManagerClient implements Runnable
 
       for (int i = 0; i < value.size(); i++)
       {
-        if (value.get(i).connecInfo.getFlowID() == flowId)
+        if (value.get(i).connecInfo.getConnID() == connID)
         {
           // do nothing,
 
@@ -314,7 +314,9 @@ public class MobilityManagerClient implements Runnable
         }
         else
         {
-          UDPControllerHashMap.updateWithController(InetAddress.getByName(newInterface), cstate.connecInfo.getFlowID());
+          UDPControllerHashMap.updateWithController(InetAddress.getByName(newInterface), 
+        		  cstate.connecInfo.getConnID());
+          
           cstate.connecInfo.setControllerIP(InetAddress.getByName(newInterface));
         }
 

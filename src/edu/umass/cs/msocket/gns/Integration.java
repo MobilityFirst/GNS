@@ -34,12 +34,13 @@ import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.common.CommonMethods;
 import edu.umass.cs.msocket.common.Constants;
-import edu.umass.cs.msocket.common.policies.DefaultProxyPolicy;
-import edu.umass.cs.msocket.common.policies.FixedProxyPolicy;
-import edu.umass.cs.msocket.common.policies.ProxySelectionPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.DefaultProxyPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.FixedProxyPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.ProxySelectionPolicy;
 import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
@@ -82,10 +83,12 @@ public class Integration
 	        		(DefaultGNSClient.getGnsClient().getGNSProvider(), 
 	        				DefaultGNSClient.getMyGuidEntry(), name));
 	        
-	        myGuid = (GuidEntry) commandRes.getResult();
+	        myGuid = GuidUtils.lookupGuidEntryFromDatabase
+	        		(DefaultGNSClient.getGnsClient().getGNSProvider(), name);
+	        
 	        
 	        // save keys in the preference
-	        System.out.println("saving keys to local");
+	        //System.out.println("saving keys to local");
 	        KeyPairUtils.saveKeyPair(DefaultGNSClient.getGnsClient().getGNSProvider(), 
 	        		myGuid.getEntityName() , myGuid.getGuid(), new KeyPair(myGuid.getPublicKey(), 
 	        				myGuid.getPrivateKey()));
@@ -137,7 +140,9 @@ public class Integration
 		// Read from the GNS
 		commandRes = DefaultGNSClient.getGnsClient().execute
 		    		(GNSCommand.fieldReadArray(guidString, Constants.SERVER_REG_ADDR, null));
-		resultArray = commandRes.getResultJSONArray();
+		//System.out.println("Lookup "+commandRes.getResultString());
+		//FIXME: change this when format at the GNS side changes.
+		resultArray = commandRes.getResultJSONObject().getJSONArray(Constants.SERVER_REG_ADDR);
 	    
 	    Vector<InetSocketAddress> resultVector = new Vector<InetSocketAddress>();
 	    for (int i = 0; i < resultArray.length(); i++)
