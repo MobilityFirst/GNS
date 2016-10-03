@@ -182,7 +182,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
   </target>
     
 
-  <target name="jar" depends="server_jarbuild, client_jarbuild, client_console_jarbuild">
+  <target name="jar" depends="server_jarbuild, client_jarbuild, client_console_jarbuild, msocket-jar, msocket-proxy-console-jar">
     <symlink link="${build.jar.dir}/GNS.jar" overwrite="yes"
                  resource="gnsserver-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
     <symlink link="${build.jar.dir}/GNSClient.jar" overwrite="yes"
@@ -599,7 +599,7 @@ integration tests sequentially"
   description="Build both mSocket and proxy jars" />-->
 
   <target name="msocket-jar"
-          depends="compile,msocketdoc"
+          depends="compile"
           description="Builds the mSocket Jar">
     <mkdir dir="${build.jar.dir}"/>
     <jar jarfile="${build.jar.dir}/msocket.jar">
@@ -647,7 +647,7 @@ integration tests sequentially"
   </target>
 	
   <target name="msocket-proxy-console-jar"
-          depends="compile,msocketdoc"
+          depends="compile"
           description="Builds the mSocket proxy console Jar">
     <mkdir dir="${build.jar.dir}"/>
     <jar jarfile="${build.jar.dir}/msocket-proxy-console.jar">

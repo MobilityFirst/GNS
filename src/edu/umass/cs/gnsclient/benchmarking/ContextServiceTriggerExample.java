@@ -10,7 +10,7 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
-public class ContextServiceTriggerExample 
+public class ContextServiceTriggerExample
 {
 	// dallas region in texas area, for which we have weather alerts.
 	public static final double LONGITUDE_MIN 					= -98.08;
@@ -35,9 +35,11 @@ public class ContextServiceTriggerExample
 	public static GuidEntry account_guid;
 	
 	
-	
 	public static void main(String[] args) throws Exception
 	{
+		String csHost = args[0];
+		int csPort = Integer.parseInt(args[1]);
+		
 		client = new GNSClientCommands();
 		System.out.println("[Client connected to GNS]\n");
 		
@@ -58,15 +60,16 @@ public class ContextServiceTriggerExample
 							+ " \"password\", true)\n");
 			account_guid = GuidUtils.lookupOrCreateAccountGuid(client, 
 					ACCOUNT_ALIAS, "password", true);
-		} catch (Exception | Error e) 
+		} catch (Exception | Error e)
 		{
 			System.out.println("Exception during accountGuid creation: " + e);
 			e.printStackTrace();
 			System.exit(1);
 		}
 		
+		System.out.println("csHost "+csHost+" csPort "+csPort);
 		
-		csClient = new ContextServiceClient<Integer>("127.0.0.1", 8000);
+		csClient = new ContextServiceClient<Integer>(csHost, csPort);
 		
 		String csSearchQuery = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE "
 			+ "latitude >= 32 AND latitude <= 33 AND "
