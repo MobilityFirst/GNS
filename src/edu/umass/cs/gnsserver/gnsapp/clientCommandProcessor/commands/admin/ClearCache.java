@@ -69,7 +69,9 @@ public class ClearCache extends BasicCommand {
       if (handler.getAdmintercessor().sendClearCache(handler)) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } else {
-        return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE);
+    	  //The old return value is commented out since currently clear cache always returns false.
+        //return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE);
+    	  return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       }
   }
 

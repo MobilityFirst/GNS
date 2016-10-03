@@ -128,14 +128,15 @@ public class AdminTestSuite extends DefaultTest{
   }
   
   @Test
-  public void test_05_ClearCache() throws Exception {
-      String result = client.clearCache();
+  public void test_05_DumpCache() throws Exception {
+      String result = client.dumpCache();
   }
   
   @Test
-  public void test_06_DumpCache() throws Exception {
-      String result = client.dumpCache();
+  public void test_06_ClearCache() throws Exception {
+      String result = client.clearCache();
   }
+  
   
 
 }
