@@ -50,9 +50,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * This class no longer needs to be used as authentication is being done by Mutual Auth, and so anyone with access to this command could do anything anyways.
  * @author westy
  */
+@Deprecated
 public class Admin extends BasicCommand {
 
   private static ArrayList<String> adminAuthStrings;
@@ -63,41 +64,6 @@ public class Admin extends BasicCommand {
    */
   public Admin(CommandModule module) {
     super(module);
-  }
-
-  /**
-   * Compares the provided passkey against the line entries in the file specified by the system property "admin.file".
-   *
-   * @param	passkey	The passkey to be verified
-   * @return Returns true if the passkey is valid and should provide admin access, and false otherwise.
-   */
-  public static boolean authenticate(String passkey) {
-    //If adminAuthStrings has not yet been initialized then read in the admin passkeys from the file specified by the system property "admin.file"
-    if (adminAuthStrings == null) {
-      //Parse the file specified by admin.file for admin authorization strings.  Each line is a new string that can grant admin access if any correspond to the client provided passkey.
-      adminAuthStrings = new ArrayList<String>();
-      String filePath = Config.getGlobalString(GNSConfig.GNSC.ADMIN_FILE); //System.getProperty("admin.file");
-      if (filePath != null) {
-        filePath = Paths.get(".").toAbsolutePath().normalize().toString() + "/" + filePath;
-        File file = new File(filePath);
-        try {
-          BufferedReader reader = new BufferedReader(new FileReader(file));
-          String line = reader.readLine();
-          while (line != null) {
-            adminAuthStrings.add(line);
-            GNSConfig.getLogger().log(Level.FINE, "Adding {0}" + " to admin auth strings.", line);
-            line = reader.readLine();
-          }
-          reader.close();
-        } catch (IOException ie) {
-          GNSConfig.getLogger().log(Level.INFO, "Failed to open admin file specified by system property admin.file : " + filePath + " ... Defaulting to no admin access.");
-        }
-      } else {
-        GNSConfig.getLogger().log(Level.INFO, "No admin file specified by system property admin.file ... Defaulting to no admin access.");
-      }
-    }
-    //Authenticate the passkey
-    return adminAuthStrings.contains(passkey);
   }
 
   @Override
@@ -112,7 +78,7 @@ public class Admin extends BasicCommand {
     try {
       GNSConfig.getLogger().log(Level.INFO, "Http host:port = {0}", handler.getHTTPServerHostPortString());
       //Compares the passkey directly against the list in the file specified by admin.auth.  We could instead use hashing here and store the hashes and salt in the file.
-      if (authenticate(passkey)) {
+      if ("on".equals(passkey)) {
         module.setAdminMode(true);
         return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } else if ("off".equals(passkey)) {

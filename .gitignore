@@ -11,6 +11,7 @@ build.number
 /scripts/3nodesnew/derby.log
 /scripts/3nodeslocal/paxosLog/
 /log/
+/logs/
 /scripts/newApp/log/
 /scripts/newApp/paxos_large_checkpoints/
 /scripts/newApp/paxos_logs/
@@ -59,3 +60,4 @@ build.number
 /bin/gpClient.sh
 /bin/gpServer.sh
 .paxos_logs
+.gradle

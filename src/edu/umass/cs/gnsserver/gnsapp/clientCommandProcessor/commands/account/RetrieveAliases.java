@@ -62,12 +62,6 @@ public class RetrieveAliases extends BasicCommand {
     return CommandType.RetrieveAliases;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return RETRIEVE_ALIASES;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {

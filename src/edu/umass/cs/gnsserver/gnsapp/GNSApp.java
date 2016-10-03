@@ -31,6 +31,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
@@ -145,96 +146,98 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   /**
    *
    */
-  LocalNameServer localNameServer = null;
-  /**
-   * The UdpDnsServer that serves DNS requests through UDP.
-   */
-  private UdpDnsServer udpDnsServer = null;
-  /**
-   * The DnsTranslator that serves DNS requests through UDP.
-   */
-  private DnsTranslator dnsTranslator = null;
+	LocalNameServer localNameServer = null;
+	/**
+	 * The UdpDnsServer that serves DNS requests through UDP.
+	 */
+	private UdpDnsServer udpDnsServer = null;
+	/**
+	 * The DnsTranslator that serves DNS requests through UDP.
+	 */
+	private DnsTranslator dnsTranslator = null;
 
-  // Which one doesn't need to exists anymore?
-  ListenerAdmin ccpListenerAdmin = null;
-  AppAdmin appAdmin = null;
+	// Which one doesn't need to exists anymore?
+	ListenerAdmin ccpListenerAdmin = null;
+	AppAdmin appAdmin = null;
 
-  /**
-   * Constructor invoked via reflection by gigapaxos.
-   *
-   * @param args
-   * @throws IOException
-   */
-  public GNSApp(String[] args) throws IOException {
-    AppReconfigurableNode.initOptions(args);
-  }
+	/**
+	 * Constructor invoked via reflection by gigapaxos.
+	 *
+	 * @param args
+	 * @throws IOException
+	 */
+	public GNSApp(String[] args) throws IOException {
+		AppReconfigurableNode.initOptions(args);
+	}
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
-    this.messenger = (SSLMessenger<String, JSONObject>) messenger;
-    this.nodeID = messenger.getMyID().toString();
-    try {
-      if (!constructed) {
-        this.GnsAppConstructor((JSONMessenger<String>) messenger);
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-      GNSConfig.getLogger().severe("Unable to create app: exiting");
-      System.exit(1);
-    }
-  }
+	@Override
+	@SuppressWarnings("unchecked")
+	public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
+		this.messenger = (SSLMessenger<String, JSONObject>) messenger;
+		this.nodeID = messenger.getMyID().toString();
+		try {
+			if (!constructed) {
+				this.GnsAppConstructor((JSONMessenger<String>) messenger);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			GNSConfig.getLogger().severe("Unable to create app: exiting");
+			System.exit(1);
+		}
+	}
 
-  private static PacketType[] types = {PacketType.COMMAND,
-    PacketType.SELECT_REQUEST, PacketType.SELECT_RESPONSE,
-    PacketType.ADMIN_REQUEST, PacketType.INTERNAL_COMMAND};
+	private static PacketType[] types = { PacketType.COMMAND,
+			PacketType.SELECT_REQUEST, PacketType.SELECT_RESPONSE, 
+			PacketType.ADMIN_REQUEST, PacketType.INTERNAL_COMMAND};
+	
+	private static PacketType[] mutualAuthTypes = {PacketType.ADMIN_COMMAND};
 
-  /**
-   * arun: The code below {@link #incrResponseCount(ClientRequest)} and
-   * {@link #executeNoop(Request)} is for instrumentation only and will go
-   * away soon.
-   */
-  private static final int RESPONSE_COUNT_THRESHOLD = 100;
-  private static boolean doneOnce = false;
+	/**
+	 * arun: The code below {@link #incrResponseCount(ClientRequest)} and
+	 * {@link #executeNoop(Request)} is for instrumentation only and will go
+	 * away soon.
+	 */
+	private static final int RESPONSE_COUNT_THRESHOLD = 100;
+	private static boolean doneOnce = false;
 
-  private synchronized void incrResponseCount(ClientRequest response) {
-    if (responseCount++ > RESPONSE_COUNT_THRESHOLD
-            && response instanceof ResponsePacket
-            && (!doneOnce && (doneOnce = true))) {
-      try {
-        this.cachedResponse = ((ResponsePacket) response)
-                .toJSONObject();
-      } catch (JSONException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
-    }
-  }
+	private synchronized void incrResponseCount(ClientRequest response) {
+		if (responseCount++ > RESPONSE_COUNT_THRESHOLD
+				&& response instanceof ResponsePacket
+				&& (!doneOnce && (doneOnce = true))) {
+			try {
+				this.cachedResponse = ((ResponsePacket) response)
+						.toJSONObject();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 
-  private static final boolean EXECUTE_NOOP_ENABLED = Config
-          .getGlobalBoolean(GNSConfig.GNSC.EXECUTE_NOOP_ENABLED);
-  private int responseCount = 0;
-  private JSONObject cachedResponse = null;
+	private static final boolean EXECUTE_NOOP_ENABLED = Config
+			.getGlobalBoolean(GNSConfig.GNSC.EXECUTE_NOOP_ENABLED);
+	private int responseCount = 0;
+	private JSONObject cachedResponse = null;
 
-  @SuppressWarnings("deprecation")
-  private boolean executeNoop(Request request) {
-    if (!EXECUTE_NOOP_ENABLED) {
-      return false;
-    }
-    if (cachedResponse != null && request instanceof CommandPacket
-            && ((CommandPacket) request).getCommandType().isRead()) {
-      try {
-        ((BasicPacketWithClientAddress) request)
-                .setResponse(new ResponsePacket(cachedResponse)
-                        .setClientRequestAndLNSIds(((ClientRequest) request)
-                                .getRequestID()));
-      } catch (JSONException e) {
-        e.printStackTrace();
-      }
-      return true;
-    }
-    return false;
-  }
+	@SuppressWarnings("deprecation")
+	private boolean executeNoop(Request request) {
+		if (!EXECUTE_NOOP_ENABLED) {
+			return false;
+		}
+		if (cachedResponse != null && request instanceof CommandPacket
+				&& ((CommandPacket) request).getCommandType().isRead()) {
+			try {
+				((BasicPacketWithClientAddress) request)
+						.setResponse(new ResponsePacket(cachedResponse)
+								.setClientRequestAndLNSIds(((ClientRequest) request)
+										.getRequestID()));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			return true;
+		}
+		return false;
+	}
 
   @SuppressWarnings("unchecked")
   // we explicitly check type
@@ -278,6 +281,9 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         case COMMAND:
           CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
           break;
+        case ADMIN_COMMAND:
+			CommandHandler.handleCommandPacket((AdminCommandPacket) request, doNotReplyToClient, this);
+			break;
         default:
           assert (false) : (this
                   + " should not be getting packets of type "
@@ -510,7 +516,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
   @Override
   public Set<IntegerPacketType> getMutualAuthRequestTypes() {
-    Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(types));
+    Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(mutualAuthTypes));
     if (InternalCommandPacket.SEPARATE_INTERNAL_TYPE) {
       maTypes.add(PacketType.INTERNAL_COMMAND);
     }

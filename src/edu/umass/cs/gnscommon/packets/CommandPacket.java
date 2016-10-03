@@ -101,6 +101,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     this.setType(PacketType.COMMAND);
     this.clientRequestId = requestId;
     this.command = command;
+    validateCommandType();
 
   }
 
@@ -135,7 +136,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
     this.forceCoordination = json.has(GNSCommandProtocol.FORCE_COORDINATE_READS)
             ? json.getBoolean(GNSCommandProtocol.FORCE_COORDINATE_READS) : false;
-
+            
+    validateCommandType();
   }
 
   /**
@@ -166,7 +168,17 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
             (int) buf.get());
     // JSON command
     this.command = getJSONObject(buf, mode);
+    
+    validateCommandType();
   }
+  
+	/**
+	 * Checks that the command type of the packet is not MUTUAL_AUTH as those should be an AdminCommandPacket instead.
+	 * This being a separate method allows AdminCommandPacket to override it to change its validation while still reusing the constructor code here.
+	 */
+	protected void validateCommandType(){
+		assert(!this.getCommandType().isMutualAuth());
+	}
 
   private static JSONObject fromBytesStringerHack(ByteBuffer buf)
           throws UnsupportedEncodingException, JSONException {
@@ -245,6 +257,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     try {
       switch (byteMode) {
         /* There is little point in using JSON just for this.command instead
+>>>>>>> 1a70f0e3c9f5685a37f51cdc7c44879293ead6aa
 			 * of the default toJSONObject() method, so we just do that. */
         case ORG_JSON:
           return this.toJSONObject().toString()
@@ -477,30 +490,39 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return -1;
   }
 
-  /**
-   * @return CommandType
-   */
-  public CommandType getCommandType() {
-    try {
-      if (command != null) {
-        if (command.has(GNSCommandProtocol.COMMAND_INT)) {
-          return CommandType.getCommandType(command
-                  .getInt(GNSCommandProtocol.COMMAND_INT));
-        }
-        if (command.has(GNSCommandProtocol.COMMANDNAME)) {
-          return CommandType.valueOf(command
-                  .getString(GNSCommandProtocol.COMMANDNAME));
-        }
-      }
-    } catch (IllegalArgumentException | JSONException e) {
-    }
-    return CommandType.Unknown;
-  }
 
   @Override
   public boolean needsCoordination() {
     return this.forceCoordination || getCommandType().isUpdate();
   }
+  
+  /**
+	 * @return CommandType
+	 */
+	public CommandType getCommandType() {
+		return getJSONCommandType(command);
+	}
+	
+	/**
+	 * Used to determine the type of a JSONObject formatted command.
+	 * @return CommandType
+	 */
+	public static CommandType getJSONCommandType(JSONObject command) {
+		try {
+			if (command != null) {
+				if (command.has(GNSCommandProtocol.COMMAND_INT)) {
+					return CommandType.getCommandType(command
+							.getInt(GNSCommandProtocol.COMMAND_INT));
+				}
+				if (command.has(GNSCommandProtocol.COMMANDNAME)) {
+					return CommandType.valueOf(command
+							.getString(GNSCommandProtocol.COMMANDNAME));
+				}
+			}
+		} catch (IllegalArgumentException | JSONException e) {
+		}
+		return CommandType.Unknown;
+	}
 
   /**
    * @param force
@@ -730,7 +752,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public boolean hasResult() {
     return this.result != null;
   }
-
+  
   /* ********************** End of result-related methods **************** */
   @Override
   public Object getSummary() {
