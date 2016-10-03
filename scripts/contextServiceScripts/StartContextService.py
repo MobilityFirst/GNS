@@ -43,7 +43,7 @@ def startCSNodes():
     configDirPath = dirPrefix+'/'+configName+'/contextServiceConf'
     curr = 0
     while(curr < len(lines)):
-        cmd = cmdPrefix+' '+str(curr)+' -csConfDir '+configDirPath +' 2> csLog.log & '
+        cmd = cmdPrefix+' '+str(curr)+' -csConfDir '+configDirPath +' &> csLog.log & '
         print "starting context service "+cmd
         os.system(cmd)
         curr = curr + 1
@@ -65,5 +65,6 @@ elif(len(sys.argv) == 4):
     writeDBFile()
         
 startCSNodes()
+print "\n#############Context service started##############\n"
 #time.sleep(5)
 #print "context service started"
