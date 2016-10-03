@@ -548,7 +548,9 @@ public class AccountAccess {
     if (Config.getGlobalBoolean(GNSConfig.GNSC.INCLUDE_CLI_NOTIFICATION)) {
       emailBody += String.format(EMAIL_CLI_CONDITIONAL, name, verifyCode);
     }
-    boolean emailOK = Email.email("GNS Account Verification", name, emailBody);
+    String subject = Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME)
+            + " Account Authentication";
+    boolean emailOK = Email.email(subject, name, emailBody);
     // do the admin email in another thread so it's faster and
     // because we don't care if it completes
     (new Thread() {

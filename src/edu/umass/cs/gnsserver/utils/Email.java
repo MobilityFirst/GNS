@@ -251,7 +251,7 @@ public class Email {
       message.setText(text);
 
       Transport.send(message);
-      getLogger().log(Level.INFO,
+      getLogger().log(Level.FINE,
               "Successfully sent email to {0} with message: {1}", new Object[]{recipient, text});
       return true;
 
@@ -326,6 +326,10 @@ public class Email {
   }
 
   public static void main(String[] args) {
-    email("hello", "westy@cs.umass.edu", "this is another test on " + Format.formatPrettyDateUTC(new Date()));
+    email("hello", "westy@cs.umass.edu", 
+            "This is another email on " + Format.formatPrettyDateUTC(new Date()) + "."
+            + "\n The support email is " + Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL) + "."
+            + "Thanks, \nHave a nice day."
+    );
   }
 }
