@@ -38,8 +38,8 @@ echo "working on $i"
 mkdir -p "${moddir}/${i%/*}"
 cat $i|grep -v "import static.*.$prefix$old;"| \
 grep -v "String *$old *="| \
-sed s/"$prefix$old"/"$new.getLabel\(\)"/g | \
-sed s/"$old"/"$new.getLabel\(\)"/g > $moddir/$i;
+sed s/"$prefix$old"/"$new.toString\(\)"/g | \
+sed s/"$old"/"$new.toString\(\)"/g > $moddir/$i;
 
 echo "modified $i and stored it in $moddir/$i"
 cp $moddir/$i $i; 
