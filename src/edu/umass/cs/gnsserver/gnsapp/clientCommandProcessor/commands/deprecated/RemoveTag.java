@@ -72,13 +72,6 @@ public class RemoveTag extends BasicCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
-	  String passkey = json.getString(PASSKEY);
-	  if (!Admin.authenticate(passkey)){
-		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
-		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
-	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
-	  }
     String guid = json.getString(GUID);
     String tag = json.getString(NAME);
     // signature and message can be empty for unsigned cases

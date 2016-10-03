@@ -45,7 +45,6 @@ import edu.umass.cs.utils.Config;
  * Cleaner implementation of a GNS client using gigapaxos' async client.
  */
 public class GNSClient {
-
   /**
    * If no properties file can be found, this client will attempt to connect
    * to a local reconfigurator at the default port
@@ -407,7 +406,7 @@ public class GNSClient {
     @Override
     public Set<IntegerPacketType> getMutualAuthRequestTypes() {
       Set<IntegerPacketType> types = new HashSet<IntegerPacketType>(
-              Arrays.asList(Packet.PacketType.ADMIN_REQUEST));
+              Arrays.asList(Packet.PacketType.ADMIN_COMMAND));
       if (InternalCommandPacket.SEPARATE_INTERNAL_TYPE) {
         types.add(Packet.PacketType.INTERNAL_COMMAND);
       }

@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
+import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.CommandType;
 
@@ -80,6 +81,12 @@ public class Packet {
      * internal requests spawned by chains in {@link CommandType}.
      */
     INTERNAL_COMMAND(9, InternalCommandPacket.class.getCanonicalName()),
+    
+    /**
+     * ADMIN_COMMAND
+     * A variant of {@link CommandPacket} that is used for client requests that require mutual authentication.
+     */
+    ADMIN_COMMAND(10, AdminCommandPacket.class.getCanonicalName()),
 
     
     /**
@@ -252,6 +259,8 @@ public class Packet {
     if (packetType != null) {
       switch (packetType) {
         // Client
+      case ADMIN_COMMAND:
+    	  return new edu.umass.cs.gnscommon.packets.AdminCommandPacket(json);
         case COMMAND:
           return new edu.umass.cs.gnscommon.packets.CommandPacket(json);
         case COMMAND_RETURN_VALUE:

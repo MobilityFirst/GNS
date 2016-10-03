@@ -26,6 +26,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.utils.DefaultTest;
 
 import java.io.IOException;
 import static org.junit.Assert.*;
@@ -40,7 +41,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class AdminTest {
+public class AdminTestSuite extends DefaultTest{
 
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
@@ -103,39 +104,38 @@ public class AdminTest {
 		assertEquals(alias, guidEntry.getEntityName());
 	}
 
-
   @Test
-  public void test_01_AdminEnter() {
-    try {
-      client.adminEnable("shabiz");
-    } catch (Exception e) {
-      fail("Exception while enabling admin mode: " + e);
-    }
-  }
-
-  @Test
-  public void test_02_ParameterGet() {
-    try {
-      String result = client.parameterGet("email_verification", "shabiz");
+  public void test_01_ParameterGet() throws Exception {
+      String result = client.parameterGet("email_verification");
       assertEquals("true", result);
-    } catch (Exception e) {
-      fail("Exception while enabling admin mode: " + e);
-    }
   }
 
   @Test
-  public void test_03_ParameterSet() {
-    try {
-      client.parameterSet("max_guids", 2000, "shabiz");
-    } catch (Exception e) {
-      fail("Exception while enabling admin mode: " + e);
-    }
-    try {
-      String result = client.parameterGet("max_guids", "shabiz");
+  public void test_02_ParameterSet() throws Exception {
+      client.parameterSet("max_guids", 2000);
+      String result = client.parameterGet("max_guids");
       assertEquals("2000", result);
-    } catch (Exception e) {
-      fail("Exception while enabling admin mode: " + e);
-    }
   }
+  
+  @Test
+  public void test_03_ParameterList() throws Exception {
+      String result = client.parameterList();
+  }
+  
+  @Test
+  public void test_04_Dump() throws Exception {
+      String result = client.dump();
+  }
+  
+  @Test
+  public void test_05_ClearCache() throws Exception {
+      String result = client.clearCache();
+  }
+  
+  @Test
+  public void test_06_DumpCache() throws Exception {
+      String result = client.dumpCache();
+  }
+  
 
 }

@@ -50,7 +50,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAMES;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.NEAR;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSWORD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEYS;
@@ -67,14 +66,16 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 
 import java.io.UnsupportedEncodingException;
@@ -163,7 +164,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   private String getResponse(CommandType commandType, GuidEntry querier,
           Object... keysAndValues) throws ClientException, IOException {
-    GNSCommand commandPacket = null;
+    CommandPacket commandPacket = null;
     return record(// just instrumentation
             commandType,
             CommandUtils.checkResponse(this
@@ -220,11 +221,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @return Constructed CommandPacket
    * @throws ClientException
    */
-  private static GNSCommand getCommand(CommandType type, GuidEntry querier,
+  private static CommandPacket getCommand(CommandType type, GuidEntry querier,
           Object... keysAndValues) throws ClientException {
-    GNSCommand packet = new GNSCommand(
+    //GNSCommand packet = new GNSCommand(
             //CommandPacket(randomLong(),
-            CommandUtils.createAndSignCommand(type, querier, keysAndValues));
+            //CommandUtils.createAndSignCommand(type, querier, keysAndValues));
+	  CommandPacket packet = GNSCommand.getCommand(type, querier, keysAndValues);
     return packet;
   }
 
@@ -2118,44 +2120,108 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Enables admin mode on the server.
-   *
-   * @param passkey
-   * @return ???
-   * @throws Exception
-   */
-  public String adminEnable(String passkey) throws Exception {
-    return getResponse(CommandType.Admin, NAME,
-            RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, passkey);
-  }
-
-  /**
    * @param field
    * @param value
-   * @param passkey
    * @throws Exception
    */
-  @Deprecated
-  public void parameterSet(String field, Object value, String passkey)
+  public void parameterSet(String field, Object value)
           throws Exception {
-    getResponse(CommandType.SetParameter, NAME,
-            RC.BROADCAST_NAME.getDefaultValue(), FIELD, field, VALUE,
-            value, PASSKEY, passkey);
+	  //Create the admin account if it doesn't already exist.
+	  try{
+	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+	  }
+	  catch(DuplicateNameException dne){
+		  //Do nothing if it already exists.
+	  }
+	  getResponse(CommandType.SetParameter, NAME,
+            "Admin", FIELD, field, VALUE, value);
   }
 
   /**
    * @param name
-   * @param passkey
    * @return ???
    * @throws Exception
    *
    */
-  @Deprecated
-  public String parameterGet(String name, String passkey) throws Exception {
+  public String parameterGet(String name) throws Exception {
+	  //Create the admin account if it doesn't already exist.
+	  try{
+	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+	  }
+	  catch(DuplicateNameException dne){
+		  //Do nothing if it already exists.
+	  }
     return getResponse(CommandType.GetParameter, NAME,
-            RC.BROADCAST_NAME.getDefaultValue(), FIELD, name, PASSKEY,
-            passkey);
+            "Admin", FIELD, name);
   }
+  
+  /**
+   * @return All system parameters and their values?
+   * @throws Exception
+   *
+   */
+  public String parameterList() throws Exception {
+	  //Create the admin account if it doesn't already exist.
+	  try{
+	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+	  }
+	  catch(DuplicateNameException dne){
+		  //Do nothing if it already exists.
+	  }
+    return getResponse(CommandType.ListParameters, NAME,
+            "Admin");
+  }
+  /**
+   * 
+   * @return The contents of the GNS.
+   * @throws Exception
+   */
+  public String dump() throws Exception {
+	  //Create the admin account if it doesn't already exist.
+	  try{
+	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+	  }
+	  catch(DuplicateNameException dne){
+		  //Do nothing if it already exists.
+	  }
+    return getResponse(CommandType.Dump, NAME,
+            "Admin");
+  }
+  
+  /**
+   *  Clears the local name server cache.
+   * @return 
+   * @throws Exception
+   */
+  public String clearCache() throws Exception {
+	  //Create the admin account if it doesn't already exist.
+	  try{
+	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+	  }
+	  catch(DuplicateNameException dne){
+		  //Do nothing if it already exists.
+	  }
+    return getResponse(CommandType.ClearCache, NAME,
+            "Admin");
+  }
+  
+  /**
+   * 
+   * @return  Returns the contents of the local name server cache.
+   * @throws Exception
+   */
+  public String dumpCache() throws Exception {
+	  //Create the admin account if it doesn't already exist.
+	  try{
+	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+	  }
+	  catch(DuplicateNameException dne){
+		  //Do nothing if it already exists.
+	  }
+    return getResponse(CommandType.DumpCache, NAME,
+            "Admin");
+  }
+  
 
   @Override
   public void close() {

@@ -66,18 +66,7 @@ public class ListParameters extends BasicCommand {
 //  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    if (module.isAdminMode()) {
-  	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
-  	  String passkey = json.getString(PASSKEY);
-  	  if (!Admin.authenticate(passkey)){
-  		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
-  		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
-  	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
-  	  }
       return new CommandResponse(GNSResponseCode.NO_ERROR, SystemParameter.listParameters());
-    }
-    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-            + " Don't understand " + CommandType.ListParameters.toString());
   }
 
   
