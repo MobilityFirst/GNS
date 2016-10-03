@@ -259,6 +259,8 @@ public class Packet {
     if (packetType != null) {
       switch (packetType) {
         // Client
+      case ADMIN_COMMAND:
+    	  return new edu.umass.cs.gnscommon.packets.AdminCommandPacket(json);
         case COMMAND:
           return new edu.umass.cs.gnscommon.packets.CommandPacket(json);
         case COMMAND_RETURN_VALUE:

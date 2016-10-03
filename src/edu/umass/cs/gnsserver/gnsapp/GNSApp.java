@@ -283,6 +283,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
           break;
         case ADMIN_COMMAND:
 			CommandHandler.handleCommandPacket((AdminCommandPacket) request, doNotReplyToClient, this);
+			break;
         default:
           assert (false) : (this
                   + " should not be getting packets of type "
