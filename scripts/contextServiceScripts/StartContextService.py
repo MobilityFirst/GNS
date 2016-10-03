@@ -33,7 +33,7 @@ def startCSNodes():
     print "Killed old context service"
     
     nodeConfigFilePath = dirPrefix+'/'+configName+'/contextServiceConf/contextServiceNodeSetup.txt'
-    cmdPrefix = 'java -ea -cp '+dirPrefix+'/context-nodoc-GNS.jar:jars/GNS.jar edu.umass.cs.contextservice.nodeApp.StartContextServiceNode '+\
+    cmdPrefix = 'nohup java -ea -cp '+dirPrefix+'/context-nodoc-GNS.jar:jars/GNS.jar edu.umass.cs.contextservice.nodeApp.StartContextServiceNode '+\
                     '-id'
     lines = []
     with open(nodeConfigFilePath) as f:
@@ -43,7 +43,7 @@ def startCSNodes():
     configDirPath = dirPrefix+'/'+configName+'/contextServiceConf'
     curr = 0
     while(curr < len(lines)):
-        cmd = cmdPrefix+' '+str(curr)+' -csConfDir '+configDirPath +' & '
+        cmd = cmdPrefix+' '+str(curr)+' -csConfDir '+configDirPath +' &> csLog.log & '
         print "starting context service "+cmd
         os.system(cmd)
         curr = curr + 1
