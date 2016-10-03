@@ -32,7 +32,7 @@ import java.util.TimerTask;
 import edu.umass.cs.msocket.MServerSocket;
 import edu.umass.cs.msocket.MSocket;
 import edu.umass.cs.msocket.MWrappedOutputStream;
-import edu.umass.cs.msocket.common.policies.NoProxyPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.NoProxyPolicy;
 
 /**
  * This class implements a server to load the proxy.

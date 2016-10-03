@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class implements the threads to do background writes for the default
@@ -52,14 +52,12 @@ public class BackgroudMultiPathWritingThread
   private Vector<SocketInfo> finishedPaths           = null;
   private Vector<SocketInfo> unfinishedPaths         = null;
 
-  private static Logger      log                     = Logger
-                                                         .getLogger(BackgroudMultiPathWritingThread.class.getName());
-
   public BackgroudMultiPathWritingThread(long endSeqNum, ConnectionInfo cinfo)
   {
     this.endSeqNum = endSeqNum;
     this.cinfo = cinfo;
-    log.trace("endSeqNum " + endSeqNum + "getDataBaseSeq num " + cinfo.getDataBaseSeq());
+    MSocketLogger.getLogger().fine
+    	("endSeqNum " + endSeqNum + "getDataBaseSeq num " + cinfo.getDataBaseSeq());
     finishedPaths = new Vector<SocketInfo>();
     unfinishedPaths = new Vector<SocketInfo>();
   }
@@ -74,13 +72,15 @@ public class BackgroudMultiPathWritingThread
       SocketInfo Obj = socketList.get(i);
       if (Obj.getOutStandingBytes() == 0)
       {
-        log.trace("socket ID " + Obj.getSocketIdentifer() + " is found to have zero outstanding bytes");
+    	  MSocketLogger.getLogger().fine
+    	  	("socket ID " + Obj.getSocketIdentifer() + " is found to have zero outstanding bytes");
         finishedPaths.add(Obj);
       }
       else
       {
         unfinishedPaths.add(Obj);
-        log.trace("unifinished paths size " + unfinishedPaths.size());
+        MSocketLogger.getLogger().fine
+        	("unifinished paths size " + unfinishedPaths.size());
       }
     }
 
@@ -114,12 +114,14 @@ public class BackgroudMultiPathWritingThread
         SocketInfo Obj = socketList.get(i);
         if (Obj.getOutStandingBytes() == 0)
         {
-          log.trace("socket ID " + Obj.getSocketIdentifer() + " is found to have zero outstanding bytes");
+          MSocketLogger.getLogger().fine
+          	("socket ID " + Obj.getSocketIdentifer() + " is found to have zero outstanding bytes");
           finishedPaths.add(Obj);
         }
         else
         {
-          log.trace("socket ID " + Obj.getSocketIdentifer() + " in unfinished Paths");
+          MSocketLogger.getLogger().fine
+          	("socket ID " + Obj.getSocketIdentifer() + " in unfinished Paths");
           tempVect.add(Obj);
         }
       }
@@ -134,7 +136,8 @@ public class BackgroudMultiPathWritingThread
                                                                 // acknowlded
                                                                 // bytes
         {
-          log.trace("sending seq num " + byteObj.getStartSeqNum() + "getDataBaseSeq num " + cinfo.getDataBaseSeq());
+          MSocketLogger.getLogger().fine
+          	("sending seq num " + byteObj.getStartSeqNum() + "getDataBaseSeq num " + cinfo.getDataBaseSeq());
 
           byte[] retransmitData = cinfo.getDataFromOutBuffer(byteObj.getStartSeqNum(), byteObj.getStartSeqNum()
               + byteObj.getLength());
@@ -159,7 +162,7 @@ public class BackgroudMultiPathWritingThread
               e.printStackTrace();
             }
 
-            log.trace("currpos " + currpos + "length " + length + " tempDataSendSeqNum " + tempDataSendSeqNum
+            MSocketLogger.getLogger().fine("currpos " + currpos + "length " + length + " tempDataSendSeqNum " + tempDataSendSeqNum
                 + "cinfo.getDataBaseSeq() " + cinfo.getDataBaseSeq());
             // reads input stream for ACKs an stores data in input buffer
             SocketInfo Obj = null;
@@ -239,7 +242,7 @@ public class BackgroudMultiPathWritingThread
               }
               catch (IOException ex)
               {
-                log.trace("Write exception caused");
+            	MSocketLogger.getLogger().fine("Write exception caused");
                 Obj.setStatus(false);
                 Obj.setneedToReqeustACK(true);
                 Obj.releaseLock();
@@ -249,7 +252,7 @@ public class BackgroudMultiPathWritingThread
             {
               // throw exception and block or wait in while loop to check for
               // any available sockets
-              log.trace("no socket avaialble for write, blocking");
+              MSocketLogger.getLogger().fine("no socket avaialble for write, blocking");
               synchronized (cinfo.getSocketMonitor())
               {
                 while ((cinfo.getActiveSocket(MultipathPolicy.MULTIPATH_POLICY_RANDOM) == null)
@@ -275,7 +278,7 @@ public class BackgroudMultiPathWritingThread
           }
         }
     }
-    log.trace("BackgroudMultiPathWritingThread finishes");
+    MSocketLogger.getLogger().fine("BackgroudMultiPathWritingThread finishes");
   }
 
   /**
@@ -285,8 +288,7 @@ public class BackgroudMultiPathWritingThread
    */
   private void handleMigrationInMultiPath(SocketInfo Obj) throws IOException
   {
-
-    log.trace("handleMigrationInMultiPath called");
+	MSocketLogger.getLogger().fine("handleMigrationInMultiPath called");
     // if queue size is > 0 then it means that there is a non-blocking
     // write pending and it should be sent first, instead of migration data
     if ((Integer) Obj.queueOperations(SocketInfo.QUEUE_SIZE, null) > 0)
@@ -295,11 +297,11 @@ public class BackgroudMultiPathWritingThread
       return;
     }
 
-    log.trace("HandleMigrationInMultiPath SocektId " + Obj.getSocketIdentifer());
+    MSocketLogger.getLogger().fine("HandleMigrationInMultiPath SocektId " + Obj.getSocketIdentifer());
 
     cinfo.multiSocketRead();
     int dataAck = (int) cinfo.getDataBaseSeq();
-    log.trace("DataAck from other side " + dataAck);
+    MSocketLogger.getLogger().fine("DataAck from other side " + dataAck);
     Obj.byteInfoVectorOperations(SocketInfo.QUEUE_REMOVE, dataAck, -1);
 
     @SuppressWarnings("unchecked")
@@ -345,7 +347,7 @@ public class BackgroudMultiPathWritingThread
     }
 
     Obj.setneedToReqeustACK(false);
-    log.trace("HandleMigrationInMultiPath Complete");
+    MSocketLogger.getLogger().fine("HandleMigrationInMultiPath Complete");
   }
 
   private void attemptSocketWrite(SocketInfo Obj) throws IOException
@@ -363,7 +365,7 @@ public class BackgroudMultiPathWritingThread
 
     if (gotWritten > 0)
     {
-      log.trace("gotWritten " + gotWritten + " buf length " + writebuf.length + " send buffer "
+      MSocketLogger.getLogger().fine("gotWritten " + gotWritten + " buf length " + writebuf.length + " send buffer "
           + Obj.getSocket().getSendBufferSize() + " SocketID " + Obj.getSocketIdentifer());
       Obj.currentChunkWriteOffsetOper(gotWritten, SocketInfo.VARIABLE_UPDATE);
     }
@@ -381,14 +383,14 @@ public class BackgroudMultiPathWritingThread
                                                                                          // reset
                                                                                          // it
     {
-      log.trace("currentChunkWriteOffset " + writebuf.length);
+      MSocketLogger.getLogger().fine("currentChunkWriteOffset " + writebuf.length);
       Obj.currentChunkWriteOffsetOper(0, SocketInfo.VARIABLE_SET);
       Obj.queueOperations(SocketInfo.QUEUE_REMOVE, null);
     }
     long endTime = System.currentTimeMillis();
 
     if (gotWritten > 0)
-      log.trace("Using socketID " + Obj.getSocketIdentifer() + "Remote IP " + Obj.getSocket().getInetAddress()
+    	MSocketLogger.getLogger().fine("Using socketID " + Obj.getSocketIdentifer() + "Remote IP " + Obj.getSocket().getInetAddress()
           + "for writing " + " time taken " + (endTime - startTime));
   }
 

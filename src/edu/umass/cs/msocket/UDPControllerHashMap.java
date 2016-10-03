@@ -27,7 +27,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class stores the Hashmap of UDP controllers running on different
@@ -46,10 +46,6 @@ public class UDPControllerHashMap
   private static UDPControllerHashMap                            UDPControllerHashMapObject = null;
   private static HashMap<InetAddress, FlowIDToControllerMapping> ControllerSocketMap        = null;
 
-  private static Logger                                          log                        = Logger
-                                                                                                .getLogger(UDPControllerHashMap.class
-                                                                                                    .getName());
-
   /**
    * @param ControllerIPAddress
    * @param cinfo
@@ -58,18 +54,19 @@ public class UDPControllerHashMap
   public static synchronized void registerWithController(InetAddress ControllerIPAddress, ConnectionInfo cinfo)
       throws SocketException
   {
-    log.trace("RegisterWithController " + ControllerIPAddress.toString());
+    MSocketLogger.getLogger().fine("RegisterWithController " + ControllerIPAddress.toString());
     createSingleton();
 
     // UDP socket already there
     if (ControllerSocketMap.containsKey(ControllerIPAddress))
     {
-      ControllerSocketMap.get(ControllerIPAddress).addControllerMapping(cinfo.getFlowID(), cinfo);
+      ControllerSocketMap.get(ControllerIPAddress).addControllerMapping
+      		(cinfo.getConnID(), cinfo);
     }
     else
     {
       FlowIDToControllerMapping Obj = new FlowIDToControllerMapping(ControllerIPAddress);
-      Obj.addControllerMapping(cinfo.getFlowID(), cinfo);
+      Obj.addControllerMapping(cinfo.getConnID(), cinfo);
       ControllerSocketMap.put(ControllerIPAddress, Obj);
       // start UDP listening thread
       (new Thread(Obj)).start();
@@ -86,22 +83,23 @@ public class UDPControllerHashMap
   {
     try
     {
-      log.trace("RegisterWithController " + ControllerIPAddress.toString());
+      MSocketLogger.getLogger().fine("RegisterWithController " + ControllerIPAddress.toString());
       createSingleton();
 
       // UDP socekt already there
       if (ControllerSocketMap.containsKey(ControllerIPAddress))
       {
-        ControllerSocketMap.get(ControllerIPAddress).removeControllerMapping(cinfo.getFlowID());
+        ControllerSocketMap.get(ControllerIPAddress).removeControllerMapping
+        		(cinfo.getConnID());
       }
       else
       {
-        log.trace("non existent controller IP, shoudl nt happen");
+        MSocketLogger.getLogger().fine("non existent controller IP, shoudl nt happen");
       }
     }
     catch (Exception ex)
     {
-      log.trace("unregisterWithController excp " + ex.getMessage());
+      MSocketLogger.getLogger().fine("unregisterWithController excp " + ex.getMessage());
     }
   }
 
@@ -111,7 +109,7 @@ public class UDPControllerHashMap
    */
   public static synchronized void startUDPController(InetAddress ControllerIPAddress) throws SocketException
   {
-    log.trace("ControllerIPAddress " + ControllerIPAddress.toString());
+    MSocketLogger.getLogger().fine("ControllerIPAddress " + ControllerIPAddress.toString());
     createSingleton();
 
     // UDP socket already there

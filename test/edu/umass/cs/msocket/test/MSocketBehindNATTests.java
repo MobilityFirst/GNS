@@ -28,10 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Random;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,9 +45,8 @@ import edu.umass.cs.msocket.MSocket;
  */
 public class MSocketBehindNATTests
 {
-  private static final String SOCKET_HRN = "msocket.junit.behindNAT1";
+  private static final String SOCKET_HRN = "msocket.junit.behindNAT3";
   private MServerSocket       mss;
-  private static Logger       log        = Logger.getLogger("MSocket.test");
 
   /**
    * Setup an MServerSocket for testing.
@@ -61,9 +56,6 @@ public class MSocketBehindNATTests
   @Before
   public void setUp() throws Exception
   {
-    BasicConfigurator.configure();
-    log.getRootLogger().setLevel(Level.INFO);
-    log.addAppender(new ConsoleAppender());
     //LinkedList<InetSocketAddress> proxyList = new LinkedList<InetSocketAddress>();
     //proxyList.add(new InetSocketAddress("ananas.cs.umass.edu", 11989));
     //mss = new MServerSocket(SOCKET_HRN);
@@ -130,7 +122,7 @@ public class MSocketBehindNATTests
   {
     sleepFor(ms);
     int value = new Random().nextInt(255);
-    //log.info("MSocket writing " + value);
+    //MSocketLogger.getLogger().fine("MSocket writing " + value);
     System.out.println("MSocket writing " + value);
     os.write(value);
     os.flush();
@@ -165,22 +157,22 @@ public class MSocketBehindNATTests
         while (!done)
         {
           int r = is.read(buf);
-          log.info("MServerSocket read " + r + " bytes");
+          System.out.println("MServerSocket read " + r + " bytes");
           if (r == -1)
             done = true;
           else
           {
-            log.info("MServerSocket writing " + r);
+        	  System.out.println("MServerSocket writing " + r);
             os.write(buf, 0, r);
             os.flush();
           }
         }
-        log.info("Closing MServerSocket");
+        System.out.println("Closing MServerSocket");
         ms.close();
       }
       catch (IOException e)
       {
-        log.error("MServerSocket side error", e);
+    	System.out.println("MServerSocket side error"+ e.getMessage());
         fail("MServerSocket side error");
       }
     }

@@ -23,11 +23,10 @@
 package edu.umass.cs.msocket;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class implements the threads to do background writes for the default
@@ -66,19 +65,18 @@ public class BackgroundWritingThread implements Runnable
 
   private boolean            runningStatus               = true;
 
-  private static Logger      log                         = Logger.getLogger(BackgroundWritingThread.class.getName());
-
   public BackgroundWritingThread(ConnectionInfo cinfo)
   {
     this.cinfo = cinfo;
-    log.trace(cinfo.getServerOrClient() + "getDataBaseSeq num " + cinfo.getDataBaseSeq());
+    MSocketLogger.getLogger().fine
+    	(cinfo.getServerOrClient() + "getDataBaseSeq num " + cinfo.getDataBaseSeq());
     finishedPaths = new Vector<SocketInfo>();
     unfinishedPaths = new Vector<SocketInfo>();
   }
 
   public void run()
   {
-    log.trace("BackgroundWritingThread started");
+	  MSocketLogger.getLogger().fine("BackgroundWritingThread started");
     
         //Vector<SocketInfo> socketList = new Vector<SocketInfo>();
         //socketList.addAll(cinfo.getAllSocketInfo());
@@ -106,7 +104,7 @@ public class BackgroundWritingThread implements Runnable
 
         if (byteObj != null)
         {
-          log.trace("sending seq num " + byteObj.getStartSeqNum() + "getDataBaseSeq num " + cinfo.getDataBaseSeq()
+        	MSocketLogger.getLogger().fine("sending seq num " + byteObj.getStartSeqNum() + "getDataBaseSeq num " + cinfo.getDataBaseSeq()
               + " currRetransmitStartSeqNum " + currRetransmitStartSeqNum);
           
           boolean operStatus = true;
@@ -116,7 +114,7 @@ public class BackgroundWritingThread implements Runnable
               cinfo.blockOnOutputStreamSelector();
               
               cinfo.setState(ConnectionInfo.READ_WRITE, true);
-              log.trace("READ_WRITE lock acquired in the Background thread");
+              MSocketLogger.getLogger().fine("READ_WRITE lock acquired in the Background thread");
         	  
         	  continousAckReads();
 	          
@@ -126,7 +124,8 @@ public class BackgroundWritingThread implements Runnable
 	          // acknowlded
 	          // bytes
 	          {
-	            log.trace("sending seq num " + byteObj.getStartSeqNum() + "getDataBaseSeq num " + cinfo.getDataBaseSeq());
+	        	MSocketLogger.getLogger().fine
+	        			("sending seq num " + byteObj.getStartSeqNum() + "getDataBaseSeq num " + cinfo.getDataBaseSeq());
 	
 	            byte[] retransmitData = cinfo.getDataFromOutBuffer(byteObj.getStartSeqNum(), byteObj.getStartSeqNum()
 	                + byteObj.getLength());
@@ -152,7 +151,7 @@ public class BackgroundWritingThread implements Runnable
       // work done, set it to inactive
       cinfo.setBackgroundThreadActive(false);
       
-      log.debug("BackgroudMultiPathWritingThread stopped totalRetransmit " + totalRetransmitBytes);
+      MSocketLogger.getLogger().fine("BackgroudMultiPathWritingThread stopped totalRetransmit " + totalRetransmitBytes);
   }
 
   /*public void stopRetransmissionThread()
@@ -180,7 +179,7 @@ public class BackgroundWritingThread implements Runnable
 
       if (cinfo.getServerOrClient() == MSocketConstants.CLIENT)
       {
-        log.debug(/*"currpos " + currpos +*/ "length " + length + " tempDataSendSeqNum " + tempDataSendSeqNum
+    	  MSocketLogger.getLogger().fine(/*"currpos " + currpos +*/ "length " + length + " tempDataSendSeqNum " + tempDataSendSeqNum
             + "cinfo.getDataBaseSeq() " + cinfo.getDataBaseSeq() + " resending on " + Obj.getSocketIdentifer());
       }
 
@@ -226,7 +225,7 @@ public class BackgroundWritingThread implements Runnable
         }
         catch (IOException ex)
         {
-          log.trace("Write exception caused");
+          MSocketLogger.getLogger().fine("Write exception caused");
           Obj.setStatus(false);
           Obj.setneedToReqeustACK(true);
           Obj.releaseLock();
@@ -250,7 +249,7 @@ public class BackgroundWritingThread implements Runnable
    */
   private void handleMigrationInMultiPath(SocketInfo Obj) throws IOException
   {
-    log.trace("handleMigrationInMultiPath called");
+	MSocketLogger.getLogger().fine("handleMigrationInMultiPath called");
     // if queue size is > 0 then it means that there is a non-blocking
     // write pending and it should be sent first, instead of migration data
     if ((Integer) Obj.queueOperations(SocketInfo.QUEUE_SIZE, null) > 0)
@@ -259,11 +258,11 @@ public class BackgroundWritingThread implements Runnable
       return;
     }
 
-    log.trace("HandleMigrationInMultiPath SocektId " + Obj.getSocketIdentifer());
+    MSocketLogger.getLogger().fine("HandleMigrationInMultiPath SocektId " + Obj.getSocketIdentifer());
 
     cinfo.multiSocketRead();
     int dataAck = (int) cinfo.getDataBaseSeq();
-    log.trace("DataAck from other side " + dataAck);
+    MSocketLogger.getLogger().fine("DataAck from other side " + dataAck);
     Obj.byteInfoVectorOperations(SocketInfo.QUEUE_REMOVE, dataAck, -1);
 
     @SuppressWarnings("unchecked")
@@ -310,7 +309,7 @@ public class BackgroundWritingThread implements Runnable
     }
 
     Obj.setneedToReqeustACK(false);
-    log.trace("HandleMigrationInMultiPath Complete");
+    MSocketLogger.getLogger().fine("HandleMigrationInMultiPath Complete");
   }
 
   /**
@@ -429,7 +428,7 @@ public class BackgroundWritingThread implements Runnable
         // finished path
         if (fastSocketID == Obj.getSocketIdentifer())
         {
-          log.trace("socket ID " + Obj.getSocketIdentifer() + " is found to be faster path " + "Remote Address "
+          MSocketLogger.getLogger().fine("socket ID " + Obj.getSocketIdentifer() + " is found to be faster path " + "Remote Address "
               + Obj.getSocket().getInetAddress() + " sent bytes " + Obj.getSentBytes());
           finishedPaths.add(Obj);
 
@@ -437,7 +436,7 @@ public class BackgroundWritingThread implements Runnable
         else
         {
           unfinishedPaths.add(Obj);
-          // log.trace("unifinished paths size " + unfinishedPaths.size());
+          // MSocketLogger.getLogger().fine("unifinished paths size " + unfinishedPaths.size());
         }
       }
     }
@@ -447,7 +446,7 @@ public class BackgroundWritingThread implements Runnable
   {
     while (cinfo.getDataBaseSeq() < cinfo.getDataSendSeq())
     {
-      log.trace("waitForOnePathToFinish");
+      MSocketLogger.getLogger().fine("waitForOnePathToFinish");
       Vector<SocketInfo> socketList = new Vector<SocketInfo>();
       socketList.addAll(cinfo.getAllSocketInfo()); // if there is just one path,
                                                    // no need for this thread
@@ -463,7 +462,7 @@ public class BackgroundWritingThread implements Runnable
           // consider it as //finished path
           if (Obj.getOutStandingBytes() <= (5 * MWrappedOutputStream.WRITE_CHUNK_SIZE))
           {
-            log.debug("socket ID " + Obj.getSocketIdentifer() + " is found to have zero outstanding bytes "
+        	MSocketLogger.getLogger().fine("socket ID " + Obj.getSocketIdentifer() + " is found to have zero outstanding bytes "
                 + "Remote Address " + Obj.getSocket().getInetAddress() + " sent bytes " + Obj.getSentBytes()
                 + " Obj.getOutStandingBytes() " + Obj.getOutStandingBytes());
             finishedPaths.add(Obj);
@@ -471,8 +470,8 @@ public class BackgroundWritingThread implements Runnable
           else
           {
             unfinishedPaths.add(Obj);
-            log.trace("unifinished paths size " + unfinishedPaths.size());
-            log.debug("socket ID " + Obj.getSocketIdentifer() + " waitForOnePathToFinish " + "Remote Address "
+            MSocketLogger.getLogger().fine("unifinished paths size " + unfinishedPaths.size());
+            MSocketLogger.getLogger().fine("socket ID " + Obj.getSocketIdentifer() + " waitForOnePathToFinish " + "Remote Address "
                 + Obj.getSocket().getInetAddress() + " sent bytes " + Obj.getSentBytes()
                 + " Obj.getOutStandingBytes() " + Obj.getOutStandingBytes());
           }
@@ -504,7 +503,7 @@ public class BackgroundWritingThread implements Runnable
           unfinishedPaths.clear();
           finishedPaths.add(minOutBytesPath);
 
-          log.debug("socket ID " + minOutBytesPath.getSocketIdentifer() + " added to finished path " + " sent bytes "
+          MSocketLogger.getLogger().fine("socket ID " + minOutBytesPath.getSocketIdentifer() + " added to finished path " + " sent bytes "
               + minOutBytesPath.getSentBytes() + " Obj.getOutStandingBytes() " + minOutBytesPath.getOutStandingBytes());
 
           // rest others go into unfinished
@@ -512,7 +511,7 @@ public class BackgroundWritingThread implements Runnable
           {
             if (minOutBytesPath.getSocketIdentifer() != socketList.get(i).getSocketIdentifer())
             {
-              log.debug("socket ID " + socketList.get(i).getSocketIdentifer() + " added to unfinished path "
+              MSocketLogger.getLogger().fine("socket ID " + socketList.get(i).getSocketIdentifer() + " added to unfinished path "
                   + " sent bytes " + socketList.get(i).getSentBytes() + " Obj.getOutStandingBytes() "
                   + socketList.get(i).getOutStandingBytes());
               unfinishedPaths.add(socketList.get(i));
@@ -554,7 +553,7 @@ public class BackgroundWritingThread implements Runnable
     catch (IOException e)
     {
       // e.printStackTrace();
-      log.trace(e);
+    	MSocketLogger.getLogger().fine(e.getMessage());
     }
 
     long newDataBaseSeqNum = cinfo.getDataBaseSeq();

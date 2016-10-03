@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.umass.cs.msocket.common.policies.ProxySelectionPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.ProxySelectionPolicy;
 
 /**
  * This class defines a LocateServiceThread

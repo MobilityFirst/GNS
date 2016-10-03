@@ -20,57 +20,40 @@
  *
  *******************************************************************************/
 
-package edu.umass.cs.msocket.common.policies;
+package edu.umass.cs.msocket.common.proxy.policies;
 
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
 
-import edu.umass.cs.msocket.MServerSocket;
 import edu.umass.cs.msocket.proxy.location.ProxyStatusInfo;
 
 /**
- * This class defines a Fixed Proxy Policy where the user can specify himself a
- * list of IP addresses of well-known proxies to use. The list will be provided
- * as is to {@link MServerSocket} in the same order as the one given in the
- * constructor.
+ * This class defines a policy that does not use a Proxy.
  * 
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class FixedProxyPolicy extends ProxySelectionPolicy
+public class NoProxyPolicy extends ProxySelectionPolicy
 {
-  private static final long serialVersionUID = -8702157104039467313L;
+  private static final long serialVersionUID = 6336245740937888229L;
 
-  /**
-   * Creates a new <code>FixedProxyPolicy</code> object
-   * 
-   * @param proxies List of InetSocketAddress of known proxies
-   */
-  public FixedProxyPolicy(List<InetSocketAddress> proxies)
-  {
-    proxyAddresses = proxies;
-  }
-
-  /**
-   * @see edu.umass.cs.msocket.common.policies.ProxySelectionPolicy#getNewProxy()
-   */
   @Override
   public List<InetSocketAddress> getNewProxy()
   {
-    return proxyAddresses;
+    return null;
   }
 
   @Override
   public boolean hasAvailableProxies()
   {
-    return proxyAddresses != null;
+    return false;
   }
 
   @Override
   public List<String> getProxyIPs(List<ProxyStatusInfo> proxies, Socket acceptedSocket)
   {
-    throw new IllegalAccessError("Fixed proxy policies should not be sent to the location service");
+    throw new IllegalAccessError("No proxy policies should not be sent to the location service");
   }
 
 }

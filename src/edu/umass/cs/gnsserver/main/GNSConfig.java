@@ -167,7 +167,19 @@ public class GNSConfig {
     /**
      * For the DNS service set to true if you want the DNS server to forward requests to DNS and GNS servers.
      */
-    DNS_ONLY(false);
+    DNS_ONLY(false),
+	  
+	/**
+	 * To enable forwarding of update to CNS this option is set to true.
+	 */
+	ENABLE_CNS(false),
+	
+	/**
+	 * If ENABLE_CNS is set to true then CNS_NODE_ADDRESS option 
+	 * specifies the nodeIP and nodePort of one CNS node, which the ContextServiceClient 
+	 * uses to connect to CNS.
+	 */
+	CNS_NODE_ADDRESS("nodeIP:nodePort");
 
     final Object defaultValue;
 
@@ -211,6 +223,20 @@ public class GNSConfig {
     public static String getApplicationName() {
       return Config.getGlobalString(GNSC.APPLICATION_NAME);
     }
+    
+    /**
+     * returns true if CNS is enabled.
+     * @return
+     */
+    public static boolean isCNSEnabled()
+    {
+    	return Config.getGlobalBoolean(GNSC.ENABLE_CNS);
+    }
+    
+    public static String getCNSNodeAddress()
+    {
+    	return Config.getGlobalString(GNSC.CNS_NODE_ADDRESS);
+    }
 
     private static Class<?> noSqlRecordsclass = getNoSqlRecordsClass();
 
@@ -251,6 +277,8 @@ public class GNSConfig {
     public String getDefaultConfigFile() {
       return "gns.server.properties";
     }
+    
+    
   }
 
   /* FIXME: arun: some parameters below are not relevant any more and need to

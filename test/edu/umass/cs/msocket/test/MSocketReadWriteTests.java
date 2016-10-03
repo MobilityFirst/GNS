@@ -27,21 +27,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.umass.cs.msocket.MServerSocket;
 import edu.umass.cs.msocket.MSocket;
-import edu.umass.cs.msocket.common.policies.NoProxyPolicy;
 
 /**
  * This class defines a MSocketReadWriteTests. We assume that the GNS is
@@ -56,7 +50,6 @@ public class MSocketReadWriteTests
   private static final int    LOCAL_PORT = 5454;
   private static final String LOCALHOST  = "127.0.0.1";
   private MServerSocket       mss;
-  private static Logger       log        = Logger.getLogger("MSocket.test");
 
   /**
    * Setup an MServerSocket for testing.
@@ -66,9 +59,6 @@ public class MSocketReadWriteTests
   @Before
   public void setUp() throws Exception
   {
-    BasicConfigurator.configure();
-    log.getRootLogger().setLevel(Level.INFO);
-    log.addAppender(new ConsoleAppender());
     //mss = new MServerSocket(SOCKET_HRN, new NoProxyPolicy(),
     //    new InetSocketAddress(LOCALHOST, LOCAL_PORT), 0);
     
@@ -129,7 +119,7 @@ public class MSocketReadWriteTests
       for (int i = 1; i <= 10; i++)
       {
     	int numRead = 0;
-        log.info("Sending round #" + i);
+    	System.out.println("Sending round #" + i);
         rand.nextBytes(send);
         os.write(send);
         os.flush();
@@ -143,7 +133,7 @@ public class MSocketReadWriteTests
     }
     catch (Exception e)
     {
-      log.error("readWrite100MB test failed", e);
+    	System.out.println("readWrite100MB test failed"+ e.getMessage());
       fail("readWrite100MB test failed");
     }
   }
@@ -164,12 +154,12 @@ public class MSocketReadWriteTests
   {
     sleepFor(ms);
     int value = new Random().nextInt(255);
-    log.info("MSocket writing " + value);
+    System.out.println("MSocket writing " + value);
     os.write(value);
     os.flush();
     sleepFor(ms);
     int read = is.read();
-    log.info("MSocket read " + read);
+    System.out.println("MSocket read " + read);
     if (read != value)
       fail("Wrong value returned by echo server. Expected " + value + " but got " + read);
   }
@@ -198,22 +188,22 @@ public class MSocketReadWriteTests
         while (!done)
         {
           int r = is.read(buf);
-          log.info("MServerSocket read " + r + " bytes");
+          System.out.println("MServerSocket read " + r + " bytes");
           if (r == -1)
             done = true;
           else
           {
-            log.info("MServerSocket writing " + r);
+        	  System.out.println("MServerSocket writing " + r);
             os.write(buf, 0, r);
             os.flush();
           }
         }
-        log.info("Closing MServerSocket");
+        System.out.println("Closing MServerSocket");
         ms.close();
       }
       catch (IOException e)
       {
-        log.error("MServerSocket side error", e);
+    	  System.out.println("MServerSocket side error"+ e.getMessage());
         fail("MServerSocket side error");
       }
     }

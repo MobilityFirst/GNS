@@ -43,7 +43,7 @@ import org.json.JSONObject;
  * @author arun, westy
  */
 public class ClientExample {
-
+	
 	// replace with your account alias
 	private static String ACCOUNT_ALIAS = "admin@gns.name";
 	private static GNSClient client;
