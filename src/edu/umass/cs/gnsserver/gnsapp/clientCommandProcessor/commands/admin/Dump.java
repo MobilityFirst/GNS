@@ -52,6 +52,12 @@ public class Dump extends BasicCommand {
   public CommandType getCommandType() {
     return CommandType.Dump;
   }
+  
+  @Override
+  public String[] getCommandParameters(){
+	  String[] params = {NAME};
+	  return params;
+  }
 
   
 
