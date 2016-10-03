@@ -43,7 +43,7 @@ def startCSNodes():
     configDirPath = dirPrefix+'/'+configName+'/contextServiceConf'
     curr = 0
     while(curr < len(lines)):
-        cmd = cmdPrefix+' '+str(curr)+' -csConfDir '+configDirPath +' &> csLog.log & '
+        cmd = cmdPrefix+' '+str(curr)+' -csConfDir '+configDirPath +' 2> csLog.log & '
         print "starting context service "+cmd
         os.system(cmd)
         curr = curr + 1
