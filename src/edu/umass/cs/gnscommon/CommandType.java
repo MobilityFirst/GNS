@@ -20,7 +20,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,9 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.junit.Test;
 
 /**
@@ -43,6 +39,9 @@ import org.junit.Test;
  * edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandDefs
  */
 public enum CommandType {
+//
+  // Data Commands
+  //
 //
   // Data Commands
   //
@@ -718,12 +717,19 @@ public enum CommandType {
           "Handles the completion of the verification process for a guid by supplying the correct code.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.CODE}),
+    ResendAuthenticationEmail(452, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResendAuthenticationEmail.class,
+          GNSCommand.ResultType.NULL, true, false,
+          "Resends the verification code email to the user. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.",
+          new String[]{GNSCommandProtocol.GUID,
+            GNSCommandProtocol.SIGNATURE,
+            GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
   ResetKey(460, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResetKey.class,
           GNSCommand.ResultType.NULL, true, false,
           "Resets the publickey for the account guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.PUBLIC_KEY,
             GNSCommandProtocol.PASSWORD}),
+
   //
   // ACL Commands
   //
