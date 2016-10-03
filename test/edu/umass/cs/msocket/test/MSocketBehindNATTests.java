@@ -45,7 +45,7 @@ import edu.umass.cs.msocket.MSocket;
  */
 public class MSocketBehindNATTests
 {
-  private static final String SOCKET_HRN = "msocket.junit.behindNAT1";
+  private static final String SOCKET_HRN = "msocket.junit.behindNAT3";
   private MServerSocket       mss;
 
   /**

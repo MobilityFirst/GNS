@@ -396,7 +396,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     this.activeCodeHandler = AppOptionsOld.enableActiveCode ? new ActiveCodeHandler() : null;
 
     // context service init
-    if (GNSConfig.GNSC.isCNSEnabled()) {
+    if (GNSConfig.GNSC.isCNSEnabled())
+    {
       String cnsNodeAddress = GNSConfig.GNSC.getCNSNodeAddress();
       // if CNS is enabled then this address is must
       assert(cnsNodeAddress != null);
@@ -411,7 +412,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       contextServiceGNSClient = new ContextServiceGNSClient(host, port);
       GNSConfig.getLogger().fine("ContextServiceGNSClient initialization completed");
     }
-
+    
+    
     constructed = true;
   }
 
