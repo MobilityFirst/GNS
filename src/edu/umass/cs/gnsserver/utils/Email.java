@@ -123,8 +123,8 @@ public class Email {
       message.setText(text);
       SMTPTransport t = (SMTPTransport) session.getTransport("smtp");
       try {
-        t.connect(SMTP_HOST, Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL),
-                Config.getGlobalString(GNSConfig.GNSC.SUPPORT_PASSWORD));
+        t.connect(SMTP_HOST, Config.getGlobalString(GNSConfig.GNSC.ADMIN_EMAIL),
+                Config.getGlobalString(GNSConfig.GNSC.ADMIN_PASSWORD));
         t.sendMessage(message, message.getAllRecipients());
         getLogger().log(Level.FINE, "Email response: {0}", t.getLastServerResponse());
       } finally {
@@ -176,7 +176,8 @@ public class Email {
               new javax.mail.Authenticator() {
         @Override
         protected PasswordAuthentication getPasswordAuthentication() {
-          return new PasswordAuthentication(Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL), Config.getGlobalString(GNSConfig.GNSC.SUPPORT_PASSWORD));
+          return new PasswordAuthentication(Config.getGlobalString(GNSConfig.GNSC.ADMIN_EMAIL), 
+                  Config.getGlobalString(GNSConfig.GNSC.ADMIN_PASSWORD));
         }
       });
 
@@ -224,8 +225,8 @@ public class Email {
    */
   // TLS doesn't work with Dreamhost
   public static boolean emailTLS(String subject, String recipient, String text, boolean suppressWarning) {
-    final String username = Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL);
-    final String contactString = Config.getGlobalString(GNSConfig.GNSC.SUPPORT_PASSWORD);
+    final String username = Config.getGlobalString(GNSConfig.GNSC.ADMIN_EMAIL);
+    final String contactString = Config.getGlobalString(GNSConfig.GNSC.ADMIN_PASSWORD);
 
     try {
       Properties props = new Properties();

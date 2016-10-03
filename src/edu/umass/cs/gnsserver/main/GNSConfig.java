@@ -43,6 +43,10 @@ public class GNSConfig {
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server.
+     *//**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
      */
     ENABLE_SECRET_KEY(true),
     /**
@@ -153,10 +157,15 @@ public class GNSConfig {
      */
     SUPPORT_EMAIL("admin@gns.name"),
     /**
+     * The name of the email that is used to log into the email server.
+     * Should be a valid email address.
+     */
+    ADMIN_EMAIL("admin@gns.name"),
+    /**
      * The name of the email reply to that is used when sending a verification email.
      * Should be a valid email address.
      */
-    SUPPORT_PASSWORD("deadDOG8"),
+    ADMIN_PASSWORD("deadDOG8"),
     /**
      * Does the verification email include text about validating using the CLI.
      */
