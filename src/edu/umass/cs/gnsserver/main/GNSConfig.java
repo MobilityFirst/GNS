@@ -112,7 +112,7 @@ public class GNSConfig {
      */
     ADMIN_FILE("conf/admin.file"),
     /**
-     * Commands older than this value (send by a client more than this 
+     * Commands older than this value (send by a client more than this
      * interval ago) will be rejected by the server.
      */
     STALE_COMMAND_INTERVAL_IN_MINUTES(30),
@@ -128,7 +128,7 @@ public class GNSConfig {
      * If enabled, email verfication will be used when account guids are created.
      */
     ENABLE_EMAIL_VERIFICATION(true),
-     /**
+    /**
      * The amount of time an email verification code is valid.
      */
     EMAIL_VERIFICATION_TIMEOUT_IN_HOURS(24),
@@ -148,6 +148,20 @@ public class GNSConfig {
      */
     APPLICATION_NAME("an application"),
     /**
+     * The name of the email reply to that is used when sending a verification email.
+     * Should be a valid email address.
+     */
+    SUPPORT_EMAIL("admin@gns.name"),
+    /**
+     * The name of the email reply to that is used when sending a verification email.
+     * Should be a valid email address.
+     */
+    SUPPORT_PASSWORD("deadDOG8"),
+    /**
+     * Does the verification email include text about validating using the CLI.
+     */
+    INCLUDE_CLI_NOTIFICATION(false),
+    /**
      * Set to "all" or a node id if you want to start an instance of the LocalNameServer when the app starts.
      */
     LOCAL_NAME_SERVER_NODES("none"),
@@ -156,7 +170,7 @@ public class GNSConfig {
      */
     DNS_SERVER_NODES("none"),
     /**
-     * For the DNS service set to true if you want the DNS server to not lookup 
+     * For the DNS service set to true if you want the DNS server to not lookup
      * records using DNS (will only lookup records in the GNS).
      */
     DNS_GNS_ONLY(false),
@@ -202,14 +216,6 @@ public class GNSConfig {
      */
     public static boolean isDontTryLocalEmail() {
       return Config.getGlobalBoolean(GNSC.DONT_TRY_LOCAL_EMAIL);
-    }
-
-    /**
-     *
-     * @return the application name (currently used by the verification mailer)
-     */
-    public static String getApplicationName() {
-      return Config.getGlobalString(GNSC.APPLICATION_NAME);
     }
 
     private static Class<?> noSqlRecordsclass = getNoSqlRecordsClass();
@@ -366,11 +372,11 @@ public class GNSConfig {
 
   private final static Logger LOG = Logger.getLogger(GNSConfig.class
           .getName());
-  
-	/**
-	 * The default reconfigurator server port number.
-	 */
-	public static final int DEFAULT_RECONFIGURATOR_PORT = 2178;
+
+  /**
+   * The default reconfigurator server port number.
+   */
+  public static final int DEFAULT_RECONFIGURATOR_PORT = 2178;
 
   /**
    * Returns the master GNS logger.

@@ -452,24 +452,12 @@ public class AccountAccess {
           + "http://%3$s/"
           + GNSConfig.GNS_URL_PATH
           + "/VerifyAccount?guid=%4$s&code=%5$s\n\n"
-          // TODO: add this back in with a conditional config parameter
-          //+ "For GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
-          //+ VERIFY_COMMAND
-          //+ " %2$s %5$s\n\n"
           + "If you did not create this account you can just ignore this email and nothing bad will happen.\n\n"
           + "Thank you,\nThe CASA Team.";
+  private static final String EMAIL_CLI_CONDITIONAL
+          = "\n\nFor GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
+          + VERIFY_COMMAND + " %1$s %2$s\n\n";
 
-//  private static final String EMAIL_BODY_OLD = "This is an automated message informing you "
-//          + "that %s has created an account for %s on the GNS server.\n\n"
-//          + "This is your verification code: %s\n\n"
-//          + "To verify this account you can click on the link below or enter this query into a browser:\n\n"
-//          + "http://%s/"
-//          + GNSConfig.GNS_URL_PATH
-//          + "/VerifyAccount?guid=%s&code=%s\n\n"
-//          + "For GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
-//          + VERIFY_COMMAND
-//          + " %s %s\n\n"
-//          + "If you did not create this account please ignore this message.";
   private static final String SUCCESS_NOTICE = "A confirmation email has been sent to %s. "
           + "Please follow the instructions in that email to verify your account.\n";
   private static final String PROBLEM_NOTICE = "There is some system problem in sending "
@@ -551,24 +539,26 @@ public class AccountAccess {
     //if (GNSConfig.enableEmailAccountVerification) {
     // Send out the confirmation email with a verification code
     String emailBody = String.format(EMAIL_BODY,
-            GNSConfig.GNSC.getApplicationName(), //1$
+            Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), //1$
             name, //2$
             hostPortString, //3$
             guid, //4$
             verifyCode //5$
     );
-    boolean emailOK = Email.email("GNS Account Verification", name,
-            emailBody);
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.INCLUDE_CLI_NOTIFICATION)) {
+      emailBody += String.format(EMAIL_CLI_CONDITIONAL, name, verifyCode);
+    }
+    boolean emailOK = Email.email("GNS Account Verification", name, emailBody);
     // do the admin email in another thread so it's faster and
     // because we don't care if it completes
     (new Thread() {
       @Override
       public void run() {
-        boolean adminEmailOK = Email.email(
-                "GNS Account Notification",
-                Email.ACCOUNT_CONTACT_EMAIL, String.format(
+        boolean adminEmailOK = Email.email("GNS Account Notification",
+                Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL),
+                String.format(
                         ADMIN_NOTICE,
-                        GNSConfig.GNSC.getApplicationName(),
+                        Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME),
                         name, hostPortString,
                         guid));
       }
@@ -642,7 +632,7 @@ public class AccountAccess {
               + "Cannot retrieve account code time");
     }
     if ((new Date()).getTime() - accountInfo.getCodeTime().getTime()
-            > Config.getGlobalInt(GNSConfig.GNSC.VERIFICATION_SECRET.EMAIL_VERIFICATION_TIMEOUT_IN_HOURS) * 60 * 60 * 1000) {
+            > Config.getGlobalInt(GNSConfig.GNSC.EMAIL_VERIFICATION_TIMEOUT_IN_HOURS) * 60 * 60 * 1000) {
       return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR,
               GNSCommandProtocol.BAD_RESPONSE + " "
               + GNSCommandProtocol.VERIFICATION_ERROR + " "
@@ -1599,7 +1589,7 @@ public class AccountAccess {
     String hostPortString = "128.119.44.108:8080";
     String guid = "0FC2D9931712BCF6B7FEC5E6B09CF03483068DE";
     String emailBody = String.format(EMAIL_BODY,
-            GNSConfig.GNSC.getApplicationName(), //1$
+            Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), //1$
             name, //2$
             hostPortString, //3$
             guid, //4$

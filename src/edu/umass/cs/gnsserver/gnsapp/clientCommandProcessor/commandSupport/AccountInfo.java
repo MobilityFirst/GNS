@@ -283,6 +283,7 @@ public class AccountInfo {
   }
   
   // JSON Conversion
+  // Todo: this should be using string in GNSCommandProtocol
   private static final String USERNAME = "username";
   private static final String GUID = "guid";
   private static final String TYPE = "type";
