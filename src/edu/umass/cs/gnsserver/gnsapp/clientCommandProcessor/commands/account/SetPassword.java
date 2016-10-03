@@ -60,12 +60,6 @@ public class SetPassword extends BasicCommand {
     return CommandType.SetPassword;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return SET_PASSWORD;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {

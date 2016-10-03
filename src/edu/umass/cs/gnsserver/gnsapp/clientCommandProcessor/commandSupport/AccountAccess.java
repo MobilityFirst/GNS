@@ -19,8 +19,20 @@ import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ALIAS;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.DUPLICATE_GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.DUPLICATE_NAME;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.EVERYONE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.JSON_PARSE_ERROR;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OK_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.UPDATE_ERROR;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFICATION_ERROR;
 import edu.umass.cs.gnscommon.utils.Base64;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.server.ServerRuntimeException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
@@ -36,6 +48,7 @@ import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -492,38 +505,12 @@ public class AccountAccess {
     String verifyCode = createVerificationCode(name);
     if ((response = addAccount(name, guid, publicKey, password,
             GNSConfig.GNSC.isEmailAuthenticationEnabled(),
-            //GNSConfig.enableEmailAccountVerification, 
-            verifyCode, handler))
-            .getExceptionOrErrorCode().isOKResult()) {
+            verifyCode, handler)).getExceptionOrErrorCode().isOKResult()) {
+
       // Account creation was succesful so maybe send email verification.
       if (GNSConfig.GNSC.isEmailAuthenticationEnabled()) {
-        //if (GNSConfig.enableEmailAccountVerification) {
-        // Send out the confirmation email with a verification code
-        String emailBody = String.format(EMAIL_BODY,
-                GNSConfig.GNSC.getApplicationName(), //1$
-                name, //2$
-                hostPortString, //3$
-                guid, //4$
-                verifyCode //5$
-        );
-        boolean emailOK = Email.email("GNS Account Verification", name,
-                emailBody);
-        // do the admin email in another thread so it's faster and
-        // because we don't care if it completes
-        (new Thread() {
-          @Override
-          public void run() {
-            boolean adminEmailOK = Email.email(
-                    "GNS Account Notification",
-                    Email.ACCOUNT_CONTACT_EMAIL, String.format(
-                            ADMIN_NOTICE,
-                            GNSConfig.GNSC.getApplicationName(),
-                            name, hostPortString,
-                            guid));
-          }
-        }).start();
-
-        if (emailOK) {
+        boolean emailSent = sendEmailAuthentication(name, guid, hostPortString, verifyCode);
+        if (emailSent) {
           return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
         } else {
           // if we can't send the confirmation back out of the account creation
@@ -560,6 +547,63 @@ public class AccountAccess {
             VERIFICATION_CODE_LENGTH));
   }
 
+  private static boolean sendEmailAuthentication(String name, String guid, String hostPortString, String verifyCode) {
+    //if (GNSConfig.enableEmailAccountVerification) {
+    // Send out the confirmation email with a verification code
+    String emailBody = String.format(EMAIL_BODY,
+            GNSConfig.GNSC.getApplicationName(), //1$
+            name, //2$
+            hostPortString, //3$
+            guid, //4$
+            verifyCode //5$
+    );
+    boolean emailOK = Email.email("GNS Account Verification", name,
+            emailBody);
+    // do the admin email in another thread so it's faster and
+    // because we don't care if it completes
+    (new Thread() {
+      @Override
+      public void run() {
+        boolean adminEmailOK = Email.email(
+                "GNS Account Notification",
+                Email.ACCOUNT_CONTACT_EMAIL, String.format(
+                        ADMIN_NOTICE,
+                        GNSConfig.GNSC.getApplicationName(),
+                        name, hostPortString,
+                        guid));
+      }
+    }).start();
+    return emailOK;
+  }
+
+  public static CommandResponse resendAuthenticationEmail(AccountInfo accountInfo,
+          String guid, String signature, String message,
+          ClientRequestHandlerInterface handler) throws UnknownHostException {
+    if (GNSConfig.GNSC.isEmailAuthenticationEnabled()) {
+      String name = accountInfo.getName();
+      String code = createVerificationCode(name);
+      boolean emailSent = sendEmailAuthentication(name, guid, handler.getHTTPServerHostPortString(), code);
+      if (emailSent) {
+        accountInfo.setVerificationCode(code);
+        accountInfo.noteUpdate();
+        if (updateAccountInfoNoAuthentication(accountInfo, handler, false)) {
+          return new CommandResponse(GNSResponseCode.NO_ERROR,
+                  GNSCommandProtocol.OK_RESPONSE);
+        } else {
+          return new CommandResponse(GNSResponseCode.UPDATE_ERROR,
+                  GNSCommandProtocol.BAD_RESPONSE + " "
+                  + GNSCommandProtocol.UPDATE_ERROR + " "
+                  + "Unable to update account info");
+        }
+      } else {
+        return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE
+                + " " + VERIFICATION_ERROR + " " + "Unable to send verification email");
+      }
+    }
+    return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE
+            + " " + VERIFICATION_ERROR + " " + "Email verification is disabled.");
+  }
+
   /**
    * Performs the account verification for a given guid using the verification
    * code.
@@ -591,7 +635,13 @@ public class AccountAccess {
               + GNSCommandProtocol.VERIFICATION_ERROR + " "
               + "Bad verification code");
     }
-    if ((new Date()).getTime() - accountInfo.getCreated().getTime()
+    if (accountInfo.getCodeTime() == null) {
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR,
+              GNSCommandProtocol.BAD_RESPONSE + " "
+              + GNSCommandProtocol.VERIFICATION_ERROR + " "
+              + "Cannot retrieve account code time");
+    }
+    if ((new Date()).getTime() - accountInfo.getCodeTime().getTime()
             > Config.getGlobalInt(GNSConfig.GNSC.VERIFICATION_SECRET.EMAIL_VERIFICATION_TIMEOUT_IN_HOURS) * 60 * 60 * 1000) {
       return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR,
               GNSCommandProtocol.BAD_RESPONSE + " "
@@ -1055,8 +1105,7 @@ public class AccountAccess {
               new HashSet<>(names), hrnMap, handler))
               .isExceptionOrError()) {
         // now we update the account info
-        if (updateAccountInfoNoAuthentication(accountInfo, handler,
-                true)) {
+        if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           handler.getRemoteQuery().createRecordBatch(guids,
                   guidInfoMap, handler);
           GNSConfig.getLogger().info(DelayProfiler.getStats());
@@ -1231,14 +1280,11 @@ public class AccountAccess {
           // update the account guid to know that we deleted the guid
           accountInfo.removeGuid(guidInfo.getGuid());
           accountInfo.noteUpdate();
-          if (updateAccountInfoNoAuthentication(accountInfo, handler,
-                  true)) {
-            return new CommandResponse(GNSResponseCode.NO_ERROR,
-                    OK_RESPONSE);
+          if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
+            return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
           } else {
             return new CommandResponse(
-                    GNSResponseCode.UPDATE_ERROR, BAD_RESPONSE
-                    + " " + UPDATE_ERROR);
+                    GNSResponseCode.UPDATE_ERROR, BAD_RESPONSE + " " + UPDATE_ERROR);
           }
         }
       } else {
@@ -1369,6 +1415,7 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return status result
    */

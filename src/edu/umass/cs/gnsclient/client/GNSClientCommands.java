@@ -746,6 +746,18 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
+   * 
+   * @param guid
+   * @return
+   * @throws Exception 
+   */
+  public String accountResendAuthenticationEmail(GuidEntry guid)
+          throws Exception {
+    return getResponse(CommandType.ResendAuthenticationEmail, guid, GUID,
+            guid.getGuid());
+  }
+
+  /**
    * Deletes the account given by name
    *
    * @param guid
@@ -1953,7 +1965,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Replaces the first element of field in target with the value 
+   * Replaces the first element of field in target with the value
    * (assuming that value is a array).
    *
    * @param target
@@ -2052,7 +2064,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Reads the first value (assuming that value is a array) for a key 
+   * Reads the first value (assuming that value is a array) for a key
    * from the GNS server for the given guid.
    * The guid of the user attempting access is also needed. Signs the query
    * using the private key of the reader guid
@@ -2107,7 +2119,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * Enables admin mode on the server.
-   * 
+   *
    * @param passkey
    * @return ???
    * @throws Exception

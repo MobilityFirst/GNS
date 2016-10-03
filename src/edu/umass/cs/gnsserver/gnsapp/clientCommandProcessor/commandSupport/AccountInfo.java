@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnsserver.utils.ResultValueString;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import org.json.JSONArray;
@@ -66,6 +65,10 @@ public class AccountInfo {
    * Used during the verification process.
    */
   private String verificationCode;
+  /**
+   * The time the verification code was created.
+   */
+  private Date codeTime;
 
   /**
    * Stores the guid and associated human readable name and
@@ -92,6 +95,7 @@ public class AccountInfo {
     //this.verified = true;
     this.verified = false;
     this.verificationCode = null;
+    this.codeTime = null;
   }
 
   /**
@@ -256,6 +260,7 @@ public class AccountInfo {
    */
   public void setVerificationCode(String verificationCode) {
     this.verificationCode = verificationCode;
+    this.codeTime = new Date();
   }
 
   /**
@@ -266,18 +271,17 @@ public class AccountInfo {
   public String getVerificationCode() {
     return verificationCode;
   }
-
+  
   /**
-   * Creates an AccountInfo instance from a ResultValueString which is the format
-   * used to store the object in the database.
-   *
-   * @param queryResult
-   * @throws JSONException
-   * @throws ParseException
+   * Returns the time the verification code was created.
+   * Can be null.
+   * 
+   * @return 
    */
-  public AccountInfo(ResultValueString queryResult) throws JSONException, ParseException {
-    this(new JSONObject(queryResult.get(0)));
+  public Date getCodeTime() {
+    return codeTime;
   }
+  
   // JSON Conversion
   private static final String USERNAME = "username";
   private static final String GUID = "guid";
@@ -289,6 +293,7 @@ public class AccountInfo {
   private static final String PASSWORD = "password";
   private static final String VERIFIED = "verified";
   private static final String CODE = "code";
+  private static final String CODE_TIME = "codeTime";
 
   /**
    * Creates an AccountInfo instance from a JSONObject.
@@ -308,6 +313,7 @@ public class AccountInfo {
     this.password = json.optString(PASSWORD, null);
     this.verified = json.getBoolean(VERIFIED);
     this.verificationCode = json.optString(CODE, null);
+    this.codeTime = json.has(CODE_TIME) ? Format.parseDateUTC(json.getString(CODE_TIME)) : null;
   }
 
   /**
@@ -350,6 +356,9 @@ public class AccountInfo {
     json.put(VERIFIED, verified);
     if (verificationCode != null) {
       json.put(CODE, verificationCode);
+    }
+    if (codeTime != null) {
+      json.put(CODE_TIME, Format.formatDateUTC(codeTime));
     }
     return json;
   }

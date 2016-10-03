@@ -72,7 +72,6 @@ import org.apache.commons.lang3.time.DateUtils;
  */
 public class FieldAccess {
 
-  private static final String EMPTY_JSON_OBJECT_STRING = new JSONObject().toString();
   private static final String EMPTY_JSON_ARRAY_STRING = new JSONArray().toString();
   private static final String EMPTY_STRING = "";
 
