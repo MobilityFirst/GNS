@@ -190,7 +190,18 @@ public class GNSConfig {
     /**
      * For the DNS service set to true if you want the DNS server to forward requests to DNS and GNS servers.
      */
-    DNS_ONLY(false);
+    DNS_ONLY(false),
+	  
+    /**
+     * If set to true enables update forwarding to CNS
+     */
+	ENABLE_CNS(false),
+	 
+	/**
+	 * Ip address:port of one node of CNS.
+	 * If ENABLE_CNS is set to true then this option should definitely be set.
+	 */
+	CNS_NODE_ADDRESS("node");
 
     final Object defaultValue;
 
@@ -226,6 +237,17 @@ public class GNSConfig {
     public static boolean isDontTryLocalEmail() {
       return Config.getGlobalBoolean(GNSC.DONT_TRY_LOCAL_EMAIL);
     }
+    
+    public static boolean isCSEnabled()
+    {
+    	return Config.getGlobalBoolean(GNSC.ENABLE_CNS);
+    }
+    
+    public static String getCNSNodeAddress()
+    {
+    	return Config.getGlobalString(GNSC.CNS_NODE_ADDRESS);
+    }
+    
 
     private static Class<?> noSqlRecordsclass = getNoSqlRecordsClass();
 
