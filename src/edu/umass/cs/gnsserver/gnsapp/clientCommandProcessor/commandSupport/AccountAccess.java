@@ -465,8 +465,10 @@ public class AccountAccess {
           + "Your account has been created. Please email us at %s and we will attempt to fix the problem.\n";
   //
   private static final String ADMIN_NOTICE = "This is an automated message informing "
-          + "you that %s has created an account for %s on the GNS server at %s.\n"
-          + "You can view their information using the link below:\n\nhttp://register.gns.name/admin/showuser.php?show=%s \n";
+          + "you that %1$s has created an account for %2$s on the GNS server at %3$s.\n"
+          + "You can view their information using the link below:"
+          // FIXME: this hack
+          + "\n\nhttp://hazard.hpcc.umass.edu/status/user?email=%2$s\n";
 
   /**
    * Adds an account guid.
@@ -558,11 +560,12 @@ public class AccountAccess {
       public void run() {
         boolean adminEmailOK = Email.email("GNS Account Notification",
                 Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL),
-                String.format(
-                        ADMIN_NOTICE,
-                        Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME),
-                        name, hostPortString,
-                        guid));
+                String.format(ADMIN_NOTICE,
+                        Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), // 1$
+                        name, // 2$
+                        hostPortString, // 3$
+                        guid // 4$
+                ));
       }
     }).start();
     return emailOK;
