@@ -31,7 +31,9 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
+
+
 /**
  * This class implements common methods as static functions, these are accessed
  * from many places. Getting active interface address of a device is implemented
@@ -41,10 +43,7 @@ import org.apache.log4j.Logger;
  * @version 1.0
  */
 public class CommonMethods
-{
-	
-	private static Logger log = Logger.getLogger(CommonMethods.class.getName());
-	
+{	
   public static Vector<String> getActiveInterfaceStringAddresses()
   {
     Vector<String> CurrentInterfaceIPs = new Vector<String>();
@@ -166,7 +165,7 @@ public class CommonMethods
       }
       catch (Exception ex)
       {
-        log.trace("excp in public IP determine returnPublicIP");
+        MSocketLogger.getLogger().fine("excp in public IP determine returnPublicIP");
         if (i == numTry)
         {
           throw new IOException(ex);

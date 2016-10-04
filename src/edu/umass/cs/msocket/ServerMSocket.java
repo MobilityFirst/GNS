@@ -23,7 +23,8 @@ package edu.umass.cs.msocket;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.util.Timer;
+
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class defines an InternalMSocket used by MServerSocket for its
@@ -32,13 +33,14 @@ import java.util.Timer;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class InternalMSocket extends MSocket
+public class ServerMSocket extends MSocket
 {
   // Used only in case of server side Msocket, null for
   private MServerSocketController serverController = null;
 
   // is the msocket a new msocket or just created to facilitate migration
   private boolean                 isNew            = true;
+  
 
   /**
    * Creates a new <code>InternalMSocket</code> object
@@ -48,7 +50,8 @@ public class InternalMSocket extends MSocket
    * @param clientSCM
    * @throws IOException
    */
-  protected InternalMSocket(SocketChannel newChannel, MServerSocketController serverController,
+  public ServerMSocket(SocketChannel newChannel, 
+		  MServerSocketController serverController,
       SetupControlMessage clientSCM) throws IOException
   {
     this.serverController = serverController;
@@ -56,9 +59,9 @@ public class InternalMSocket extends MSocket
     // other wise due to race condition it blocks as by
     // default it is blocking mode
     setupControlServer(newChannel, clientSCM);
-    if (cinfo == null)
+    if (connectionInfo == null)
       throw new IOException("Unexpected null cinfo");
-    cinfo.setServerOrClient(MSocketConstants.SERVER);
+    connectionInfo.setServerOrClient(MSocketConstants.SERVER);
   }
 
   /**
@@ -73,91 +76,85 @@ public class InternalMSocket extends MSocket
   }
 
   /**
-   * Returns the flowID of the connection. The flowID is unique for a particular
-   * server-client connection.
-   * 
-   * @return
-   */
-  public long getFlowID()
-  {
-    return flowID;
-  }
-
-  /**
    * @param scm
    */
-  protected void setupServerController(SetupControlMessage scm)
+  private void setupServerController(SetupControlMessage scm)
   {
-    log.trace("Received IP:port " + scm.port + ":" + scm.iaddr + " for flowID " + flowID + "; ackSeq = " + scm.ackSeq);
-    cinfo.setRemoteControlAddress(scm.iaddr);
-    cinfo.setRemoteControlPort(scm.port);
+    MSocketLogger.getLogger().fine
+    ("Received IP:port " + scm.port + ":" + scm.iaddr + " for connID " 
+    		+ connectionInfo.getConnID() + "; ackSeq = " + scm.ackSeq);
+    connectionInfo.setRemoteControlAddress(scm.iaddr);
+    connectionInfo.setRemoteControlPort(scm.port);
   }
 
   // Server reads first, then writes
   // have to be synchronized, multiple threads calls it.
   // otherwise socketID might get same
-  private synchronized void setupControlServer(SocketChannel newChannel, SetupControlMessage clientSCM)
+  private synchronized void setupControlServer(SocketChannel newChannel, 
+		  SetupControlMessage clientSCM)
       throws IOException
   {
-    long localFlowID = (long) (Math.random() * Long.MAX_VALUE);
+    long localConnID = (long) (Math.random() * Long.MAX_VALUE);
 
     SetupControlMessage scm = null;
 
     // FIXME: need some better way
     if (clientSCM == null)
     {
-
-      scm = setupControlRead(newChannel);
+      scm = SetupControlMessage.setupControlRead(newChannel);
     }
     else
     {
       scm = clientSCM;
     }
 
-    cinfo = serverController.getConnectionInfo(scm.flowID);
+    connectionInfo = serverController.getConnectionInfo(scm.connID);
 
-    switch (scm.MesgType)
+    switch (scm.mesgType)
     {
       case SetupControlMessage.NEW_CON_MESG :
       case SetupControlMessage.NEW_CON_REQ :
       {
-        log.debug("NEW_CON_MESG recv at server from " + newChannel.socket().getInetAddress() + " scm.ackSeq "
-            + scm.ackSeq);
-        setupControlWrite(serverController.getLocalAddress(), localFlowID, SetupControlMessage.NEW_CON_MESG_REPLY,
-            serverController.getLocalPort(), newChannel, scm.SocketId, scm.ProxyId, scm.GUID, 0);
+        MSocketLogger.getLogger().fine("NEW_CON_MESG recv at server from " 
+        		+ newChannel.socket().getInetAddress() + " scm.ackSeq "
+        		+ scm.ackSeq);
+        SetupControlMessage.setupControlWrite(serverController.getLocalAddress(), 
+        		localConnID, SetupControlMessage.NEW_CON_MESG_REPLY,
+            serverController.getLocalPort(), newChannel, scm.socketID, 
+            scm.proxyID, scm.GUID, 0, connectionInfo);
 
         // new flowID is computed as average of both proposals for new
         // connections
-        flowID = (localFlowID + scm.flowID) / 2;
-        serverController.setConnectionInfo(this);
-        log.trace("Created new flow ID " + flowID);
-        cinfo = serverController.getConnectionInfo(flowID);
+        long connID = (localConnID + scm.connID) / 2;
+        serverController.setConnectionInfo(connID);
+        MSocketLogger.getLogger().fine("Created new flow ID " + connID);
+        connectionInfo = serverController.getConnectionInfo(connID);
         setupServerController(scm);
 
         // need to set it here
         newChannel.configureBlocking(false);
-        SocketInfo sockInfo = new SocketInfo(newChannel, newChannel.socket(), scm.SocketId);
+        SocketInfo sockInfo = new SocketInfo(newChannel, newChannel.socket(), scm.socketID);
 
         // ack seq num overloads the rtt from
         // client to server in newe con message
         sockInfo.setEstimatedRTT(scm.ackSeq);
 
-        cinfo.addSocketInfo(scm.SocketId, sockInfo);
+        connectionInfo.addSocketInfo(scm.socketID, sockInfo);
 
-        cinfo.inputQueuePutSocketInfo(sockInfo);
-        cinfo.outputQueuePutSocketInfo(sockInfo);
+        connectionInfo.inputQueuePutSocketInfo(sockInfo);
+        connectionInfo.outputQueuePutSocketInfo(sockInfo);
         
-        cinfo.setServerOrClient(MSocketConstants.SERVER);
+        connectionInfo.setServerOrClient(MSocketConstants.SERVER);
         
-        cinfo.setMSocketState(MSocketConstants.ACTIVE);
-        serverController.getConnectionInfo(flowID).setState(ConnectionInfo.ALL_READY, true);
-        log.trace("Set server state to ALL_READY");
+        connectionInfo.setMSocketState(MSocketConstants.ACTIVE);
+        serverController.getConnectionInfo(connID).setState(ConnectionInfo.ALL_READY, true);
+        MSocketLogger.getLogger().fine("Set server state to ALL_READY");
 
         //localTimer = new Timer();
         //startLocalTimer();
         //TimerTaskClass TaskObj = new TimerTaskClass(this);
         //(new Thread(TaskObj)).start();
-        KeepAliveStaticThread.registerForKeepAlive(cinfo);
+        KeepAliveStaticThread.registerForKeepAlive(connectionInfo);
 
         break;
       }
@@ -165,18 +162,21 @@ public class InternalMSocket extends MSocket
       case SetupControlMessage.ADD_SOCKET :
       case SetupControlMessage.ADD_SOCKET_REQ :
       {
-        log.debug("ADD_SOCKET recv at server from " + newChannel.socket().getInetAddress() + " scm.ackSeq "
+        MSocketLogger.getLogger().fine("ADD_SOCKET recv at server from " + newChannel.socket().getInetAddress() + " scm.ackSeq "
             + scm.ackSeq);
 
-        setupControlWrite(serverController.getLocalAddress(), flowID, SetupControlMessage.ADD_SOCKET_REPLY,
-            serverController.getLocalPort(), newChannel, scm.SocketId, scm.ProxyId, scm.GUID, 0);
+        SetupControlMessage.setupControlWrite(serverController.getLocalAddress(), 
+        		connectionInfo.getConnID(), 
+        		SetupControlMessage.ADD_SOCKET_REPLY,
+        		serverController.getLocalPort(), 
+        		newChannel, scm.socketID, scm.proxyID, scm.GUID, 0, connectionInfo);
         // need to set it here
         newChannel.configureBlocking(false);
 
         // ackseq num overloads the RTT from the client
         // to the server
-        cinfo.addSocketHashMap(newChannel, scm.ackSeq);
-        flowID = scm.flowID;
+        connectionInfo.addSocketHashMap(newChannel, scm.ackSeq);
+        //flowID = scm.flowID;
         isNew = false;
         break;
       }
@@ -184,22 +184,26 @@ public class InternalMSocket extends MSocket
       case SetupControlMessage.MIGRATE_SOCKET :
       case SetupControlMessage.MIGRATE_SOCKET_REQ :
       {
-        cinfo = serverController.getConnectionInfo(scm.flowID);
+    	  connectionInfo = serverController.getConnectionInfo(scm.connID);
 
         // server doesn't have a flowID that the client is trying to use to
         // migrate a previous connection. send reset.
-        if (cinfo == null)
+        if (connectionInfo == null)
         {
-          log.debug("sending MIGRATE_SOCKET_RESET");
-          setupControlWrite(serverController.getLocalAddress(), scm.flowID, SetupControlMessage.MIGRATE_SOCKET_RESET,
-              serverController.getLocalPort(), newChannel, scm.SocketId, scm.ProxyId, scm.GUID, 0);
+          MSocketLogger.getLogger().fine("sending MIGRATE_SOCKET_RESET");
+          SetupControlMessage.setupControlWrite(serverController.getLocalAddress(), 
+        		  scm.connID, SetupControlMessage.MIGRATE_SOCKET_RESET,
+              serverController.getLocalPort(), newChannel, 
+              scm.socketID, scm.proxyID, scm.GUID, 0, connectionInfo);
           isNew = false;
         }
         else
         {
           System.out.println("MIGRATE_SOCKET arrvied");
-          setupControlWrite(serverController.getLocalAddress(), scm.flowID, SetupControlMessage.MIGRATE_SOCKET_REPLY,
-              serverController.getLocalPort(), newChannel, scm.SocketId, scm.ProxyId, scm.GUID, 0);
+          SetupControlMessage.setupControlWrite(serverController.getLocalAddress(), 
+        		  scm.connID, SetupControlMessage.MIGRATE_SOCKET_REPLY,
+              serverController.getLocalPort(), newChannel, 
+              scm.socketID, scm.proxyID, scm.GUID, 0, connectionInfo);
 
           setupServerController(scm);
 
@@ -211,12 +215,12 @@ public class InternalMSocket extends MSocket
            */
           isNew = false;
 
-          cinfo.closeAll(scm.SocketId);
-          flowID = scm.flowID;
+          connectionInfo.closeAll(scm.socketID);
+          //flowID = scm.flowID;
 
-          cinfo.getObuffer().setDataBaseSeq(scm.ackSeq);
+          connectionInfo.getObuffer().setDataBaseSeq(scm.ackSeq);
 
-          SocketInfo sockObj = cinfo.getSocketInfo(scm.SocketId);
+          SocketInfo sockObj = connectionInfo.getSocketInfo(scm.socketID);
 
           while (!sockObj.acquireLock())
             ;
@@ -230,17 +234,17 @@ public class InternalMSocket extends MSocket
 
           sockObj.releaseLock();
 
-          cinfo.inputQueuePutSocketInfo(sockObj);
-          cinfo.outputQueuePutSocketInfo(sockObj);
+          connectionInfo.inputQueuePutSocketInfo(sockObj);
+          connectionInfo.outputQueuePutSocketInfo(sockObj);
 
           sockObj.setLastKeepAlive(KeepAliveStaticThread.getLocalClock()); //
 
-          synchronized (cinfo.getSocketMonitor())
+          synchronized (connectionInfo.getSocketMonitor())
           {
-            cinfo.getSocketMonitor().notifyAll(); // waking up blocked threads
+        	  connectionInfo.getSocketMonitor().notifyAll(); // waking up blocked threads
           }
 
-          ResendIfNeededThread RensendObj = new ResendIfNeededThread(cinfo);
+          ResendIfNeededThread RensendObj = new ResendIfNeededThread(connectionInfo);
           (new Thread(RensendObj)).start();
           
           System.out.println("MIGRATE_SOCKET complete");
@@ -251,12 +255,5 @@ public class InternalMSocket extends MSocket
       }
     }
   }
-
-  /**
-   * Remove the current flow ID from the server controller map
-   */
-  protected void removeFlowId()
-  {
-    serverController.removeConnectionInfo(flowID);
-  }
+  
 }

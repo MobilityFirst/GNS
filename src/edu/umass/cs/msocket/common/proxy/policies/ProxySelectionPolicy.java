@@ -20,7 +20,7 @@
  *
  *******************************************************************************/
 
-package edu.umass.cs.msocket.common.policies;
+package edu.umass.cs.msocket.common.proxy.policies;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;

@@ -30,18 +30,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 
-
-
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.common.CommonMethods;
 import edu.umass.cs.msocket.common.Constants;
-import edu.umass.cs.msocket.common.policies.DefaultProxyPolicy;
-import edu.umass.cs.msocket.common.policies.FixedProxyPolicy;
-import edu.umass.cs.msocket.common.policies.ProxySelectionPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.DefaultProxyPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.FixedProxyPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.ProxySelectionPolicy;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class defines the methods used for the integration with the GNS. All
@@ -53,8 +53,7 @@ import edu.umass.cs.msocket.common.policies.ProxySelectionPolicy;
  */
 public class Integration
 {
-	private static Logger log = Logger.getLogger(Integration.class.getName());
-	private static final Object  gnsLock = new Object();
+	//private static final Object  gnsLock = new Object();
   /**
    * Register any globally unique Human Readable Name in the GNS and create a
    * field with the same name in that GUID to store the InetSocketAddress
@@ -71,44 +70,44 @@ public class Integration
   {
 	try
 	{
-	    //if (credentials == null)
-	    //  credentials = GnsCredentials.getDefaultCredentials();
-	
-	    log.trace("Looking for entity " + name + " GUID and certificates...");
+	    MSocketLogger.getLogger().fine("Looking for entity " + name + " GUID and certificates...");
 	
 	    GuidEntry myGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName(), name);
-	    //final GNSClientCommands gnsClient = credentials.getGnsClient();
-	
-	    /*
-	     * Take a lock on the GNS connection object to prevent concurrent queries to
-	     * the GNS on the same connection as the library is not thread-safe from
-	     * that standpoint.
-	     */
-	    synchronized (gnsLock)
+	    
+	    if (myGuid == null)
 	    {
-	      if (myGuid == null)
-	      {
 	        System.out.println("No keys found for service " + name + ". Generating new GUID and keys");
 	        // Create a new GUID
-	        myGuid = DefaultGNSClient.getGnsClient().guidCreate(DefaultGNSClient.getMyGuidEntry(), name);
+	        
+	        GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute(GNSCommand.createGUID
+	        		(DefaultGNSClient.getGnsClient().getGNSProvider(), 
+	        				DefaultGNSClient.getMyGuidEntry(), name));
+	        
+	        myGuid = GuidUtils.lookupGuidEntryFromDatabase
+	        		(DefaultGNSClient.getGnsClient().getGNSProvider(), name);
+	        
 	        
 	        // save keys in the preference
-	        System.out.println("saving keys to local");
-	        KeyPairUtils.saveKeyPair(KeyPairUtils.getDefaultGns(), 
-	        		myGuid.getEntityName() , myGuid.getGuid(), new KeyPair(myGuid.getPublicKey(), myGuid.getPrivateKey()));
+	        //System.out.println("saving keys to local");
+	        KeyPairUtils.saveKeyPair(DefaultGNSClient.getGnsClient().getGNSProvider(), 
+	        		myGuid.getEntityName() , myGuid.getGuid(), new KeyPair(myGuid.getPublicKey(), 
+	        				myGuid.getPrivateKey()));
 	
 	        // storing alias in gns record, need it to find it when we have GUID
 	        // from group members
-	        DefaultGNSClient.getGnsClient().fieldCreateList
-	        		(myGuid.getGuid(), Constants.ALIAS_FIELD, new JSONArray().put(name), myGuid);
-	      }
+	        DefaultGNSClient.getGnsClient().execute(GNSCommand.fieldCreateList
+	        		(myGuid.getGuid(), Constants.ALIAS_FIELD, new JSONArray().put(name), myGuid));
+	     }
 	
-	      // Put the IP address in the GNS
-	      String ipPort = saddr.getAddress().getHostAddress() + ":" + saddr.getPort();
-	      log.trace("Updating " + Constants.SERVER_REG_ADDR + " GNSValue " + ipPort);
-	      DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.SERVER_REG_ADDR, new JSONArray().put(ipPort), myGuid);
-	    }
-	} catch(Exception ex)
+	     // Put the IP address in the GNS
+	     String ipPort = saddr.getAddress().getHostAddress() + ":" + saddr.getPort();
+	     MSocketLogger.getLogger().fine("Updating " + Constants.SERVER_REG_ADDR + " GNSValue " + ipPort);
+	     
+	     DefaultGNSClient.getGnsClient().execute(GNSCommand.fieldReplaceOrCreateList
+	    		 (myGuid.getGuid(), Constants.SERVER_REG_ADDR, new JSONArray().put(ipPort), myGuid));
+	     
+	} 
+	catch(Exception ex)
 	{
 		ex.printStackTrace();
 		throw new IOException(ex);
@@ -130,30 +129,26 @@ public class Integration
   {
 	 try
 	 {
-	    log.trace("Retrieving IP of " + name);
+	    MSocketLogger.getLogger().fine("Retrieving IP of " + name);
 	    
-	    //if (gnsCredentials == null)
-	    //{
-	    //  gnsCredentials = GnsCredentials.getDefaultCredentials();
-	    //}
 	    JSONArray resultArray;
-	    synchronized (gnsLock)
-	    {
-	    	//UniversalTcpClient gnsClient = gnsCredentials.getGnsClient();
-		    String guidString = DefaultGNSClient.getGnsClient().lookupGuid(name);
-		    log.trace("GUID lookup " + guidString);
-		
+	    
+	    GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute(GNSCommand.lookupGUID(name));
+		String guidString = commandRes.getResultString();
+		MSocketLogger.getLogger().fine("GUID lookup " + guidString);
 		    
-		    // Read from the GNS
-		    resultArray = DefaultGNSClient.getGnsClient().
-		    		fieldReadArray(guidString, Constants.SERVER_REG_ADDR, null);
-	    }
+		// Read from the GNS
+		commandRes = DefaultGNSClient.getGnsClient().execute
+		    		(GNSCommand.fieldReadArray(guidString, Constants.SERVER_REG_ADDR, null));
+		//System.out.println("Lookup "+commandRes.getResultString());
+		//FIXME: change this when format at the GNS side changes.
+		resultArray = commandRes.getResultJSONObject().getJSONArray(Constants.SERVER_REG_ADDR);
 	    
 	    Vector<InetSocketAddress> resultVector = new Vector<InetSocketAddress>();
 	    for (int i = 0; i < resultArray.length(); i++)
 	    {
 	      String str = resultArray.getString(i);
-	      log.trace("Value returned from GNS " + str);
+	      MSocketLogger.getLogger().fine("Value returned from GNS " + str);
 	      String[] Parsed = str.split(":");
 	      InetSocketAddress socketAddress = new InetSocketAddress(Parsed[0], Integer.parseInt(Parsed[1]));
 	      resultVector.add(socketAddress);
@@ -182,13 +177,13 @@ public class Integration
 	    //UniversalTcpClient gnsClient = gnsCredentials.getGnsClient();
 	    GuidEntry socketGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName(), name);
 	    
-	    synchronized (gnsLock)
+	    if(socketGuid != null)
 	    {
-	      if(socketGuid != null)
-	    	  DefaultGNSClient.getGnsClient().fieldClear
-	    	  (socketGuid.getGuid(), Constants.SERVER_REG_ADDR, socketGuid);
+	    	DefaultGNSClient.getGnsClient().execute(GNSCommand.fieldClear
+	    			(socketGuid.getGuid(), Constants.SERVER_REG_ADDR, socketGuid));
 	    }
-	    log.trace("All fields cleared from GNS for MServerSocket " + name);
+	    
+	    MSocketLogger.getLogger().fine("All fields cleared from GNS for MServerSocket " + name);
 	} catch(Exception ex)
 	{
 		ex.printStackTrace();
@@ -208,24 +203,22 @@ public class Integration
   public static void unregisterWithGNS(String name, InetSocketAddress saddr)
       throws Exception
   {
-    //if (gnsCredentials == null)
-    //  gnsCredentials = GnsCredentials.getDefaultCredentials();
-
-    //final GNSClientCommands gnsClient = gnsCredentials.getGnsClient();
     GuidEntry socketGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName(), name);
     String ipPort = saddr.getAddress().getHostAddress() + ":" + saddr.getPort();
 
     // If all GNS accesses are synchronized on this object, we shouldn't have a
     // concurrency issue while updating
-    synchronized (gnsLock)
-    {
-      JSONArray currentIPs = DefaultGNSClient.getGnsClient().fieldReadArray(socketGuid.getGuid(), Constants.SERVER_REG_ADDR,
-    		  socketGuid);
+    
+    GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute
+    	(GNSCommand.fieldReadArray(socketGuid.getGuid(), Constants.SERVER_REG_ADDR,
+  		  socketGuid));
+    
+    JSONArray currentIPs = commandRes.getResultJSONArray();
       
-      JSONArray newIPs = new JSONArray();
-      int idx = -1;
-      for (int i = 0; i < currentIPs.length(); i++)
-      {
+    JSONArray newIPs = new JSONArray();
+    int idx = -1;
+    for (int i = 0; i < currentIPs.length(); i++)
+    {
         if (ipPort.equals(currentIPs.getString(i)))
         {
           idx = i;
@@ -239,10 +232,10 @@ public class Integration
       if (idx != -1)
       {
     	  //currentIPs.remove(idx);
-    	  DefaultGNSClient.getGnsClient().fieldReplaceList(socketGuid.getGuid(), Constants.SERVER_REG_ADDR, newIPs,
-    			  socketGuid);
+    	  DefaultGNSClient.getGnsClient().execute
+    	  	( GNSCommand.fieldReplaceList(socketGuid.getGuid(), 
+    	  			Constants.SERVER_REG_ADDR, newIPs, socketGuid) );
       }
-    }
   }
 
   /**
@@ -256,7 +249,8 @@ public class Integration
 	  if( CommonMethods.isServerBehindNAT() )
 	  {
 		  InetSocketAddress sockAddr = 
-				  new InetSocketAddress(DefaultGNSClient.proxyName, DefaultGNSClient.proxyPort);
+				  new InetSocketAddress(DefaultGNSClient.PROXY_NAME, 
+						  DefaultGNSClient.PROXY_PORT);
 		  LinkedList<InetSocketAddress> proxyList = new LinkedList<InetSocketAddress>();
 		  proxyList.add(sockAddr);
 		  return new FixedProxyPolicy(proxyList);
@@ -304,21 +298,12 @@ public class Integration
    * @return
    * @throws UnknownHostException
    */
-  public synchronized static String getGUIDOfAlias(String alias) throws UnknownHostException
+  public static String getGUIDOfAlias(String alias) throws UnknownHostException
   {
 	  try
-	  {
-	    /*if (gnsCredentials == null)
-	    {
-	      long gnsCredStart = System.currentTimeMillis();
-	      gnsCredentials = GnsCredentials.getDefaultCredentials();
-	      long gnsCredEnd = System.currentTimeMillis();
-	      log.debug("gnsCredentials time"+ (gnsCredEnd - gnsCredStart) );
-	    }*/
-	
-	    //UniversalTcpClient gnsClient = gnsCredentials.getGnsClient();
-		  
-	    String guidAlias = DefaultGNSClient.getGnsClient().lookupGuid(alias);
+	  {  
+		GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute(GNSCommand.lookupGUID(alias));
+	    String guidAlias = commandRes.getResultString();
 	    
 	    return guidAlias;
 	  } catch(Exception ex)

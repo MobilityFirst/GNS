@@ -28,13 +28,12 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.KeepAliveStaticThread;
 import edu.umass.cs.msocket.MServerSocketController;
 import edu.umass.cs.msocket.TemporaryTasksES;
 import edu.umass.cs.msocket.common.CommonMethods;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class implements the server side mobility manager. MServerSocket
@@ -58,10 +57,6 @@ public class MobilityManagerServer implements Runnable
   private static MobilityManagerServer                          mobilityManagerObj        = null;
   private static HashMap<String, Vector<ConnectionStateServer>> managerConnectionStateMap = null;
   private Vector<String>                                        activeInterfaceAddress    = null;
-
-  private static Logger                                         log                       = Logger
-                                                                                              .getLogger(MobilityManagerServer.class
-                                                                                                  .getName());
 
   /**
    * TODO: registerWithManager definition.
@@ -94,7 +89,7 @@ public class MobilityManagerServer implements Runnable
   {
     createSingleton();
     removeServer();
-    log.trace("num registered with " + getConnectionStateSize());
+    MSocketLogger.getLogger().fine("num registered with " + getConnectionStateSize());
   }
 
   @Override
@@ -125,7 +120,7 @@ public class MobilityManagerServer implements Runnable
           if (!active)
           {
             notWorkingIPs.add(activeInterfaceAddress.get(i));
-            log.trace("not working IPs " + activeInterfaceAddress.get(i));
+            MSocketLogger.getLogger().fine("not working IPs " + activeInterfaceAddress.get(i));
           }
         }
 
@@ -153,7 +148,7 @@ public class MobilityManagerServer implements Runnable
     {
       e.printStackTrace();
     }
-    log.trace("MobilityManagerServer thread exit");
+    MSocketLogger.getLogger().fine("MobilityManagerServer thread exit");
   }
 
   private synchronized static Vector<ConnectionStateServer> getConnectionState(String key)
@@ -210,7 +205,7 @@ public class MobilityManagerServer implements Runnable
   {
     // FIXME: need to check if this ip address is still valid , before inserting
     String localIpAddress = mServerSocketController.getMServerSocket().getInetAddress().getHostAddress();
-    log.trace("insertIntoConnectionStateMap " + localIpAddress);
+    MSocketLogger.getLogger().fine("insertIntoConnectionStateMap " + localIpAddress);
     if (managerConnectionStateMap.containsKey(localIpAddress))
     {
       ConnectionStateServer cstate = new ConnectionStateServer(mServerSocketController);
@@ -253,7 +248,7 @@ public class MobilityManagerServer implements Runnable
       try
       {
         String newInterface = getNewInterface(POLICY_RANDOM);
-        log.trace("performMigration newInterface " + newInterface);
+        MSocketLogger.getLogger().fine("performMigration newInterface " + newInterface);
 
         if (newInterface == "") // no active interface to migrate to
         {
@@ -272,7 +267,7 @@ public class MobilityManagerServer implements Runnable
         int newPort = 0;
         cstate.mServerSocketController.getMServerSocket().migrate(InetAddress.getByName(newInterface), newPort);
 
-        log.trace("Completed server migration to interface " + newInterface + "port " + newPort);
+        MSocketLogger.getLogger().fine("Completed server migration to interface " + newInterface + "port " + newPort);
 
         Vector<ConnectionStateServer> vect = getConnectionState(newInterface);
         if (vect == null)
@@ -286,7 +281,7 @@ public class MobilityManagerServer implements Runnable
       {
 
         // migration failed for some reason, put it in "" IP vector of manager.
-        log.trace("migration failed");
+        MSocketLogger.getLogger().fine("migration failed");
         String failedIP = "";
         Vector<ConnectionStateServer> vect = getConnectionState(failedIP);
         if (vect == null)

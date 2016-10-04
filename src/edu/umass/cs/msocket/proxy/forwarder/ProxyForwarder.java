@@ -41,9 +41,8 @@ import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.SetupControlMessage;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class implements the proxy forwarding, implements the proxy listening
@@ -55,7 +54,6 @@ import edu.umass.cs.msocket.SetupControlMessage;
  */
 public class ProxyForwarder
 {
-
   public static final int                   LISTEN_THREAD          = 1;                                               // Proxy
                                                                                                                        // thread
                                                                                                                        // types,
@@ -159,11 +157,9 @@ public class ProxyForwarder
   private final ExecutorService             pool;
   private boolean                           runstatus              = true;
 
-  private static Logger                     log                    = Logger.getLogger(ProxyForwarder.class.getName());
-
   public ProxyForwarder(String ProxyName, int ProxyPort) throws SocketException, IOException
   {
-    this.ProxyName = ProxyName;
+	this.ProxyName = ProxyName;
     this.ProxyPort = ProxyPort;
     ProxyControlChannelMap = new HashMap<String, ProxyMSocket>();
     pServerSocket = new ProxyServerSocket(this.ProxyName, this.ProxyPort, this);
@@ -178,11 +174,11 @@ public class ProxyForwarder
 
     ProxyForwarderThread List_Thr = new ProxyForwarderThread(pServerSocket, LISTEN_THREAD, this);
     (new Thread(List_Thr)).start();
-    log.trace("Proxy listen thread started");
+    System.out.println("Proxy listen thread started");
 
     ProxyForwarderThread Splice_Thr = new ProxyForwarderThread(pServerSocket, SPLICING_THREAD, this);
     (new Thread(Splice_Thr)).start();
-    log.trace("Proxy splicing thread started");
+    System.out.println("Proxy splicing thread started");
   }
 
   /**
@@ -245,11 +241,11 @@ public class ProxyForwarder
           SocketChannel RegisteredChannel = Socket.getUnderlyingChannel();
           RegisteredChannel.configureBlocking(false);
 
-          log.trace("Splice PUT before register");
+          MSocketLogger.getLogger().fine("Splice PUT before register");
           RegisterQueueInfo regObj = new RegisterQueueInfo(Socket, RegisteredChannel);
           registerQueueOperations(PUT, regObj);
 
-          log.trace("Splice PUT after register");
+          MSocketLogger.getLogger().fine("Splice PUT after register");
           return Obj.getProxyId();
         }
         else
@@ -263,7 +259,7 @@ public class ProxyForwarder
           SocketChannel RegisteredChannel = Socket.getUnderlyingChannel();
           RegisteredChannel.configureBlocking(false);
 
-          log.trace("Splice PUT before register");
+          MSocketLogger.getLogger().fine("Splice PUT before register");
           RegisterQueueInfo regObj = new RegisterQueueInfo(Socket, RegisteredChannel);
           registerQueueOperations(PUT, regObj);
 
@@ -325,10 +321,10 @@ public class ProxyForwarder
               ProxyMSocket RetSocket = ((ProxyServerSocket) (TaskObj)).accept();
               String Key = RetSocket.getUnderlyingChannel().socket().getInetAddress().toString();
               Key = Key + ":" + RetSocket.getUnderlyingChannel().socket().getPort();
-              log.trace("Key for socket map " + RetSocket.getStringGUID());
+              MSocketLogger.getLogger().fine("Key for socket map " + RetSocket.getStringGUID());
               if (RetSocket.getSocketType() == ProxyForwarder.CONTROL_SOC)
               {
-                log.trace("Control Socket inserted into Map ");
+                MSocketLogger.getLogger().fine("Control Socket inserted into Map ");
                 PForwarderObj.ProxyControlChannelMap(ProxyForwarder.PUT, RetSocket.getStringGUID(), RetSocket);
               }
               else if (RetSocket.getSocketType() == ProxyForwarder.DATA_SOC)
@@ -454,7 +450,7 @@ public class ProxyForwarder
             {
               if (Obj.workingperations(ProxyMSocket.GET, false) == true)
               {
-                log.trace("proxy sending keep alive at " + localClock + "remote address "
+                MSocketLogger.getLogger().fine("proxy sending keep alive at " + localClock + "remote address "
                     + Obj.getUnderlyingChannel().socket().getRemoteSocketAddress());
                 Obj.setupControlWrite(InetAddress.getLocalHost(), -1, -1, -1, SetupControlMessage.KEEP_ALIVE, -1, -1
                 		, Obj.getByteGUID(), Obj.getUnderlyingChannel());
@@ -544,14 +540,14 @@ public class ProxyForwarder
 
         if (numread > 0)
         {
-          log.trace("Splicer: Read from source channel " + numread + "src channel port "
+          MSocketLogger.getLogger().fine("Splicer: Read from source channel " + numread + "src channel port "
               + SourceChannel.socket().getPort() + " proxyId " + ChannelObj.getProxyId());
           bytebuf.flip();
           while (bytebuf.hasRemaining())
           {
             int numwrite = DestinationChannel.write(bytebuf);
             if (numwrite > 0)
-              log.trace("Splicer: Written into dest channel " + numwrite + " dest channel port "
+              MSocketLogger.getLogger().fine("Splicer: Written into dest channel " + numwrite + " dest channel port "
                   + DestinationChannel.socket().getPort());
           }
           numBytesSpliced += numread;
@@ -561,7 +557,7 @@ public class ProxyForwarder
       catch (Exception e)
       {
 
-        log.trace("Exception in splicing");
+        MSocketLogger.getLogger().fine("Exception in splicing");
         e.printStackTrace();
         key.cancel();
       }

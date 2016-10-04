@@ -106,8 +106,8 @@ public class ContextMember
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			csClient.sendUpdate(msocketGroupMemberInternalsObj.getMyGUID(), attrValJSON, 
-					-1, true);
+			csClient.sendUpdate(msocketGroupMemberInternalsObj.getMyGUID(), null , attrValJSON, 
+					-1);
 		}
 	}
 	
