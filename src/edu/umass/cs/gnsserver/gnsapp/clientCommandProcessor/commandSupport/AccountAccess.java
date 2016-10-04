@@ -463,12 +463,11 @@ public class AccountAccess {
   private static final String PROBLEM_NOTICE = "There is some system problem in sending "
           + "your confirmation email to %s. "
           + "Your account has been created. Please email us at %s and we will attempt to fix the problem.\n";
-  //
-  private static final String ADMIN_NOTICE = "This is an automated message informing "
+  
+  private static final String ADMIN_BODY = "This is an automated message informing "
           + "you that %1$s has created an account for %2$s on the GNS server at %3$s.\n"
           + "You can view their information using the link below:"
-          // FIXME: this hack
-          + "\n\n%4$%2$s?name\n";
+          + "\n\n%4$s%2$s\n";
 
   /**
    * Adds an account guid.
@@ -560,7 +559,7 @@ public class AccountAccess {
       public void run() {
         boolean adminEmailOK = Email.email("GNS Account Notification",
                 Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL),
-                String.format(ADMIN_NOTICE,
+                String.format(ADMIN_BODY,
                         Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), // 1$
                         name, // 2$
                         hostPortString, // 3$
@@ -1590,18 +1589,29 @@ public class AccountAccess {
   // test code
   public static void main(String[] args) {
     String name = "westy@cs.umass.edu";
-    String verifyCode = "000000";
+    //String verifyCode = "000000";
     String hostPortString = "128.119.44.108:8080";
-    String guid = "0FC2D9931712BCF6B7FEC5E6B09CF03483068DE";
-    String emailBody = String.format(EMAIL_BODY,
-            Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), //1$
-            name, //2$
-            hostPortString, //3$
-            guid, //4$
-            verifyCode //5$
-    );
-    System.out.println(emailBody);
-    boolean emailOK = Email.email("GNS Account Verification", name, emailBody);
-
+    //String guid = "0FC2D9931712BCF6B7FEC5E6B09CF03483068DE";
+//    String emailBody = String.format(EMAIL_BODY,
+//            Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), //1$
+//            name, //2$
+//            hostPortString, //3$
+//            guid, //4$
+//            verifyCode //5$
+//    );
+//    System.out.println(emailBody);
+//    boolean emailOK = Email.email("GNS Account Verification", name, emailBody);
+    
+     String adminBody = String.format(ADMIN_BODY,
+                        Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), // 1$
+                        name, // 2$
+                        hostPortString, // 3$
+                        Config.getGlobalString(GNSConfig.GNSC.STATUS_URL)); //4$ 
+     System.out.println(adminBody);
+     boolean emailOK =Email.email("GNS Account Notification",
+                Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL),
+                adminBody);
+     
+    
   }
 }
