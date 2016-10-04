@@ -167,6 +167,10 @@ public class GNSConfig {
      */
     ADMIN_PASSWORD("deadDOG8"),
     /**
+     * A url that will lookup status for the application when passed a HRN.
+     */
+    STATUS_URL("http://127.0.0.1/status?alias="),
+    /**
      * Does the verification email include text about validating using the CLI.
      */
     INCLUDE_CLI_NOTIFICATION(false),

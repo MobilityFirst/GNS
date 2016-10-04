@@ -468,7 +468,7 @@ public class AccountAccess {
           + "you that %1$s has created an account for %2$s on the GNS server at %3$s.\n"
           + "You can view their information using the link below:"
           // FIXME: this hack
-          + "\n\nhttp://hazard.hpcc.umass.edu/status/user?email=%2$s\n";
+          + "\n\n%4$%2$s?name\n";
 
   /**
    * Adds an account guid.
@@ -564,7 +564,7 @@ public class AccountAccess {
                         Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), // 1$
                         name, // 2$
                         hostPortString, // 3$
-                        guid // 4$
+                        Config.getGlobalString(GNSConfig.GNSC.STATUS_URL) //4$ 
                 ));
       }
     }).start();
