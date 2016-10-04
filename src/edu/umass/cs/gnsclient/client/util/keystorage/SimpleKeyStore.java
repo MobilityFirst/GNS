@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client.util;
+package edu.umass.cs.gnsclient.client.util.keystorage;
 
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
@@ -42,9 +42,10 @@ import org.apache.commons.lang3.ArrayUtils;
  * We use a trigger to keep track of update times for each row.
  * We explicitly set a timestamp field for each read on the row.
  *
- * @author westy
+ * @author westy, ayadav
  */
-public class SimpleKeyStore {
+public class SimpleKeyStore extends AbstractKeyStorage
+{
 
   public static final int MAX_KEY_LENGTH = 2048;
 
@@ -351,5 +352,11 @@ public class SimpleKeyStore {
       GNSClientConfig.getLogger().log(Level.INFO, "New value is {0}", keyStore.get("frank", null));
       keyStore.shutdown();
     }
+  }
+  
+  @Override
+  public String toString() 
+  {
+	  return this.toString();
   }
 }
