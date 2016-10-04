@@ -581,7 +581,7 @@ public class AccountAccess {
       if (emailSent) {
         accountInfo.setVerificationCode(code);
         accountInfo.noteUpdate();
-        if (updateAccountInfoNoAuthentication(accountInfo, handler, false)) {
+        if (updateAccountInfoLocallyNoAuthentication(accountInfo, handler)) {
           return new CommandResponse(GNSResponseCode.NO_ERROR,
                   GNSProtocol.OK_RESPONSE.toString());
         } else {
@@ -652,7 +652,7 @@ public class AccountAccess {
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
-    if (updateAccountInfoNoAuthentication(accountInfo, handler, false)) {
+    if (updateAccountInfoLocallyNoAuthentication(accountInfo, handler)) {
       return new CommandResponse(GNSResponseCode.NO_ERROR,
               GNSProtocol.OK_RESPONSE.toString() + " "
               + "Your account has been verified."); // add a
@@ -1513,13 +1513,18 @@ public class AccountAccess {
       return GNSResponseCode.JSON_PARSE_ERROR;
     }
   }
-
+  
+  private static boolean updateAccountInfoLocallyNoAuthentication(
+          AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
+    return updateAccountInfoNoAuthentication(accountInfo, handler, false);
+  }
+  
   private static boolean updateAccountInfoNoAuthentication(
           AccountInfo accountInfo, ClientRequestHandlerInterface handler,
-          boolean sendToReplica) {
+          boolean remoteUpdate) {
     return !updateAccountInfo(accountInfo.getGuid(), accountInfo,
             Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null,
-            null, handler, sendToReplica)
+            null, handler, remoteUpdate)
             .isExceptionOrError();
   }
 

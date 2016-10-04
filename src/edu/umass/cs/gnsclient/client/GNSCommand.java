@@ -1,3 +1,18 @@
+/* Copyright (1c) 2016 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (1the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
+ * Initial developer(s): Westy */
 package edu.umass.cs.gnsclient.client;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESSER;
@@ -12,7 +27,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELDS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GROUP_ACL;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID_RECORD_PUBLICKEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.INTERVAL;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.LOCATION_FIELD_NAME;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.MAX_DISTANCE;
@@ -23,7 +37,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAMES;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.NEAR;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSWORD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEYS;
@@ -37,20 +50,14 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -65,15 +72,10 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.Util;
 
 /**
  * @author arun
@@ -81,56 +83,6 @@ import edu.umass.cs.utils.Util;
  * A helper class with static methods to help construct GNS commands.
  */
 public class GNSCommand extends CommandPacket {
-
-  /**
-   * The result types that can be returned by executing {@link CommandPacket}.
-   */
-  public static enum ResultType {
-    /**
-     * The default methods {@link CommandPacket#getResultString()} or
-     * {@link CommandPacket#getResult()} be used to retrieve the result
-     * irrespective of the result type.
-     */
-    STRING,
-    /**
-     * The methods {@link CommandPacket#getResultMap} or
-     * {@link CommandPacket#getResultJSONObject} can be used if and only if
-     * the result type is {@link #MAP};
-     */
-    MAP,
-    /**
-     * The methods {@link CommandPacket#getResultList},
-     * {@link CommandPacket#getResultJSONArray} can be used if and only if
-     * the result type is {@link #LIST}
-     */
-    LIST,
-    /**
-     * The method {@link CommandPacket#getResultBoolean} can be used if and
-     * only if the result type is {@link #BOOLEAN}.
-     */
-    BOOLEAN,
-    /**
-     * The method {@link CommandPacket#getResultLong} can be used if and
-     * only if the result type is {@link #LONG}.
-     */
-    LONG,
-    /**
-     * The method {@link CommandPacket#getResultInt} can be used if and only
-     * if the result type is {@link #INTEGER}.
-     */
-    INTEGER,
-    /**
-     * The method {@link CommandPacket#getResultDouble} can be used if and
-     * only if the result type is {@link #DOUBLE}.
-     */
-    DOUBLE,
-    /**
-     * The result of executing this command is null or does not return a
-     * result.
-     */
-    NULL
-
-  };
 
   /* GNSCommand constructors must remain private */
   protected GNSCommand(JSONObject command) {
@@ -141,9 +93,10 @@ public class GNSCommand extends CommandPacket {
 		 * transformed to carry a different ID if */
             randomLong(), command);
   }
+
   protected GNSCommand(long id, JSONObject command) {
-	    super(id, command);
-	  }
+    super(id, command);
+  }
 
   /**
    * Constructs a command of type {@code type} issued by the {@code querier}
@@ -164,11 +117,11 @@ public class GNSCommand extends CommandPacket {
    */
   public static CommandPacket getCommand(CommandType type, GuidEntry querier,
           Object... keysAndValues) throws ClientException {
-	  JSONObject command = CommandUtils.createAndSignCommand(type, querier,
-	            keysAndValues);
-	  if (CommandPacket.getJSONCommandType(command).isMutualAuth()){
-		  return new AdminCommandPacket(randomLong(), command);
-	  }
+    JSONObject command = CommandUtils.createAndSignCommand(type, querier,
+            keysAndValues);
+    if (CommandPacket.getJSONCommandType(command).isMutualAuth()) {
+      return new AdminCommandPacket(randomLong(), command);
+    }
     return new GNSCommand(command);
   }
 
@@ -253,18 +206,18 @@ public class GNSCommand extends CommandPacket {
   // converts JSONException to ClientException
   protected static JSONObject makeJSON(String field, Object value)
           throws JSONException {
-      return new JSONObject().put(field, value);
+    return new JSONObject().put(field, value);
   }
 
-	// converts JSONException to ClientException
-	protected static JSONObject getJSONObject(String field, Object value)
-			throws ClientException {
-		try {
-			return makeJSON(field, value);
-		} catch (JSONException e) {
-			throw new ClientException(e);
-		}
-	}
+  // converts JSONException to ClientException
+  protected static JSONObject getJSONObject(String field, Object value)
+          throws ClientException {
+    try {
+      return makeJSON(field, value);
+    } catch (JSONException e) {
+      throw new ClientException(e);
+    }
+  }
 
   /**
    * Creates an index for a field. {@code targetGUID} is only used for
@@ -574,23 +527,23 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket accountGuidCreate(String gnsInstance,
           String alias, String password) throws Exception {
-	    GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
-	    /* arun: Don't recreate pair if one already exists. Otherwise you can
+    GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
+    /* arun: Don't recreate pair if one already exists. Otherwise you can
 			 * not get out of the funk where the account creation timed out but
 			 * wasn't rolled back fully at the server. Re-using
 			 * the same GUID will at least pass verification as opposed to 
 			 * incurring an ACTIVE_REPLICA_EXCEPTION for a new (non-existent) GUID.
-	     */
-		if (entry == null) {
-			KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
-					.generateKeyPair();
-			String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-					.getPublic().getEncoded());
-			// Squirrel this away now just in case the call below times out.
-			KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
-			entry = new GuidEntry(alias, guid, keyPair.getPublic(),
-					keyPair.getPrivate());
-		}
+     */
+    if (entry == null) {
+      KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
+              .generateKeyPair();
+      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
+              .getPublic().getEncoded());
+      // Squirrel this away now just in case the call below times out.
+      KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
+      entry = new GuidEntry(alias, guid, keyPair.getPublic(),
+              keyPair.getPrivate());
+    }
     return accountGuidCreateHelper(alias, entry, password);
   }
 
@@ -1046,23 +999,23 @@ public class GNSCommand extends CommandPacket {
             accountGuid.getGuid(), NAME, name, PUBLIC_KEY, publicKeyString);
   }
 
-	/**
-	 * Register a new account guid with the corresponding alias and the given
-	 * public key on the GNS server. Returns a new guid.
-	 *
-	 * @param alias
-	 *            the alias to register (usually an email address)
-	 * @param guidEntry
-	 * @param password
-	 *            the public key associate with the account
-	 * @return guid the GUID generated by the GNS
-	 * @throws IOException
-	 * @throws UnsupportedEncodingException
-	 * @throws ClientException
-	 * @throws InvalidGuidException
-	 *             if the user already exists
-	 * @throws NoSuchAlgorithmException
-	 */
+  /**
+   * Register a new account guid with the corresponding alias and the given
+   * public key on the GNS server. Returns a new guid.
+   *
+   * @param alias
+   * the alias to register (usually an email address)
+   * @param guidEntry
+   * @param password
+   * the public key associate with the account
+   * @return guid the GUID generated by the GNS
+   * @throws IOException
+   * @throws UnsupportedEncodingException
+   * @throws ClientException
+   * @throws InvalidGuidException
+   * if the user already exists
+   * @throws NoSuchAlgorithmException
+   */
   public static final CommandPacket accountGuidCreateHelper(String alias,
           GuidEntry guidEntry, String password)
           throws UnsupportedEncodingException, IOException, ClientException,
@@ -2025,7 +1978,7 @@ public class GNSCommand extends CommandPacket {
    * @return The {@link GNSCommand.ResultType} type of the result obtained by
    * executing this query.
    */
-  public ResultType getResultType() {
+  public CommandResultType getResultType() {
     return this.getCommandType().getResultType();
   }
 }
