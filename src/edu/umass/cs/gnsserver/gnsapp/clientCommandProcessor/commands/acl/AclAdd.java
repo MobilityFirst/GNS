@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
@@ -98,7 +99,7 @@ public class AclAdd extends BasicCommand {
     GNSResponseCode responseCode;
     if (!(responseCode = FieldMetaData.add(access, guid, field,
             accessorPublicKey, writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {
       return new CommandResponse(responseCode, responseCode.getProtocolCode());
     }

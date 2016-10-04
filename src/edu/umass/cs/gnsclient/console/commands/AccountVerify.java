@@ -22,6 +22,7 @@ package edu.umass.cs.gnsclient.console.commands;
 import java.util.StringTokenizer;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -89,7 +90,7 @@ public class AccountVerify extends ConsoleCommand {
       String code = st.nextToken();
 
       try {
-        if (client.accountGuidVerify(guid, code).startsWith(GNSCommandProtocol.OK_RESPONSE)) {
+        if (client.accountGuidVerify(guid, code).startsWith(GNSProtocol.OK_RESPONSE.toString())) {
           printString("Account verified.\n");
           module.setAccountVerified(true);
           return;

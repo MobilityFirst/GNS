@@ -18,6 +18,7 @@ package edu.umass.cs.gnsclient.client.integrationtests;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
@@ -2008,7 +2009,7 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       failWithStackTrace("Exception while creating guids: ", e);
     }
-    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
+    assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
   }
 
   @Test
