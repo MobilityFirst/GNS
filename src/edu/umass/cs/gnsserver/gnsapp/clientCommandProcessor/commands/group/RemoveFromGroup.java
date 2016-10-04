@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Group
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 
 import java.io.IOException;
@@ -77,7 +78,7 @@ public class RemoveFromGroup extends BasicCommand {
     try {
       if (!(responseCode = GroupAccess.removeFromGroup(guid, member,
               writer, signature, message, handler)).isExceptionOrError()) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }

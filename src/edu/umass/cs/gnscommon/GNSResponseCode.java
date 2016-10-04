@@ -43,7 +43,7 @@ public enum GNSResponseCode implements Serializable {
    * For other response codes the return value only contains
    * additional information to describe the error or exception.
    */
-  NO_ERROR(200, GNSCommandProtocol.OK_RESPONSE, TYPE.NORMAL),
+  NO_ERROR(200, GNSProtocol.OK_RESPONSE.toString(), TYPE.NORMAL),
   /**
    * Unspecified error. This should be used replaced with more specific errors
    * in most cases and used sparingly, if at all because it doesn't convey

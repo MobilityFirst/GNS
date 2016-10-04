@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 
 import java.io.IOException;
@@ -78,7 +79,7 @@ public class AddMembersToGroup extends BasicCommand {
     try {
       if (!(responseCode = GroupAccess.addToGroup(guid, new ResultValue(members), 
               writer, signature, message, handler)).isExceptionOrError()) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }

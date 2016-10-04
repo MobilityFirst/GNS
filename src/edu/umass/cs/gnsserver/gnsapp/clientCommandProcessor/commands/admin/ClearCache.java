@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
@@ -67,11 +68,11 @@ public class ClearCache extends BasicCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
       if (handler.getAdmintercessor().sendClearCache(handler)) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
     	  //The old return value is commented out since currently clear cache always returns false.
         //return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE);
-    	  return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+    	  return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       }
   }
 

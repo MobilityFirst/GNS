@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -96,7 +97,7 @@ public class NSGroupAccess {
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about this when we get transactions working.
 
-    if (response.equals(GNSCommandProtocol.OK_RESPONSE)) {
+    if (response.equals(GNSProtocol.OK_RESPONSE.toString())) {
       //if (!groupResponse.isAnError()) {
       // This is probably a bad idea to update every member
       for (String member : members) {
