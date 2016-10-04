@@ -31,11 +31,13 @@ import java.util.List;
 import java.util.Vector;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.msocket.common.CommonMethods;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.common.proxy.policies.DefaultProxyPolicy;
@@ -66,7 +68,7 @@ public class Integration
    *          default GNS (if null default GNS credentials are used)
    * @throws IOException
    */
-  public static void registerWithGNS(String name, InetSocketAddress saddr) throws IOException
+  public static void registerWithGNS(String name, InetSocketAddress saddr) throws Exception
   {
 	try
 	{
@@ -103,10 +105,16 @@ public class Integration
 	     String ipPort = saddr.getAddress().getHostAddress() + ":" + saddr.getPort();
 	     MSocketLogger.getLogger().fine("Updating " + Constants.SERVER_REG_ADDR + " GNSValue " + ipPort);
 	     
+	     
 	     DefaultGNSClient.getGnsClient().execute(GNSCommand.fieldReplaceOrCreateList
 	    		 (myGuid.getGuid(), Constants.SERVER_REG_ADDR, new JSONArray().put(ipPort), myGuid));
 	     
 	} 
+	catch(InvalidGuidException ex)
+	{
+		throw new Exception("\n Server name "+ name+" already taken by someone else using GNS. "
+				+ "Please choose a different name and restart the application\n ");
+	}
 	catch(Exception ex)
 	{
 		ex.printStackTrace();
@@ -142,7 +150,20 @@ public class Integration
 		    		(GNSCommand.fieldReadArray(guidString, Constants.SERVER_REG_ADDR, null));
 		//System.out.println("Lookup "+commandRes.getResultString());
 		//FIXME: change this when format at the GNS side changes.
-		resultArray = commandRes.getResultJSONObject().getJSONArray(Constants.SERVER_REG_ADDR);
+		JSONObject resultJSON = commandRes.getResultJSONObject();
+		
+		if(resultJSON == null )
+		{
+			throw new Exception("\n Name "+name+" not found in GNS. Connection cannot proceed. \n");
+		}
+		else
+		{
+			if(!resultJSON.has(Constants.SERVER_REG_ADDR))
+			{
+				throw new Exception("\n Name "+name+" not found in GNS. Connection cannot proceed. \n");
+			}
+		}
+		resultArray = resultJSON.getJSONArray(Constants.SERVER_REG_ADDR);
 	    
 	    Vector<InetSocketAddress> resultVector = new Vector<InetSocketAddress>();
 	    for (int i = 0; i < resultArray.length(); i++)
@@ -179,8 +200,16 @@ public class Integration
 	    
 	    if(socketGuid != null)
 	    {
-	    	DefaultGNSClient.getGnsClient().execute(GNSCommand.fieldClear
+	    	try
+	    	{
+	    		DefaultGNSClient.getGnsClient().execute(GNSCommand.fieldClear
 	    			(socketGuid.getGuid(), Constants.SERVER_REG_ADDR, socketGuid));
+	    	} 
+	    	catch(InvalidGuidException invGuidExcp)
+	    	{
+	    		throw new Exception("\n Server name "+name +" already taken by someone else using GNS. "
+	    				+ "Please choose a different name and restart the application \n");
+	    	}
 	    }
 	    
 	    MSocketLogger.getLogger().fine("All fields cleared from GNS for MServerSocket " + name);
@@ -203,7 +232,8 @@ public class Integration
   public static void unregisterWithGNS(String name, InetSocketAddress saddr)
       throws Exception
   {
-    GuidEntry socketGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName(), name);
+    GuidEntry socketGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName()
+    		, name);
     String ipPort = saddr.getAddress().getHostAddress() + ":" + saddr.getPort();
 
     // If all GNS accesses are synchronized on this object, we shouldn't have a

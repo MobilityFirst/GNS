@@ -128,6 +128,7 @@ public class DefaultGNSClient
             	// trustStore.jks file
             	String trustStoreFile = "trustStore.jks";
             	writeAFileFromJarToLocalDirByteSteam(trustStoreFile);
+            	
             }
             else
             {
@@ -140,6 +141,15 @@ public class DefaultGNSClient
         	// FIXME: may be we should checks if all files are there or create them again.
         }
 	}
+	
+//	java.util.logging.SimpleFormatter.format=%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS [%4$s] %5$s%6$s%n
+//			.level=ALL
+//			handlers=java.util.logging.FileHandler
+//			java.util.logging.FileHandler.level=INFO
+//			java.util.logging.ConsoleHandler.level=WARNING
+//			java.util.logging.FileHandler.pattern = /tmp/gigapaxos.log
+//			java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter
+
 	
 	
 	private void writeAFileFromJarToLocalDir(String fileName)

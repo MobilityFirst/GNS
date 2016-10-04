@@ -533,7 +533,8 @@ public class MServerSocket extends ServerSocket
    *          migrating the sockets
    * @throws Exception
    */
-  public void migrate(InetAddress localAddress, int localPort, ProxySelectionPolicy proxySelectionPolicy)
+  public void migrate(InetAddress localAddress, int localPort, 
+		  ProxySelectionPolicy proxySelectionPolicy)
       throws IOException
   {
     /*if (isServerBehindNAT())
@@ -590,7 +591,12 @@ public class MServerSocket extends ServerSocket
         for (Iterator<InetSocketAddress> iterator = proxyVector.iterator(); iterator.hasNext();)
         {
           InetSocketAddress retProxy = iterator.next();
-          Integration.registerWithGNS(serverAlias, retProxy);
+          try {
+			Integration.registerWithGNS(serverAlias, retProxy);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
           ProxyInfo proxyInfo = new ProxyInfo(retProxy.getHostName(), retProxy.getPort());
           // just setting it to current time
@@ -611,7 +617,7 @@ public class MServerSocket extends ServerSocket
 		      catch (Exception ex)
 		      {
 		        MSocketLogger.getLogger().fine("registration with GNS failed "+ex);
-		        //ex.printStackTrace();
+		        ex.printStackTrace();
 		      }
 	      }
         
@@ -679,7 +685,12 @@ public class MServerSocket extends ServerSocket
 	      for (Iterator<InetSocketAddress> iterator = proxyVector.iterator(); iterator.hasNext();)
 	      {
 	        InetSocketAddress retProxy = iterator.next();
-	        Integration.registerWithGNS(serverAlias, retProxy);
+	        try {
+				Integration.registerWithGNS(serverAlias, retProxy);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	        
 	        if(firstTime)
 	        {

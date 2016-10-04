@@ -10,12 +10,16 @@ public class MSocketLogger
 	private static Logger LOGGER = null;
 	static
 	{
+		
 		LOGGER = Logger.getLogger(
 				MSocketLogger.class.getName());
 		ConsoleHandler ch = new ConsoleHandler();
         ch.setLevel(Level.OFF);
         LOGGER.addHandler(ch);
         LOGGER.setLevel(Level.OFF);
+        
+        Logger l0 = Logger.getLogger("");
+        l0.removeHandler(l0.getHandlers()[0]);
 	}
 	
 	public static Logger getLogger()
