@@ -23,7 +23,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.N;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.OK_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
@@ -31,6 +30,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
+
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -94,7 +95,7 @@ public abstract class AbstractUpdate extends BasicCommand {
       responseCode = FieldAccess.updateUserJSON(header, guid, userJSON, 
               writer, signature, message, timestamp, handler);
       if (!responseCode.isExceptionOrError()) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
@@ -108,7 +109,7 @@ public abstract class AbstractUpdate extends BasicCommand {
               getUpdateOperation(),
               writer, signature, message, timestamp,
               handler)).isExceptionOrError()) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }

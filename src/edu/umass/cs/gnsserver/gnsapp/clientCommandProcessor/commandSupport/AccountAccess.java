@@ -19,6 +19,8 @@ import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
+
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ALIAS;
@@ -28,7 +30,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.DUPLICATE_GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.DUPLICATE_NAME;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.EVERYONE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.JSON_PARSE_ERROR;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.OK_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UPDATE_ERROR;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFICATION_ERROR;
@@ -501,7 +502,7 @@ public class AccountAccess {
       if (GNSConfig.GNSC.isEmailAuthenticationEnabled()) {
         boolean emailSent = sendEmailAuthentication(name, guid, hostPortString, verifyCode);
         if (emailSent) {
-          return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+          return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
         } else {
           // if we can't send the confirmation back out of the account creation
           AccountInfo accountInfo = lookupAccountInfoFromGuidAnywhere(guid, handler);
@@ -583,7 +584,7 @@ public class AccountAccess {
         accountInfo.noteUpdate();
         if (updateAccountInfoNoAuthentication(accountInfo, handler, false)) {
           return new CommandResponse(GNSResponseCode.NO_ERROR,
-                  GNSCommandProtocol.OK_RESPONSE);
+                  GNSProtocol.OK_RESPONSE.toString());
         } else {
           return new CommandResponse(GNSResponseCode.UPDATE_ERROR,
                   GNSCommandProtocol.BAD_RESPONSE + " "
@@ -654,7 +655,7 @@ public class AccountAccess {
     accountInfo.noteUpdate();
     if (updateAccountInfoNoAuthentication(accountInfo, handler, false)) {
       return new CommandResponse(GNSResponseCode.NO_ERROR,
-              GNSCommandProtocol.OK_RESPONSE + " "
+              GNSProtocol.OK_RESPONSE.toString() + " "
               + "Your account has been verified."); // add a
       // little something for the kids
     } else {
@@ -697,7 +698,7 @@ public class AccountAccess {
         guidInfo.noteUpdate();
         if (updateGuidInfoNoAuthentication(guidInfo, handler)) {
           return new CommandResponse(GNSResponseCode.NO_ERROR,
-                  GNSCommandProtocol.OK_RESPONSE + " "
+                  GNSProtocol.OK_RESPONSE.toString() + " "
                   + "Public key has been updated.");
         } else {
           return new CommandResponse(GNSResponseCode.UPDATE_ERROR,
@@ -812,7 +813,7 @@ public class AccountAccess {
         }
         if (returnCode != null && !returnCode.isExceptionOrError()) {
           return new CommandResponse(GNSResponseCode.NO_ERROR,
-                  OK_RESPONSE);
+                  GNSProtocol.OK_RESPONSE.toString());
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we
@@ -897,7 +898,7 @@ public class AccountAccess {
 
         // all is well
         return new CommandResponse(GNSResponseCode.NO_ERROR,
-                OK_RESPONSE);
+                GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR,
                 BAD_RESPONSE + " " + BAD_ACCOUNT);
@@ -1015,7 +1016,7 @@ public class AccountAccess {
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
       updateAccountInfoNoAuthentication(accountInfo, handler, true);
-      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE
+      return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString()
               + " " + " [created " + name + " and " + guid
               + " and updated account info successfully]");
     } catch (JSONException e) {
@@ -1105,7 +1106,7 @@ public class AccountAccess {
                   guidInfoMap, handler);
           GNSConfig.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse(GNSResponseCode.NO_ERROR,
-                  OK_RESPONSE);
+                  GNSProtocol.OK_RESPONSE.toString());
         }
       }
       return new CommandResponse(returnCode, BAD_RESPONSE + " "
@@ -1270,13 +1271,13 @@ public class AccountAccess {
         // tell them we are gone
         if (ignoreAccountGuid) {
           return new CommandResponse(GNSResponseCode.NO_ERROR,
-                  OK_RESPONSE);
+                  GNSProtocol.OK_RESPONSE.toString());
         } else {
           // update the account guid to know that we deleted the guid
           accountInfo.removeGuid(guidInfo.getGuid());
           accountInfo.noteUpdate();
           if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
-            return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+            return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
           } else {
             return new CommandResponse(
                     GNSResponseCode.UPDATE_ERROR, BAD_RESPONSE + " " + UPDATE_ERROR);
@@ -1342,7 +1343,7 @@ public class AccountAccess {
                 BAD_RESPONSE + " " + UPDATE_ERROR);
       } else {
         return new CommandResponse(GNSResponseCode.NO_ERROR,
-                OK_RESPONSE);
+                GNSProtocol.OK_RESPONSE.toString());
       }
     } catch (JSONException e) {
       return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR,
@@ -1399,7 +1400,7 @@ public class AccountAccess {
       return new CommandResponse(responseCode, BAD_RESPONSE + " "
               + responseCode.getProtocolCode());
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
   }
 
   /**
@@ -1425,7 +1426,7 @@ public class AccountAccess {
       return new CommandResponse(GNSResponseCode.UPDATE_ERROR,
               BAD_RESPONSE + " " + UPDATE_ERROR);
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
   }
 
   /**
@@ -1450,7 +1451,7 @@ public class AccountAccess {
       return new CommandResponse(GNSResponseCode.UPDATE_ERROR,
               BAD_RESPONSE + " " + UPDATE_ERROR);
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
   }
 
   /**
@@ -1475,7 +1476,7 @@ public class AccountAccess {
       return new CommandResponse(GNSResponseCode.UPDATE_ERROR,
               BAD_RESPONSE + " " + UPDATE_ERROR);
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
   }
 
   private static GNSResponseCode updateAccountInfo(String guid,

@@ -11,7 +11,19 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
  *         to this class.
  */
 public enum GNSProtocol {
-
+	//
+    // Response codes
+	//
+	/**
+	 * Indicates that a command that does not return a value has completed successfully.
+	 * See {@link edu.umass.cs.gnscommon.GNSResponseCode#NO_ERROR}.
+	 */
+	OK_RESPONSE("+OK+"),
+	
+	//
+	// Misc
+	//
+	//
 	/**
 	 * The key for the querier GUID that originated the request chain. This is
 	 * the GUID to which all resource usage is charged. This GUID is needed to

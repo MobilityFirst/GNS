@@ -35,6 +35,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Activ
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
@@ -80,7 +81,7 @@ public class ClearCode extends BasicCommand {
     if (response.isExceptionOrError()) {
       return new CommandResponse(response, BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     }
   }
 

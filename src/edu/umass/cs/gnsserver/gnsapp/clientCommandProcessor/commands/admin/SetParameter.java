@@ -26,6 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Syste
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
@@ -70,7 +71,7 @@ public class SetParameter extends BasicCommand {
     String value = json.getString(VALUE);
       try {
         SystemParameter.valueOf(parameterString.toUpperCase()).setFieldValue(value);
-        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } catch (Exception e) {
         System.out.println("Problem setting parameter: " + e);
         return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR, BAD_RESPONSE + " "
