@@ -43,7 +43,8 @@ public class GNSConfig {
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server.
-     *//**
+     */
+    /**
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server.
@@ -223,14 +224,6 @@ public class GNSConfig {
       return Config.getGlobalBoolean(GNSC.ENABLE_EMAIL_VERIFICATION_SALT);
     }
 
-    /**
-     *
-     * @return true if the use of the local mailer is disabled when sending verification messages
-     */
-    public static boolean isDontTryLocalEmail() {
-      return Config.getGlobalBoolean(GNSC.DONT_TRY_LOCAL_EMAIL);
-    }
-
     private static Class<?> noSqlRecordsclass = getNoSqlRecordsClass();
 
     /**
@@ -364,32 +357,12 @@ public class GNSConfig {
   }
 
   /**
-   * Controls whether email verification is enabled.
-   */
-  public static boolean enableEmailAccountVerification = true;
-  /**
    * Controls whether signature verification is enabled.
    */
   public static boolean enableSignatureAuthentication = true;
-  /**
-   * Default query timeout in ms. How long we wait before retransmitting a
-   * query.
-   */
-  public static int DEFAULT_QUERY_TIMEOUT = 2000;
-  /**
-   * Maximum query wait time in milliseconds. After this amount of time a
-   * negative response will be sent back to a client indicating that a record
-   * could not be found.
-   */
-  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 16000; // was 10
 
   private final static Logger LOG = Logger.getLogger(GNSConfig.class
           .getName());
-
-  /**
-   * The default reconfigurator server port number.
-   */
-  public static final int DEFAULT_RECONFIGURATOR_PORT = 2178;
 
   /**
    * Returns the master GNS logger.
@@ -399,6 +372,11 @@ public class GNSConfig {
   public static Logger getLogger() {
     return LOG;
   }
+
+  /**
+   * The default reconfigurator server port number.
+   */
+  public static final int DEFAULT_RECONFIGURATOR_PORT = 2178;
 
   /**
    * Attempts to look for a MANIFEST file in that contains the Build-Version
