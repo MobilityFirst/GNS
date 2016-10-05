@@ -20,17 +20,40 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 
+import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSClient.AsyncClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
+import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.NIOHeader;
+import edu.umass.cs.nio.nioutils.StringifiableDefault;
+import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+
 import static org.junit.Assert.*;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -42,8 +65,54 @@ import org.junit.runners.MethodSorters;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AdminBadAuthTest {
+	/**
+	 * 
+	 * @author Brendan Teich
+	 * 
+	 * This class overrides GNSClient and its AsynchClient in order to force it
+	 *  to send MUTUAL_AUTH requests to the SERVER_AUTH client port.
+	 *
+	 */
+	private static class BadClient extends GNSClientCommands{
+		  private BadClient(Set<InetSocketAddress> reconfigurators)
+		          throws IOException {
+		    this.asyncClient = new AsyncClientBad(reconfigurators,
+		            ReconfigurationConfig.getClientSSLMode(),
+		            ReconfigurationConfig.getClientPortOffset(), true);
+		  }
+		  /**
+		   * @throws IOException
+		   */
+		  public BadClient() throws IOException {
+		    super((InetSocketAddress) null);
+		  }
+		/**
+		   * Straightforward async client implementation that expects only one packet
+		   * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
+		   */
+		  class AsyncClientBad extends AsyncClient{
+
+		    public AsyncClientBad(Set<InetSocketAddress> reconfigurators,
+		    		SSL_MODES sslMode, int clientPortOffset,
+		    		boolean checkConnectivity) throws IOException {
+		    			super(reconfigurators, sslMode, clientPortOffset,
+		    					checkConnectivity);
+		    }
+
+		    /**
+		     * This returns null since this client always sends commands to the client port.
+		     */
+		    @SuppressWarnings("javadoc")
+		    @Override
+		    public Set<IntegerPacketType> getMutualAuthRequestTypes() {
+		    	return null;
+		    }
+
+		  }
+	}
 
   private static GNSClientCommands client;
+  private static BadClient badClient;
   private static GuidEntry masterGuid;
 	private static final String DEFAULT_ACCOUNT_ALIAS = "support@gns.name";
 
@@ -66,6 +135,7 @@ public class AdminBadAuthTest {
 	  System.out.println("Starting client");
 
 		client = new GNSClientCommands();
+		
 		// Make all the reads be coordinated
 		client.setForceCoordinatedReads(true);
 		// arun: connectivity check embedded in GNSClient constructor
@@ -93,8 +163,38 @@ public class AdminBadAuthTest {
 		if (accountCreated == false) {
 			fail("Failure setting up account guid; aborting all tests.");
 		}
+		
+		badClient = new BadClient();
+		badClient.setForceCoordinatedReads(true);
+		connected = badClient instanceof GNSClient;
+		if (connected) {
+			System.out.println("BadClient created and connected to server.");
+		}
+		/*
+		//
+		tries = 5;
+		accountCreated = false;
+
+		
+		do {
+			try {
+				System.out.println("Creating account guid: " + (tries - 1)
+						+ " attempt remaining.");
+				masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
+						accountAlias, PASSWORD, true);
+				accountCreated = true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				ThreadUtils.sleep((5 - tries) * 5000);
+			}
+		} while (!accountCreated && --tries > 0);
+		if (accountCreated == false) {
+			fail("Failure setting up account guid; aborting all tests.");
+		}*/
   }
   
+  /*These tests check if sending an admin command on the MUTUAL_AUTH 
+   * port with the wrong keystore or without a keystore fails like it should. */
   @Test(expected=ClientException.class)
   public void test_01_ParameterGet() throws Exception {
       String result = client.parameterGet("email_verification");
@@ -127,6 +227,38 @@ public class AdminBadAuthTest {
   }
   
   
+  /*These tests check if sending an admin command on the client port
+   * without mutual auth fails like it should. */
   
+  @Test(expected=ClientException.class)
+  public void test_11_ParameterGet_ClientPort() throws Exception {
+      String result =  badClient.parameterGet("email_verification");
+  }
+
+  @Test(expected=ClientException.class)
+  public void test_12_ParameterSet_ClientPort() throws Exception {
+      badClient.parameterSet("max_guids", 2000);
+      String result = badClient.parameterGet("max_guids");
+  }
+  
+  @Test(expected=ClientException.class)
+  public void test_13_ParameterList_ClientPort() throws Exception {
+      String result =  badClient.parameterList();
+  }
+  
+  @Test(expected=ClientException.class)
+  public void test_14_Dump_ClientPort() throws Exception {
+      String result =  badClient.dump();
+  }
+  
+  @Test(expected=ClientException.class)
+  public void test_15_ClearCache_ClientPort() throws Exception {
+      String result =  badClient.clearCache();
+  }
+  
+  @Test(expected=ClientException.class)
+  public void test_16_DumpCache_ClientPort() throws Exception {
+      String result =  badClient.dumpCache();
+  }
 
 }

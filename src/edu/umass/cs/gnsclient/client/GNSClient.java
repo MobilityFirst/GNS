@@ -69,8 +69,8 @@ public class GNSClient {
           InetAddress.getLoopbackAddress(),
           GNSConfig.DEFAULT_RECONFIGURATOR_PORT);
 
-  // ReconfigurableAppClientAsync instance
-  private final AsyncClient asyncClient;
+  // ReconfigurableAppClientAsync instance, protected and nonfinal so BadClient in an admin test can override this.
+  protected AsyncClient asyncClient;
   // local name server
   private InetSocketAddress GNSProxy = null;
 
@@ -352,9 +352,10 @@ public class GNSClient {
 
   /**
    * Straightforward async client implementation that expects only one packet
-   * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
+   * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}. Public in scope so
+   * that it can be overrided for testing purposes.
    */
-  static class AsyncClient extends
+  public static class AsyncClient extends
           ReconfigurableAppClientAsync<CommandPacket> implements
           AppRequestParserBytes {
 
