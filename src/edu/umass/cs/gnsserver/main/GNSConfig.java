@@ -158,23 +158,25 @@ public class GNSConfig {
      */
     SUPPORT_EMAIL("admin@gns.name"),
     /**
-     * The name of the email that is used to log into the email server.
+     * The name of the email that is used to log into the email relay server
+     * when sending a verification email if the local emailer fails.
      * Should be a valid email address.
      */
     ADMIN_EMAIL("admin@gns.name"),
     /**
-     * The name of the email reply to that is used when sending a verification email.
-     * Should be a valid email address.
+     * The the email account password that is used when sending a verification email
+     * if the local emailer fails.
+     * Should be the empty string if you don't want to use the relay emailer.
      */
-    ADMIN_PASSWORD("deadDOG8"),
-    /**
-     * A url that will lookup status for the application when passed a HRN.
-     */
-    STATUS_URL("http://127.0.0.1/status?alias="),
+    ADMIN_PASSWORD(""),
     /**
      * Does the verification email include text about validating using the CLI.
      */
     INCLUDE_CLI_NOTIFICATION(false),
+    /**
+     * A url that will lookup status for the application when passed a HRN.
+     */
+    STATUS_URL("http://127.0.0.1/status?alias="),
     /**
      * Set to "all" or a node id if you want to start an instance of the LocalNameServer when the app starts.
      */

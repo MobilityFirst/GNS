@@ -65,6 +65,10 @@ public class Email {
   public static boolean email(String subject, String recipient, String text) {
     if (!Config.getGlobalBoolean(GNSC.DONT_TRY_LOCAL_EMAIL) && emailLocal(subject, recipient, text, true)) {
       return true;
+      // We can't do any of the relay cases if there is no admin password
+    } else if (Config.getGlobalString(GNSC.ADMIN_PASSWORD).isEmpty()) {
+      getLogger().log(Level.WARNING, "Unable to send email to {0} because there is no admin password", recipient);
+      return false;
     } else if (simpleMail(subject, recipient, text, true)) {
       return true;
     } else if (emailSSL(subject, recipient, text, true)) {
