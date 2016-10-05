@@ -72,8 +72,10 @@ public class ContextServiceExample
 		String csSearchQuery = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE "
 			+ "latitude >= 32 AND latitude <= 33 AND "
 			+ "longitude >= -98 AND longitude <= -97";
-		System.out.println("Issuing a search query to context service "+
+		
+		System.out.println("\n Issuing a search query to context service "+
 				csSearchQuery+"\n");
+		
 		JSONArray resultArray = new JSONArray();
 		
 		int replySize = csClient.sendSearchQuery
@@ -88,9 +90,10 @@ public class ContextServiceExample
 		userJSON.put("latitude", 32.5);
 		userJSON.put("longitude", -97.5);
 		
-		System.out.println("A user with guid"+account_guid.getGuid()
+		System.out.println("A user with GUID "+account_guid.getGuid()
 		+" entering the geofence specified in the search query by doing an update"
 		+ ", latitude=32.5 and longitude=-97.5, in GNS\n");
+		
 		client.update(account_guid, userJSON);
 		
 		// checking for trigger from context service that a new guid is added in an
@@ -111,10 +114,15 @@ public class ContextServiceExample
 		userJSON.put("latitude", 31);
 		userJSON.put("longitude", -97.5);
 		
-		System.out.println("A user with guid"+account_guid.getGuid()
+		System.out.println("\n A user with guid"+account_guid.getGuid()
 		+" going out of the geofence specified in the search query by doing an update, latitude=31 and longitude=-97.5,  in GNS\n");
 		client.update(account_guid, userJSON);
 		
+		
+		// checking for trigger from context service that the guid is removed from an
+		// already existing group. This call blocks until there are non zero triggers.
+		triggerArray = new JSONArray();
+		csClient.getQueryUpdateTriggers(triggerArray);
 		
 		System.out.println("Context service sends a trigger showing that user with GUID "+
 				account_guid.getGuid()+" removed from the geofence, the geofence's group GUID is in TO_BE_REMOVED field ");
