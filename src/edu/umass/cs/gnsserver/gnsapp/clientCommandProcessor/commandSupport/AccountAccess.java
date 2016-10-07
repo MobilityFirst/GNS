@@ -39,6 +39,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
@@ -464,7 +465,7 @@ public class AccountAccess {
   private static final String PROBLEM_NOTICE = "There is some system problem in sending "
           + "your confirmation email to %s. "
           + "Your account has been created. Please email us at %s and we will attempt to fix the problem.\n";
-  
+
   private static final String ADMIN_BODY = "This is an automated message informing "
           + "you that %1$s has created an account for %2$s on the GNS server at %3$s.\n"
           + "You can view their information using the link below:"
@@ -685,63 +686,32 @@ public class AccountAccess {
               BAD_RESPONSE + " " + VERIFICATION_ERROR
               + " Account not verified");
     }
-    if (verifyPassword(accountInfo, password)) {
-      GuidInfo guidInfo;
-      if ((guidInfo = lookupGuidInfoLocally(guid, handler)) == null) {
-        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR,
-                GNSCommandProtocol.BAD_RESPONSE + " "
-                + GNSCommandProtocol.BAD_ACCOUNT + " "
-                + "Unable to read guid info");
-      } else {
-        guidInfo.setPublicKey(publicKey);
-        guidInfo.noteUpdate();
-        if (updateGuidInfoNoAuthentication(guidInfo, handler)) {
-          return new CommandResponse(GNSResponseCode.NO_ERROR,
-                  GNSProtocol.OK_RESPONSE.toString() + " "
-                  + "Public key has been updated.");
-        } else {
-          return new CommandResponse(GNSResponseCode.UPDATE_ERROR,
-                  GNSCommandProtocol.BAD_RESPONSE + " "
-                  + GNSCommandProtocol.UNSPECIFIED_ERROR
-                  + " " + "Unable to update guid info");
-        }
-      }
-    } else {
+    if (!password.equals(accountInfo.getPassword())) {
       return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR,
               GNSCommandProtocol.BAD_RESPONSE + " "
               + GNSCommandProtocol.VERIFICATION_ERROR + " "
               + "Password mismatch");
     }
-  }
-
-  // synchronized use of the MessageDigest
-  private static synchronized boolean verifyPassword(AccountInfo accountInfo,
-          String password) {
-    try {
-      messageDigest.update((password + SALT + accountInfo
-              .getName()).getBytes("UTF-8"));
-      return accountInfo.getPassword().equals(
-              encryptPassword(password, accountInfo.getName()));
-    } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-      GNSConfig.getLogger().log(Level.WARNING,
-              "Problem hashing password:{0}", e);
-      return false;
+    GuidInfo guidInfo;
+    if ((guidInfo = lookupGuidInfoLocally(guid, handler)) == null) {
+      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR,
+              GNSCommandProtocol.BAD_RESPONSE + " "
+              + GNSCommandProtocol.BAD_ACCOUNT + " "
+              + "Unable to read guid info");
+    } else {
+      guidInfo.setPublicKey(publicKey);
+      guidInfo.noteUpdate();
+      if (updateGuidInfoNoAuthentication(guidInfo, handler)) {
+        return new CommandResponse(GNSResponseCode.NO_ERROR,
+                GNSProtocol.OK_RESPONSE.toString() + " "
+                + "Public key has been updated.");
+      } else {
+        return new CommandResponse(GNSResponseCode.UPDATE_ERROR,
+                GNSCommandProtocol.BAD_RESPONSE + " "
+                + GNSCommandProtocol.UNSPECIFIED_ERROR
+                + " " + "Unable to update guid info");
+      }
     }
-  }
-
-  // Code is duplicated in all of the clients (currently java, php, iphone).
-  // function encryptPassword($password, $username) {
-  // return base64_encode(hash('sha256', $password . "42shabiz" . $username,
-  // true));
-  // }
-  private static final String SALT = "42shabiz";
-
-  // synchronized use of the MessageDigest
-  private static synchronized String encryptPassword(String password,
-          String alias) throws NoSuchAlgorithmException,
-          UnsupportedEncodingException {
-    messageDigest.update((password + SALT + alias).getBytes("UTF-8"));
-    return Base64.encodeToString(messageDigest.digest(), false);
   }
 
   /**
@@ -782,6 +752,7 @@ public class AccountAccess {
         // username and public key
         // this one could fail if someone uses the same public key to
         // register another one... that's a nono
+        // Note that password here is base64 encoded
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
         accountInfo.noteUpdate();
         // if email verifications are off we just set it to verified
@@ -1513,12 +1484,12 @@ public class AccountAccess {
       return GNSResponseCode.JSON_PARSE_ERROR;
     }
   }
-  
+
   private static boolean updateAccountInfoLocallyNoAuthentication(
           AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
     return updateAccountInfoNoAuthentication(accountInfo, handler, false);
   }
-  
+
   private static boolean updateAccountInfoNoAuthentication(
           AccountInfo accountInfo, ClientRequestHandlerInterface handler,
           boolean remoteUpdate) {
@@ -1607,17 +1578,16 @@ public class AccountAccess {
 //    );
 //    System.out.println(emailBody);
 //    boolean emailOK = Email.email("GNS Account Verification", name, emailBody);
-    
-     String adminBody = String.format(ADMIN_BODY,
-                        Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), // 1$
-                        name, // 2$
-                        hostPortString, // 3$
-                        Config.getGlobalString(GNSConfig.GNSC.STATUS_URL)); //4$ 
-     System.out.println(adminBody);
-     boolean emailOK =Email.email("GNS Account Notification",
-                Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL),
-                adminBody);
-     
-    
+
+    String adminBody = String.format(ADMIN_BODY,
+            Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), // 1$
+            name, // 2$
+            hostPortString, // 3$
+            Config.getGlobalString(GNSConfig.GNSC.STATUS_URL)); //4$ 
+    System.out.println(adminBody);
+    boolean emailOK = Email.email("GNS Account Notification",
+            Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL),
+            adminBody);
+
   }
 }

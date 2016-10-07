@@ -675,6 +675,7 @@ public enum CommandType {
             GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
+ 
   RemoveAlias(441, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAlias.class,
           CommandResultType.NULL, false, false,
           "Removes the alias from the account associated with the GUID. "
@@ -705,6 +706,10 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
+   RemoveAccountWithPassword(445, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccountWithPassword.class,
+          CommandResultType.NULL, false, false,
+          "Removes the account GUID associated with the human readable name authorized by the account password.",
+          new String[]{GNSCommandProtocol.NAME, GNSCommandProtocol.PASSWORD}),
   SetPassword(450, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.SetPassword.class,
           CommandResultType.NULL, true, false,
           "Sets the password. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.",

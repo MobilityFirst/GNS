@@ -36,6 +36,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
 import java.io.IOException;
@@ -76,7 +77,7 @@ public class RegisterAccount extends BasicCommand {
     String password = json.getString(PASSWORD);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-
+    
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     // FIXME: this lacking signature check is for temporary backward compatability... remove it.
     // See RegisterAccountUnsigned

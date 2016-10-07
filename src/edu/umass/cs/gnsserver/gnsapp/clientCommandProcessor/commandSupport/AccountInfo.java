@@ -45,16 +45,16 @@ import java.util.Set;
  */
 public class AccountInfo {
 
-  private String name;
-  private String guid;
+  private final String name;
+  private final String guid;
   // This is reserved for future use.
-  private String type;
-  private Set<String> aliases;
-  private Set<String> guids;
-  private Date created;
+  private final String type;
+  private final Set<String> aliases;
+  private final Set<String> guids;
+  private final Date created;
   private Date updated;
   /**
-   * An encrypted password
+   * An encrypted and base64 encoded password
    */
   private String password;
   /**

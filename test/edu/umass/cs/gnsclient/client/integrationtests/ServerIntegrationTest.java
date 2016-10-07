@@ -455,6 +455,52 @@ public class ServerIntegrationTest extends DefaultTest {
       failWithStackTrace("Exception while doing Lookup testGuid: ", e);
     }
   }
+  
+  private static String ACCOUNT_TO_REMOVE_WITH_PASSWORD = "passwordremovetest@gns.name";
+  private static final String REMOVE_ACCOUNT_PASSWORD = "removalPassword";
+  private static GuidEntry accountToRemoveGuid;
+  
+  @Test
+  public void test_035_RemoveAccountWithPasswordCreateAccount() {
+    try {
+      accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD, true);
+    } catch (Exception e) {
+      fail("Exception creating account in RemoveAccountWithPasswordTest: " + e);
+    }
+  }
+
+  @Test
+  public void test_036_RemoveAccountWithPasswordCheckAccount() {
+    try {
+      // this should be using the guid
+      client.lookupAccountRecord(accountToRemoveGuid.getGuid());
+    } catch (ClientException e) {
+      fail("lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " failed.");
+    } catch (IOException e) {
+      fail("Exception while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
+    }
+  }
+
+  @Test
+  public void test_037_RemoveAccountWithPasswordRemoveAccount() {
+    try {
+      client.accountGuidRemoveWithPassword(ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD);
+    } catch (Exception e) {
+      fail("Exception while removing masterGuid in RemoveAccountWithPasswordTest: " + e);
+    }
+  }
+
+  @Test
+  public void test_038_RemoveAccountWithPasswordCheckAccountAfterRemove() {
+    try {
+      client.lookupGuid(ACCOUNT_TO_REMOVE_WITH_PASSWORD);
+      fail("lookupGuid for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " should have throw an exception.");
+    } catch (ClientException e) {
+
+    } catch (IOException e) {
+      fail("Exception in RemoveAccountWithPasswordTest while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
+    }
+  }
 
   @Test
   public void test_040_LookupPrimaryGuid() {

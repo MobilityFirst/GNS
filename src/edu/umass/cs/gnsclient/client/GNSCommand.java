@@ -1020,18 +1020,11 @@ public class GNSCommand extends CommandPacket {
           GuidEntry guidEntry, String password)
           throws UnsupportedEncodingException, IOException, ClientException,
           InvalidGuidException, NoSuchAlgorithmException {
-    return //password != null
-            //            ? 
-            getCommand(CommandType.RegisterAccount,
-                    guidEntry, NAME, alias, PUBLIC_KEY, Base64.encodeToString(
-                            guidEntry.publicKey.getEncoded(), false),
-                    PASSWORD,
-                    password != null ? Base64.encodeToString(Password.encryptPassword(password, alias), false)
-                            : "");
-//            : getCommand(CommandType.RegisterAccountSansPassword,
-//                    guidEntry.getPrivateKey(), guidEntry.publicKey, NAME,
-//                    alias, PUBLIC_KEY, Base64.encodeToString(
-//                            guidEntry.publicKey.getEncoded(), false));
+    return getCommand(CommandType.RegisterAccount,
+            guidEntry, NAME, alias, PUBLIC_KEY, Base64.encodeToString(
+                    guidEntry.publicKey.getEncoded(), false),
+            PASSWORD,
+            password != null ? Password.encryptAndEncodePassword(password, alias) : "");
   }
 
   private static final CommandPacket aclAdd(String accessType,

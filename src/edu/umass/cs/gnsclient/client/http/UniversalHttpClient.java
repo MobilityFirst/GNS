@@ -1184,19 +1184,13 @@ public class UniversalHttpClient implements GNSClientInterface {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
     String command;
-    //if (password != null) {
     command = createQuery(
             CommandType.RegisterAccount, GNSCommandProtocol.NAME,
             URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString,
             GNSCommandProtocol.PASSWORD,
             password != null
-                    ? Base64.encodeToString(Password.encryptPassword(password, alias), false)
+                    ? Password.encryptAndEncodePassword(password, alias)
                     : "");
-//    } else {
-//      command = createQuery(
-//              CommandType.RegisterAccountSansPassword, GNSCommandProtocol.NAME,
-//              URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString);
-//    }
     return checkResponse(command, sendGetCommand(command));
 
   }

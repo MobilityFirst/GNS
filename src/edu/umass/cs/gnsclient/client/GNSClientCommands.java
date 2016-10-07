@@ -224,9 +224,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   private static CommandPacket getCommand(CommandType type, GuidEntry querier,
           Object... keysAndValues) throws ClientException {
     //GNSCommand packet = new GNSCommand(
-            //CommandPacket(randomLong(),
-            //CommandUtils.createAndSignCommand(type, querier, keysAndValues));
-	  CommandPacket packet = GNSCommand.getCommand(type, querier, keysAndValues);
+    //CommandPacket(randomLong(),
+    //CommandUtils.createAndSignCommand(type, querier, keysAndValues));
+    CommandPacket packet = GNSCommand.getCommand(type, querier, keysAndValues);
     return packet;
   }
 
@@ -631,11 +631,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public JSONObject lookupAccountRecord(String accountGuid)
           throws IOException, ClientException {
     try {
-      return new JSONObject(getResponse(
-              CommandType.LookupAccountRecord, GUID, accountGuid));
+      return new JSONObject(getResponse(CommandType.LookupAccountRecord, GUID, accountGuid));
     } catch (JSONException e) {
-      throw new ClientException(
-              "Failed to parse LOOKUP_ACCOUNT_RECORD response", e);
+      throw new ClientException("Failed to parse LOOKUP_ACCOUNT_RECORD response", e);
     }
   }
 
@@ -748,10 +746,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * 
+   *
    * @param guid
    * @return
-   * @throws Exception 
+   * @throws Exception
    */
   public String accountResendAuthenticationEmail(GuidEntry guid)
           throws Exception {
@@ -763,12 +761,23 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * Deletes the account given by name
    *
    * @param guid
-   * GuidEntry
    * @throws Exception
    */
   public void accountGuidRemove(GuidEntry guid) throws Exception {
     getResponse(CommandType.RemoveAccount, guid, GUID, guid.getGuid(),
             NAME, guid.getEntityName());
+  }
+
+  /**
+   * Deletes the account given by name using the password to authenticate.
+   *
+   * @param name
+   * @param password
+   * @throws Exception
+   */
+  public void accountGuidRemoveWithPassword(String name, String password) throws Exception {
+    String encodedPassword = Password.encryptAndEncodePassword(password, name);
+    getResponse(CommandType.RemoveAccountWithPassword, NAME, name, PASSWORD, encodedPassword);
   }
 
   /**
@@ -1239,20 +1248,13 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
           throws UnsupportedEncodingException, IOException, ClientException,
           InvalidGuidException, NoSuchAlgorithmException {
     long startTime = System.currentTimeMillis();
-    String result
-            = //password != null ? 
-            getResponse(
-                    CommandType.RegisterAccount, guidEntry, NAME, alias,
-                    PUBLIC_KEY, Base64.encodeToString(
-                            guidEntry.publicKey.getEncoded(), false), PASSWORD,
-                    password != null
-                            ? Base64.encodeToString(
-                                    Password.encryptPassword(password, alias), false)
-                            : "");
-//            : getResponse(CommandType.RegisterAccountSansPassword,
-//                    guidEntry.getPrivateKey(), guidEntry.publicKey, NAME,
-//                    alias, PUBLIC_KEY, Base64.encodeToString(
-//                            guidEntry.publicKey.getEncoded(), false));
+    String result = getResponse(
+            CommandType.RegisterAccount, guidEntry, NAME, alias,
+            PUBLIC_KEY, Base64.encodeToString(
+                    guidEntry.publicKey.getEncoded(), false), PASSWORD,
+            password != null
+                    ? Password.encryptAndEncodePassword(password, alias)
+                    : "");
     DelayProfiler.updateDelay("accountGuidCreate", startTime);
     return result;
   }
@@ -2126,14 +2128,13 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   public void parameterSet(String field, Object value)
           throws Exception {
-	  //Create the admin account if it doesn't already exist.
-	  try{
-	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-	  }
-	  catch(DuplicateNameException dne){
-		  //Do nothing if it already exists.
-	  }
-	  getResponse(CommandType.SetParameter, NAME,
+    //Create the admin account if it doesn't already exist.
+    try {
+      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+    } catch (DuplicateNameException dne) {
+      //Do nothing if it already exists.
+    }
+    getResponse(CommandType.SetParameter, NAME,
             "Admin", FIELD, field, VALUE, value);
   }
 
@@ -2144,84 +2145,80 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    *
    */
   public String parameterGet(String name) throws Exception {
-	  //Create the admin account if it doesn't already exist.
-	  try{
-	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-	  }
-	  catch(DuplicateNameException dne){
-		  //Do nothing if it already exists.
-	  }
+    //Create the admin account if it doesn't already exist.
+    try {
+      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+    } catch (DuplicateNameException dne) {
+      //Do nothing if it already exists.
+    }
     return getResponse(CommandType.GetParameter, NAME,
             "Admin", FIELD, name);
   }
-  
+
   /**
    * @return All system parameters and their values?
    * @throws Exception
    *
    */
   public String parameterList() throws Exception {
-	  //Create the admin account if it doesn't already exist.
-	  try{
-	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-	  }
-	  catch(DuplicateNameException dne){
-		  //Do nothing if it already exists.
-	  }
+    //Create the admin account if it doesn't already exist.
+    try {
+      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+    } catch (DuplicateNameException dne) {
+      //Do nothing if it already exists.
+    }
     return getResponse(CommandType.ListParameters, NAME,
             "Admin");
   }
+
   /**
-   * 
+   *
    * @return The contents of the GNS.
    * @throws Exception
    */
   public String dump() throws Exception {
-	  //Create the admin account if it doesn't already exist.
-	  try{
-	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-	  }
-	  catch(DuplicateNameException dne){
-		  //Do nothing if it already exists.
-	  }
+    //Create the admin account if it doesn't already exist.
+    try {
+      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+    } catch (DuplicateNameException dne) {
+      //Do nothing if it already exists.
+    }
     return getResponse(CommandType.Dump, NAME,
             "Admin");
   }
-  
+
   /**
-   *  Clears the local name server cache.
-   * @return 
+   * Clears the local name server cache.
+   *
+   * @return
    * @throws Exception
    */
   public String clearCache() throws Exception {
-	  //Create the admin account if it doesn't already exist.
-	  try{
-	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-	  }
-	  catch(DuplicateNameException dne){
-		  //Do nothing if it already exists.
-	  }
+    //Create the admin account if it doesn't already exist.
+    try {
+      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+    } catch (DuplicateNameException dne) {
+      //Do nothing if it already exists.
+    }
     return getResponse(CommandType.ClearCache, NAME,
             "Admin");
   }
-  
+
   /**
-   * 
-   * @return  Returns the contents of the local name server cache.
+   *
+   * @return Returns the contents of the local name server cache.
    * @throws Exception
    */
   public String dumpCache() throws Exception {
-	  //Create the admin account if it doesn't already exist.
-	  try{
-	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-	  }
-	  catch(DuplicateNameException dne){
-		  //Do nothing if it already exists.
-	  }
+    //Create the admin account if it doesn't already exist.
+    try {
+      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+    } catch (DuplicateNameException dne) {
+      //Do nothing if it already exists.
+    }
     return getResponse(CommandType.DumpCache, NAME,
             "Admin");
   }
-  
 
   @Override
   public void close() {
