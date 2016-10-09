@@ -85,6 +85,13 @@ public class GNSClientConfig {
 		 * CommandValueReturnPacket, etc.
 		 */
 		BYTE_MODE(0),
+		
+		/*
+		 * If set to true, the client uses java preferences to store keys rather than DerbyDB.
+		 * Specifically, KeyPairUtils class uses JavaPreferences instead of DerbyDB.
+		 * 
+		 */
+		USE_JAVA_PREFERENCE(false)
 
 		;
 
@@ -107,6 +114,12 @@ public class GNSClientConfig {
 		@Override
 		public String getDefaultConfigFile() {
 			return "gns.client.properties";
+		}
+		
+		
+		public static boolean isJavapreferencesEnabled()
+		{
+			return Config.getGlobalBoolean(GNSCC.USE_JAVA_PREFERENCE);
 		}
 	}
 

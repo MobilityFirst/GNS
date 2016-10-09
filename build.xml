@@ -182,7 +182,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
   </target>
     
 
-  <target name="jar" depends="server_jarbuild, client_jarbuild, client_console_jarbuild">
+  <target name="jar" depends="server_jarbuild, client_jarbuild, client_console_jarbuild, msocket-jar, msocket-proxy-console-jar">
     <symlink link="${build.jar.dir}/GNS.jar" overwrite="yes"
                  resource="gnsserver-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
     <symlink link="${build.jar.dir}/GNSClient.jar" overwrite="yes"
@@ -663,18 +663,16 @@ integration tests sequentially"
   description="Build both mSocket and proxy jars" />-->
 
   <target name="msocket-jar"
-          depends="clean,compile,msocketdoc"
+          depends="compile"
           description="Builds the mSocket Jar">
     <mkdir dir="${build.jar.dir}"/>
-    <jar jarfile="${build.jar.dir}/msocket-${VERSION}-${RELEASE}.jar">
+    <jar jarfile="${build.jar.dir}/msocket.jar">
 		
       <!-- including gns client -->
       <fileset refid="client.includes"/>
       <fileset refid="client.keystore" />
       <zipgroupfileset refid="client.lib" />
-		
-      <!-- include log4j, to be removed at some point -->
-      <zipgroupfileset dir="${lib.dir}" includes="log4j*.jar" />
+
 		
       <!-- including msocket core code -->
       <fileset dir="${build.classes.dir}">
@@ -683,18 +681,13 @@ integration tests sequentially"
         <exclude name="edu/umass/cs/msocket/proxy/**" />
         <exclude name="edu/umass/cs/msocket/watchdog/**" />
       </fileset>
-		
-      <!-- including context service messages -->
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/contextservice/messages/*.class"/>
-		
-      <!-- including config files -->
-      <fileset dir="${conf.dir}/msocketFiles">
-        <include name="topLevelDomainNames.txt" />
+
+      <fileset dir="${conf.dir}">
+        <include name="gnsclient.msocket.properties" />
+	<include name="trustStore.jks" />
+	<include name="keyStore.jks" />
       </fileset>
-	 
-      <fileset dir="${conf.dir}/msocketFiles">
-        <include name="contextServiceNodeSetup.txt" />
-      </fileset>
+
 	  
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
@@ -709,34 +702,26 @@ integration tests sequentially"
   </target>
 	
   <target name="msocket-proxy-console-jar"
-          depends="clean,compile,msocketdoc"
+          depends="compile"
           description="Builds the mSocket proxy console Jar">
     <mkdir dir="${build.jar.dir}"/>
-    <jar jarfile="${build.jar.dir}/msocket-proxy-console-${VERSION}-${RELEASE}.jar">
+    <jar jarfile="${build.jar.dir}/msocket-proxy-console.jar">
 			
       <!-- including gns client -->
       <fileset refid="client.includes"/>
       <fileset refid="client.keystore" />
       <zipgroupfileset refid="client.lib" />
-			
-      <!-- include log4j, to be removed at some point -->
-      <zipgroupfileset dir="${lib.dir}" includes="log4j*.jar" />
+
 			
       <!-- including msocket core code -->
       <fileset dir="${build.classes.dir}">
         <include name="edu/umass/cs/msocket/**" />
       </fileset>
-			
-      <!-- including context service messages -->
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/contextservice/messages/*.class"/>
-			
-      <!-- including config files -->
-      <fileset dir="${conf.dir}/msocketFiles">
-        <include name="topLevelDomainNames.txt" />
-      </fileset>
-		 
-      <fileset dir="${conf.dir}/msocketFiles">
-        <include name="contextServiceNodeSetup.txt" />
+
+      <fileset dir="${conf.dir}">
+        <include name="gnsclient.msocket.properties" />
+	<include name="trustStore.jks" />
+	<include name="keyStore.jks" />
       </fileset>
 			
       <fileset dir="${src.dir}">

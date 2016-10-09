@@ -24,16 +24,12 @@ package edu.umass.cs.msocket.contextsocket;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.MSocket;
 
 
 public class ContextSocketOutputStream extends OutputStream
 {
 	private final MSocket thisMSocket;
-	
-	private static Logger log = Logger.getLogger(ContextSocketOutputStream.class.getName());
 
 	public ContextSocketOutputStream(MSocket accptMSocket) 
 	{
@@ -90,7 +86,7 @@ public class ContextSocketOutputStream extends OutputStream
 	{
 		if(memberMSocketInfo == null)
 		{
-			log.trace("returned socket info null, should not happen");
+			MSocketLogger.getLogger().fine("returned socket info null, should not happen");
 		}
 		
 		synchronized(memberMSocketInfo)
@@ -105,7 +101,7 @@ public class ContextSocketOutputStream extends OutputStream
 				retSocket.getOutputStream().write(sentByteArray, 0, sentByteArray.length);
 			} catch (Exception e)
 			{
-				log.trace("write failed");
+				MSocketLogger.getLogger().fine("write failed");
 				memberMSocketInfo.setAccptMSocket(null);
 				e.printStackTrace();
 			}

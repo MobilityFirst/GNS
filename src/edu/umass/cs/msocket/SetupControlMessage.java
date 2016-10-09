@@ -22,9 +22,15 @@
 
 package edu.umass.cs.msocket;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class implements the setup control message format, serialization and
@@ -185,12 +191,12 @@ public class SetupControlMessage
   public final int         port;                                         // udp
                                                                           // controller
                                                                           // port
-  public final long        flowID;
+  public final long        connID;
   public final int         ackSeq;
-  public final int         MesgType;
-  public final int         SocketId;
+  public final int         mesgType;
+  public final int         socketID;
 
-  public final int         ProxyId;                                      // ID
+  public final int         proxyID;                                      // ID
                                                                           // of
                                                                           // the
                                                                           // connection
@@ -202,30 +208,31 @@ public class SetupControlMessage
 
   public final byte[]      GUID                 = new byte[SIZE_OF_GUID];
 
-  public SetupControlMessage(InetAddress ia, int p, long fid, int as, int mstype, int SocketId,
-      int ProxyId, byte[] GUID)
+  public SetupControlMessage(InetAddress ia, int p, long connid, 
+		  int as, int mstype, int socketid,
+      int proxyid, byte[] guid)
   {
-    iaddr = ia;
-    port = p;
-    flowID = fid;
-    ackSeq = as;
-    MesgType = mstype;
-    this.SocketId = SocketId;
-
-    this.ProxyId = ProxyId;
-    System.arraycopy(GUID, 0, this.GUID, 0, SIZE_OF_GUID);
+    this.iaddr = ia;
+    this.port = p;
+    this.connID = connid;
+    this.ackSeq = as;
+    this.mesgType = mstype;
+    this.socketID = socketid;
+    
+    this.proxyID = proxyid;
+    System.arraycopy(guid, 0, this.GUID, 0, SIZE_OF_GUID);
   }
 
   public byte[] getBytes() throws UnknownHostException
   {
     ByteBuffer buf = ByteBuffer.allocate(SetupControlMessage.SIZE);
-    buf.put(iaddr.getAddress());
-    buf.putInt(port);
-    buf.putLong(flowID);
-    buf.putInt(ackSeq);
-    buf.putInt(MesgType);
-    buf.putInt(SocketId);
-    buf.putInt(ProxyId);
+    buf.put(this.iaddr.getAddress());
+    buf.putInt(this.port);
+    buf.putLong(this.connID);
+    buf.putInt(this.ackSeq);
+    buf.putInt(this.mesgType);
+    buf.putInt(this.socketID);
+    buf.putInt(this.proxyID);
     buf.put(this.GUID, 0, SIZE_OF_GUID);
     buf.flip();
     return buf.array();
@@ -239,7 +246,7 @@ public class SetupControlMessage
     byte[] ia = new byte[ControlMessage.INET_ADDR_SIZE];
     buf.get(ia);
     int port = buf.getInt();
-    long flowID = buf.getLong();
+    long connID = buf.getLong();
     int ackSeq = buf.getInt();
     int mesgType = buf.getInt();
     int socketId = buf.getInt();
@@ -247,16 +254,106 @@ public class SetupControlMessage
     byte[] GUID = new byte[SIZE_OF_GUID];
     buf.get(GUID);
 
-    SetupControlMessage cm = new SetupControlMessage(InetAddress.getByAddress(ia), port, flowID, ackSeq, mesgType,
+    SetupControlMessage cm = new SetupControlMessage(InetAddress.getByAddress(ia), port, 
+    		connID, ackSeq, mesgType,
        socketId, proxyId, GUID);
     return cm;
   }
 
   public String toString()
   {
-    String s = "[" + iaddr + ", " + port + ", " + flowID + "]";
+    String s = "[" + iaddr + ", " + port + ", " + connID + "]";
     return s;
   }
+  
+  /**
+   * Reads setup control message from a channel
+   * Synchronization of this methid is caller's responsibility
+   * @param scToUse
+   * @return
+   * @throws IOException
+   */
+  public static SetupControlMessage setupControlRead(SocketChannel scToUse) throws IOException
+  {
+    ByteBuffer buf = ByteBuffer.allocate(SetupControlMessage.SIZE);
+    scToUse.socket().setSoTimeout(MSocket.MSOCKET_HANDSHAKE_TIMEOUT);
+
+    int ret = 0;
+    while (ret < SetupControlMessage.SIZE)
+    {
+      MSocketLogger.getLogger().fine("setup control read happening");
+      InputStream is = scToUse.socket().getInputStream();
+      try
+      {
+        int currRead = is.read(buf.array(), ret, SetupControlMessage.SIZE - ret);
+        MSocketLogger.getLogger().fine("read " + ret + " bytes");
+        if (currRead == -1)
+        {
+          if (ret < SetupControlMessage.SIZE)
+          {
+            throw new java.net.ConnectException("Invalid handshake packet, probably not connected to an MServerSocket");
+          }
+        }
+        else
+          ret += currRead;
+      }
+      catch (SocketTimeoutException e)
+      {
+        throw new SocketTimeoutException("Timeout while establishing connection with MServerSocket.");
+      }
+    }
+    MSocketLogger.getLogger().fine("setup control read complete");
+
+    SetupControlMessage scm = SetupControlMessage.getSetupControlMessage(buf.array());
+    return scm;
+  }
+  
+  /**
+   * Synchronization of this method is callers responsibility
+   * @param ControllerAddress
+   * @param lfid
+   * @param mstype
+   * @param ControllerPort
+   * @param SCToUse
+   * @param SocketId
+   * @param ProxyId
+   * @param GUID
+   * @param connectTime
+   * @param cinfo
+   * @throws IOException
+   */
+  public static void setupControlWrite
+  		(InetAddress ControllerAddress, long lfid, int mstype, int ControllerPort,
+	      SocketChannel SCToUse, int SocketId, int ProxyId, byte[] GUID, 
+	      long connectTime, ConnectionInfo cinfo) 
+	    		  throws IOException
+  {
+	  int DataAckSeq = 0;
+	  if (cinfo != null)
+	  {
+		  {
+			  DataAckSeq = cinfo.getDataAckSeq();
+	      }
+	  }
+	  
+	  if (mstype == SetupControlMessage.NEW_CON_MESG || 
+			  mstype == SetupControlMessage.ADD_SOCKET)
+	  {
+		  DataAckSeq = (int) connectTime;
+		  MSocketLogger.getLogger().fine("Connect time " + DataAckSeq);
+	  }
+
+	    SetupControlMessage scm = new SetupControlMessage(ControllerAddress, ControllerPort, lfid, DataAckSeq, mstype,
+	        SocketId, ProxyId, GUID);
+	    ByteBuffer buf = ByteBuffer.wrap(scm.getBytes());
+
+	    while (buf.remaining() > 0)
+	    {
+	      SCToUse.write(buf);
+	    }
+
+	    MSocketLogger.getLogger().fine("Sent IP:port " + ControllerPort + "; ackSeq = " + (cinfo != null ? DataAckSeq : 0));
+	  }
 
   public static void main(String[] args)
   {
@@ -268,7 +365,7 @@ public class SetupControlMessage
       // byte[] enc = scm.getBytes();
       // SetupControlMessage dec =
       // SetupControlMessage.getSetupControlMessage(enc);
-      // log.debug(dec);
+      // MSocketLogger.getLogger().fine(dec);
     }
     catch (Exception e)
     {

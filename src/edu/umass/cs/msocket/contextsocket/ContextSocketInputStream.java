@@ -24,8 +24,6 @@ package edu.umass.cs.msocket.contextsocket;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.MSocket;
 
 public class ContextSocketInputStream extends InputStream
@@ -40,8 +38,6 @@ public class ContextSocketInputStream extends InputStream
 	// The inputstream reads bytes in chunks
 	// dones't read all bytes in chunks.
 	private int numBytesRem 									= 0;
-	
-	private static Logger log = Logger.getLogger(ContextSocketInputStream.class.getName());
 	
 	public ContextSocketInputStream(MSocket thisMSocket)
 	{
@@ -262,7 +258,7 @@ public class ContextSocketInputStream extends InputStream
 //		Vector<MSocket> currMSockets = new Vector<MSocket>();
 //		currMSockets.addAll( (Collection<? extends MSocket>) msocketGroupMemberInternalsObj.memberConnectionMapOperations(
 //				MSocketGroupMemberInternals.GET_ALL, "", null));
-//		log.trace("currMSockets size "+currMSockets.size());
+//		MSocketLogger.getLogger().fine("currMSockets size "+currMSockets.size());
 //		
 //		synchronized(msocketGroupMemberInternalsObj.accptMonitor)
 //		{
@@ -278,7 +274,7 @@ public class ContextSocketInputStream extends InputStream
 //				currMSockets.clear();
 //				currMSockets.addAll( (Collection<? extends MSocket>) msocketGroupMemberInternalsObj.memberConnectionMapOperations(
 //						MSocketGroupMemberInternals.GET_ALL, "", null));
-//				log.trace("currMSockets size "+currMSockets.size());
+//				MSocketLogger.getLogger().fine("currMSockets size "+currMSockets.size());
 //			}
 //		}
 		

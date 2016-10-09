@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client.util;
+package edu.umass.cs.gnsclient.client.util.keystorage;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.sql.Connection;

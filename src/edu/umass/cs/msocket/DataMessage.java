@@ -25,7 +25,7 @@ package edu.umass.cs.msocket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class defines the data message format, every data is sent encapsulated
@@ -81,7 +81,6 @@ public class DataMessage
   
   // stores the beginning position of data copy in the given buffer.
   private final int arrayCopyOffset;
-  private static Logger  log            = Logger.getLogger(DataMessage.class.getName());
 
   /*
    * If the byte[] argument b is null or longer than the specified length
@@ -126,7 +125,7 @@ public class DataMessage
     	buf.put(msg, arrayCopyOffset, length);
     	if(length>0)
     	{
-    		log.trace("DataMessage: msg[0] "+msg[0]);
+    		MSocketLogger.getLogger().fine("DataMessage: msg[0] "+msg[0]);
     	}
       }
     buf.flip();
@@ -171,6 +170,6 @@ public class DataMessage
 
     DataMessage dec = DataMessage.getDataMessage(enc);
     enc[11] = 98;
-    log.debug(dec);
+    MSocketLogger.getLogger().fine(dec.toString());
   }
 }

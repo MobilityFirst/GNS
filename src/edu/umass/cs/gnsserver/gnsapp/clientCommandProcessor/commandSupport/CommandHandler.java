@@ -146,7 +146,7 @@ public class CommandHandler {
     // reply to client is true, this means this is the active replica
     // that recvd the request from the gnsClient. So, let's check for
     // sending trigger to Context service here.
-    if (AppOptionsOld.enableContextService) {
+    if ( GNSConfig.GNSC.isCSEnabled() ) {
       if (!doNotReplyToClient) {
 
         if (commandHandler.getClass().getSuperclass() == AbstractUpdate.class) {
@@ -162,6 +162,7 @@ public class CommandHandler {
         }
       }
     }
+    
   }
 
   // This little dance is because we need to remove the signature to get the

@@ -21,32 +21,6 @@
 
 package edu.umass.cs.msocket.proxy.legacyforwarder;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.Enumeration;
-import java.util.Vector;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.apache.log4j.Logger;
-
-import edu.umass.cs.msocket.AcceptConnectionQueue;
-import edu.umass.cs.msocket.proxy.forwarder.ProxyForwarder;
-import edu.umass.cs.msocket.proxy.forwarder.ProxyMSocket;
-import edu.umass.cs.msocket.proxy.forwarder.ProxyServerSocket;
-
 public class LegacyProxyServerSocket 
 {
 	  /*private ServerSocketChannel   	ssc        = null;
@@ -204,7 +178,7 @@ public class LegacyProxyServerSocket
 	    {
 	      // read and service request on socket
 	      // FIXME: check for how to handle exceptions here
-	      log.trace("new connection accepted by socket channel");
+	      MSocketLogger.getLogger().fine("new connection accepted by socket channel");
 
 	      LegacyProxyMSocket ms = null;
 	      try
@@ -220,7 +194,7 @@ public class LegacyProxyServerSocket
 	        // transitoion into all ready state as well
 	      }
 
-	      log.trace("Accepted connection from " + ms.getInetAddress() + ":" + ms.getPort());
+	      MSocketLogger.getLogger().fine("Accepted connection from " + ms.getInetAddress() + ":" + ms.getPort());
 
 	      acceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, ms);
 	      synchronized (monitor)
@@ -233,7 +207,7 @@ public class LegacyProxyServerSocket
 
 	  private void BlockForAccept()
 	  {
-	    log.trace("accept called");
+	    MSocketLogger.getLogger().fine("accept called");
 	    synchronized (monitor)
 	    {
 	      while ((Integer) acceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.GET_SIZE, null) == 0)
@@ -248,7 +222,7 @@ public class LegacyProxyServerSocket
 	        }
 	      }
 	    }
-	    log.trace("new connection socket ready");
+	    MSocketLogger.getLogger().fine("new connection socket ready");
 	  }
 
 	  private class AcceptThreadPool implements Runnable
@@ -315,7 +289,7 @@ public class LegacyProxyServerSocket
 	            }
 	            else
 	            {
-	              log.trace("Interface IP " + IP);
+	              MSocketLogger.getLogger().fine("Interface IP " + IP);
 	              CurrentInterfaceIPs.add(inetAddress);
 	            }
 	          }

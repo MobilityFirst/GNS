@@ -25,10 +25,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.ConnectionInfo;
 import edu.umass.cs.msocket.MWrappedOutputStream;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 
 public class RoundRobinMultipathScheduler extends MultipathSchedulerInterface
@@ -38,8 +37,6 @@ public class RoundRobinMultipathScheduler extends MultipathSchedulerInterface
 	
 	// returns path in round robin manner
 	private int nextPathIndex				  			= 0;
-	
-	private static Logger  log              			= Logger.getLogger(RoundRobinMultipathScheduler.class.getName());
 	
 	public RoundRobinMultipathScheduler(ConnectionInfo cinfo)
 	{
@@ -52,7 +49,7 @@ public class RoundRobinMultipathScheduler extends MultipathSchedulerInterface
 	public void initializeScheduler(int startSeqNum, int numChunks,
 			List<Integer> activePathIDs)
 	{
-		log.debug("initializeScheduler(): result startSeqNum " + startSeqNum +
+		MSocketLogger.getLogger().fine("initializeScheduler(): result startSeqNum " + startSeqNum +
 				" numChunks "+numChunks);
 		this.startSeqNum = startSeqNum;
 		this.numChunks = numChunks;
@@ -72,7 +69,7 @@ public class RoundRobinMultipathScheduler extends MultipathSchedulerInterface
 			
 			ChunkInformation chunkInfo = new ChunkInformation(tempStartSeqNum, nextPathId, 0);
 			//chunkInfoMap.put(tempStartSeqNum, chunkInfo);
-			log.debug("getSchedulingScheme(): result tempStartSeqNum "+tempStartSeqNum+
+			MSocketLogger.getLogger().fine("getSchedulingScheme(): result tempStartSeqNum "+tempStartSeqNum+
 					" favoritePathId "+nextPathId);
 			tempStartSeqNum  += MWrappedOutputStream.WRITE_CHUNK_SIZE;
 			result.add(chunkInfo);

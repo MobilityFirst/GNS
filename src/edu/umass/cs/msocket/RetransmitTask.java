@@ -28,7 +28,7 @@ import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 /**
  * This class implements a timer to retransmit a message over a UDP channel.
@@ -48,7 +48,6 @@ public class RetransmitTask extends TimerTask
 
   private int                       txCount          = 0;
   private Timer                     timer;
-  private static Logger             log              = Logger.getLogger(RetransmitTask.class.getName());
 
   /**
    * in the constructor invocation either servercontroller is null or Mapping is
@@ -94,13 +93,13 @@ public class RetransmitTask extends TimerTask
 
       if (cmsg.getType() == ControlMessage.ACK_ONLY)
       {
-        log.trace("Sending ack " + cmsg);
+        MSocketLogger.getLogger().fine("Sending ack " + cmsg);
         retransmit();
       }
       else if (cinfo.getCtrlBaseSeq() <= cmsg.getSendseq())
       {
         if (txCount > 0)
-          log.trace("Retransmitting message " + cmsg + " coz baseseq=" + cinfo.getCtrlBaseSeq());
+          MSocketLogger.getLogger().fine("Retransmitting message " + cmsg + " coz baseseq=" + cinfo.getCtrlBaseSeq());
         retransmit();
         txCount++;
         if (txCount > MAX_RETRANSMIT)
@@ -110,13 +109,13 @@ public class RetransmitTask extends TimerTask
       }
       else
       {
-        log.trace("Completed delivery of message " + cmsg);
+        MSocketLogger.getLogger().fine("Completed delivery of message " + cmsg);
         timer.cancel();
       }
     }
     catch (IOException e)
     {
-      log.trace("IOException while retransmitting packet " + cmsg + "; canceling retransmission attempts");
+      MSocketLogger.getLogger().fine("IOException while retransmitting packet " + cmsg + "; canceling retransmission attempts");
       timer.cancel();
       e.printStackTrace();
     }

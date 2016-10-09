@@ -41,12 +41,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.common.CommonMethods;
-import edu.umass.cs.msocket.common.policies.NoProxyPolicy;
-import edu.umass.cs.msocket.common.policies.ProxySelectionPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.NoProxyPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.ProxySelectionPolicy;
 import edu.umass.cs.msocket.gns.Integration;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 import edu.umass.cs.msocket.mobility.MobilityManagerServer;
 
 /**
@@ -85,8 +84,6 @@ public class MServerSocket extends ServerSocket
   private String                  serverGUID          = "";
   private boolean                 isBound;
   private boolean                 isClosed;
-
-  private static Logger           log                 = Logger.getLogger(MServerSocket.class.getName());
 
   /**
    * Creates an unbound server socket.
@@ -279,7 +276,7 @@ public class MServerSocket extends ServerSocket
     }
     catch (Exception e)
     {
-      log.warn("Failed to unregister server socket " + getServerName() + " from GNS", e);
+    	MSocketLogger.getLogger().fine("Failed to unregister server socket " + getServerName() + " from GNS"+ e.getMessage());
     }
 
     isClosed = true;
@@ -353,7 +350,7 @@ public class MServerSocket extends ServerSocket
 	    	}
 	    	catch (Exception ex)
 	    	{
-	    		log.trace("registration with GNS failed "+ex);
+	    		MSocketLogger.getLogger().fine("registration with GNS failed "+ex);
 	    		//ex.printStackTrace();
 	    	}
 	    }
@@ -536,7 +533,8 @@ public class MServerSocket extends ServerSocket
    *          migrating the sockets
    * @throws Exception
    */
-  public void migrate(InetAddress localAddress, int localPort, ProxySelectionPolicy proxySelectionPolicy)
+  public void migrate(InetAddress localAddress, int localPort, 
+		  ProxySelectionPolicy proxySelectionPolicy)
       throws IOException
   {
     /*if (isServerBehindNAT())
@@ -560,7 +558,7 @@ public class MServerSocket extends ServerSocket
         for (int i = 0; i < vect.size(); i++)
         {
           ProxyInfo Obj = vect.get(i);
-          log.trace("removing proxy " + Obj.getProxyInfo());
+          MSocketLogger.getLogger().fine("removing proxy " + Obj.getProxyInfo());
           try
           {
         	  controller.getProxyConnObj().removeProxy(Obj.getProxyInfo(), Obj);
@@ -593,7 +591,12 @@ public class MServerSocket extends ServerSocket
         for (Iterator<InetSocketAddress> iterator = proxyVector.iterator(); iterator.hasNext();)
         {
           InetSocketAddress retProxy = iterator.next();
-          Integration.registerWithGNS(serverAlias, retProxy);
+          try {
+			Integration.registerWithGNS(serverAlias, retProxy);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
           ProxyInfo proxyInfo = new ProxyInfo(retProxy.getHostName(), retProxy.getPort());
           // just setting it to current time
@@ -613,15 +616,15 @@ public class MServerSocket extends ServerSocket
 		      }
 		      catch (Exception ex)
 		      {
-		        log.trace("registration with GNS failed "+ex);
-		        //ex.printStackTrace();
+		        MSocketLogger.getLogger().fine("registration with GNS failed "+ex);
+		        ex.printStackTrace();
 		      }
 	      }
         
         controller.initMigrateChildren(localAddress, serverListeningPort, UDPPort);
       }
 
-      log.trace("MServerSocket new UDP port of server " + UDPPort);
+      MSocketLogger.getLogger().fine("MServerSocket new UDP port of server " + UDPPort);
     }
   }
   
@@ -674,7 +677,7 @@ public class MServerSocket extends ServerSocket
 	    	}
 	    	catch(IOException ex)
 	    	{
-	    			log.trace("Unregister failed, contuining to register");
+	    			MSocketLogger.getLogger().fine("Unregister failed, contuining to register");
 	    			ex.printStackTrace();
 	    	}
 	      boolean firstTime = true;
@@ -682,7 +685,12 @@ public class MServerSocket extends ServerSocket
 	      for (Iterator<InetSocketAddress> iterator = proxyVector.iterator(); iterator.hasNext();)
 	      {
 	        InetSocketAddress retProxy = iterator.next();
-	        Integration.registerWithGNS(serverAlias, retProxy);
+	        try {
+				Integration.registerWithGNS(serverAlias, retProxy);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	        
 	        if(firstTime)
 	        {
@@ -692,7 +700,7 @@ public class MServerSocket extends ServerSocket
 	        }
 	        
 	        ProxyInfo proxyInfo = new ProxyInfo(retProxy.getHostName(), retProxy.getPort());
-	        log.info("proxy host name "+retProxy.getHostName() +" port "+retProxy.getPort());
+	        MSocketLogger.getLogger().fine("proxy host name "+retProxy.getHostName() +" port "+retProxy.getPort());
 	        proxyInfo.setActive(true);
 	        controller.getProxyConnObj().addProxy(proxyInfo.getProxyInfo(), proxyInfo);
 	      }
@@ -726,7 +734,7 @@ public class MServerSocket extends ServerSocket
 
   private void BlockForAccept()
   {
-    log.trace("accept called");
+    MSocketLogger.getLogger().fine("accept called");
     synchronized (monitor)
     {
       while ((Integer) AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.GET_SIZE, null) == 0)
@@ -741,7 +749,7 @@ public class MServerSocket extends ServerSocket
         }
       }
     }
-    log.trace("new connection socket ready");
+    MSocketLogger.getLogger().fine("new connection socket ready");
   }
 
   private void TimeOutWaitForaccept() throws InterruptedException, TimeoutException, ExecutionException
@@ -776,65 +784,69 @@ public class MServerSocket extends ServerSocket
    */
   private class Handler implements Runnable
   {
-    private final SocketChannel connectionSocketChannel;
-    private final MSocket proxyMSocket;
+	  private final SocketChannel connectionSocketChannel;
+	  private final MSocket proxyMSocket;
+	  
+	  public Handler(SocketChannel connectionSocketChannel, MSocket proxyMSocket)
+	  {
+		  this.connectionSocketChannel = connectionSocketChannel;
+		  this.proxyMSocket = proxyMSocket;
+	  }
+	  
+	  public void run()
+	  {
+		  if (!proxySelection.hasAvailableProxies())
+		  {
+			  	// read and service request on socket
+			  	// FIXME: check for how to handle exceptions here
+			  	MSocketLogger.getLogger().fine("new connection accepted by socket channel");
 
-    Handler(SocketChannel connectionSocketChannel, MSocket proxyMSocket)
-    {
-      this.connectionSocketChannel = connectionSocketChannel;
-      this.proxyMSocket = proxyMSocket;
-    }
-
-    public void run()
-    {
-    	if (!proxySelection.hasAvailableProxies())
-    	{
-    		// read and service request on socket
-    		// FIXME: check for how to handle exceptions here
-    		log.trace("new connection accepted by socket channel");
-
-    		InternalMSocket ms = null;
-    		try
-    		{
-    			ms = new InternalMSocket(connectionSocketChannel, controller, null);
-    		}
-    		catch (IOException e)
-    		{
-    			e.printStackTrace();
-    			// FIXME: exception for newly accepted socket
-    			// close and reject socket so that client reconnects again
-    			// do not put in active queue as currently done
-    			// transition into all ready state as well
-    			log.warn("Failed to accept new connection", e);
-    			return;
-    		}
-
-    		log.info("Accepted connection from " + ms.getInetAddress() + ":" + ms.getPort());
-		      if (ms.isNew())
-		      {
-		
-		        // FIXME: what to do here for exception
-		        controller.setConnectionInfo(ms);
-		
-		        AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, ms);
-		        synchronized (monitor)
-		        {
-		          monitor.notifyAll();
-		        }
-		      }
-		      log.trace("MServerSocket Handler thread exits");
-    	} else
-    	{
-    		if(proxyMSocket != null)
-    		{
-    			AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, proxyMSocket);
-		        synchronized (monitor)
-		        {
-		          monitor.notifyAll();
-		        }
-    		}
-    	}
-    }
+				ServerMSocket ms = null;
+				try
+				{
+					ms = new ServerMSocket(connectionSocketChannel, controller, null);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+					// FIXME: exception for newly accepted socket
+					// close and reject socket so that client reconnects again
+					// do not put in active queue as currently done
+					// transition into all ready state as well
+					MSocketLogger.getLogger().fine("Failed to accept new connection"
+									+ e.getMessage());
+					return;
+				}
+			
+				MSocketLogger.getLogger().fine("Accepted connection from " 
+							+ ms.getInetAddress() + ":" + ms.getPort());
+			      if (ms.isNew())
+			      {
+			
+			        // FIXME: what to do here for exception
+			        controller.setConnectionInfo(ms.getConnID());
+			
+			        AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, ms);
+			        synchronized (monitor)
+			        {
+			          monitor.notifyAll();
+			        }
+			      }
+			      MSocketLogger.getLogger().fine("MServerSocket Handler thread exits");
+		  } 
+		  else
+		  {
+	    		if(proxyMSocket != null)
+	    		{
+	    			AcceptConnectionQueueObj.getFromQueue(AcceptConnectionQueue.PUT, 
+	    					proxyMSocket);
+			        synchronized (monitor)
+			        {
+			          monitor.notifyAll();
+			        }
+	    		}
+	      }
+	   }
   }
 
   /**
@@ -880,7 +892,7 @@ public class MServerSocket extends ServerSocket
           continue;
         }
       }
-      log.trace("AcceptThreadPool exits");
+      MSocketLogger.getLogger().fine("AcceptThreadPool exits");
     }
 
     public void StopAcceptPool()

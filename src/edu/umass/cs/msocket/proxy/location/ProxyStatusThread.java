@@ -29,9 +29,7 @@ import java.util.logging.Logger;
 
 import org.json.JSONArray;
 
-
-
-
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
@@ -76,12 +74,13 @@ public class ProxyStatusThread extends Thread
    */
   protected void populateProxyList() throws Exception
   {
-    //final GNSClientCommands gnsClient = gnsCredentials.getGnsClient();
-    //final GuidEntry guidEntry = gnsCredentials.getGuidEntry();
     JSONArray guids;
     try
     {
-      guids = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGroupName, Constants.ACTIVE_PROXY_FIELD, DefaultGNSClient.getMyGuidEntry());
+    	GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute( GNSCommand.fieldReadArray
+    			(proxyGroupName, Constants.ACTIVE_PROXY_FIELD, DefaultGNSClient.getMyGuidEntry()) );
+      
+    	guids = commandRes.getResultJSONArray();
     }
     catch (InvalidGuidException e)
     {
@@ -96,12 +95,29 @@ public class ProxyStatusThread extends Thread
     for (int i = 0; i < guids.length(); i++)
     {
       String proxyGuid = guids.getString(i);
-      String proxyIP = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGuid, Constants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
-      JSONArray proxyLoad = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGuid, Constants.PROXY_LOAD, DefaultGNSClient.getMyGuidEntry());
-      JSONArray proxyLocation = DefaultGNSClient.getGnsClient().getLocation(proxyGuid, DefaultGNSClient.getMyGuidEntry());
+      
+      GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute( GNSCommand.fieldReadArray
+    		  (proxyGuid, Constants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()) );
+      
+      String proxyIP = commandRes.getResultJSONArray().getString(0);
+      
+      commandRes = DefaultGNSClient.getGnsClient().execute
+    		  ( GNSCommand.fieldReadArray(proxyGuid, Constants.PROXY_LOAD, 
+    				  DefaultGNSClient.getMyGuidEntry()) );
+      
+      JSONArray proxyLoad = commandRes.getResultJSONArray();
+      
+      
+      commandRes = DefaultGNSClient.getGnsClient().execute( 
+    		  GNSCommand.getLocation(proxyGuid, DefaultGNSClient.getMyGuidEntry()) );
+    		  
+      JSONArray proxyLocation = commandRes.getResultJSONArray();
+      
+      
       double lontitude = Double.parseDouble(proxyLocation.getString(0));
       double latitude = Double.parseDouble(proxyLocation.getString(1));
-      ProxyStatusInfo proxyInfo = new ProxyStatusInfo(proxyGuid, proxyIP, proxyLoad, lontitude, latitude);
+      ProxyStatusInfo proxyInfo = new ProxyStatusInfo(proxyGuid, proxyIP, proxyLoad, 
+    		  lontitude, latitude);
       newList.add(proxyInfo);
     }
 

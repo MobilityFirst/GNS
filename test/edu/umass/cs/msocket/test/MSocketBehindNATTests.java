@@ -49,7 +49,7 @@ import edu.umass.cs.msocket.MSocket;
  */
 public class MSocketBehindNATTests
 {
-  private static final String SOCKET_HRN = "msocket.junit.behindNAT1";
+  private static final String SOCKET_HRN = "msocket.junit.behindNAT10";
   private MServerSocket       mss;
   private static Logger       log        = Logger.getLogger("MSocket.test");
 

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -41,7 +40,6 @@ import org.junit.Test;
 
 import edu.umass.cs.msocket.MServerSocket;
 import edu.umass.cs.msocket.MSocket;
-import edu.umass.cs.msocket.common.policies.NoProxyPolicy;
 
 /**
  * This class defines a MSocketReadWriteTests. We assume that the GNS is

@@ -26,11 +26,11 @@ import java.net.SocketTimeoutException;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
 
 import edu.umass.cs.msocket.MServerSocket;
 import edu.umass.cs.msocket.MSocket;
 import edu.umass.cs.msocket.gns.Integration;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 public class ContextMemberInternals
 {
@@ -59,8 +59,6 @@ public class ContextMemberInternals
 	
 	private HashMap<String, ContextSocket> accptMSockets 		= null;
 	private int numAccptSocket						 			= 0;
-	
-	private static Logger log = Logger.getLogger(ContextMemberInternals.class.getName());
 	
 	public ContextMemberInternals(String localName) throws Exception 
 	{
@@ -113,7 +111,7 @@ public class ContextMemberInternals
 			case PUT:
 			{
 				accptMSockets.put(aliasMember, toPut);
-				log.trace("MSocketGroupMemberInternals new socket accepted "+aliasMember+
+				MSocketLogger.getLogger().fine("MSocketGroupMemberInternals new socket accepted "+aliasMember+
 						" num sockets "+accptMSockets.size());
 				break;
 			}
@@ -133,7 +131,7 @@ public class ContextMemberInternals
 			numAccptSocket++;
 			String key = numAccptSocket +"";
 			
-			log.trace("MSocketGroupMemberInternals new socket accepted "+key);
+			MSocketLogger.getLogger().fine("MSocketGroupMemberInternals new socket accepted "+key);
 			ContextSocket readMSocketInf = new ContextSocket(newJoining);
 			memberConnectionMapOperations(PUT, key, readMSocketInf);
 			
@@ -173,7 +171,7 @@ public class ContextMemberInternals
 					numAccptSocket++;
 					String key = numAccptSocket +"";
 					
-					log.trace("MSocketGroupMemberInternals new socket accepted "+key);
+					MSocketLogger.getLogger().fine("MSocketGroupMemberInternals new socket accepted "+key);
 					ContextSocket readMSocketInf = new ContextSocket(newJoining);
 					memberConnectionMapOperations(PUT, key, readMSocketInf);
 					

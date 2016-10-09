@@ -13,6 +13,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import org.json.JSONObject;
 
 import edu.umass.cs.contextservice.client.ContextServiceClient;
+import edu.umass.cs.contextservice.client.callback.implementations.NoopCallBack;
+import edu.umass.cs.contextservice.client.callback.implementations.NoopUpdateReply;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
@@ -29,15 +31,23 @@ import java.util.logging.Level;
 public class ContextServiceGNSClient implements ContextServiceGNSInterface {
 
   private ContextServiceClient<Integer> csClient;
+  private NoopCallBack csNoopCallBack;
+  private NoopUpdateReply csNoopUpdateReply;
 
-  public ContextServiceGNSClient(String hostName, int portNum) {
+  public ContextServiceGNSClient(String hostName, int portNum) 
+  {
     // catching everything here, otherwise exception doesn't get printed in executor service.
-    try {
+    try 
+    {
       csClient = new ContextServiceClient<Integer>(hostName, portNum);
     } catch (Error | Exception er) {
       er.printStackTrace();
     }
+    
+    csNoopCallBack = new NoopCallBack();
+    csNoopUpdateReply = new NoopUpdateReply();
   }
+  
 
 //	@Override
 //	public void sendUpdateToCS(String GUID, JSONObject attrValPairJSON, long versionNum, boolean blocking) 
@@ -71,7 +81,8 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
         GNSConfig.getLogger().log(Level.FINE, "Trigger to CS guid {0} userJSON {1}",
                 new Object[]{guid, userJSON});
 
-        csClient.sendUpdate(guid, userJSON, -1, blocking);
+        csClient.sendUpdateWithCallBack(guid, null, userJSON, -1, 
+        		csNoopUpdateReply, csNoopCallBack);
       } else {
         // single field update
         JSONObject attrValJSON = new JSONObject();
@@ -80,7 +91,8 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
         GNSConfig.getLogger().log(Level.FINE, "Trigger to CS guid {0} attrValJSON {1}",
                 new Object[]{guid, attrValJSON});
 
-        csClient.sendUpdate(guid, attrValJSON, -1, blocking);
+        csClient.sendUpdateWithCallBack(guid, null, attrValJSON, -1, 
+        		csNoopUpdateReply, csNoopCallBack);
       }
     } catch (Exception | Error ex) {
       ex.printStackTrace();

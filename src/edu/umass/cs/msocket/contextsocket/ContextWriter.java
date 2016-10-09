@@ -23,8 +23,6 @@ package edu.umass.cs.msocket.contextsocket;
 
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.log4j.Logger;
-
 
 /**
  * This class defines a MSocketGroupWriter
@@ -36,8 +34,6 @@ public class ContextWriter
 	//public static double CHECK_RADIUS = 75;
 	private final String writerName;
 	private ContextWriterInternals msocketGroupWriterInternalsObj   = null;
-	
-	protected static Logger     log                                 = Logger.getLogger(ContextWriter.class.getName());
 	
 	/**
 	 * @param groupName: multicast groupName
