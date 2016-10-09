@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.gnsapp.deprecated;
 
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
-import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
 
 import java.util.Map;
 
@@ -77,13 +76,6 @@ public class AppOptionsOld {
    */
   public static long activeCodeBlacklistSeconds = 10;
 
-  // context service options
-  public static boolean enableContextService = false;
-
-  //FIXME: The owner of this should move it into GNSConfig
-  // ip port of one node read from config files.
-  public static String contextServiceIpPort = "";
-
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
 
   private static final String ENABLE_ACTIVE_CODE = "enableActiveCode";
@@ -100,21 +92,13 @@ public class AppOptionsOld {
   public static Options getAllOptions() {
     Option help = new Option("help", "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
-
-    Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
-    Option contextServiceHostPort = new Option(CONTEXT_SERVICE_IP_PORT, "must be set if enableContextService is set to true. It gives the host port information of one context service node. Similar to LNS "
-            + "information of GNS");
-
+    
+    
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(help);
 
-    //context service options
-    commandLineOptions.addOption(enableContextService);
-    commandLineOptions.addOption(contextServiceHostPort);
-
     return commandLineOptions;
-
   }
 
   private static boolean initialized = false;
@@ -142,14 +126,6 @@ public class AppOptionsOld {
     if (allValues.containsKey(ENABLE_ACTIVE_CODE)) {
       enableActiveCode = true;
     }
-
-    if (isOptionTrue(ENABLE_CONTEXT_SERVICE, allValues)) {
-      enableContextService = true;
-    }
-
-    if (allValues.containsKey(CONTEXT_SERVICE_IP_PORT)) {
-      contextServiceIpPort = allValues.get(CONTEXT_SERVICE_IP_PORT);
-    }
   }
-
+  
 }

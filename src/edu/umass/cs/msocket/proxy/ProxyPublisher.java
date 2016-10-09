@@ -35,11 +35,7 @@ import java.util.logging.Logger;
 
 import org.json.JSONArray;
 
-
-
-
-
-
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -96,7 +92,11 @@ public class ProxyPublisher extends Thread
     if (myGuid == null)
     {
       logger.info("No keys found for proxy " + proxyName + ". Generating new GUID and keys");
-      myGuid = DefaultGNSClient.getGnsClient().guidCreate(DefaultGNSClient.getMyGuidEntry(), proxyName);
+      GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute(GNSCommand.createGUID
+    		  (DefaultGNSClient.getGnsClient().getGNSProvider(), 
+    				  DefaultGNSClient.getMyGuidEntry(), proxyName));
+      
+      myGuid = (GuidEntry) commandRes.getResult();
     }
     logger.info("Proxy has guid " + myGuid.getGuid());
 
@@ -186,13 +186,20 @@ public class ProxyPublisher extends Thread
     }
 
     // Look for the group GUID
-    String groupGuid = DefaultGNSClient.getGnsClient().lookupGuid(proxyGroupName);
+    GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute
+    		(GNSCommand.lookupGUID(proxyGroupName));
+    
+    
+    String groupGuid = commandRes.getResultString();
 
     // Check if we are a member of the group
     boolean isVerified = false;
     try
     {
-      JSONArray members = DefaultGNSClient.getGnsClient().groupGetMembers(groupGuid, myGuid);
+    	commandRes = DefaultGNSClient.getGnsClient().execute
+    			(GNSCommand.groupGetMembers(groupGuid, myGuid));
+    	
+      JSONArray members = commandRes.getResultJSONArray();
       for (int i = 0; i < members.length(); i++)
       {
         if (myGuid.getGuid().equals(members.get(i)))
@@ -212,22 +219,39 @@ public class ProxyPublisher extends Thread
       logger.log(Level.INFO,
           "Could not access the proxy group member list because we are not likely a group member yet (" + e + ")");
     }
-
+    
     // Make sure we advertise ourselves as a proxy and make the field readable
     // by everyone
-    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.SERVICE_TYPE_FIELD,
-        new JSONArray().put(Constants.PROXY_SERVICE), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.SERVICE_TYPE_FIELD, null);
+    DefaultGNSClient.getGnsClient().execute(
+    		GNSCommand.fieldReplaceOrCreateList(myGuid.getGuid(), Constants.SERVICE_TYPE_FIELD,
+            new JSONArray().put(Constants.PROXY_SERVICE), myGuid) );
+    
+    DefaultGNSClient.getGnsClient().execute(
+    		GNSCommand.aclAdd(AclAccessType.READ_WHITELIST, myGuid, 
+    				Constants.SERVICE_TYPE_FIELD, null));
+    
     // Publish external IP (readable by everyone)
     InetSocketAddress externalIP = (InetSocketAddress) proxySocketAddres;
-    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.PROXY_EXTERNAL_IP_FIELD,
-        new JSONArray().put(externalIP.getAddress().getHostAddress() + ":" + externalIP.getPort()), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.PROXY_EXTERNAL_IP_FIELD, null);
+    
+    
+    DefaultGNSClient.getGnsClient().execute(GNSCommand.fieldReplaceOrCreateList
+    		(myGuid.getGuid(), Constants.PROXY_EXTERNAL_IP_FIELD,
+            new JSONArray().put
+            (externalIP.getAddress().getHostAddress() + ":" + externalIP.getPort()), myGuid) );
+    
+    DefaultGNSClient.getGnsClient().execute(
+    		GNSCommand.aclAdd(AclAccessType.READ_WHITELIST, myGuid, 
+    				Constants.PROXY_EXTERNAL_IP_FIELD, null));
+    
 
     // Update our location if geolocation resolution worked
     if (proxyInfo.getLatLong() != null)
-    	DefaultGNSClient.getGnsClient().setLocation(myGuid, proxyInfo.getLatLong().getLongitude(), proxyInfo.getLatLong().getLatitude());
-
+    {
+    	DefaultGNSClient.getGnsClient().execute
+    	( GNSCommand.setLocation(myGuid, proxyInfo.getLatLong().getLongitude(), 
+    			proxyInfo.getLatLong().getLatitude()) );
+    }
+    
     if (!isVerified)
     {
       logger
@@ -248,7 +272,8 @@ public class ProxyPublisher extends Thread
    */
   public void publishNewProxyLocation(double longitude, double latitude) throws Exception
   {
-	  DefaultGNSClient.getGnsClient().setLocation(DefaultGNSClient.getMyGuidEntry(), longitude, latitude);
+	  DefaultGNSClient.getGnsClient().execute
+	  	(GNSCommand.setLocation(DefaultGNSClient.getMyGuidEntry(), longitude, latitude));
   }
 
   /**
@@ -271,8 +296,11 @@ public class ProxyPublisher extends Thread
       try
       {
         Thread.sleep(1000);
-        DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(DefaultGNSClient.getMyGuidEntry().getGuid(), Constants.PROXY_LOAD,
-            ProxyLoadStatistics.serializeLoadInformation(), DefaultGNSClient.getMyGuidEntry());
+        
+        DefaultGNSClient.getGnsClient().execute( 
+        		GNSCommand.fieldReplaceOrCreateList(DefaultGNSClient.getMyGuidEntry().getGuid(), 
+        		Constants.PROXY_LOAD, ProxyLoadStatistics.serializeLoadInformation(), 
+        		DefaultGNSClient.getMyGuidEntry()) );
       }
       catch (Exception e)
       {

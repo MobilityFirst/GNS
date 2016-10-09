@@ -41,7 +41,7 @@ import org.junit.Test;
 import edu.umass.cs.msocket.FlowPath;
 import edu.umass.cs.msocket.MServerSocket;
 import edu.umass.cs.msocket.MSocket;
-import edu.umass.cs.msocket.common.policies.NoProxyPolicy;
+import edu.umass.cs.msocket.common.proxy.policies.NoProxyPolicy;
 
 /**
  * This class defines a MSocket multipaths tests. We assume that the GNS is
@@ -52,7 +52,7 @@ import edu.umass.cs.msocket.common.policies.NoProxyPolicy;
  */
 public class MSocketMultipathTests
 {
-  private static final String SOCKET_HRN = "msocket.junit.multipath";
+  private static final String SOCKET_HRN = "msocket.junit.multipath10";
   private static final int    LOCAL_PORT = 5454;
   private static final String LOCALHOST  = "127.0.0.1";
   private MServerSocket       mss;

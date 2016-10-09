@@ -40,8 +40,7 @@ import org.json.JSONException;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.msocket.MSocket;
 import edu.umass.cs.msocket.gns.GNSCalls;
-
-import org.apache.log4j.Logger;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 public class ContextWriterInternals
 {
@@ -76,7 +75,7 @@ public class ContextWriterInternals
 	private final ContextServiceClient<Integer> csClient;
 	// for exp measurements
 	//private long startTime 											= 0;
-	private static Logger log = Logger.getLogger(ContextWriterInternals.class.getName());
+
 	
 	public ContextWriterInternals(String writerName, String groupQuery) throws Exception
 	{
@@ -191,7 +190,7 @@ public class ContextWriterInternals
 	
 	public synchronized void createGroup()
 	{
-		log.trace("group creation started");
+		MSocketLogger.getLogger().fine("group creation started");
 		if(ContextSocketConfig.USE_GNS)
 		{
 			//JSONArray groupMembers = getGroupMembersGUIDs();
@@ -272,11 +271,11 @@ public class ContextWriterInternals
 			this.groupGUID = GNSCalls.getGroupGUID(this.groupQuery);
 			grpMembers = GNSCalls.readGroupMembers(groupQuery, groupGUID);
 			long end = System.currentTimeMillis();
-			log.trace("MSOCKETWRITERINTERNAL from GNS time "+(end-start)+" attr "+numAttr);
+			MSocketLogger.getLogger().fine("MSOCKETWRITERINTERNAL from GNS time "+(end-start)+" attr "+numAttr);
 			
 		} catch(Exception ex)
 		{
-			log.trace("My groupQuery "+groupQuery+" group not in GNS, contact context service");
+			MSocketLogger.getLogger().fine("My groupQuery "+groupQuery+" group not in GNS, contact context service");
 			grpMembers = new JSONArray();
 			this.csQueryLockFlag = false;
 			long qcsStart = System.currentTimeMillis();
@@ -297,7 +296,7 @@ public class ContextWriterInternals
 			}*/
 			
 			long end = System.currentTimeMillis();
-			log.trace("MSOCKETWRITERINTERNAL from CS querytime "+(end-start)+" numAttr "+numAttr+" cstime "+(end-qcsStart)+ "grpMembers "+grpMembers);
+			MSocketLogger.getLogger().fine("MSOCKETWRITERINTERNAL from CS querytime "+(end-start)+" numAttr "+numAttr+" cstime "+(end-qcsStart)+ "grpMembers "+grpMembers);
 		}
 		return grpMembers;
 	}
@@ -335,7 +334,7 @@ public class ContextWriterInternals
 		{
 			String GUIDMember = memberKeysVector.get(i);
 			
-			log.trace("writing to "+GUIDMember);
+			MSocketLogger.getLogger().fine("writing to "+GUIDMember);
 			connectionSetupPool.execute(new writeTask(GUIDMember, arrayToWrite, offset, length));
 		}
 	}
@@ -356,7 +355,7 @@ public class ContextWriterInternals
 			try
 			{
 				String memberAlias = GNSCalls.getAlias(guidString);
-				log.trace("creating new MSocket to "+ guidString + " alias "+ memberAlias);
+				MSocketLogger.getLogger().fine("creating new MSocket to "+ guidString + " alias "+ memberAlias);
 				retSocket = new MSocket(memberAlias, 0);
 			} catch(Exception ex)
 			{
@@ -395,7 +394,7 @@ public class ContextWriterInternals
 			
 			if(retSocketInfo == null)
 			{
-				log.trace("returned socket info null");
+				MSocketLogger.getLogger().fine("returned socket info null");
 			}
 			else
 			{
@@ -418,7 +417,7 @@ public class ContextWriterInternals
 			long gstart = System.currentTimeMillis();
 			grpMembers = GNSCalls.readGroupMembers(this.groupQuery, this.groupGUID);
 			long gend = System.currentTimeMillis();
-			log.trace("getGroupMembersGUIDs time "+(gend-gstart));
+			MSocketLogger.getLogger().fine("getGroupMembersGUIDs time "+(gend-gstart));
 		} catch(Exception ex)
 		{
 			ex.printStackTrace();
@@ -448,7 +447,7 @@ public class ContextWriterInternals
 	
 	/*public synchronized void startGroupMaintainThread()
 	{
-		log.trace("starting group maintain thread");
+		MSocketLogger.getLogger().fine("starting group maintain thread");
 		//GroupMemberMaintain grpObj = new GroupMemberMaintain(this);
 		//new Thread(grpObj).start();
 	}*/
@@ -520,8 +519,8 @@ public class ContextWriterInternals
 				String memberGUID = (String) memberGuids.get(i);
 				
 				//String alias = GnsIntegration.getAliasOfGUID(memberGUID, null);
-				//log.trace("getting key value of "+alias);
-				//log.trace("gp 1"+writerInternalObj.getGroupName()+" gpGNS "+GnsIntegration.getGroupNameFromGNS((String) memberGuids.get(i), null));
+				//MSocketLogger.getLogger().fine("getting key value of "+alias);
+				//MSocketLogger.getLogger().fine("gp 1"+writerInternalObj.getGroupName()+" gpGNS "+GnsIntegration.getGroupNameFromGNS((String) memberGuids.get(i), null));
 				if( GnsIntegration.getKeyValue( memberGUID, field, null).equals( value ) )
 				{
 					currMem.add(memberGUID);
@@ -531,7 +530,7 @@ public class ContextWriterInternals
 				e.printStackTrace();
 			} catch (Exception e) 
 			{
-				log.trace("excp in groupMembershipCheck");
+				MSocketLogger.getLogger().fine("excp in groupMembershipCheck");
 				//e.printStackTrace();
 			}
 		}

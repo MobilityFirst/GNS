@@ -25,12 +25,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import edu.umass.cs.msocket.ByteRangeInfo;
 import edu.umass.cs.msocket.ConnectionInfo;
 import edu.umass.cs.msocket.DataMessage;
 import edu.umass.cs.msocket.SocketInfo;
+import edu.umass.cs.msocket.logger.MSocketLogger;
 
 
 /**
@@ -44,8 +43,6 @@ import edu.umass.cs.msocket.SocketInfo;
 public abstract class MultipathWritingPolicy {
 	
 	protected ConnectionInfo cinfo			= null;
-	
-	private static Logger  	log            	= Logger.getLogger(MultipathWritingPolicy.class.getName());
 	
 	
 	/**
@@ -64,7 +61,7 @@ public abstract class MultipathWritingPolicy {
 	  protected void handleMigrationInMultiPath(SocketInfo Obj) throws IOException
 	  {
 
-	    log.trace("handleMigrationInMultiPath called");
+	    MSocketLogger.getLogger().fine("handleMigrationInMultiPath called");
 	    // if queue size is > 0 then it means that there is a non-blocking
 	    // write pending and it should be sent first, instead of migration data
 	    if ((Integer) Obj.queueOperations(SocketInfo.QUEUE_SIZE, null) > 0)
@@ -73,11 +70,11 @@ public abstract class MultipathWritingPolicy {
 	      return;
 	    }
 
-	    log.trace("HandleMigrationInMultiPath SocektId " + Obj.getSocketIdentifer());
+	    MSocketLogger.getLogger().fine("HandleMigrationInMultiPath SocektId " + Obj.getSocketIdentifer());
 
 	    cinfo.multiSocketRead();
 	    int dataAck = (int) cinfo.getDataBaseSeq();
-	    log.trace("DataAck from other side " + dataAck);
+	    MSocketLogger.getLogger().fine("DataAck from other side " + dataAck);
 	    Obj.byteInfoVectorOperations(SocketInfo.QUEUE_REMOVE, dataAck, -1);
 
 	    @SuppressWarnings("unchecked")
@@ -124,7 +121,7 @@ public abstract class MultipathWritingPolicy {
 	    }
 
 	    Obj.setneedToReqeustACK(false);
-	    log.trace("HandleMigrationInMultiPath Complete");
+	    MSocketLogger.getLogger().fine("HandleMigrationInMultiPath Complete");
 	  }
 	  
 	  
@@ -144,7 +141,7 @@ public abstract class MultipathWritingPolicy {
 
 	    if (gotWritten > 0)
 	    {
-	      log.trace("gotWritten " + gotWritten + " buf length " + writebuf.length + " SocketID " + Obj.getSocketIdentifer());
+	      MSocketLogger.getLogger().fine("gotWritten " + gotWritten + " buf length " + writebuf.length + " SocketID " + Obj.getSocketIdentifer());
 	      Obj.currentChunkWriteOffsetOper(gotWritten, SocketInfo.VARIABLE_UPDATE);
 	    }
 
@@ -161,7 +158,7 @@ public abstract class MultipathWritingPolicy {
 	                                                                                         // reset
 	                                                                                         // it
 	    {
-	      log.trace("currentChunkWriteOffset " + writebuf.length);
+	      MSocketLogger.getLogger().fine("currentChunkWriteOffset " + writebuf.length);
 	      Obj.currentChunkWriteOffsetOper(0, SocketInfo.VARIABLE_SET);
 	      Obj.queueOperations(SocketInfo.QUEUE_REMOVE, null);
 	    }
@@ -170,7 +167,7 @@ public abstract class MultipathWritingPolicy {
 
 	    Obj.getDataChannel().configureBlocking(false);
 	    if (gotWritten > 0)
-	      log.trace("Using socketID " + Obj.getSocketIdentifer() + "Remote IP " + Obj.getSocket().getInetAddress()
+	      MSocketLogger.getLogger().fine("Using socketID " + Obj.getSocketIdentifer() + "Remote IP " + Obj.getSocket().getInetAddress()
 	          + "for writing " + " time taken " + (endTime - startTime));
 	  }
 }

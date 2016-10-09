@@ -20,7 +20,7 @@
  *
  *******************************************************************************/
 
-package edu.umass.cs.msocket.common.policies;
+package edu.umass.cs.msocket.common.proxy.policies;
 
 /**
  * This class defines a DefaultProxyPolixy that picks a random proxy in the GNS.

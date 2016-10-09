@@ -193,7 +193,7 @@ public class ClientExample {
 		System.out.println("\nclient.read(GUID) -> " + result.toString());
 
 		// Delete created GUID
-		client.execute(GNSCommand.accountGuidRemove(guid));
+		//client.execute(GNSCommand.accountGuidRemove(guid));
 		System.out.println("\n// GUID delete\n"
 				+ "client.accountGuidRemove(GUID) // GUID=" + guid);
 

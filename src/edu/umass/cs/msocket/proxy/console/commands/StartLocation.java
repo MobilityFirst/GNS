@@ -23,6 +23,7 @@
 package edu.umass.cs.msocket.proxy.console.commands;
 
 
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
@@ -99,9 +100,14 @@ public class StartLocation extends ConsoleCommand
       {
         if (!module.isSilent())
           console.printString("No keys found for location service " + serviceName + ". Generating new GUID and keys\n");
-        myGuid = DefaultGNSClient.getGnsClient().guidCreate(module.getAccountGuid(), serviceName);
+        
+        GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute(GNSCommand.createGUID
+        		(DefaultGNSClient.getGnsClient().getGNSProvider(), module.getAccountGuid(), serviceName));
+        
+        
+        myGuid = (GuidEntry) commandRes.getResult();
       }
-
+      
       if (myGuid == null)
       {
         console.printString("No keys found for location service " + serviceName + ". Cannot connect without the key\n");
