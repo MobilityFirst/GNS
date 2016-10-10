@@ -38,6 +38,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFICATION_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -84,7 +85,7 @@ public class AddAlias extends BasicCommand {
     }
     if (!accountInfo.isVerified()) {
       return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
-    } else if (accountInfo.getAliases().size() > GNSConfig.MAXALIASES) {
+    } else if (accountInfo.getAliases().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_ALIASES)) {
       return new CommandResponse(GNSResponseCode.TOO_MANY_ALIASES_EXCEPTION, BAD_RESPONSE + " " + TOO_MANY_ALIASES);
     } else {
       return AccountAccess.addAlias(accountInfo, name, guid, signature, message, timestamp, handler);

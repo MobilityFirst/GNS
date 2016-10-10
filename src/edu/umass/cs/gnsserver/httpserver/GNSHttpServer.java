@@ -59,6 +59,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
+import edu.umass.cs.utils.Config;
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
@@ -74,7 +75,7 @@ import org.json.JSONObject;
  */
 public class GNSHttpServer {
 
-  private static final String GNSPATH = GNSConfig.GNS_URL_PATH;
+  private static final String GNS_PATH = Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH);
   private static final int STARTING_PORT = 8080;
   private int port;
   // handles command processing
@@ -118,7 +119,7 @@ public class GNSHttpServer {
       HttpServer server = HttpServer.create(addr, 0);
 
       server.createContext("/", new EchoHandler());
-      server.createContext("/" + GNSPATH, new DefaultHandler());
+      server.createContext("/" + GNS_PATH, new DefaultHandler());
       server.setExecutor(Executors.newCachedThreadPool());
       server.start();
       LOG.log(Level.INFO,
@@ -153,7 +154,7 @@ public class GNSHttpServer {
           String path = uri.getPath();
           String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
 
-          String action = path.replaceFirst("/" + GNSPATH + "/", "");
+          String action = path.replaceFirst("/" + GNS_PATH + "/", "");
 
           CommandResponse response;
           if (!action.isEmpty()) {
@@ -164,13 +165,13 @@ public class GNSHttpServer {
             response = new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE
                     + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + action + " " + query);
           }
-          LOG.log(Level.FINER, "Response: {0}", response);
+          LOG.log(Level.FINER, "Response: " + response);
           // FIXME: This totally ignores the error code.
           responseBody.write(response.getReturnValue().getBytes());
           responseBody.close();
         }
       } catch (Exception e) {
-        LOG.log(Level.SEVERE, "Error: {0}", e);
+        LOG.log(Level.SEVERE, "Error: " + e);
         e.printStackTrace();
         try {
           String response = BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e;
@@ -204,8 +205,8 @@ public class GNSHttpServer {
 
     BasicCommand command;
     try {
-      command = commandModule.lookupCommand(CommandType.valueOf(action));
-      // handle actions that valueOf can't parse
+      // allows for "dump" as well as "Dump".
+      command = commandModule.lookupCommand(CommandType.getCommandForHttp(action));
       if (command != null) {
         return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler);
       }

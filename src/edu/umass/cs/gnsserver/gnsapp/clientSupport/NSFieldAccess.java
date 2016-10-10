@@ -28,11 +28,11 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
@@ -138,7 +138,7 @@ public class NSFieldAccess {
   public static ValuesMap lookupFieldsLocalNoAuth(InternalRequestHeader header, String guid, List<String> fields,
           ColumnFieldType returnFormat, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
-	  return lookupFieldsLocalNoAuth(header, guid, fields, returnFormat, handler, AppOptionsOld.enableActiveCode);
+	  return lookupFieldsLocalNoAuth(header, guid, fields, returnFormat, handler, GNSConfig.enableActiveCode);
 	  
   }
 
@@ -312,7 +312,7 @@ public class NSFieldAccess {
   private static ValuesMap handleActiveCode(InternalRequestHeader header, String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
-	  if(!AppOptionsOld.enableActiveCode) return originalValues;
+	  if(!GNSConfig.enableActiveCode) return originalValues;
 	  
     ValuesMap newResult = originalValues;
     // Only do this for user fields.

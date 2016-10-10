@@ -58,9 +58,10 @@ import org.junit.runner.notification.Failure;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.database.MongoRecords;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
@@ -2329,21 +2330,9 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   public void test_620_contextServiceTest() {
     // run it only when CS is enabled
-    // FIXME: right now options are not shared, so just reading the
-    // ns.properties file
     // to check if context service is enabled.
-    HashMap<String, String> propMap = readingOptionsFromNSProperties();
-    boolean enableContextService = false;
-    String csIPPort = "";
-    if (propMap
-            .containsKey(AppOptionsOld.ENABLE_CONTEXT_SERVICE)) {
-      enableContextService = Boolean.parseBoolean(propMap
-              .get(AppOptionsOld.ENABLE_CONTEXT_SERVICE));
-
-      csIPPort = propMap
-              .get(AppOptionsOld.CONTEXT_SERVICE_IP_PORT);
-    }
-
+    boolean enableContextService = Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_CNS);
+    String csIPPort = Config.getGlobalString(GNSConfig.GNSC.CNS_NODE_ADDRESS);
     if (enableContextService) {
       try {
         JSONObject attrValJSON = new JSONObject();

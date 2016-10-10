@@ -452,7 +452,7 @@ public class AccountAccess {
           + "If you are unable to click on the link, you can complete your email address\n"
           + "verification by copying and pasting the URL into your web browser:\n\n"
           + "http://%3$s/"
-          + GNSConfig.GNS_URL_PATH
+          + Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH)
           + "/VerifyAccount?guid=%4$s&code=%5$s\n\n"
           + "If you did not create this account you can just ignore this email and nothing bad will happen.\n\n"
           + "Thank you,\nThe CASA Team.";
@@ -495,11 +495,11 @@ public class AccountAccess {
     // make this even if  we don't need it
     String verifyCode = createVerificationCode(name);
     if ((response = addAccount(name, guid, publicKey, password,
-            GNSConfig.GNSC.isEmailAuthenticationEnabled(),
+            Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION),
             verifyCode, handler)).getExceptionOrErrorCode().isOKResult()) {
 
       // Account creation was succesful so maybe send email verification.
-      if (GNSConfig.GNSC.isEmailAuthenticationEnabled()) {
+      if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)) {
         boolean emailSent = sendEmailAuthentication(name, guid, hostPortString, verifyCode);
         if (emailSent) {
           return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
@@ -530,8 +530,8 @@ public class AccountAccess {
     return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
             .getInstance().hash(name + SECRET
                     // Add salt unless email verification is disabled or salt is disabled.
-                    + (GNSConfig.GNSC.isEmailAuthenticationEnabled()
-                    && GNSConfig.GNSC.isEmailAuthenticationSaltEnabled()
+                    + (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
+                    && Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)
                             ? new String(
                                     Util.getRandomAlphanumericBytes(128))
                             : "")),
@@ -575,7 +575,7 @@ public class AccountAccess {
   public static CommandResponse resendAuthenticationEmail(AccountInfo accountInfo,
           String guid, String signature, String message,
           ClientRequestHandlerInterface handler) throws UnknownHostException {
-    if (GNSConfig.GNSC.isEmailAuthenticationEnabled()) {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)) {
       String name = accountInfo.getName();
       String code = createVerificationCode(name);
       boolean emailSent = sendEmailAuthentication(name, guid, handler.getHTTPServerHostPortString(), code);

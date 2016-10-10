@@ -148,7 +148,7 @@ public class InstallConfig {
    * @param args
    */
   public static void main(String[] args) {
-    String filename = GNSConfig.WESTY_GNS_DIR_PATH + "/conf/ec2_small/installer_config";
+    String filename = "/Users/westy/Documents/Code/GNS/conf/ec2_small/installer_config";
     InstallConfig config = new InstallConfig(filename);
     System.out.println(config.toString());
   }

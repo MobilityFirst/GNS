@@ -28,7 +28,6 @@ import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
@@ -146,7 +145,7 @@ public class CommandHandler {
     // reply to client is true, this means this is the active replica
     // that recvd the request from the gnsClient. So, let's check for
     // sending trigger to Context service here.
-    if ( GNSConfig.GNSC.isCSEnabled() ) {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_CNS)) {
       if (!doNotReplyToClient) {
 
         if (commandHandler.getClass().getSuperclass() == AbstractUpdate.class) {

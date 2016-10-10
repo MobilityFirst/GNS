@@ -51,8 +51,6 @@ import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.AppReconfigurableNode;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnamed.DnsTranslator;
@@ -167,7 +165,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 	 * @throws IOException
 	 */
 	public GNSApp(String[] args) throws IOException {
-		AppReconfigurableNode.initOptions(args);
+		//AppReconfigurableNode.initOptions(args);
 	}
 
 	@Override
@@ -399,12 +397,12 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
             || Config.getGlobalString(GNSConfig.GNSC.DNS_SERVER_NODES).contains(nodeID)) {
       startDNS();
     }
-    this.activeCodeHandler = AppOptionsOld.enableActiveCode ? new ActiveCodeHandler() : null;
+    this.activeCodeHandler = GNSConfig.enableActiveCode ? new ActiveCodeHandler() : null;
 
     // context service init
-    if (GNSConfig.GNSC.isCSEnabled()) 
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_CNS)) 
     {
-    	String nodeAddressString = GNSConfig.GNSC.getCNSNodeAddress();
+    	String nodeAddressString = Config.getGlobalString(GNSConfig.GNSC.CNS_NODE_ADDRESS);
     	
       String[] parsed = nodeAddressString.split(":");
       
