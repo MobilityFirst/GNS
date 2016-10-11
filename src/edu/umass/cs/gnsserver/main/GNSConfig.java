@@ -64,7 +64,8 @@ public class GNSConfig {
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server.
-     *//**
+     */
+    /**
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server.
@@ -148,11 +149,37 @@ public class GNSConfig {
     /**
      * The default port used by mongo. 27017 is the default mongo uses.
      */
+    //
+    // REMOTE QUERY TIMEOUTS
+    //
+    /**
+     * The timeout for synchronous reads in Remote Query.
+     */
+    REPLICA_READ_TIMEOUT(5000),
+    /**
+     * The timeout for synchronous writes in Remote Query.
+     */
+    REPLICA_UPDATE_TIMEOUT(8000),
+    /**
+     * The timeout for synchronous queries to a reconfigurator in Remote Query.
+     */
+    RECON_TIMEOUT(4000),
+    /**
+     * The timeout for select queries.
+     */
+    /* FIXME: arun: need to determine this timeout systematically, not an ad hoc constant. */
+    SELECT_REQUEST_TIMEOUT(5000),
+    //
+    // NO SQL BACKING DATABASE
+    //
     MONGO_PORT(27017),
     /**
      * The class used to represent NoSQL records.
      */
     NOSQL_RECORDS_CLASS("edu.umass.cs.gnsserver.database.MongoRecords"),
+    //
+    // ACCOUNT GUIDS
+    //
     /**
      * The maximum number of subguids allowed in an account guid. The upper
      * limit on this is currently dictated by mongo's 16MB document limit.
@@ -274,7 +301,7 @@ public class GNSConfig {
     public Object getDefaultValue() {
       return this.defaultValue;
     }
-    
+
     private static Class<?> noSqlRecordsclass = getNoSqlRecordsClass();
 
     /**
@@ -316,7 +343,7 @@ public class GNSConfig {
     }
   }
 
- //FIXME: Remove this.
+  //FIXME: Remove this.
   /**
    * The default starting port.
    */

@@ -412,7 +412,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
   <target name="test" description="Runs the default integration test against a 3 node server." 
           depends="compile, compiletest">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
-    <property name="java.util.logging.config.file" value="conf/logging.gns.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
     <property name="waitTillAllServersReady" value="5000"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
