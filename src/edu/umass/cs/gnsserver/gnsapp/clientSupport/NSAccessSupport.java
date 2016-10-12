@@ -99,7 +99,7 @@ public class NSAccessSupport {
    */
   public static boolean verifySignature(String accessorPublicKey, String signature, String message) throws
           InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
-    if (!GNSConfig.enableSignatureAuthentication) {
+    if (!Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_SIGNATURE_AUTHENTICATION)) {
       return true;
     }
     byte[] publickeyBytes = Base64.decode(accessorPublicKey);

@@ -668,7 +668,7 @@ public class FieldAccess {
       if (!accountInfo.isVerified()) {
         return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.VERIFICATION_ERROR + " Account not verified");
-      } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
+      } else if (accountInfo.getGuids().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_SUBGUIDS)) {
         return new CommandResponse(GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.TOO_MANY_GUIDS);
       } else {

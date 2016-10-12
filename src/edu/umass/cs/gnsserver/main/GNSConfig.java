@@ -34,11 +34,32 @@ import edu.umass.cs.utils.Config;
  */
 public class GNSConfig {
 
+  //FIXME: The owner of this should move it into GNSConfig
+  /**
+   * How long (in seconds) to blacklist active code.
+   */
+  public static long activeCodeBlacklistSeconds = 10;
+  //FIXME: Do this have an equivalent in gigapaxos we can use.
+  /**
+   * Determines the number of replicas based on ratio of lookups to writes.
+   * Used by {@link LocationBasedDemandProfile}.
+   */
+  public static double normalizingConstant = 0.5;
+  //FIXME: The owner of this should move it into GNSConfig
+  /**
+   * Enable active code.
+   */
+  public static boolean enableActiveCode = false;
+  //FIXME: The owner of this should move it into GNSConfig
+  /**
+   * Number of active code worker.
+   */
+  public static int activeCodeWorkerCount = 1;
+
   /**
    *
    */
   public static enum GNSC implements Config.ConfigurableEnum {
-
     /**
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
@@ -65,6 +86,10 @@ public class GNSConfig {
      * Code-breaking if enabled. Meant only for instrumentation.
      */
     EXECUTE_NOOP_ENABLED(false),
+    /**
+     * Never set this to false, but if you do you'll disable signature authentication.
+     */
+    ENABLE_SIGNATURE_AUTHENTICATION(true),
     /**
      * A secret shared between the server and a trusted client in order to circumvent
      * account verification. Must be changed using properties file if manual
@@ -124,11 +149,50 @@ public class GNSConfig {
     /**
      * The default port used by mongo. 27017 is the default mongo uses.
      */
+    //
+    // REMOTE QUERY TIMEOUTS
+    //
+    /**
+     * The timeout for synchronous reads in Remote Query.
+     */
+    REPLICA_READ_TIMEOUT(5000),
+    /**
+     * The timeout for synchronous writes in Remote Query.
+     */
+    REPLICA_UPDATE_TIMEOUT(8000),
+    /**
+     * The timeout for synchronous queries to a reconfigurator in Remote Query.
+     */
+    RECON_TIMEOUT(4000),
+    /**
+     * The timeout for select queries.
+     */
+    /* FIXME: arun: need to determine this timeout systematically, not an ad hoc constant. */
+    SELECT_REQUEST_TIMEOUT(5000),
+    //
+    // NO SQL BACKING DATABASE
+    //
     MONGO_PORT(27017),
     /**
      * The class used to represent NoSQL records.
      */
     NOSQL_RECORDS_CLASS("edu.umass.cs.gnsserver.database.MongoRecords"),
+    //
+    // ACCOUNT GUIDS
+    //
+    /**
+     * The maximum number of subguids allowed in an account guid. The upper
+     * limit on this is currently dictated by mongo's 16MB document limit.
+     * https://docs.mongodb.org/manual/reference/limits/#bson-documents
+     */
+    ACCOUNT_GUID_MAX_SUBGUIDS(300000),
+    /**
+     * The maximum number of HRN aliases allowed for a guid.
+     */
+    ACCOUNT_GUID_MAX_ALIASES(100),
+    //
+    // EMAIL VERIFICATION
+    //
     /**
      * If enabled, email verfication will be used when account guids are created.
      */
@@ -177,10 +241,23 @@ public class GNSConfig {
      * A url that will lookup status for the application when passed a HRN.
      */
     STATUS_URL("http://127.0.0.1/status?alias="),
+    //
+    // HTTP Service
+    //
+    /**
+     * The URL path used by the HTTP server.
+     */
+    HTTP_SERVER_GNS_URL_PATH("GNS"),
+    // 
+    // LOCAL NAME SERVER SETUP
+    // 
     /**
      * Set to "all" or a node id if you want to start an instance of the LocalNameServer when the app starts.
      */
     LOCAL_NAME_SERVER_NODES("none"),
+    //
+    // Domain Name Service
+    //
     /**
      * For the DNS service set to "all" or a node id if you want to start the DNS server when the app starts.
      */
@@ -198,17 +275,21 @@ public class GNSConfig {
      * For the DNS service set to true if you want the DNS server to forward requests to DNS and GNS servers.
      */
     DNS_ONLY(false),
-	  
+    //
+    // Contect Name Service
+    //
     /**
      * If set to true enables update forwarding to CNS
      */
-	ENABLE_CNS(false),
-	 
-	/**
-	 * Ip address:port of one node of CNS.
-	 * If ENABLE_CNS is set to true then this option should definitely be set.
-	 */
-	CNS_NODE_ADDRESS("node");
+    ENABLE_CNS(false),
+    /**
+     * Ip address:port of one node of CNS.
+     * If ENABLE_CNS is set to true then this option should definitely be set.
+     */
+    CNS_NODE_ADDRESS("node");
+    //
+    // Active
+    //
 
     final Object defaultValue;
 
@@ -220,41 +301,6 @@ public class GNSConfig {
     public Object getDefaultValue() {
       return this.defaultValue;
     }
-
-    /**
-     *
-     * @return true if email verfication will be used when account guids are created
-     */
-    public static boolean isEmailAuthenticationEnabled() {
-      return Config.getGlobalBoolean(GNSC.ENABLE_EMAIL_VERIFICATION);
-    }
-
-    /**
-     *
-     * @return true if email salt will be added to the EMAIL_VERIFICATION code.
-     */
-    public static boolean isEmailAuthenticationSaltEnabled() {
-      return Config.getGlobalBoolean(GNSC.ENABLE_EMAIL_VERIFICATION_SALT);
-    }
-
-    /**
-     *
-     * @return true if the use of the local mailer is disabled when sending verification messages
-     */
-    public static boolean isDontTryLocalEmail() {
-      return Config.getGlobalBoolean(GNSC.DONT_TRY_LOCAL_EMAIL);
-    }
-    
-    public static boolean isCSEnabled()
-    {
-    	return Config.getGlobalBoolean(GNSC.ENABLE_CNS);
-    }
-    
-    public static String getCNSNodeAddress()
-    {
-    	return Config.getGlobalString(GNSC.CNS_NODE_ADDRESS);
-    }
-    
 
     private static Class<?> noSqlRecordsclass = getNoSqlRecordsClass();
 
@@ -297,32 +343,21 @@ public class GNSConfig {
     }
   }
 
-  /* FIXME: arun: some parameters below are not relevant any more and need to
-	 * go. I removed the ones not being using static analysis. */
+  //FIXME: Remove this.
   /**
    * The default starting port.
    */
   public static final int DEFAULT_STARTING_PORT = 24400;
+  //FIXME: Do this have an equivalent in gigapaxos we can use.
   /**
-   * The URL path used by the HTTP server.
+   * The minimum number of replicas. Used by {@link LocationBasedDemandProfile}.
    */
-  public static final String GNS_URL_PATH = "GNS";
-  // Useful for testing with resources in conf/testCodeResources if using
-  // "import from build file in IDE". Better way to do this?
+  public static int minReplica = 3;
+  //FIXME: Do this have an equivalent in gigapaxos we can use.
   /**
-   * Hack.
+   * The maximum number of replicas. Used by {@link LocationBasedDemandProfile}.
    */
-  public static final String WESTY_GNS_DIR_PATH = "/Users/westy/Documents/Code/GNS";
-  /**
-   * The maximum number of HRN aliases allowed for a guid.
-   */
-  public static int MAXALIASES = 100;
-  /**
-   * The maximum number of subguids allowed in an account guid. The upper
-   * limit on this is currently dictated by mongo's 16MB document limit.
-   * https://docs.mongodb.org/manual/reference/limits/#bson-documents
-   */
-  public static int MAXGUIDS = 300000;
+  public static int maxReplica = 100;
 
   // This is designed so we can run multiple NSs on the same host if needed
   /**

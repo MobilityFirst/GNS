@@ -1030,7 +1030,8 @@ public enum CommandType {
 
   }
 
-  private static final Map<Integer, CommandType> map = new HashMap<Integer, CommandType>();
+  private static final Map<Integer, CommandType> map = new HashMap<>();
+  private static final Map<String, CommandType> lowerCaseCommandNameMapForHttp = new HashMap<>();
 
   static {
     for (CommandType type : CommandType.values()) {
@@ -1045,6 +1046,7 @@ public enum CommandType {
                 + type.getInt());
       }
       map.put(type.getInt(), type);
+      lowerCaseCommandNameMapForHttp.put(type.name().toLowerCase(), type);
     }
   }
 
@@ -1115,6 +1117,16 @@ public enum CommandType {
 
   public static CommandType getCommandType(int number) {
     return map.get(number);
+  }
+  
+  /**
+   * Returns the command that corresponds to the name ignoring case.
+   * 
+   * @param name
+   * @return 
+   */
+  public static CommandType getCommandForHttp(String name) {
+    return lowerCaseCommandNameMapForHttp.get(name.toLowerCase());
   }
 
   private void setChain(CommandType... invokedCommands) {

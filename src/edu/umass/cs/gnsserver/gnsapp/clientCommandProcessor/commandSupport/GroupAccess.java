@@ -58,6 +58,11 @@ public class GroupAccess {
 
   /**
    * Sends a request to the NS to add a single GUID to a group.
+   * Updates the GROUP field in a group GUID adding the member to it and 
+   * also updates the reverse field (GROUPS) in the member to indicate 
+   * their membership in the group. The writer can be any GUID but that 
+   * GUID must sign the request and also have ACL access to the GROUP 
+   * field in the group GUID.
    *
    * @param guid
    * @param memberGuid
@@ -80,6 +85,11 @@ public class GroupAccess {
 
   /**
    * Sends a request to the NS to add a list of GUIDs to a group.
+   * Updates the GROUP field in a group GUID adding the group members to it and 
+   * also updates the reverse field (GROUPS) in all the members to indicate 
+   * their membership in the group. The writer can be any GUID but that 
+   * GUID must sign the request and also have ACL access to the GROUP 
+   * field in the group GUID.
    *
    * @param guid
    * @param members

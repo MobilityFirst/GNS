@@ -189,7 +189,8 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    */
   private String getHTMLForm() {
     StringBuilder result = new StringBuilder();
-    result.append(getCommandType().toString());
+    // write out lower case because we except any case
+    result.append(getCommandType().toString().toLowerCase());
     String[] parameters = getCommandParameters();
     String prefix = QUERYPREFIX;
     for (int i = 0; i < parameters.length; i++) {
