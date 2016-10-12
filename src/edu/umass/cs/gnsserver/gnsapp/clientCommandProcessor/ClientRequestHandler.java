@@ -59,6 +59,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   private final String activeReplicaID;
   private final GNSApp app;
   private int httpServerPort;
+  private int httpsServerPort;
 
   /**
    * Creates an instance of the ClientRequestHandler.
@@ -75,15 +76,15 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
           String activeReplicaID,
           GNSApp app,
           GNSNodeConfig<String> gnsNodeConfig) throws IOException {
-    
+
     assert (activeReplicaID != null);
     this.admintercessor = admintercessor;
     this.nodeAddress = nodeAddress;
     // a little hair to convert fred to fred-activeReplica if we just get fred
     this.activeReplicaID = gnsNodeConfig.isActiveReplica(activeReplicaID) ? activeReplicaID
             : gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
-    this.remoteQuery = new RemoteQuery(activeReplicaID, 
-            new InetSocketAddress(gnsNodeConfig.getNodeAddress(activeReplicaID), 
+    this.remoteQuery = new RemoteQuery(activeReplicaID,
+            new InetSocketAddress(gnsNodeConfig.getNodeAddress(activeReplicaID),
                     gnsNodeConfig.getNodePort(activeReplicaID)));
     this.app = app;
     // FOR NOW WE KEEP BOTH
@@ -137,15 +138,32 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   @Override
-  public String getHTTPServerHostPortString() throws UnknownHostException {
+  public String getHttpServerHostPortString() throws UnknownHostException {
     // this isn't going to work behind NATs but for public servers it should get the
     // job done
     return getLocalHostLANAddress().getHostAddress() + ":" + httpServerPort;
   }
+  
+  @Override
+  public int getHttpsServerPort() {
+    return httpsServerPort;
+  }
 
-	@Override
-	public CommandPacket getOriginRequest(InternalRequestHeader header) {
-		return this.app.getOriginRequest(header);
-	}
+  @Override
+  public void setHttpsServerPort(int httpServerPort) {
+    this.httpsServerPort = httpServerPort;
+  }
+
+  @Override
+  public String getHttpsServerHostPortString() throws UnknownHostException {
+    // this isn't going to work behind NATs but for public servers it should get the
+    // job done
+    return getLocalHostLANAddress().getHostAddress() + ":" + httpsServerPort;
+  }
+
+  @Override
+  public CommandPacket getOriginRequest(InternalRequestHeader header) {
+    return this.app.getOriginRequest(header);
+  }
 
 }

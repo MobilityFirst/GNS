@@ -88,7 +88,7 @@ public class RegisterAccount extends BasicCommand {
     }
     try {
       CommandResponse result = AccountAccess.addAccountWithVerification(
-              handler.getHTTPServerHostPortString(),
+              handler.getHttpServerHostPortString(),
               name, guid, publicKey,
               password, handler);
       if (result.getExceptionOrErrorCode().isOKResult()) {

@@ -77,7 +77,7 @@ public class Admin extends BasicCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String passkey = json.getString(PASSKEY);
     try {
-      GNSConfig.getLogger().log(Level.INFO, "Http host:port = {0}", handler.getHTTPServerHostPortString());
+      GNSConfig.getLogger().log(Level.INFO, "Http host:port = {0}", handler.getHttpServerHostPortString());
       //Compares the passkey directly against the list in the file specified by admin.auth.  We could instead use hashing here and store the hashes and salt in the file.
       if ("on".equals(passkey)) {
         module.setAdminMode(true);

@@ -578,7 +578,7 @@ public class AccountAccess {
     if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)) {
       String name = accountInfo.getName();
       String code = createVerificationCode(name);
-      boolean emailSent = sendEmailAuthentication(name, guid, handler.getHTTPServerHostPortString(), code);
+      boolean emailSent = sendEmailAuthentication(name, guid, handler.getHttpServerHostPortString(), code);
       if (emailSent) {
         accountInfo.setVerificationCode(code);
         accountInfo.noteUpdate();

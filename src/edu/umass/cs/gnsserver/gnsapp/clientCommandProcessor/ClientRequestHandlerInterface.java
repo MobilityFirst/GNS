@@ -112,11 +112,34 @@ public interface ClientRequestHandlerInterface {
    * @return HTTP server:port
    * @throws java.net.UnknownHostException
    */
-  public String getHTTPServerHostPortString() throws UnknownHostException;
+  public String getHttpServerHostPortString() throws UnknownHostException;
 
-/**
- * @param header
- * @return The originating request corresponding to {@code header}.
- */
-public CommandPacket getOriginRequest(InternalRequestHeader header);
+  /**
+   * Returns the port associated with the secure HTTP server running on this node.
+   *
+   * @return HTTP server port.
+   */
+  public int getHttpsServerPort();
+
+  /**
+   * Sets the port associated with the secure HTTP server running on this node.
+   *
+   * @param port
+   */
+  public void setHttpsServerPort(int port);
+
+  /**
+   * *
+   * Returns a string of the form inetaddress:port for the secure http server.
+   *
+   * @return HTTP server:port
+   * @throws java.net.UnknownHostException
+   */
+  public String getHttpsServerHostPortString() throws UnknownHostException;
+
+  /**
+   * @param header
+   * @return The originating request corresponding to {@code header}.
+   */
+  public CommandPacket getOriginRequest(InternalRequestHeader header);
 }

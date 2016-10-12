@@ -30,8 +30,12 @@ import com.sun.net.httpserver.HttpServer;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.QUERY_PROCESSING_ERROR;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -41,8 +45,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
-
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
@@ -58,13 +60,11 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-
 import edu.umass.cs.utils.Config;
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONObject;
 
@@ -75,21 +75,22 @@ import org.json.JSONObject;
  */
 public class GNSHttpServer {
 
-  private static final String GNS_PATH = Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH);
+  protected static final String GNS_PATH = Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH);
   private static final int STARTING_PORT = 8080;
+  private HttpServer httpServer = null;
   private int port;
   // handles command processing
   private final CommandModule commandModule;
-  private final ClientRequestHandlerInterface requestHandler;
+  protected final ClientRequestHandlerInterface requestHandler;
   private final Date serverStartDate = new Date();
 
   private final static Logger LOG = Logger.getLogger(GNSHttpServer.class.getName());
+  
 
   public GNSHttpServer(ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
     runServer();
-    requestHandler.setHttpServerPort(port);
   }
 
   /**
@@ -106,7 +107,13 @@ public class GNSHttpServer {
       }
     } while (cnt++ < 100);
   }
-
+  
+  public void stop() {
+    if (httpServer != null) {
+      httpServer.stop(0);
+    }
+  }
+ 
   /**
    * Try to start the http server at the port.
    *
@@ -116,12 +123,14 @@ public class GNSHttpServer {
   public boolean tryPort(int port) {
     try {
       InetSocketAddress addr = new InetSocketAddress(port);
-      HttpServer server = HttpServer.create(addr, 0);
+      httpServer = HttpServer.create(addr, 0);
 
-      server.createContext("/", new EchoHandler());
-      server.createContext("/" + GNS_PATH, new DefaultHandler());
-      server.setExecutor(Executors.newCachedThreadPool());
-      server.start();
+      httpServer.createContext("/", new EchoHandler());
+      httpServer.createContext("/" + GNS_PATH, new DefaultHandler());
+      httpServer.setExecutor(Executors.newCachedThreadPool());
+      httpServer.start();
+      // Need to do this for the places where we expose the insecure http service to the user
+      requestHandler.setHttpServerPort(port);
       LOG.log(Level.INFO,
               "HTTP server is listening on port {0}", port);
       return true;
@@ -133,7 +142,7 @@ public class GNSHttpServer {
     }
   }
 
-  private class DefaultHandler implements HttpHandler {
+  protected class DefaultHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) {
@@ -234,7 +243,7 @@ public class GNSHttpServer {
   /**
    * Returns info about the server.
    */
-  private class EchoHandler implements HttpHandler {
+  protected class EchoHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
