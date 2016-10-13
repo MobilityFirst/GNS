@@ -31,7 +31,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
@@ -56,7 +56,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class AbstractUpdateList extends BasicCommand {
+public abstract class AbstractUpdateList extends AbstractCommand {
 
   /**
    *

@@ -38,7 +38,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
 import java.io.IOException;
@@ -55,7 +55,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RemoveGuid extends BasicCommand {
+public class RemoveGuid extends AbstractCommand {
 
   /**
    * Creates a RemoveGuid instance.

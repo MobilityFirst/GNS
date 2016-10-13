@@ -26,8 +26,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -44,7 +44,7 @@ import org.json.JSONObject;
  * @author westy
  */
 @Deprecated
-public class GetTagged extends BasicCommand {
+public class GetTagged extends AbstractCommand {
 
   /**
    *

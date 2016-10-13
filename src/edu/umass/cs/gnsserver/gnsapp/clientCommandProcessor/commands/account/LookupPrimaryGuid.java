@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
@@ -37,7 +37,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupPrimaryGuid extends BasicCommand {
+public class LookupPrimaryGuid extends AbstractCommand {
 
   /**
    *

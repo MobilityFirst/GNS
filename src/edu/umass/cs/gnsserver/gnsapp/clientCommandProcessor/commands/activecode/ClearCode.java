@@ -37,8 +37,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -46,7 +46,7 @@ import java.util.Date;
  * The command to clear the active code for the specified GUID and action.
  *
  */
-public class ClearCode extends BasicCommand {
+public class ClearCode extends AbstractCommand {
 
   /**
    * Creates a Clear instance.

@@ -43,12 +43,12 @@ import org.json.JSONObject;
 /**
  * This class helps to implement a unified set of client support commands that translate
  * between client support requests and core GNS commands that are sent to the server.
- * Specifically the BasicCommand is the superclass for all other commands.
+ * Specifically the AbstractCommand is the superclass for all other commands.
  * It supports command sorting to facilitate command lookup. It also supports command documentation.
  *
  * @author westy, arun
  */
-public abstract class BasicCommand implements Comparable<BasicCommand>, Summarizable {
+public abstract class AbstractCommand implements CommandInterface, Comparable<AbstractCommand>, Summarizable {
 
   /**
    *
@@ -60,7 +60,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    *
    * @param module
    */
-  public BasicCommand(CommandModule module) {
+  public AbstractCommand(CommandModule module) {
     this.module = module;
   }
 
@@ -73,7 +73,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    */
   // 
   @Override
-  public int compareTo(BasicCommand otherCommand) {
+  public int compareTo(AbstractCommand otherCommand) {
     int alphaResult = getCommandType().toString().compareTo(otherCommand.getCommandType().toString());
     // sort by number of arguments putting the longer ones first because we need to do longest match first.
     if (alphaResult == 0) {
@@ -91,13 +91,6 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
   }
 
   /**
-   * Returns the name of the command type.
-   *
-   * @return the command type
-   */
-  public abstract CommandType getCommandType();
-  
-  /**
    * Returns a string array with names of the argument parameters to the command.
    *
    * @return argument parameters
@@ -105,8 +98,8 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
   public String[] getCommandParameters() {
     return getCommandType().getCommandParameters();
   }
-  
-   /**
+
+  /**
    * Get the description of the command
    *
    * @return <code>String</code> of the command description
@@ -114,26 +107,16 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
   public String getCommandDescription() {
     return getCommandType().getCommandDescription();
   }
-
-
-  /**
-   * Executes the command. Arguments are passed in the JSONObject.
-   *
-   * @param json
-   * @param handler
-   * @return the command response of the commands
-   * @throws InvalidKeyException
-   * @throws InvalidKeySpecException
-   * @throws JSONException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   * @throws java.io.UnsupportedEncodingException
-   * @throws java.text.ParseException
-   */
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  
+  // FIXME: This is a workaround to the missing execute method described in MOB-918
+  // I'm not sure what effect a null InternalRequestHeader will have going out.
+  // This is currently only used by the HTTP server
+  @Override
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler)
+          throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException,
           UnsupportedEncodingException, ParseException {
-    throw new RuntimeException("This method should never have been called");
+    return execute(null, json, handler);
   }
 
   /**
@@ -155,11 +138,12 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    * @throws UnsupportedEncodingException
    * @throws ParseException
    */
+  @Override
   public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, UnsupportedEncodingException, ParseException {
-    return this.execute(command, handler);
+    return execute(command, handler);
   }
 
   /**
@@ -282,7 +266,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
     return new Object() {
       @Override
       public String toString() {
-        return BasicCommand.this.toString();
+        return AbstractCommand.this.toString();
       }
     };
   }

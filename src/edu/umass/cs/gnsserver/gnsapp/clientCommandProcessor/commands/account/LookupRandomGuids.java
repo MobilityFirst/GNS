@@ -24,7 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
@@ -45,7 +45,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupRandomGuids extends BasicCommand {
+public class LookupRandomGuids extends AbstractCommand {
 
   /**
    * Creates a LookupRandomGuids instance.

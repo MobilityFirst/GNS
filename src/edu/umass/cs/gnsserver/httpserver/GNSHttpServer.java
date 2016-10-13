@@ -52,7 +52,7 @@ import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Format;
@@ -212,7 +212,7 @@ public class GNSHttpServer {
     }
     JSONObject jsonFormattedCommand = new JSONObject(queryMap);
 
-    BasicCommand command;
+    AbstractCommand command;
     try {
       // allows for "dump" as well as "Dump".
       command = commandModule.lookupCommand(CommandType.getCommandForHttp(action));

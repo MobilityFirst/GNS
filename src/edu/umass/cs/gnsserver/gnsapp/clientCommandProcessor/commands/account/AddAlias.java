@@ -36,7 +36,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.TOO_MANY_ALIASES;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFICATION_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
 import java.security.InvalidKeyException;
@@ -52,7 +52,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AddAlias extends BasicCommand {
+public class AddAlias extends AbstractCommand {
 
   /**
    * Creates an AddAlias instance.

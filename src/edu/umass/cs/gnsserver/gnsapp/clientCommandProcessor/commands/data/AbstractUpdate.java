@@ -39,7 +39,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import java.security.InvalidKeyException;
@@ -57,7 +57,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class AbstractUpdate extends BasicCommand {
+public abstract class AbstractUpdate extends AbstractCommand {
 
   /**
    *
@@ -92,8 +92,7 @@ public abstract class AbstractUpdate extends BasicCommand {
 
     GNSResponseCode responseCode;
     if (field == null) {
-      responseCode = FieldAccess.updateUserJSON(header, guid, userJSON, 
-              writer, signature, message, timestamp, handler);
+      responseCode = FieldAccess.updateUserJSON(header, guid, userJSON, writer, signature, message, timestamp, handler);
       if (!responseCode.isExceptionOrError()) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {

@@ -36,7 +36,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 
@@ -54,7 +54,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class CreateList extends BasicCommand {
+public class CreateList extends AbstractCommand {
 
   /**
    *

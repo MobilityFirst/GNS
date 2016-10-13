@@ -225,7 +225,7 @@ public enum CommandType {
   ReadUnsigned(162, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadUnsigned.class,
           CommandResultType.MAP, true, false,
           "Returns one key value pair from the GNS. Does not require authentication but "
-          + "field must be set to be readable by everyone or the magic token needs to be supplied. "
+          + "field must be set to be readable by everyone. "
           + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD}),
@@ -406,8 +406,8 @@ public enum CommandType {
   ReplaceUserJSONUnsigned(221, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSONUnsigned.class,
           CommandResultType.NULL, true, false,
           "Replaces existing fields in JSON record with the given JSONObject's fields. "
-          + "Field must be world writeable or magic must be supplied as this command does "
-          + "not specify the writer and is not signed.Doesn't touch top-level "
+          + "Field must be world writeable as this command does "
+          + "not specify the writer and is not signed. Doesn't touch top-level "
           + "fields that aren't in the given JSONObject.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.USER_JSON,

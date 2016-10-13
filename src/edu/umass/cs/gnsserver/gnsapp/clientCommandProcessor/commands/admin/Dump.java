@@ -29,8 +29,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,7 +38,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class Dump extends BasicCommand {
+public class Dump extends AbstractCommand {
 
   /**
    *

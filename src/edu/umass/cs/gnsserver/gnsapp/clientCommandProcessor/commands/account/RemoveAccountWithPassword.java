@@ -26,7 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESS_DENIED;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
@@ -57,7 +57,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RemoveAccountWithPassword extends BasicCommand {
+public class RemoveAccountWithPassword extends AbstractCommand {
 
   /**
    * Creates a RemoveAccount instance.

@@ -3,7 +3,6 @@ package edu.umass.cs.gnscommon.packets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;

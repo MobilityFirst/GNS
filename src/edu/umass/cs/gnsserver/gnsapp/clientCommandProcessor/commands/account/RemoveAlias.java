@@ -36,8 +36,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFICATION_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -52,7 +52,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RemoveAlias extends BasicCommand {
+public class RemoveAlias extends AbstractCommand {
 
   /**
    * Creates a RemoveAlias instance.

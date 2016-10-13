@@ -33,7 +33,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import java.io.UnsupportedEncodingException;
@@ -51,7 +51,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class Read extends BasicCommand {
+public class Read extends AbstractCommand {
 
   /**
    * Necessary parameters

@@ -28,8 +28,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,7 +37,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupGuid extends BasicCommand {
+public class LookupGuid extends AbstractCommand {
 
   /**
    * Creates a LookupGuid instance.

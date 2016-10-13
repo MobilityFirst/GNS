@@ -32,7 +32,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import java.security.InvalidKeyException;
@@ -52,7 +52,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ReadArray extends BasicCommand {
+public class ReadArray extends AbstractCommand {
 
   /**
    *

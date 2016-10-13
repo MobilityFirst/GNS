@@ -36,8 +36,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -57,7 +57,7 @@ import org.json.JSONObject;
  * @author westy
  */
 @Deprecated
-public class ClearTagged extends BasicCommand {
+public class ClearTagged extends AbstractCommand {
 
   /**
    *

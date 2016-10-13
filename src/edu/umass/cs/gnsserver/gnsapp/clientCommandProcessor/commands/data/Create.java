@@ -28,7 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 
@@ -47,7 +47,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class Create extends BasicCommand {
+public class Create extends AbstractCommand {
 
   /**
    *
@@ -61,7 +61,6 @@ public class Create extends BasicCommand {
   public CommandType getCommandType() {
     return CommandType.Create;
   }
-
 
   @Override
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,

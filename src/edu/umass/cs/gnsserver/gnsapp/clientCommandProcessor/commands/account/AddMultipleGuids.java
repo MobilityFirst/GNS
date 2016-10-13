@@ -25,7 +25,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
@@ -61,7 +61,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AddMultipleGuids extends BasicCommand {
+public class AddMultipleGuids extends AbstractCommand {
 
   /**
    * Creates an AddGuid instance.

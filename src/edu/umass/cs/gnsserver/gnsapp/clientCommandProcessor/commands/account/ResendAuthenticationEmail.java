@@ -35,8 +35,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
@@ -53,7 +53,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ResendAuthenticationEmail extends BasicCommand {
+public class ResendAuthenticationEmail extends AbstractCommand {
 
   /**
    * Creates a SetPassword instance.

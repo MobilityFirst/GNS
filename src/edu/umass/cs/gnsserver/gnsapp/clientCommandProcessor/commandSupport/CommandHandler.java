@@ -16,7 +16,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
@@ -83,7 +83,7 @@ public class CommandHandler {
   private static final long LONG_DELAY_THRESHOLD = 1;
 
   private static void runCommand(CommandPacket commandPacket,
-          BasicCommand commandHandler, ClientRequestHandlerInterface handler,
+          AbstractCommand commandHandler, ClientRequestHandlerInterface handler,
           boolean doNotReplyToClient, GNSApp app) {
     JSONObject jsonFormattedCommand = PacketUtils.getCommand(commandPacket);
     try {
@@ -197,7 +197,7 @@ public class CommandHandler {
    * @param handler
    * @return Result of executing {@code commandPacket}.
    */
-  public static CommandResponse executeCommand(BasicCommand commandHandler,
+  public static CommandResponse executeCommand(AbstractCommand commandHandler,
           CommandPacket commandPacket, ClientRequestHandlerInterface handler) {
     try {
       if (commandHandler != null) {
@@ -283,7 +283,7 @@ public class CommandHandler {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse executeCommand(BasicCommand command,
+  public static CommandResponse executeCommand(AbstractCommand command,
           JSONObject json, ClientRequestHandlerInterface handler) {
     assert command != null;
     try {

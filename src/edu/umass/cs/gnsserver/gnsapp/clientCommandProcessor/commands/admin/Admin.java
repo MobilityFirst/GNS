@@ -30,7 +30,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
 
@@ -55,7 +55,7 @@ import org.json.JSONObject;
  * @author westy
  */
 @Deprecated
-public class Admin extends BasicCommand {
+public class Admin extends AbstractCommand {
 
   private static ArrayList<String> adminAuthStrings;
 

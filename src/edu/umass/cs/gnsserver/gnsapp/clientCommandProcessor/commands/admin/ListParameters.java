@@ -34,8 +34,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ListParameters extends BasicCommand {
+public class ListParameters extends AbstractCommand {
 
   /**
    *

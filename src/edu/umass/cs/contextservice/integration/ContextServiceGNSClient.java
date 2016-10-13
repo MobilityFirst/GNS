@@ -15,7 +15,7 @@ import org.json.JSONObject;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.contextservice.client.callback.implementations.NoopCallBack;
 import edu.umass.cs.contextservice.client.callback.implementations.NoopUpdateReply;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
 
@@ -54,7 +54,7 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
 //	{	
 //	}
   @Override
-  public void sendTiggerOnGnsCommand(JSONObject jsonFormattedCommand, BasicCommand command, boolean blocking) {
+  public void sendTiggerOnGnsCommand(JSONObject jsonFormattedCommand, AbstractCommand command, boolean blocking) {
     try {
       // code copied exactly from AbstractUpdate class
       String guid = jsonFormattedCommand.getString(GUID);
