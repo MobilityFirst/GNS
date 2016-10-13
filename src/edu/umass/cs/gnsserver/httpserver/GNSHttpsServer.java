@@ -56,8 +56,8 @@ public class GNSHttpsServer extends GNSHttpServer {
 
   private final static Logger LOG = Logger.getLogger(GNSHttpsServer.class.getName());
 
-  public GNSHttpsServer(ClientRequestHandlerInterface requestHandler) {
-    super(requestHandler);
+  public GNSHttpsServer(int port, ClientRequestHandlerInterface requestHandler) {
+    super(port, requestHandler);
   }
 
   @Override

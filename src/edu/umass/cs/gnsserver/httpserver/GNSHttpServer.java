@@ -76,7 +76,6 @@ import org.json.JSONObject;
 public class GNSHttpServer {
 
   protected static final String GNS_PATH = Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH);
-  private static final int STARTING_PORT = 8080;
   private HttpServer httpServer = null;
   private int port;
   // handles command processing
@@ -87,22 +86,22 @@ public class GNSHttpServer {
   private final static Logger LOG = Logger.getLogger(GNSHttpServer.class.getName());
   
 
-  public GNSHttpServer(ClientRequestHandlerInterface requestHandler) {
+  public GNSHttpServer(int port, ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
-    runServer();
+    runServer(port);
   }
 
   /**
    * Start the server.
    */
-  public final void runServer() {
+  public final void runServer(int startingPort) {
     int cnt = 0;
     do {
       // Find the first port after starting port that actually works.
       // Usually if 8080 is busy we can get 8081.
-      if (tryPort(STARTING_PORT + cnt)) {
-        port = STARTING_PORT + cnt;
+      if (tryPort(startingPort + cnt)) {
+        port = startingPort + cnt;
         break;
       }
     } while (cnt++ < 100);

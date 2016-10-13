@@ -69,6 +69,15 @@ public class GNSConfig {
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server.
+     *//**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
+     */
+    /**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
      */
     ENABLE_SECRET_KEY(true),
     /**
@@ -244,6 +253,14 @@ public class GNSConfig {
     //
     // HTTP Service
     //
+    /**
+     * Starting port for the non-secure server.
+     */
+    HTTP_SERVER_CLEAR_PORT(8080),
+    /**
+     * Starting port for the secure server.
+     */
+    HTTP_SERVER_SECURE_PORT(9080),
     /**
      * The URL path used by the HTTP server.
      */

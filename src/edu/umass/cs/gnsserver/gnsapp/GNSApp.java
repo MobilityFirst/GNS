@@ -405,8 +405,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     appAdmin.start();
     GNSConfig.getLogger().log(Level.INFO, "{0} Admin thread initialized", nodeID);
     // Start up some servers
-    httpServer = new GNSHttpServer(requestHandler);
-    httpsServer = new GNSHttpsServer(requestHandler);
+    httpServer = new GNSHttpServer(Config.getGlobalInt(GNSConfig.GNSC.HTTP_SERVER_CLEAR_PORT), requestHandler);
+    httpsServer = new GNSHttpsServer(Config.getGlobalInt(GNSConfig.GNSC.HTTP_SERVER_SECURE_PORT), requestHandler);
     if (Config.getGlobalString(GNSConfig.GNSC.LOCAL_NAME_SERVER_NODES).contains("all")
             || Config.getGlobalString(GNSConfig.GNSC.LOCAL_NAME_SERVER_NODES).contains(nodeID)) {
       localNameServer = new LocalNameServer();
