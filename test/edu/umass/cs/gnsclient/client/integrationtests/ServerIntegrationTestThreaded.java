@@ -74,6 +74,7 @@ public class ServerIntegrationTestThreaded {
 	/**
 	 * Runs each of the ServerIntegrationTest tests numThreads times in parallel for numRuns time sequentially.
 	 * Only uses one ServerIntegrationTest object and client. amongst all threads, and excludes tests that cannot be run in parallel.
+   * @throws java.lang.Exception
 	 */
 	@Test
 	public void test_01_ParallelServerIntegrationTest() throws Exception{

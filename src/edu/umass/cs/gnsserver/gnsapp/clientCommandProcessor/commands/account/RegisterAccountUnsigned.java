@@ -39,6 +39,10 @@ public class RegisterAccountUnsigned extends RegisterAccount {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.RegisterAccountUnsigned;

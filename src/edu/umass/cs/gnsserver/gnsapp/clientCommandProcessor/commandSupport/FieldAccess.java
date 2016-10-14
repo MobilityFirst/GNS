@@ -100,6 +100,11 @@ public class FieldAccess {
    * The server-side modifications involve changes to AccountAccess to handle
    * lookupGuidLocally and lookupPrimaryGuid differently.
    */
+
+  /**
+   *
+   */
+
   protected static final boolean SINGLE_FIELD_VALUE_ONLY = false;//true;
 
   /**
@@ -247,11 +252,13 @@ public class FieldAccess {
    * Reads the value of all the fields in a guid.
    * Doesn't return internal system fields.
    *
+   * @param header
    * @param guid
    * @param reader
    * @param signature
    * @param message
    * @param handler
+   * @param timestamp
    * @return a command response
    */
   public static CommandResponse lookupMultipleValues(InternalRequestHeader header, String guid,
@@ -291,6 +298,7 @@ public class FieldAccess {
    * @param reader
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a command response
    */
@@ -365,6 +373,7 @@ public class FieldAccess {
   /**
    * Updates the field with value.
    *
+   * @param header
    * @param guid - the guid to update
    * @param key - the field to update
    * @param value - the new value
@@ -724,6 +733,18 @@ public class FieldAccess {
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
+  /**
+   *
+   * @param guid
+   * @param field
+   * @param fields
+   * @param reader
+   * @param signature
+   * @param message
+   * @param timestamp
+   * @param app
+   * @return the GNSResponseCode
+   */
   public static GNSResponseCode signatureAndACLCheckForRead(String guid,
           String field, List<String> fields,
           String reader, String signature, String message,

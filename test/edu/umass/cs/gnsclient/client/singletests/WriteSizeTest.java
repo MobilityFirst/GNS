@@ -32,6 +32,10 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+/**
+ *
+ * @author westy
+ */
 public class WriteSizeTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
@@ -39,6 +43,9 @@ public class WriteSizeTest {
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public WriteSizeTest() {
     if (client == null) {
       try {
@@ -55,6 +62,9 @@ public class WriteSizeTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void writeSizeTest() {
     int numValues = 100;

@@ -34,8 +34,19 @@ import java.util.logging.Logger;
  */
 public class Logging {
 
+  /**
+   *
+   */
   public static Level DEFAULTCONSOLELEVEL = Level.INFO;
+
+  /**
+   *
+   */
   public static Level DEFAULTFILELEVEL = Level.FINE;
+
+  /**
+   *
+   */
   public static String DEFAULTLOGFILENAME = "log" + System.getProperty("file.separator") + "gns_client_log.xml";
 
   /**

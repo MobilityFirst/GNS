@@ -54,12 +54,6 @@ import org.json.JSONObject;
 public class Read extends AbstractCommand {
 
   /**
-   * Necessary parameters
-   */
-  public static final String[] PARAMS = {GUID, FIELD, 
-    READER, SIGNATURE, SIGNATUREFULLMESSAGE};
-
-  /**
    *
    * @param module
    */
@@ -67,6 +61,10 @@ public class Read extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.Read;

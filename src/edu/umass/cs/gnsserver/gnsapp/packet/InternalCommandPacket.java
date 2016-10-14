@@ -113,7 +113,13 @@ public class InternalCommandPacket extends CommandPacket implements
 		// hasBeenCoordinatedOnce already initialized
 	}
 
-	protected InternalCommandPacket(InternalRequestHeader header,
+  /**
+   *
+   * @param header
+   * @param command
+   * @throws JSONException
+   */
+  protected InternalCommandPacket(InternalRequestHeader header,
 			JSONObject command) throws JSONException {
 		this(header.getTTL(), header.getOriginatingGUID(), header
 				.getOriginatingRequestID(), command);

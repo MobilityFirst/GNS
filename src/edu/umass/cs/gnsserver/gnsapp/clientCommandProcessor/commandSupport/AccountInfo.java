@@ -334,7 +334,7 @@ public class AccountInfo {
    * is to large to be sent to the client.
    *
    * @param forClient
-   * @return
+   * @return the JSON Object
    * @throws JSONException
    */
   public JSONObject toJSONObject(boolean forClient) throws JSONException {

@@ -49,6 +49,9 @@ public class DottedReadTest {
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
 
+  /**
+   *
+   */
   public DottedReadTest() {
     if (client == null) {
       try {
@@ -65,6 +68,9 @@ public class DottedReadTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_1_CreateFields() {
     try {
@@ -75,6 +81,9 @@ public class DottedReadTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_2_Update() {
     try {
@@ -93,6 +102,9 @@ public class DottedReadTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_3_ReadAll() {
     try {
@@ -112,6 +124,9 @@ public class DottedReadTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_4_ReadDeep() {
     try {
@@ -122,6 +137,9 @@ public class DottedReadTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_5_ReadMid() {
     try {
@@ -135,6 +153,9 @@ public class DottedReadTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_6_ReadShallow() {
     try {

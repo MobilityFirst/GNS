@@ -56,12 +56,14 @@ public class SetCode extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.SetCode;
   }
-
-  
 
   @Override
   public CommandResponse execute(JSONObject json,

@@ -50,6 +50,10 @@ public class VerifyAccount extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.VerifyAccount;

@@ -72,6 +72,10 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
 
   }
 
+  /**
+   *
+   * @return an array of tasks
+   */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
@@ -93,6 +97,10 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
     }
   }
 
+  /**
+   *
+   * @return an array of tasks
+   */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
@@ -111,16 +119,30 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
     return lnsRequestInfo.getServiceName() + " | " + Long.toString(lnsRequestInfo.getLNSReqID());
   }
 
+  /**
+   *
+   * @return a set of packet types
+   */
   @Override
   public Set<PacketType> getEventTypes() {
     return new HashSet<>();
   }
 
+  /**
+   *
+   * @return the key
+   */
   @Override
   public String getKey() {
     return this.key;
   }
 
+  /**
+   *
+   * @param event
+   * @param ptasks
+   * @return an array of packet types
+   */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
           ProtocolEvent event,
@@ -133,6 +155,10 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
     return this.getClass().getSimpleName() + " " + lnsRequestInfo.getServiceName() + " " + lnsRequestInfo.getLNSReqID();
   }
 
+  /**
+   *
+   * @return the period
+   */
   @Override
   public long getPeriod() {
     return RESTART_PERIOD;

@@ -63,6 +63,10 @@ public class RemoveAlias extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.RemoveAlias;

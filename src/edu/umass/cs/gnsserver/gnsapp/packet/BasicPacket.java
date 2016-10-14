@@ -75,8 +75,16 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
     }
   }
 
+  /**
+   *
+   */
   public static boolean shortenLongToString = false; // shorten is unused right now
 
+  /**
+   *
+   * @param shorten
+   * @return the string
+   */
   public String toString(boolean shorten) {
     if (shortenLongToString && shorten) {
       return toReasonableString();
@@ -85,6 +93,10 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
     }
   }
 
+  /**
+   *
+   * @return the string
+   */
   public String toReasonableString() {
     try {
       return this.toJSONObject().toReasonableString();

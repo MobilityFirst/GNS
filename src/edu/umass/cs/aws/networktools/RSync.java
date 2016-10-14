@@ -32,6 +32,14 @@ public class RSync {
 
   private static boolean verbose = true;
   
+  /**
+   *
+   * @param user
+   * @param host
+   * @param keyFile
+   * @param localFile
+   * @param remoteFile
+   */
   public static void upload(String user, String host, File keyFile, String localFile, String remoteFile) {
     try {
     ArrayList<String> command = new ArrayList<>();
@@ -54,14 +62,26 @@ public class RSync {
     }
   }
   
+  /**
+   *
+   * @return the value of verbose
+   */
   public static boolean isVerbose() {
     return verbose;
   }
 
+  /**
+   *
+   * @param verbose
+   */
   public static void setVerbose(boolean verbose) {
     RSync.verbose = verbose;
   }
   
+  /**
+   *
+   * @param arg
+   */
   public static void main(String[] arg) {
     String host = "ec2-23-21-120-250.compute-1.amazonaws.com";
     String localFile = "/Users/westy/Documents/Code/GNS/dist/GNS.jar";

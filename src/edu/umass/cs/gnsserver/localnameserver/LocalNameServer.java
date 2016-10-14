@@ -106,6 +106,10 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   private final InetSocketAddress address;
   private final AbstractJSONPacketDemultiplexer demultiplexer;
 
+  /**
+   *
+   * @throws IOException
+   */
   public LocalNameServer() throws IOException {
     this(new InetSocketAddress(usePublicIP ? NetworkUtils.getLocalHostLANAddress().getHostAddress()
             : "127.0.0.1",
@@ -238,6 +242,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
    *
    * @param id
    * @param requestInfo
+   * @param header
    */
   @Override
   public void addRequestInfo(long id, LNSRequestInfo requestInfo, NIOHeader header) {
@@ -278,6 +283,10 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
   }
 
   // marker for broken and/or hacky code
+
+  /**
+   *
+   */
   protected static final String LNS_BAD_HACKY = "Bad hacky code: ";
 
   /**

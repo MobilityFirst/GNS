@@ -37,6 +37,10 @@ public class Append extends AbstractUpdate {
     super(module);
   }
   
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.Append;

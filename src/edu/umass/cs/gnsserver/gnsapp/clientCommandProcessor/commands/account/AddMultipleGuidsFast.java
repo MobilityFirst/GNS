@@ -40,6 +40,10 @@ public class AddMultipleGuidsFast extends AddMultipleGuids {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.AddMultipleGuidsFast;

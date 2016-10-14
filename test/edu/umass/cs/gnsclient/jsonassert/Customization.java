@@ -7,18 +7,34 @@ public final class Customization {
 	private final String path;
 	private final ValueMatcher<Object> comparator;
 
-	public Customization(String path, ValueMatcher<Object> comparator) {
+  /**
+   *
+   * @param path
+   * @param comparator
+   */
+  public Customization(String path, ValueMatcher<Object> comparator) {
         assert path != null;
         assert comparator != null;
 		this.path = path;
 		this.comparator = comparator;
 	}
 
-	public static Customization customization(String path, ValueMatcher<Object> comparator) {
+  /**
+   *
+   * @param path
+   * @param comparator
+   * @return the Customization
+   */
+  public static Customization customization(String path, ValueMatcher<Object> comparator) {
 		return new Customization(path, comparator);
 	}
 
-    public boolean appliesToPath(String path) {
+  /**
+   *
+   * @param path
+   * @return true if it applies
+   */
+  public boolean appliesToPath(String path) {
         return this.path.equals(path);
     }
 

@@ -57,17 +57,15 @@ public class AclRemove extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.AclRemove;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return ACL_REMOVE;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {

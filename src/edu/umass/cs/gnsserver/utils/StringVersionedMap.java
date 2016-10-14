@@ -14,8 +14,6 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy
- *
  */
 package edu.umass.cs.gnsserver.utils;
 

@@ -190,8 +190,6 @@ public class ThroughputAsynchMultiClientTest {
    * Creates a ThroughputStress instance with the given arguments.
    *
    * @param alias - the alias to use to create the account guid. null uses "boo@hoo.com".
-   * @param host
-   * @param port
    */
   public ThroughputAsynchMultiClientTest(String alias) {
     InetSocketAddress address;
@@ -307,6 +305,7 @@ public class ThroughputAsynchMultiClientTest {
    * If the user specifies an updateAlias we make one
    * guid using that alias and use that for all clients. Otherwise we
    * make a bunch of random guids.
+   * @param useExistingGuids
    */
   public void createSubGuidsAndWriteValue(boolean useExistingGuids) {
     try {
@@ -519,12 +518,20 @@ public class ThroughputAsynchMultiClientTest {
     return new CommandPacket(-1, command);
   }
 
+  /**
+   *
+   */
   public class WorkerTask implements Runnable {
 
     private final int clientNumber;
     private final int requests;
     Random rand = new Random();
 
+    /**
+     *
+     * @param clientNumber
+     * @param requests
+     */
     public WorkerTask(int clientNumber, int requests) {
       this.clientNumber = clientNumber;
       this.requests = requests;

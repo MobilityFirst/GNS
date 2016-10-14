@@ -39,6 +39,10 @@ public class DerbyControl {
   private String framework = "embedded";
   private String protocol = "jdbc:derby:";
 
+  /**
+   *
+   * @return a connection
+   */
   public Connection start() {
     try {
       Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
@@ -91,6 +95,9 @@ public class DerbyControl {
     }
   }
 
+  /**
+   *
+   */
   public void shutdown() {
     /*
      * In embedded mode, an application should shut down the database.

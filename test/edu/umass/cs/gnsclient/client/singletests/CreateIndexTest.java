@@ -56,6 +56,9 @@ public class CreateIndexTest {
   private static GuidEntry masterGuid;
   private static String testField;
 
+  /**
+   *
+   */
   public CreateIndexTest() {
     if (client == null) {
       try {
@@ -73,6 +76,9 @@ public class CreateIndexTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateField() {
     
@@ -84,6 +90,9 @@ public class CreateIndexTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_CreateIndex() {
     try {
@@ -93,6 +102,9 @@ public class CreateIndexTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_03_SelectPass() {
     try {

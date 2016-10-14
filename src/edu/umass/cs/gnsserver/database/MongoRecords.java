@@ -377,6 +377,13 @@ public class MongoRecords implements NoSQLRecords {
     doUpdate(collectionName, guid, updates);
   }
 
+  /**
+   *
+   * @param collectionName
+   * @param values
+   * @throws FailedDBOperationException
+   * @throws RecordExistsException
+   */
   public void bulkUpdate(String collectionName, Map<String, JSONObject> values)
           throws FailedDBOperationException, RecordExistsException {
     //String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();

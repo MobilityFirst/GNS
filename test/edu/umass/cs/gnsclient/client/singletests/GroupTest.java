@@ -52,6 +52,9 @@ public class GroupTest {
   private static GuidEntry samEntry;
   private static GuidEntry mygroupEntry;
 
+  /**
+   *
+   */
   public GroupTest() {
     if (client == null) {
        try {
@@ -68,6 +71,9 @@ public class GroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_testCreateGuids() {
     try {
@@ -82,6 +88,9 @@ public class GroupTest {
 
   private static GuidEntry guidToDeleteEntry;
 
+  /**
+   *
+   */
   @Test
   public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
@@ -98,6 +107,9 @@ public class GroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_211_GroupAddWesty() {
     try {
@@ -107,7 +119,10 @@ public class GroupTest {
     }
   }
   
-   @Test
+  /**
+   *
+   */
+  @Test
   public void test_212_GroupAddSam() {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), samEntry.getGuid(), mygroupEntry);
@@ -115,7 +130,11 @@ public class GroupTest {
       fail("Exception while adding Sam: " + e);
     }
   }
-   @Test
+
+  /**
+   *
+   */
+  @Test
   public void test_213_GroupAddGuidToDelete() {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), guidToDeleteEntry.getGuid(), mygroupEntry);
@@ -124,6 +143,9 @@ public class GroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_214_GroupAddCheck() {
     try {
@@ -140,6 +162,9 @@ public class GroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_215_GroupRemoveGuid() {
     // now remove a guid and check for group updates
@@ -158,6 +183,9 @@ public class GroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_213_GroupRemoveCheck() {
     try {

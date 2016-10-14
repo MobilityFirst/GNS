@@ -14,7 +14,14 @@ public final class JSONCompareUtil {
 
     private JSONCompareUtil() {}
 
-     public static Map<Object,JSONObject> arrayOfJsonObjectToMap(JSONArray array, String uniqueKey) throws JSONException {
+  /**
+   *
+   * @param array
+   * @param uniqueKey
+   * @return object map
+   * @throws JSONException
+   */
+  public static Map<Object,JSONObject> arrayOfJsonObjectToMap(JSONArray array, String uniqueKey) throws JSONException {
         Map<Object, JSONObject> valueMap = new HashMap<Object, JSONObject>();
         for(int i = 0 ; i < array.length() ; ++i) {
             JSONObject jsonObject = (JSONObject)array.get(i);
@@ -24,8 +31,13 @@ public final class JSONCompareUtil {
         return valueMap;
     }
 
-
-    public static String findUniqueKey(JSONArray expected) throws JSONException {
+  /**
+   *
+   * @param expected
+   * @return the key
+   * @throws JSONException
+   */
+  public static String findUniqueKey(JSONArray expected) throws JSONException {
         // Find a unique key for the object (id, name, whatever)
         JSONObject o = (JSONObject)expected.get(0); // There's at least one at this point
         for(String candidate : getKeys(o)) {
@@ -38,6 +50,10 @@ public final class JSONCompareUtil {
     /**
      * {@code candidate} is usable as a unique key if every element in the
      * {@code array} is a JSONObject having that key, and no two values are the same.
+   * @param candidate
+   * @param array
+   * @return 
+   * @throws org.json.JSONException
      */
     public static boolean isUsableAsUniqueKey(String candidate, JSONArray array) throws JSONException {
         Set<Object> seenValues = new HashSet<Object>();
@@ -62,7 +78,13 @@ public final class JSONCompareUtil {
         return true;
     }
 
-    public static List<Object> jsonArrayToList(JSONArray expected) throws JSONException {
+  /**
+   *
+   * @param expected
+   * @return the list of objects
+   * @throws JSONException
+   */
+  public static List<Object> jsonArrayToList(JSONArray expected) throws JSONException {
         List<Object> jsonObjects = new ArrayList<Object>(expected.length());
         for(int i = 0 ; i < expected.length() ; ++i) {
             jsonObjects.add(expected.get(i));
@@ -70,7 +92,13 @@ public final class JSONCompareUtil {
         return jsonObjects;
     }
 
-    public static boolean allSimpleValues(JSONArray array) throws JSONException {
+  /**
+   *
+   * @param array
+   * @return true if all values are simple
+   * @throws JSONException
+   */
+  public static boolean allSimpleValues(JSONArray array) throws JSONException {
         for(int i = 0 ; i < array.length() ; ++i) {
             if (!isSimpleValue(array.get(i))) {
                 return false;
@@ -79,11 +107,22 @@ public final class JSONCompareUtil {
         return true;
     }
 
-    public static boolean isSimpleValue(Object o) {
+  /**
+   *
+   * @param o
+   * @return true if it is a simple value
+   */
+  public static boolean isSimpleValue(Object o) {
         return !(o instanceof JSONObject) && !(o instanceof JSONArray);
     }
 
-    public static boolean allJSONObjects(JSONArray array) throws JSONException {
+  /**
+   *
+   * @param array
+   * @return true if all values are JSONObjects
+   * @throws JSONException
+   */
+  public static boolean allJSONObjects(JSONArray array) throws JSONException {
         for(int i = 0 ; i < array.length() ; ++i) {
             if (!(array.get(i) instanceof JSONObject)) {
                 return false;
@@ -92,7 +131,13 @@ public final class JSONCompareUtil {
         return true;
     }
 
-    public static boolean allJSONArrays(JSONArray array) throws JSONException {
+  /**
+   *
+   * @param array
+   * @return true if all values are JSONArrays
+   * @throws JSONException
+   */
+  public static boolean allJSONArrays(JSONArray array) throws JSONException {
         for(int i = 0 ; i < array.length() ; ++i) {
             if (!(array.get(i) instanceof JSONArray)) {
                 return false;
@@ -101,7 +146,12 @@ public final class JSONCompareUtil {
         return true;
     }
 
-    public static Set<String> getKeys(JSONObject jsonObject) {
+  /**
+   *
+   * @param jsonObject
+   * @return the keys
+   */
+  public static Set<String> getKeys(JSONObject jsonObject) {
         Set<String> keys = new TreeSet<String>();
         Iterator<?> iter = jsonObject.keys();
         while(iter.hasNext()) {
@@ -110,15 +160,34 @@ public final class JSONCompareUtil {
         return keys;
     }
 
-    public static String qualify(String prefix, String key) {
+  /**
+   *
+   * @param prefix
+   * @param key
+   * @return the string
+   */
+  public static String qualify(String prefix, String key) {
         return "".equals(prefix) ? key : prefix + "." + key;
     }
 
-    public static String formatUniqueKey(String key, String uniqueKey, Object value) {
+  /**
+   *
+   * @param key
+   * @param uniqueKey
+   * @param value
+   * @return the key
+   */
+  public static String formatUniqueKey(String key, String uniqueKey, Object value) {
         return key + "[" + uniqueKey + "=" + value + "]";
     }
 
-    public static <T> Map<T, Integer> getCardinalityMap(final Collection<T> coll) {
+  /**
+   *
+   * @param <T>
+   * @param coll
+   * @return the map
+   */
+  public static <T> Map<T, Integer> getCardinalityMap(final Collection<T> coll) {
         Map count = new HashMap<T, Integer>();
         for (T item : coll) {
             Integer c = (Integer) (count.get(item));

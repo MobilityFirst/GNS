@@ -27,6 +27,10 @@ public enum AclAccessType {
    */
   WRITE_BLACKLIST;
 
+  /**
+   *
+   * @return the types as a string
+   */
   public static String typesToString() {
     StringBuilder result = new StringBuilder();
     String prefix = "";

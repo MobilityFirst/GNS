@@ -76,6 +76,7 @@ public enum JSONCompareMode {
     /**
      * Get the equivalent {@code JSONCompareMode} with or without strict ordering.
      * 
+   * @param strictOrdering
      * @return the equivalent {@code JSONCompareMode}
      */
     public JSONCompareMode withStrictOrdering(boolean strictOrdering) {
@@ -89,6 +90,7 @@ public enum JSONCompareMode {
     /**
      * Get the equivalent {@code JSONCompareMode} with or without extensibility.
      * 
+   * @param extensible
      * @return the equivalent {@code JSONCompareMode}
      */
     public JSONCompareMode withExtensible(boolean extensible) {

@@ -88,6 +88,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   public ClientCoreTest() {
     if (client == null) {
       try {
@@ -112,6 +115,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_010_CreateEntity() {
     String localAlias = "testGUID" + RandomString.randomString(6);
@@ -125,6 +131,9 @@ public class ClientCoreTest {
     assertEquals(localAlias, guidEntry.getEntityName());
   }
 
+  /**
+   *
+   */
   @Test
   public void test_020_RemoveGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
@@ -149,6 +158,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_030_RemoveGuidSansAccountInfo() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
@@ -173,6 +185,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_040_LookupPrimaryGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
@@ -189,6 +204,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_050_CreateSubGuid() {
     try {
@@ -199,6 +217,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_060_FieldNotFoundException() {
     try {
@@ -211,6 +232,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_070_FieldExistsFalse() {
     try {
@@ -220,6 +244,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_080_CreateFieldForFieldExists() {
     try {
@@ -230,6 +257,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_090_FieldExistsTrue() {
     try {
@@ -239,6 +269,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_100_CreateFields() {
     try {
@@ -277,6 +310,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_110_ACLPartOne() {
     //testCreateField();
@@ -304,6 +340,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_120_ACLPartTwo() {
     try {
@@ -364,6 +403,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_130_ACLALLFields() {
     //testACL();
@@ -390,6 +432,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_140_ACLCreateDeeperField() {
     try {
@@ -416,6 +461,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_170_DB() {
     //testCreateEntity();
@@ -475,6 +523,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_180_DBUpserts() {
     HashSet<String> expected = null;
@@ -530,6 +581,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_190_Substitute() {
     String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(6);
@@ -572,6 +626,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_200_SubstituteList() {
     String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(6);
@@ -617,6 +674,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
@@ -633,6 +693,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_211_GroupAdd() {
     try {
@@ -656,6 +719,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_212_GroupRemoveGuid() {
     // now remove a guid and check for group updates
@@ -677,6 +743,9 @@ public class ClientCoreTest {
 
   private static GuidEntry groupAccessUserEntry = null;
 
+  /**
+   *
+   */
   @Test
   public void test_220_GroupAndACLCreateGuids() {
     //testGroup();
@@ -713,6 +782,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_221_GroupAndACLTestBadAccess() {
     try {
@@ -727,6 +799,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_222_GroupAndACLTestGoodAccess() {
     try {
@@ -736,6 +811,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_223_GroupAndACLTestRemoveGuid() {
     try {
@@ -756,6 +834,9 @@ public class ClientCoreTest {
 
   private static String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
 
+  /**
+   *
+   */
   @Test
   public void test_230_AliasAdd() {
     try {
@@ -769,6 +850,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_231_AliasRemove() {
     try {
@@ -783,6 +867,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_232_AliasCheck() {
     try {
@@ -797,6 +884,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_240_WriteAccess() {
     String fieldName = "whereAmI";
@@ -840,6 +930,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_250_UnsignedRead() {
     String unsignedReadFieldName = "allreadaccess";
@@ -863,6 +956,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_260_UnsignedWrite() {
     String unsignedWriteFieldName = "allwriteaccess";
@@ -885,6 +981,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_270_RemoveField() {
     String fieldToDelete = "fieldToDelete";
@@ -917,6 +1016,9 @@ public class ClientCoreTest {
 
   }
 
+  /**
+   *
+   */
   @Test
   public void test_280_ListOrderAndSetElement() {
     try {
@@ -950,6 +1052,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_310_BasicSelect() {
     try {
@@ -961,6 +1066,9 @@ public class ClientCoreTest {
     }
   }
   
+  /**
+   *
+   */
   @Test
   public void test_320_GeoSpatialSelect() {
     try {
@@ -1003,6 +1111,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_330_QuerySelect() {
     String fieldName = "testQuery";
@@ -1047,6 +1158,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_400_SetFieldNull() {
     String field = "fieldToSetToNull";
@@ -1080,6 +1194,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_410_JSONUpdate() {
     try {
@@ -1192,6 +1309,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_420_NewRead() {
     try {
@@ -1252,6 +1372,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_430_NewUpdate() {
     try {
@@ -1336,6 +1459,9 @@ public class ClientCoreTest {
   private static final String BYTE_TEST_FIELD = "testBytes";
   private static byte[] byteTestValue;
 
+  /**
+   *
+   */
   @Test
   public void test_440_CreateBytesField() {
     try {
@@ -1348,6 +1474,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_441_ReadBytesField() {
     try {
@@ -1362,6 +1491,9 @@ public class ClientCoreTest {
   private static int numberTocreate = 100;
   private static GuidEntry accountGuidForBatch = null;
 
+  /**
+   *
+   */
   @Test
   public void test_510_CreateBatchAccountGuid() {
     // can change the number to create on the command line
@@ -1377,6 +1509,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_511_CreateBatch() {
     Set<String> aliases = new HashSet<>();
@@ -1395,6 +1530,9 @@ public class ClientCoreTest {
     assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
   }
 
+  /**
+   *
+   */
   @Test
   public void test_512_CheckBatch() {
     try {
@@ -1483,6 +1621,9 @@ public class ClientCoreTest {
 
   private static String createIndexTestField;
 
+  /**
+   *
+   */
   @Test
   public void test_810_CreateField() {
     createIndexTestField = "testField" + RandomString.randomString(6);
@@ -1494,6 +1635,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_820_CreateIndex() {
     try {
@@ -1503,6 +1647,9 @@ public class ClientCoreTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_830_SelectPass() {
     try {
@@ -1562,6 +1709,9 @@ public class ClientCoreTest {
             + "}";
   }
 
+  /**
+   *
+   */
   @Test
   public void test_999_Stop() {
     try {

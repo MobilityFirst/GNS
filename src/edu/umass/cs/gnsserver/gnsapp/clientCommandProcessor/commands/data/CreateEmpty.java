@@ -37,6 +37,10 @@ public class CreateEmpty extends Create {
     super(module);
   }
   
+  /**
+   *
+   * @return the command type
+   */ 
   @Override
   public CommandType getCommandType() {
     return CommandType.CreateEmpty;

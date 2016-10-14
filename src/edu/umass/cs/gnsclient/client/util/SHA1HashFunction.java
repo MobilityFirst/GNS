@@ -38,6 +38,11 @@ public class SHA1HashFunction extends BasicHashFunction {
     }
   }
 
+  /**
+   *
+   * @param key
+   * @return an array of bytes
+   */
   @Override
   public synchronized byte[] hash(String key) {
     try {
@@ -49,11 +54,20 @@ public class SHA1HashFunction extends BasicHashFunction {
 
   }
 
+  /**
+   *
+   * @param bytes
+   * @return an array of bytes
+   */
   public synchronized byte[] hash(byte[] bytes) {
     hashfunction.update(bytes);
     return hashfunction.digest();
   }
 
+  /**
+   *
+   * @return the hash function instance
+   */
   public static SHA1HashFunction getInstance() {
     return SHA1HashFunctionHolder.INSTANCE;
   }

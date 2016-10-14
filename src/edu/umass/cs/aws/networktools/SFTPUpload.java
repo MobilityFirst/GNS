@@ -40,6 +40,14 @@ public class SFTPUpload {
 
   private static boolean verbose = false;
 
+  /**
+   *
+   * @param user
+   * @param host
+   * @param keyFile
+   * @param fileToTransfer
+   * @param sftpWorkingDirectory
+   */
   public static void uploadFile(String user, String host, File keyFile, String fileToTransfer, String sftpWorkingDirectory) {
     if (verbose) {
       System.out.println("Upload file from " + fileToTransfer + " to " + host + "@" + user + " " + sftpWorkingDirectory);
@@ -53,6 +61,15 @@ public class SFTPUpload {
     }
   }
 
+  /**
+   *
+   * @param user
+   * @param host
+   * @param keyFile
+   * @param fileToTransfer
+   * @param sftpWorkingDirectory
+   * @return true if the local file is newer
+   */
   public static boolean localFileNewer(String user, String host, File keyFile, String fileToTransfer, String sftpWorkingDirectory) {
     if (verbose) {
       System.out.println("Local File Newer Check " + fileToTransfer + " to " + host + "@" + user + " " + sftpWorkingDirectory);
@@ -91,14 +108,26 @@ public class SFTPUpload {
     return (ChannelSftp) channel;
   }
   
+  /**
+   *
+   * @return true if verbose
+   */
   public static boolean isVerbose() {
     return verbose;
   }
 
+  /**
+   *
+   * @param verbose
+   */
   public static void setVerbose(boolean verbose) {
     SFTPUpload.verbose = verbose;
   }
 
+  /**
+   *
+   * @param arg
+   */
   public static void main(String[] arg) {
     String host = "ec2-23-21-120-250.compute-1.amazonaws.com";
     String file = "installScript.sh";

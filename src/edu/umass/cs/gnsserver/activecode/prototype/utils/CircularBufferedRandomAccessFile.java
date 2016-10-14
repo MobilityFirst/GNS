@@ -62,6 +62,7 @@ public class CircularBufferedRandomAccessFile {
 	 * @param file
 	 * @param size
 	 * @param enableDebug
+   * @param id
 	 */
 	public CircularBufferedRandomAccessFile(String file, long size, boolean enableDebug, String id){
 		this.file = file;
@@ -100,6 +101,7 @@ public class CircularBufferedRandomAccessFile {
 	/**
 	 * @param file
 	 * @param enableDebug
+   * @param id
 	 */
 	public CircularBufferedRandomAccessFile(String file, boolean enableDebug, String id){
 		this(file, MAX_SIZE, enableDebug, id);

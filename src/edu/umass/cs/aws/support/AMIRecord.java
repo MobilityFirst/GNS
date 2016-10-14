@@ -51,28 +51,54 @@ public class AMIRecord {
     this.securityGroup = securityGroup;
   }
 
+  /**
+   *
+   * @return the name
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   *
+   * @return the description
+   */
   public String getDescription() {
     return description;
   }
 
+  /**
+   *
+   * @return the instance type
+   */
   public String getInstanceType() {
     return instanceType;
   }
 
+  /**
+   *
+   * @return the vpc subnet
+   */
   public String getVpcSubnet() {
     return vpcSubnet;
   }
 
+  /**
+   *
+   * @return the security group
+   */
   public String getSecurityGroup() {
     return securityGroup;
   }
   
   private static Map<AMIRecordType, Map<RegionRecord, AMIRecord>> records = null;
 
+  /**
+   *
+   * @param type
+   * @param region
+   * @return the AMIRecord
+   */
   public static AMIRecord getAMI(AMIRecordType type, RegionRecord region) {
     if (records == null) {
       init();
@@ -84,6 +110,9 @@ public class AMIRecord {
     return result;
   }
 
+  /**
+   *
+   */
   public static void init() {
     records = new EnumMap<>(AMIRecordType.class);
     // our new mongo AMI

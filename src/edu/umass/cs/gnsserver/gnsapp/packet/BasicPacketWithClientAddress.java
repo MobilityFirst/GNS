@@ -61,6 +61,9 @@ public abstract class BasicPacketWithClientAddress extends BasicPacket {
             : MessageNIOTransport.getSenderAddress(json);
   }
   
+  /**
+   *
+   */
   protected ClientRequest response  =null;
   /**
  * @param response

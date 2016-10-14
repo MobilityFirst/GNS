@@ -209,6 +209,16 @@ public class GroupAccess {
     return NSFieldAccess.lookupListFieldAnywhere(guid, GROUPS, true, handler);
   }
 
+  /**
+   *
+   * @param guid
+   * @param reader
+   * @param signature
+   * @param message
+   * @param timestamp
+   * @param handler
+   * @return the groups as a ResultValue
+   */
   public static ResultValue lookupGroupsLocally(String guid,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {

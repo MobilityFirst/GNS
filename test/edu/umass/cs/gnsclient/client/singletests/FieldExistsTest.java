@@ -47,6 +47,9 @@ public class FieldExistsTest {
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
 
+  /**
+   *
+   */
   public FieldExistsTest() {
     if (client == null) {
       try {
@@ -63,6 +66,9 @@ public class FieldExistsTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateEntity() {
     try {
@@ -72,6 +78,9 @@ public class FieldExistsTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_CreateSubGuid() {
     try {
@@ -82,6 +91,9 @@ public class FieldExistsTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_03_FieldNotFoundException() {
     try {
@@ -94,6 +106,9 @@ public class FieldExistsTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_04_FieldExistsFalse() {
     try {
@@ -103,6 +118,9 @@ public class FieldExistsTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_05_CreateField() {
     try {
@@ -113,6 +131,9 @@ public class FieldExistsTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_06_FieldExistsTrue() {
     try {

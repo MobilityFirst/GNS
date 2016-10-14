@@ -54,6 +54,15 @@ public class ExecuteBash {
     SSHClient.exec(username, host, keyFile, "bash " + scriptName + argumentList.toString(), withSudo, null);
   }
   
+  /**
+   *
+   * @param username
+   * @param host
+   * @param keyFile
+   * @param scriptName
+   * @param command
+   * @param arguments
+   */
   public static void executeBashScriptWithSudoNoPass(String username, String host, File keyFile, String scriptName, String command, Object... arguments) {
     SSHClient.execWithSudoNoPass(username, host, keyFile, "echo \'" + command + "\' > " + scriptName);
     SSHClient.execWithSudoNoPass(username, host, keyFile, CHMODCOMMAND + " " + scriptName);
@@ -67,6 +76,15 @@ public class ExecuteBash {
     //SSHClient.exec(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString(), withSudo, null);
   }
 
+  /**
+   *
+   * @param username
+   * @param host
+   * @param keyFile
+   * @param scriptName
+   * @param command
+   * @param arguments
+   */
   public static void executeBashScriptNoSudo(String username, String host, File keyFile, String scriptName, String command, Object... arguments) {
     SSHClient.exec(username, host, keyFile, "echo \'" + command + "\' > " + scriptName);
     SSHClient.exec(username, host, keyFile, CHMODCOMMAND + " " + scriptName);
@@ -93,6 +111,10 @@ public class ExecuteBash {
     executeBashScript(username, host, keyFile, false, scriptName, command, arguments);
   }
 
+  /**
+   *
+   * @param arg
+   */
   public static void main(String[] arg) {
     ExecuteBash.executeBashScript("ec2-user", "23.21.160.80",
             new File("/Users/westy/.ssh/aws.pem"),

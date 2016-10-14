@@ -16,11 +16,23 @@ public class DefaultComparator extends AbstractComparator {
 
     JSONCompareMode mode;
 
-    public DefaultComparator(JSONCompareMode mode) {
+  /**
+   *
+   * @param mode
+   */
+  public DefaultComparator(JSONCompareMode mode) {
         this.mode = mode;
     }
 
-    @Override
+  /**
+   *
+   * @param prefix
+   * @param expected
+   * @param actual
+   * @param result
+   * @throws JSONException
+   */
+  @Override
     public void compareJSON(String prefix, JSONObject expected, JSONObject actual, JSONCompareResult result)
             throws JSONException {
         // Check that actual contains all the expected values
@@ -32,7 +44,15 @@ public class DefaultComparator extends AbstractComparator {
         }
     }
 
-    @Override
+  /**
+   *
+   * @param prefix
+   * @param expectedValue
+   * @param actualValue
+   * @param result
+   * @throws JSONException
+   */
+  @Override
     public void compareValues(String prefix, Object expectedValue, Object actualValue, JSONCompareResult result)
             throws JSONException {
         if (expectedValue instanceof Number && actualValue instanceof Number) {
@@ -52,7 +72,15 @@ public class DefaultComparator extends AbstractComparator {
         }
     }
 
-    @Override
+  /**
+   *
+   * @param prefix
+   * @param expected
+   * @param actual
+   * @param result
+   * @throws JSONException
+   */
+  @Override
     public void compareJSONArray(String prefix, JSONArray expected, JSONArray actual, JSONCompareResult result)
             throws JSONException {
         if (expected.length() != actual.length()) {

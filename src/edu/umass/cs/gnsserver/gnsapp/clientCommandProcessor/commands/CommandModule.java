@@ -53,6 +53,11 @@ public class CommandModule {
 
   private Map<CommandType, AbstractCommand> commandLookupTable;
 
+  /**
+   *
+   * @param commandType
+   * @param command
+   */
   public void addCommand(CommandType commandType, AbstractCommand command) {
     if (commandLookupTable.get(commandType) != null) {
       ClientSupportConfig.getLogger().log(Level.SEVERE,
@@ -153,10 +158,20 @@ public class CommandModule {
     return null;
   }
 
+  /**
+   *
+   * @param commandType
+   * @return the command
+   */
   public AbstractCommand lookupCommand(CommandType commandType) {
     return commandLookupTable.get(commandType);
   }
 
+  /**
+   *
+   * @param commandName
+   * @return the command
+   */
   public AbstractCommand lookupCommand(String commandName) {
     try {
       return lookupCommand(CommandType.valueOf(commandName));

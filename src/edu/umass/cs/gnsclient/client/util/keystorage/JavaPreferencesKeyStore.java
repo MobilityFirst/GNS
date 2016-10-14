@@ -3,12 +3,18 @@ package edu.umass.cs.gnsclient.client.util.keystorage;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+/**
+ *
+ * @author westy
+ */
 public class JavaPreferencesKeyStore extends AbstractKeyStorage
 {
 	private final Preferences KEYSTORE;
 	
-	
-	public JavaPreferencesKeyStore()
+  /**
+   *
+   */
+  public JavaPreferencesKeyStore()
 	{
 		KEYSTORE = 
 			Preferences.userRoot().node(JavaPreferencesKeyStore.class.getName());

@@ -37,17 +37,13 @@ public class AddToGroupSelf extends AddToGroup {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.AddToGroupSelf;
   }
-
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return ADD_TO_GROUP;
-//  }
-
-  
+ 
 }

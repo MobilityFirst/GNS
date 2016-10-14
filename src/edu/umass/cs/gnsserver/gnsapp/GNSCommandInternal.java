@@ -27,142 +27,149 @@ import edu.umass.cs.utils.Config;
  *
  */
 public class GNSCommandInternal extends InternalCommandPacket {
-	protected GNSCommandInternal(InternalRequestHeader header,
-			JSONObject command) throws JSONException {
-		super(header, command);
-	}
 
-	/**
-	 * This magic makes the command obviate signature checks. This command is
-	 * usable only at a server because only servers can know of or generate the
-	 * correct {@link GNSConfig.GNSC#INTERNAL_OP_SECRET}.
-	 * 
-	 * @param command
-	 * @return
-	 * @throws JSONException
-	 */
-	private static JSONObject makeInternal(CommandType type, JSONObject command)
-			throws JSONException {
-		// internal commands can not and need not be signed
-		assert (!command.has(GNSCommandProtocol.SIGNATURE));
-		// currently only read/write requests can be internal
-		assert (type.isRead() || type.isUpdate());
-		// only unsigned commands can be modified this way
-		return command.put(type.isRead() ? GNSCommandProtocol.READER
-				: GNSCommandProtocol.WRITER, Config
-				.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-	}
+  /**
+   *
+   * @param header
+   * @param command
+   * @throws JSONException
+   */
+  protected GNSCommandInternal(InternalRequestHeader header,
+          JSONObject command) throws JSONException {
+    super(header, command);
+  }
 
-	/** The querier is always null in internal commands as it is implicitly
-	 * a trusted server or client.
-	 * 
-	 * @param type
-	 * @param header
-	 * @param keysAndValues
-	 * @return GNSCommandInternal 
-	 * @throws JSONException
-	 * @throws InternalRequestException 
-	 */
-	private static GNSCommandInternal getCommand(CommandType type,
-			InternalRequestHeader header, Object... keysAndValues)
-			throws JSONException, InternalRequestException {
-		return enforceChecks(new GNSCommandInternal(header, makeInternal(
-				type,
-				CommandUtils
-						.createCommand(type, keysAndValues)
+  /**
+   * This magic makes the command obviate signature checks. This command is
+   * usable only at a server because only servers can know of or generate the
+   * correct {@link GNSConfig.GNSC#INTERNAL_OP_SECRET}.
+   *
+   * @param command
+   * @return a JSON Object
+   * @throws JSONException
+   */
+  private static JSONObject makeInternal(CommandType type, JSONObject command)
+          throws JSONException {
+    // internal commands can not and need not be signed
+    assert (!command.has(GNSCommandProtocol.SIGNATURE));
+    // currently only read/write requests can be internal
+    assert (type.isRead() || type.isUpdate());
+    // only unsigned commands can be modified this way
+    return command.put(type.isRead() ? GNSCommandProtocol.READER
+            : GNSCommandProtocol.WRITER, Config
+            .getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+  }
 
-						.put(GNSProtocol.ORIGINATING_GUID.toString(),
-								header.getOriginatingGUID())
+  /**
+   * The querier is always null in internal commands as it is implicitly
+   * a trusted server or client.
+   *
+   * @param type
+   * @param header
+   * @param keysAndValues
+   * @return GNSCommandInternal
+   * @throws JSONException
+   * @throws InternalRequestException
+   */
+  private static GNSCommandInternal getCommand(CommandType type,
+          InternalRequestHeader header, Object... keysAndValues)
+          throws JSONException, InternalRequestException {
+    return enforceChecks(new GNSCommandInternal(header, makeInternal(
+            type,
+            CommandUtils
+            .createCommand(type, keysAndValues)
+            .put(GNSProtocol.ORIGINATING_GUID.toString(),
+                    header.getOriginatingGUID())
+            .put(GNSProtocol.ORIGINATING_QID.toString(),
+                    header.getOriginatingRequestID())
+            .put(GNSProtocol.REQUEST_TTL.toString(),
+                    header.getTTL()))), header);
+  }
 
-						.put(GNSProtocol.ORIGINATING_QID.toString(),
-								header.getOriginatingRequestID())
+  private static GNSCommandInternal enforceChecks(
+          GNSCommandInternal gnsCommandInternal, InternalRequestHeader header)
+          throws InternalRequestException {
+    if (header.getTTL() == 0) {
+      throw new InternalRequestException(
+              GNSResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
+    }
+    if (header.hasBeenCoordinatedOnce()
+            && gnsCommandInternal.needsCoordination()) {
+      throw new InternalRequestException(
+              GNSResponseCode.INTERNAL_REQUEST_EXCEPTION,
+              "Attempting a second coordinated request in a chain with "
+              + gnsCommandInternal.getSummary());
+    }
+    return gnsCommandInternal;
+  }
 
-						.put(GNSProtocol.REQUEST_TTL.toString(),
-								header.getTTL()))), header);
-	}
+  /**
+   * Identical to {@link GNSCommand#fieldReadArray(String, String, GuidEntry)}
+   * except that the last {@code querierGUID} argument is replaced by an
+   * internal request {@code header}. For internal operations, we need the
+   * {@link GNSProtocol#ORIGINATING_GUID} to perform ACL checks or to "charge"
+   * it an operation (for accounting purposes) but we don't need to generate
+   * or verify its signatures. This and other information is in
+   * {@link InternalRequestHeader}.
+   *
+   * @param targetGUID
+   * @param field
+   * The queried field.
+   * @param header
+   * The internal request header.
+   * @return Refer {@link GNSCommand#fieldRead(String, String, GuidEntry)}.
+   * @throws JSONException
+   * @throws InternalRequestException
+   */
+  public static final InternalCommandPacket fieldRead(String targetGUID,
+          String field, InternalRequestHeader header) throws JSONException, InternalRequestException {
+    return getCommand(CommandType.ReadUnsigned, header,
+            GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
+            field);
+  }
 
-	private static GNSCommandInternal enforceChecks(
-			GNSCommandInternal gnsCommandInternal, InternalRequestHeader header)
-			throws InternalRequestException {
-		if (header.getTTL() == 0)
-			throw new InternalRequestException(
-					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
-		if (header.hasBeenCoordinatedOnce()
-				&& gnsCommandInternal.needsCoordination())
-			throw new InternalRequestException(
-					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION,
-					"Attempting a second coordinated request in a chain with "
-							+ gnsCommandInternal.getSummary());
-		return gnsCommandInternal;
-	}
+  /**
+   * @param targetGUID
+   * @param fields
+   * The queried fields.
+   * @param header
+   * The internal request header.
+   * @return InternalCommandPacket
+   * @throws JSONException
+   * @throws InternalRequestException
+   */
+  public static final InternalCommandPacket fieldRead(String targetGUID,
+          ArrayList<String> fields, InternalRequestHeader header)
+          throws JSONException, InternalRequestException {
+    return getCommand(CommandType.ReadUnsigned, header,
+            GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELDS,
+            fields);
+  }
 
-	/**
-	 * Identical to {@link GNSCommand#fieldReadArray(String, String, GuidEntry)}
-	 * except that the last {@code querierGUID} argument is replaced by an
-	 * internal request {@code header}. For internal operations, we need the
-	 * {@link GNSProtocol#ORIGINATING_GUID} to perform ACL checks or to "charge"
-	 * it an operation (for accounting purposes) but we don't need to generate
-	 * or verify its signatures. This and other information is in
-	 * {@link InternalRequestHeader}.
-	 * 
-	 * @param targetGUID
-	 * @param field
-	 *            The queried field.
-	 * @param header
-	 *            The internal request header.
-	 * @return Refer {@link GNSCommand#fieldRead(String, String, GuidEntry)}.
-	 * @throws JSONException
-	 * @throws InternalRequestException 
-	 */
-	public static final InternalCommandPacket fieldRead(String targetGUID,
-			String field, InternalRequestHeader header) throws JSONException, InternalRequestException {
-		return getCommand(CommandType.ReadUnsigned, header,
-				GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
-				field);
-	}
-
-	/**
-	 * @param targetGUID
-	 * @param fields
-	 *            The queried fields.
-	 * @param header
-	 *            The internal request header.
-	 * @return InternalCommandPacket
-	 * @throws JSONException
-	 * @throws InternalRequestException 
-	 */
-	public static final InternalCommandPacket fieldRead(String targetGUID,
-			ArrayList<String> fields, InternalRequestHeader header)
-			throws JSONException, InternalRequestException {
-		return getCommand(CommandType.ReadUnsigned, header,
-				GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELDS,
-				fields);
-	}
-
-	/**
-	 * Identical to
-	 * {@link GNSCommand#fieldUpdate(String, String, Object, GuidEntry)} except
-	 * that the last {@code querierGUID} argument is an InternalRequestHeader. For internal
-	 * operations, we need the identity of {@code querierGUID} to perform ACL
-	 * checks or to "charge" it an operation for accounting purposes, but we
-	 * don't need to generate or verify its signatures.
-	 * 
-	 * @param header
-	 * 
-	 * @param field
-	 * @param value
-	 * @param targetGUID
-	 * @return InternalCommandPacket
-	 *         
-	 * @throws JSONException
-	 * @throws InternalRequestException 
-	 */
-	public static InternalCommandPacket fieldUpdate(String targetGUID, String field,
-			JSONObject value, InternalRequestHeader header)
-			throws JSONException, InternalRequestException {
-		return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
-				GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
-				field, GNSCommandProtocol.USER_JSON,
-				new JSONObject().put(field, value));
-	}
+  /**
+   * Identical to
+   * {@link GNSCommand#fieldUpdate(String, String, Object, GuidEntry)} except
+   * that the last {@code querierGUID} argument is an InternalRequestHeader. For internal
+   * operations, we need the identity of {@code querierGUID} to perform ACL
+   * checks or to "charge" it an operation for accounting purposes, but we
+   * don't need to generate or verify its signatures.
+   *
+   * @param header
+   *
+   * @param field
+   * @param value
+   * @param targetGUID
+   * @return InternalCommandPacket
+   *
+   * @throws JSONException
+   * @throws InternalRequestException
+   */
+  public static InternalCommandPacket fieldUpdate(String targetGUID, String field,
+          JSONObject value, InternalRequestHeader header)
+          throws JSONException, InternalRequestException {
+    return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
+            GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
+            field, GNSCommandProtocol.USER_JSON,
+            new JSONObject().put(field, value));
+  }
 }

@@ -196,7 +196,7 @@ public class UniversalHttpClient implements GNSClientInterface {
   /**
    * Return the help message of the GNS. Can be used to check connectivity
    *
-   * @return
+   * @return the help string
    * @throws IOException
    */
   public String getHelp() throws IOException {
@@ -225,7 +225,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * If this is a sub guid returns the account guid it was created under.
    *
    * @param guid
-   * @return
+   * @return the guid
    * @throws UnsupportedEncodingException
    * @throws IOException
    * @throws ClientException
@@ -242,7 +242,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * Returns a JSON object containing all of the guid information.
    *
    * @param guid
-   * @return
+   * @return the JSONObject containing the guid record
    * @throws IOException
    * @throws ClientException
    */
@@ -264,7 +264,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * account guid.
    *
    * @param gaccountGuid
-   * @return
+   * @return the JSON Object containing the account record
    * @throws IOException
    * @throws ClientException
    */
@@ -299,7 +299,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * Get the public key for a given GUID
    *
    * @param guid
-   * @return
+   * @return the publickey
    * @throws InvalidGuidException
    * @throws ClientException
    * @throws IOException
@@ -327,7 +327,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    *
    * @param alias - a human readable alias to the guid - usually an email
    * address
-   * @return
+   * @return the GuidEntry for the new account
    * @throws Exception
    */
   @Override
@@ -997,7 +997,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * Selects all records that match query.
    *
    * @param query
-   * @return
+   * @return a JSONArray containing all the guids
    * @throws Exception
    */
   public JSONArray selectQuery(String query) throws Exception {
@@ -1013,7 +1013,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    *
    * @param guid
    * @param query
-   * @return
+   * @return a JSONArray containing all the guids
    * @throws Exception
    */
   public JSONArray selectSetupGroupQuery(String guid, String query) throws Exception {
@@ -1029,7 +1029,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * Look up the value of a context aware group guid using a query.
    *
    * @param guid
-   * @return
+   * @return a JSONArray containing all the guids
    * @throws Exception
    */
   public JSONArray selectLookupGroupQuery(String guid) throws Exception {
@@ -1152,7 +1152,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param accountGuid
    * @param name
    * @param publicKey
-   * @return
+   * @return the guid
    * @throws Exception
    */
   private String guidCreate(GuidEntry accountGuid, String name, PublicKey publicKey) throws Exception {
@@ -1198,6 +1198,15 @@ public class UniversalHttpClient implements GNSClientInterface {
   // ///////////////////////////////
   // // PRIVATE METHODS BELOW /////
   // /////////////////////////////
+
+  /**
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @param accesserGuid
+   * @throws Exception
+   */
   protected void aclAdd(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
     String command = createAndSignQuery(guid,
             accesserGuid == null ? CommandType.AclAdd : CommandType.AclAddSelf,
@@ -1210,6 +1219,14 @@ public class UniversalHttpClient implements GNSClientInterface {
     checkResponse(command, response);
   }
 
+  /**
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @param accesserGuid
+   * @throws Exception
+   */
   protected void aclRemove(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
     String command = createAndSignQuery(guid,
             accesserGuid == null ? CommandType.AclRemove : CommandType.AclRemoveSelf,
@@ -1223,6 +1240,15 @@ public class UniversalHttpClient implements GNSClientInterface {
     checkResponse(command, response);
   }
 
+  /**
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @param accesserGuid
+   * @return the acl as a JSON array
+   * @throws Exception
+   */
   protected JSONArray aclGet(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
     String command = createAndSignQuery(guid,
             accesserGuid == null ? CommandType.AclRetrieve : CommandType.AclRetrieveSelf,
@@ -1239,6 +1265,13 @@ public class UniversalHttpClient implements GNSClientInterface {
     }
   }
 
+  /**
+   *
+   * @param command
+   * @param response
+   * @return the response
+   * @throws ClientException
+   */
   protected String checkResponse(String command, String response) throws ClientException {
     return CommandUtils.oldCheckResponse(response);
 //    // System.out.println("response:" + response);

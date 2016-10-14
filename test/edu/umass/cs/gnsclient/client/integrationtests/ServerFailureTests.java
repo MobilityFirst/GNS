@@ -68,7 +68,12 @@ public class ServerFailureTests {
 	
 	private final int EXPECTED_MIN_THROUGHPUT = 1000; //If throughput is below this when a majority of replicas are up, the test fails.
 	
-	public static void causeRandomServerFailure() throws IOException, InterruptedException{
+  /**
+   *
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  public static void causeRandomServerFailure() throws IOException, InterruptedException{
 		//Get the GNS directory
 		//String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
 		//System.out.println("Current path: " + topDir);
@@ -114,7 +119,11 @@ public class ServerFailureTests {
 		
 	}
 	
-	public static void recoverAllServers() throws IOException{
+  /**
+   *
+   * @throws IOException
+   */
+  public static void recoverAllServers() throws IOException{
 		//Restart the server to simulate recovery.
 		synchronized(suite){
 			ArrayList<String> toRestart = new ArrayList<String>();
@@ -138,8 +147,11 @@ public class ServerFailureTests {
 		}
 	}
 	
-	
-	@BeforeClass
+  /**
+   *
+   * @throws Exception
+   */
+  @BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
 		
@@ -248,7 +260,11 @@ public class ServerFailureTests {
 		}
 	}
 
-	@AfterClass
+  /**
+   *
+   * @throws Exception
+   */
+  @AfterClass
 	public static void tearDownAfterClass() throws Exception {
 
 		System.out.println("Stopping and clearing all replicas.");
@@ -259,10 +275,17 @@ public class ServerFailureTests {
 			client.close();
 		}
 	}
-	@Rule
+
+  /**
+   *
+   */
+  @Rule
 	public TestName testName = new TestName();
 
-	@Rule
+  /**
+   *
+   */
+  @Rule
 	public TestWatcher ruleExample = new TestWatcher() {
 		@Override
 		protected void failed(Throwable e, Description description) {
@@ -277,16 +300,26 @@ public class ServerFailureTests {
 		}
 	};
 
-	@Before
+  /**
+   *
+   */
+  @Before
 	public void beforeMethod() {
 		System.out.print(testName.getMethodName() + " ");
 	}
 
-	@After
+  /**
+   *
+   */
+  @After
 	public void afterMethod() {
 	}
 
-	@Test
+  /**
+   *
+   * @throws Exception
+   */
+  @Test
 	public void test_010_Throughput() throws Exception {
 		String threadString = System.getProperty("failureTest.threads");
 		int numThreads = 20;

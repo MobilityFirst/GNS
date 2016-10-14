@@ -37,17 +37,13 @@ public class AclRemoveSelf extends AclRemove {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.AclRemoveSelf;
   }
-
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return ACL_REMOVE;
-//  }
-
   
 }

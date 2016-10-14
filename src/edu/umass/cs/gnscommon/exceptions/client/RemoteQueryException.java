@@ -2,6 +2,10 @@ package edu.umass.cs.gnscommon.exceptions.client;
 
 import edu.umass.cs.gnscommon.GNSResponseCode;
 
+/**
+ *
+ * @author westy
+ */
 public class RemoteQueryException extends ClientException {
 
 	/**

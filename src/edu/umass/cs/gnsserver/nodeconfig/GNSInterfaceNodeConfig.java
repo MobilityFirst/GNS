@@ -33,9 +33,17 @@ import java.util.Set;
 public interface GNSInterfaceNodeConfig<NodeIDType> extends
         ReconfigurableNodeConfig<NodeIDType> {
 
+  /**
+   *
+   * @return a set of node ids
+   */
   @Override
   public Set<NodeIDType> getReconfigurators();
 
+  /**
+   *
+   * @return a set of node ids
+   */
   @Override
   public Set<NodeIDType> getActiveReplicas();
 

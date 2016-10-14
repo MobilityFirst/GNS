@@ -53,18 +53,37 @@ public class DiskMapRecords implements NoSQLRecords {
     return collection;
   }
 
+  /**
+   *
+   * @param name
+   * @return a disk map
+   */
   public DiskMap<String, JSONObject> getMap(String name) {
     return getCollection(name).getMap();
   }
 
+  /**
+   *
+   * @param name
+   * @return the mongo records
+   */
   public MongoRecords getMongoRecords(String name) {
     return getCollection(name).getMongoRecords();
   }
 
+  /**
+   *
+   * @param nodeID
+   */
   public DiskMapRecords(String nodeID) {
     this(nodeID, -1);
   }
 
+  /**
+   *
+   * @param nodeID
+   * @param port
+   */
   public DiskMapRecords(String nodeID, int port) {
     this.collections = new ConcurrentHashMap<>();
     this.mongoNodeID = nodeID;
@@ -98,7 +117,7 @@ public class DiskMapRecords implements NoSQLRecords {
    * that there are no cyclic pointers.
    *
    * @param record
-   * @return
+   * @return a JSON Object
    * @throws org.json.JSONException
    */
   protected static JSONObject recursiveCopyJSONObject(JSONObject record)

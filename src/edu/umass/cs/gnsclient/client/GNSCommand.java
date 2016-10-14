@@ -85,6 +85,12 @@ import edu.umass.cs.gnscommon.utils.Base64;
 public class GNSCommand extends CommandPacket {
 
   /* GNSCommand constructors must remain private */
+
+  /**
+   *
+   * @param command
+   */
+
   protected GNSCommand(JSONObject command) {
     this(
             /* arun: we just generate a random value here because it is not easy (or
@@ -94,6 +100,11 @@ public class GNSCommand extends CommandPacket {
             randomLong(), command);
   }
 
+  /**
+   *
+   * @param id
+   * @param command
+   */
   protected GNSCommand(long id, JSONObject command) {
     super(id, command);
   }
@@ -204,12 +215,28 @@ public class GNSCommand extends CommandPacket {
   }
 
   // converts JSONException to ClientException
+
+  /**
+   *
+   * @param field
+   * @param value
+   * @return a JSONObject
+   * @throws JSONException
+   */
   protected static JSONObject makeJSON(String field, Object value)
           throws JSONException {
     return new JSONObject().put(field, value);
   }
 
   // converts JSONException to ClientException
+
+  /**
+   *
+   * @param field
+   * @param value
+   * @return a JSONObject
+   * @throws ClientException
+   */
   protected static JSONObject getJSONObject(String field, Object value)
           throws ClientException {
     try {
@@ -988,7 +1015,7 @@ public class GNSCommand extends CommandPacket {
    * @param accountGuid
    * @param name
    * @param publicKey
-   * @return
+   * @return a command packet
    * @throws Exception
    */
   private static final CommandPacket guidCreateHelper(GuidEntry accountGuid,

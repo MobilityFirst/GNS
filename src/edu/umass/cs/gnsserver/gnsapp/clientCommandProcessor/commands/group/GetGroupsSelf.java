@@ -38,17 +38,12 @@ public class GetGroupsSelf extends GetGroups {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.GetGroupsSelf;
-  }
-
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return GET_GROUPS;
-//  }
-
-  
+  } 
 }

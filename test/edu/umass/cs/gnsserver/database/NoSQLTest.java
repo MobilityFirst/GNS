@@ -53,6 +53,9 @@ public class NoSQLTest {
   private static NoSQLRecords instance;
   private static GNSRecordMap<String> recordMap;
 
+  /**
+   *
+   */
   public NoSQLTest() {
     if (instance == null) {
       instance = new DiskMapRecords(node);
@@ -60,6 +63,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_Insert() {
     JSONObject json = new JSONObject();
@@ -77,6 +83,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_PrintAll() {
     try {
@@ -87,6 +96,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_03_LookupEntireRecord() {
     JSONObject json = new JSONObject();
@@ -114,6 +126,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_04_LookupSomeFields() {
     Map<ColumnField, Object> expected = new HashMap<>();
@@ -146,6 +161,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_05_RemoveEntireRecord() {
     try {
@@ -155,6 +173,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_06_CheckForRecordGone() {
     try {
@@ -167,6 +188,9 @@ public class NoSQLTest {
 
   private static String guid2 = "guid#2";
 
+  /**
+   *
+   */
   @Test
   public void test_20_InsertRecord() {
     JSONObject json = new JSONObject();
@@ -184,6 +208,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_21_UpdateEntireRecord() {
     JSONObject json = new JSONObject();
@@ -203,6 +230,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_22_LookupEntireRecordGuid2() {
     JSONObject json = new JSONObject();
@@ -232,6 +262,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_23_UpdateIndividualFields() {
     try {
@@ -245,6 +278,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_24_LookupEntireRecordGuid2Again() {
     JSONObject json = new JSONObject();
@@ -275,6 +311,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_25_LookupSomeDottedFields() {
     try {
@@ -294,6 +333,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_30_RemoveMapKeys() {
     try {
@@ -307,6 +349,9 @@ public class NoSQLTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_31_LookupEntireRecordGuid2YetAgain() {
     JSONObject json = new JSONObject();

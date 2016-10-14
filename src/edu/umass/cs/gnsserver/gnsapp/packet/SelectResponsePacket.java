@@ -130,7 +130,6 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    *
    * @param id
    * @param lnsAddress
-   * @param lnsQueryId
    * @param nsQueryId
    * @param nameServer
    * @param errorMessage
@@ -250,17 +249,29 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
     return errorMessage;
   }
 
+  /**
+   *
+   * @return the service name
+   */
   @Override
   public String getServiceName() {
     // FIXME:
     return "SelectResponse";
   }
 
+  /**
+   *
+   * @return the response
+   */
   @Override
   public ClientRequest getResponse() {
     return this.response;
   }
 
+  /**
+   *
+   * @return the id
+   */
   @Override
   public long getRequestID() {
     return requestId;

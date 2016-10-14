@@ -61,6 +61,12 @@ public class AdminTestSuite extends DefaultTest{
       }
     }
   }*/
+
+  /**
+   *
+   * @throws IOException
+   */
+
   @BeforeClass
   public static void setupBeforeClass() throws IOException{
 	  System.out.println("Starting client");
@@ -95,6 +101,10 @@ public class AdminTestSuite extends DefaultTest{
 		}
   }
   
+  /**
+   *
+   * @throws Exception
+   */
   @Test
 	public void test_001_CreateEntity() throws Exception {
 		String alias = "testGUID" + RandomString.randomString(12);
@@ -104,12 +114,20 @@ public class AdminTestSuite extends DefaultTest{
 		assertEquals(alias, guidEntry.getEntityName());
 	}
 
+  /**
+   *
+   * @throws Exception
+   */
   @Test
   public void test_01_ParameterGet() throws Exception {
       String result = client.parameterGet("email_verification");
       assertEquals("true", result);
   }
 
+  /**
+   *
+   * @throws Exception
+   */
   @Test
   public void test_02_ParameterSet() throws Exception {
       client.parameterSet("max_guids", 2000);
@@ -117,21 +135,37 @@ public class AdminTestSuite extends DefaultTest{
       assertEquals("2000", result);
   }
   
+  /**
+   *
+   * @throws Exception
+   */
   @Test
   public void test_03_ParameterList() throws Exception {
       String result = client.parameterList();
   }
   
+  /**
+   *
+   * @throws Exception
+   */
   @Test
   public void test_04_Dump() throws Exception {
       String result = client.dump();
   }
   
+  /**
+   *
+   * @throws Exception
+   */
   @Test
   public void test_05_DumpCache() throws Exception {
       String result = client.dumpCache();
   }
   
+  /**
+   *
+   * @throws Exception
+   */
   @Test
   public void test_06_ClearCache() throws Exception {
       String result = client.clearCache();

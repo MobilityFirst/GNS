@@ -47,6 +47,9 @@ import org.apache.commons.lang3.ArrayUtils;
 public class SimpleKeyStore extends AbstractKeyStorage
 {
 
+  /**
+   *
+   */
   public static final int MAX_KEY_LENGTH = 2048;
 
   private static final String TABLE_NAME = "GNS_CLIENT_KEYSTORE"; // Derby uses all upcase for table names
@@ -97,6 +100,7 @@ public class SimpleKeyStore extends AbstractKeyStorage
    * @param key
    * @param value
    */
+  @Override
   public void put(String key, String value) {
     try {
       if (get(key, null) != null) {
@@ -126,8 +130,9 @@ public class SimpleKeyStore extends AbstractKeyStorage
    *
    * @param key
    * @param def
-   * @return
+   * @return the value as a string
    */
+  @Override
   public String get(String key, String def) {
     String result = def;
     ResultSet rs = null;
@@ -161,6 +166,11 @@ public class SimpleKeyStore extends AbstractKeyStorage
     }
   }
 
+  /**
+   *
+   * @param key
+   * @return the update time as a Date
+   */
   public Date updateTime(String key) {
     ResultSet rs = null;
     try {
@@ -179,6 +189,11 @@ public class SimpleKeyStore extends AbstractKeyStorage
     return null;
   }
 
+  /**
+   *
+   * @param key
+   * @return the read time as a DATE
+   */
   public Date readTime(String key) {
     ResultSet rs = null;
     try {
@@ -326,6 +341,11 @@ public class SimpleKeyStore extends AbstractKeyStorage
   }
 
   // TEST CODE
+
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args) {
 
     SimpleKeyStore keyStore = new SimpleKeyStore();

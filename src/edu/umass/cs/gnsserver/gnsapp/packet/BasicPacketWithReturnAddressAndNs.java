@@ -65,6 +65,10 @@ public abstract class BasicPacketWithReturnAddressAndNs<NodeIDType> extends Basi
     this.nameServerID = nameServerID;
   }
   
+  /**
+   *
+   * @param nameServerID
+   */
   public BasicPacketWithReturnAddressAndNs(NodeIDType nameServerID) {
     super();
     this.nameServerID = nameServerID;

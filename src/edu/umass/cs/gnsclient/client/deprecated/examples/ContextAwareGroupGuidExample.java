@@ -84,6 +84,17 @@ public class ContextAwareGroupGuidExample {
   private static GuidEntry groupOneGuidEntry;
   private static GuidEntry groupTwoGuidEntry;
 
+  /**
+   *
+   * @param args
+   * @throws IOException
+   * @throws InvalidKeySpecException
+   * @throws NoSuchAlgorithmException
+   * @throws ClientException
+   * @throws InvalidKeyException
+   * @throws SignatureException
+   * @throws Exception
+   */
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
@@ -208,7 +219,7 @@ public class ContextAwareGroupGuidExample {
    *
    * @param client
    * @param name
-   * @return
+   * @return the GuidEntry
    * @throws Exception
    */
   private static GuidEntry lookupOrCreateAccountGuid(GNSClientCommands client,

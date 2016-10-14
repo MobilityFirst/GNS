@@ -140,7 +140,7 @@ public class CreateMultiGuidClient {
    *
    * @param client
    * @param name
-   * @return
+   * @return a guid entry
    * @throws Exception
    */
   private static GuidEntry lookupOrCreateAccountGuid(GNSClientCommands client,

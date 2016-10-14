@@ -40,8 +40,19 @@ import org.json.JSONObject;
  */
 public class BasicGuidEntry {
 
+  /**
+   *
+   */
   public final String entityName;
+
+  /**
+   *
+   */
   public final String guid;
+
+  /**
+   *
+   */
   public final PublicKey publicKey;
 
   /**

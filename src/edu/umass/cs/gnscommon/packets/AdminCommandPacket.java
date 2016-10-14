@@ -7,21 +7,40 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
+/**
+ *
+ * @author westy
+ */
 public class AdminCommandPacket extends CommandPacket {
 
-	public AdminCommandPacket(long requestId, JSONObject command) {
+  /**
+   *
+   * @param requestId
+   * @param command
+   */
+  public AdminCommandPacket(long requestId, JSONObject command) {
 		super(requestId, command);
 		this.setType(PacketType.ADMIN_COMMAND);
 		assert(this.getCommandType().isMutualAuth());
 	}
 
-	public AdminCommandPacket(JSONObject json) throws JSONException {
+  /**
+   *
+   * @param json
+   * @throws JSONException
+   */
+  public AdminCommandPacket(JSONObject json) throws JSONException {
 		super(json);
 		this.setType(PacketType.ADMIN_COMMAND);
 		assert(this.getCommandType().isMutualAuth());
 	}
 
-	public AdminCommandPacket(byte[] bytes) throws RequestParseException {
+  /**
+   *
+   * @param bytes
+   * @throws RequestParseException
+   */
+  public AdminCommandPacket(byte[] bytes) throws RequestParseException {
 		super(bytes);
 		this.setType(PacketType.ADMIN_COMMAND);
 		assert(this.getCommandType().isMutualAuth());

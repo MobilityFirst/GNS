@@ -36,6 +36,10 @@ public class ReadMultiFieldUnsigned extends Read {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.ReadMultiFieldUnsigned;

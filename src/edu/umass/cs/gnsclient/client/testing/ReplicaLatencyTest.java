@@ -189,6 +189,10 @@ public class ReplicaLatencyTest {
 
   }
 
+  /**
+   *
+   * @param closeActiveReplica
+   */
   public void readsAndWrites(String closeActiveReplica) {
     boolean successLatch = false;
     int countdown = 10; // makes it do 10 more requests after success
@@ -225,6 +229,9 @@ public class ReplicaLatencyTest {
     System.out.println("Got " + subGuidEntry.getGuid());
   }
 
+  /**
+   *
+   */
   public void performRead() {
     try {
       client.fieldRead(subGuidEntry, "environment");

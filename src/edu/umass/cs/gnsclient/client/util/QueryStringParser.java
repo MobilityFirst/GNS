@@ -105,7 +105,7 @@ public class QueryStringParser
    * been found. Note that the current parameter is not considered.
    * 
    * @param names
-   * @return
+   * @return true if the parameter is found
    */
   public boolean search(Collection<String> names)
   {

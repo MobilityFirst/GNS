@@ -41,7 +41,7 @@ public interface Stringifiable<ObjectType> {
    * things that are Stringifiable.
    *
    * @param strValue
-   * @return
+   * @return the value
    */
   public ObjectType valueOf(String strValue);
   
@@ -49,10 +49,16 @@ public interface Stringifiable<ObjectType> {
    * Converts a set of string node ids using valueOf.
    * 
    * @param strNodes
-   * @return 
-   */
+   * @return a set of values
+   */ 
   public Set<ObjectType> getValuesFromStringSet(Set<String> strNodes);
   
+  /**
+   *
+   * @param array
+   * @return a set of values
+   * @throws JSONException
+   */
   public Set<ObjectType> getValuesFromJSONArray(JSONArray array) throws JSONException;
 
 }

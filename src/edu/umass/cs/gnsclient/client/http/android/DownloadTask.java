@@ -40,6 +40,11 @@ public class DownloadTask extends AsyncTask<String, String, Object> {
 
   private static final String LOG_TAG = "GNS";
 
+  /**
+   *
+   * @param urls
+   * @return the result
+   */
   @Override
   protected Object doInBackground(String... urls) {
     String stringUrl = urls[0];

@@ -72,6 +72,10 @@ public class ValuesMap extends JSONObject implements Summarizable {
     }
   }
 
+  /**
+   *
+   * @return the values map sans internals 
+   */
   public ValuesMap removeInternalFields() {
     ValuesMap copy = new ValuesMap(this);
     Iterator<?> keyIter = copy.keys();
@@ -107,6 +111,11 @@ public class ValuesMap extends JSONObject implements Summarizable {
     }
   }
 
+  /**
+   *
+   * @return the keys
+   * @throws JSONException
+   */
   public List<String> getKeys() throws JSONException {
     List<String> result = new ArrayList<>();
     Iterator<?> keyIter = keys();
@@ -116,11 +125,14 @@ public class ValuesMap extends JSONObject implements Summarizable {
     return result;
   }
 
-  @Override
   /**
    * Returns true if the ValuesMap contains the key.
    * Supports dot notation.
+   *
+   * @param key
+   * @return true if the ValuesMap contains the key.
    */
+  @Override
   public boolean has(String key) {
     // if key is "flapjack.sally" this returns true if the map looks like this
     // {"flapjack.sally":{"left":"eight","right":"seven"}}
@@ -207,6 +219,10 @@ public class ValuesMap extends JSONObject implements Summarizable {
     return somethingChanged;
   }
 
+  /**
+   *
+   * @return the summary 
+   */
   @Override
   public Object getSummary() {
     return edu.umass.cs.utils.Util.truncate(ValuesMap.this.toString(), 64, 64).toString();

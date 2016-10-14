@@ -47,6 +47,9 @@ public class CreateAccountTest {
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public CreateAccountTest() {
     if (client == null) {
       try {
@@ -58,6 +61,9 @@ public class CreateAccountTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateAccount() {
     try {
@@ -67,6 +73,9 @@ public class CreateAccountTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_CheckAccount() {
     String guidString = null;

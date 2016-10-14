@@ -53,17 +53,15 @@ public class ListParameters extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.ListParameters;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return LIST_PARAMETERS;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
       return new CommandResponse(GNSResponseCode.NO_ERROR, SystemParameter.listParameters());

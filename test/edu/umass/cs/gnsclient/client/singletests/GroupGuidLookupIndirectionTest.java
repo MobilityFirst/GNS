@@ -53,6 +53,9 @@ public class GroupGuidLookupIndirectionTest {
   private static GuidEntry indirectionGroupGuid;
   private JSONArray IndirectionGroupMembers = new JSONArray();
 
+  /**
+   *
+   */
   public GroupGuidLookupIndirectionTest() {
     if (client == null) {
        try {
@@ -69,6 +72,9 @@ public class GroupGuidLookupIndirectionTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_SetupGuids() {
     try {
@@ -83,6 +89,9 @@ public class GroupGuidLookupIndirectionTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_RegisterGroup() {
     try {
@@ -93,6 +102,9 @@ public class GroupGuidLookupIndirectionTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_03_AddGroupMembers() {
     try {
@@ -103,6 +115,9 @@ public class GroupGuidLookupIndirectionTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_99_TestRead() {
     try {

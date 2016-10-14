@@ -748,7 +748,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   /**
    *
    * @param guid
-   * @return
+   * @return the email
    * @throws Exception
    */
   public String accountResendAuthenticationEmail(GuidEntry guid)
@@ -1215,7 +1215,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param accountGuid
    * @param name
    * @param publicKey
-   * @return
+   * @return the guid  string
    * @throws Exception
    */
   private String guidCreateHelper(GuidEntry accountGuid, String name,
@@ -2190,7 +2190,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   /**
    * Clears the local name server cache.
    *
-   * @return
+   * @return the result of the clear cache command
    * @throws Exception
    */
   public String clearCache() throws Exception {
@@ -2200,8 +2200,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
     } catch (DuplicateNameException dne) {
       //Do nothing if it already exists.
     }
-    return getResponse(CommandType.ClearCache, NAME,
-            "Admin");
+    return getResponse(CommandType.ClearCache, NAME, "Admin");
   }
 
   /**

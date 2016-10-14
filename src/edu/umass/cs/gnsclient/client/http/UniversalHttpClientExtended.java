@@ -262,7 +262,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param guid
    * @param field
    * @param reader
-   * @return
+   * @return first value as a string
    * @throws Exception
    */
   public String fieldReadFirstElement(String guid, String field, GuidEntry reader) throws Exception {
@@ -281,43 +281,6 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
     String response = sendGetCommand(command);
 
     return checkResponse(command, response);
-  }
-
-  /**
-   * Removes a tag from the tags of the guid.
-   *
-   * @param guid
-   * @param tag
-   * @throws Exception
-   */
-  @Deprecated
-  public void removeTag(GuidEntry guid, String tag) throws Exception {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Retrieves GUIDs that have been tagged with tag
-   *
-   * @param tag
-   * @return
-   * @throws Exception
-   */
-  @Deprecated
-  public JSONArray retrieveTagged(String tag) throws Exception {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Removes all guids that have the corresponding tag. Removes the reverse
-   * fields for the entity name and aliases. Note: doesn't remove all the
-   * associated fields yet, though, so still a work in progress.
-   *
-   * @param tag
-   * @throws Exception
-   */
-  @Deprecated
-  public void clearTagged(String tag) throws Exception {
-    throw new UnsupportedOperationException();
   }
 
 }

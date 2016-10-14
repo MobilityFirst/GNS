@@ -51,17 +51,15 @@ public class DumpCache extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.DumpCache;
   }
-
   
-
-//  @Override
-//  public String getCommandName() {
-//    return DUMPCACHE;
-//  }
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,

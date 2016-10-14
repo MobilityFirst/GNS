@@ -37,6 +37,10 @@ public class AppendOrCreateList extends AbstractUpdateList {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.AppendOrCreateList;

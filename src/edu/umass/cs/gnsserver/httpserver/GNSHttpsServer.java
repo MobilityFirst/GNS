@@ -56,10 +56,18 @@ public class GNSHttpsServer extends GNSHttpServer {
 
   private final static Logger LOG = Logger.getLogger(GNSHttpsServer.class.getName());
 
+  /**
+   *
+   * @param port
+   * @param requestHandler
+   */
   public GNSHttpsServer(int port, ClientRequestHandlerInterface requestHandler) {
     super(port, requestHandler);
   }
 
+  /**
+   *
+   */
   @Override
   public final void stop() {
     if (httpsServer != null) {

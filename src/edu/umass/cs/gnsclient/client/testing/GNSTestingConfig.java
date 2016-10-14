@@ -46,85 +46,95 @@ import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
- * 
- *         Configuration parameters for testing GNS performance and
- *         functionality. Mainly for holding testing parameters other than those
- *         already in gigaapxos' {@link TESTPaxosConfig} and
- *         {@link TESTReconfigurationConfig}.
+ *
+ * Configuration parameters for testing GNS performance and
+ * functionality. Mainly for holding testing parameters other than those
+ * already in gigaapxos' {@link TESTPaxosConfig} and
+ * {@link TESTReconfigurationConfig}.
  */
 public class GNSTestingConfig {
 
-	protected static void load() {
-		// testing specific config parameters
-		try {
-			Config.register(GNSTC.class, TESTING_CONFIG_FILE_KEY,
-					DEFAULT_TESTING_CONFIG_FILE);
-		} catch (IOException e) {
-			// ignore as defaults will be used
-		}
-	}
+  /**
+   *
+   */
+  protected static void load() {
+    // testing specific config parameters
+    try {
+      Config.register(GNSTC.class, TESTING_CONFIG_FILE_KEY,
+              DEFAULT_TESTING_CONFIG_FILE);
+    } catch (IOException e) {
+      // ignore as defaults will be used
+    }
+  }
 
-	static {
-		load();
-	}
+  static {
+    load();
+  }
 
-	/**
-	 * 
-	 */
-	public static final String TESTING_CONFIG_FILE_KEY = "testingConfig";
-	/**
-	 * 
-	 */
-	public static final String DEFAULT_TESTING_CONFIG_FILE = "testing.properties";
+  /**
+   *
+   */
+  public static final String TESTING_CONFIG_FILE_KEY = "testingConfig";
+  /**
+   *
+   */
+  public static final String DEFAULT_TESTING_CONFIG_FILE = "testing.properties";
 
-	/**
-	 * GNS testing config parameters.
-	 */
-	public static enum GNSTC implements Config.ConfigurableEnum {
+  /**
+   * GNS testing config parameters.
+   */
+  public static enum GNSTC implements Config.ConfigurableEnum {
 
-		/**
-		 * Number of GUIDs per account GUID.
-		 */
-		NUM_GUIDS_PER_ACCOUNT(100),
+    /**
+     * Number of GUIDs per account GUID.
+     */
+    NUM_GUIDS_PER_ACCOUNT(100),
+    /**
+     * Use only account GUIDs, no sub-GUIDs.
+     */
+    ACCOUNT_GUIDS_ONLY(false),
+    /**
+     *
+     */
+    ACCOUNT_GUID_PREFIX("ACCOUNT_GUID"),
+    /**
+     * If enabled, the GNS will cache and return the same value for reads.
+     *
+     * Code-breaking if enabled. Meant only for instrumentation.
+     */
+    EXECUTE_NOOP_ENABLED(false),;
 
-		/**
-		 * Use only account GUIDs, no sub-GUIDs.
-		 */
-		ACCOUNT_GUIDS_ONLY(false),
-		
-		/**
-		 * 
-		 */
-		ACCOUNT_GUID_PREFIX("ACCOUNT_GUID"),
-		
-		/**
-		 * If enabled, the GNS will cache and return the same value for reads. 
-		 * 
-		 * Code-breaking if enabled. Meant only for instrumentation.
-		 */
-		EXECUTE_NOOP_ENABLED (false),
+    final Object defaultValue;
 
-		;
+    GNSTC(Object defaultValue) {
+      this.defaultValue = defaultValue;
+    }
 
-		final Object defaultValue;
+    /**
+     *
+     * @return the default value
+     */
+    @Override
+    public Object getDefaultValue() {
+      return this.defaultValue;
+    }
 
-		GNSTC(Object defaultValue) {
-			this.defaultValue = defaultValue;
-		}
+    /**
+     *
+     * @return the config file key
+     */
+    @Override
+    public String getConfigFileKey() {
+      return "testingConfig";
+    }
 
-		@Override
-		public Object getDefaultValue() {
-			return this.defaultValue;
-		}
-
-		@Override
-		public String getConfigFileKey() {
-			return "testingConfig";
-		}
-
-		@Override
-		public String getDefaultConfigFile() {
-			return "testing.properties";
-		}
-	}
+    /**
+     *
+     * @return the default config file
+     */
+    @Override
+    public String getDefaultConfigFile() {
+      return "testing.properties";
+    }
+  }
 }

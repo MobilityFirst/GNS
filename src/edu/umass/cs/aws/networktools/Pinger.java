@@ -38,10 +38,24 @@ public class Pinger {
 
   private static final long NOCONNECTION = -1;
 
+  /**
+   *
+   * @param host
+   * @param port
+   * @param timeoutMs
+   * @return true if the host is reachable
+   */
   public static boolean isReachable(String host, int port, int timeoutMs) {
     return checkConnection(host, port, timeoutMs) != NOCONNECTION;
   }
 
+  /**
+   *
+   * @param host
+   * @param port
+   * @param timeoutMs
+   * @return the time to connect or NOCONNECTION
+   */
   public static long checkConnection(String host, int port, int timeoutMs) {
     long start = NOCONNECTION; //default check value
     long end = NOCONNECTION; //default check value
@@ -86,6 +100,10 @@ public class Pinger {
     return total; //returns NOCONNECTION if timeout
   }
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args) {
     int timeoutMs = 2000; // 2 seconds
     long value = checkConnection("ec2-23-22-192-183.compute-1.amazonaws.com", 22, timeoutMs);

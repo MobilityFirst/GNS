@@ -89,6 +89,11 @@ public class AWSEC2 {
    * http://aws.amazon.com/security-credentials
    */
 
+  /**
+   *
+   */
+
+
   public static final String DEFAULT_SECURITY_GROUP_NAME = "aws";
 
   private static String currentTab = "";
@@ -352,6 +357,12 @@ public class AWSEC2 {
     return keyPair;
   }
 
+  /**
+   *
+   * @param ec2
+   * @param name
+   * @param publicKeyMaterial
+   */
   public static void importKeyPair(AmazonEC2 ec2, String name, String publicKeyMaterial) {
     ImportKeyPairRequest newKeyRequest = new ImportKeyPairRequest(name, publicKeyMaterial);
     ec2.importKeyPair(newKeyRequest);
@@ -422,6 +433,10 @@ public class AWSEC2 {
     // JAVA7 return new String(Files.readAllBytes(FileSystems.getDefault().getPath(filename)));
   }
 
+  /**
+   *
+   * @param ec2
+   */
   public static void describeElasticIPs(AmazonEC2 ec2) {
     StringBuilder output = new StringBuilder();
     String prefix = currentTab + "Elastic IPs: ";
@@ -434,6 +449,12 @@ public class AWSEC2 {
     System.out.println(output);
   }
 
+  /**
+   *
+   * @param ec2
+   * @param ip
+   * @return the address
+   */
   public static Address findElasticIP(AmazonEC2 ec2, String ip) {
     DescribeAddressesResult describeAddressesResult = ec2.describeAddresses();
     for (Address address : describeAddressesResult.getAddresses()) {
@@ -444,6 +465,12 @@ public class AWSEC2 {
     return null;
   }
 
+  /**
+   *
+   * @param ec2
+   * @param ip
+   * @param instance
+   */
   public static void associateAddress(AmazonEC2 ec2, String ip, Instance instance) {
     Address address;
     if ((address = findElasticIP(ec2, ip)) != null) {
@@ -512,6 +539,10 @@ public class AWSEC2 {
 
     return createdInstanceId;
   }
+
+  /**
+   *
+   */
   public static String DEFAULTSECONDMOUNTPOINT = "/dev/sda2";
 
   /**
@@ -698,6 +729,10 @@ public class AWSEC2 {
     ec2.terminateInstances(tir);
   }
 
+  /**
+   *
+   * @param ec2
+   */
   public static void describeAllEndpoints(AmazonEC2 ec2) {
     for (RegionRecord endpoint : RegionRecord.values()) {
       System.out.println("*** " + endpoint.getURL() + " (" + endpoint.getLocation() + ") ***");
@@ -712,6 +747,9 @@ public class AWSEC2 {
     }
   }
 
+  /**
+   *
+   */
   public static int DEFAULTREACHABILITYWAITTIME = 240000; // FOUR minutes...
 
   /**
@@ -826,6 +864,11 @@ public class AWSEC2 {
     return null;
   }
 
+  /**
+   *
+   * @param args
+   * @throws Exception
+   */
   public static void main(String[] args) throws Exception {
     AWSCredentials credentials = new PropertiesCredentials(
             AWSEC2.class.getResourceAsStream(System.getProperty("user.home") 

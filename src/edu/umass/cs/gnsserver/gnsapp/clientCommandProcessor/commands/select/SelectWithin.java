@@ -45,12 +45,15 @@ public class SelectWithin extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   * 
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.SelectWithin;
   }
-
-  
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {

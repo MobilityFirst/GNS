@@ -53,17 +53,15 @@ public class RemoveFromGroup extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.RemoveFromGroup;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return REMOVE_FROM_GROUP;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {

@@ -50,13 +50,15 @@ public class Unknown extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.Unknown;
   }
-
   
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler)
           throws InvalidKeyException, InvalidKeySpecException, JSONException,

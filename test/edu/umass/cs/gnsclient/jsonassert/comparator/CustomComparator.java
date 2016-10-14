@@ -8,17 +8,33 @@ import org.json.JSONException;
 import java.util.Arrays;
 import java.util.Collection;
 
-
+/**
+ *
+ * @author westy
+ */
 public class CustomComparator extends DefaultComparator {
 
     private final Collection<Customization> customizations;
 
-    public CustomComparator(JSONCompareMode mode,  Customization... customizations) {
+  /**
+   *
+   * @param mode
+   * @param customizations
+   */
+  public CustomComparator(JSONCompareMode mode,  Customization... customizations) {
         super(mode);
         this.customizations = Arrays.asList(customizations);
     }
 
-    @Override
+  /**
+   *
+   * @param prefix
+   * @param expectedValue
+   * @param actualValue
+   * @param result
+   * @throws JSONException
+   */
+  @Override
     public void compareValues(String prefix, Object expectedValue, Object actualValue, JSONCompareResult result) throws JSONException {
         Customization customization = getCustomization(prefix);
         if (customization != null) {

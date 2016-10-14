@@ -45,13 +45,15 @@ public class SelectNear extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.SelectNear;
   }
-
   
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String field = json.getString(FIELD);

@@ -63,6 +63,7 @@ public class LNSRequestInfo {
    *
    * @param lnsReqId
    * @param commandPacket
+   * @param sender
    */
   public LNSRequestInfo(long lnsReqId, CommandPacket commandPacket, InetSocketAddress sender) {
     this.lnsReqID = lnsReqId;
@@ -139,7 +140,7 @@ public class LNSRequestInfo {
   /**
    * Time duration for which the request was under processing at the local serviceName server.
    *
-   * @return
+   * @return the latency
    */
   public synchronized long getResponseLatency() {
     return finishTime - startTime;

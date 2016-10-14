@@ -179,6 +179,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     //AppReconfigurableNode.initOptions(args);
   }
 
+  /**
+   *
+   * @param messenger
+   */
   @Override
   @SuppressWarnings("unchecked")
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
@@ -248,6 +252,12 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return false;
   }
 
+  /**
+   *
+   * @param request
+   * @param doNotReplyToClient
+   * @return true if the command is successfully executed
+   */
   @SuppressWarnings("unchecked")
   // we explicitly check type
   @Override
@@ -436,6 +446,13 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   }
 
   // For InterfaceApplication
+
+  /**
+   *
+   * @param string
+   * @return the request
+   * @throws RequestParseException
+   */
   @Override
   public Request getRequest(String string) throws RequestParseException {
     GNSConfig.getLogger().log(Level.FINE,
@@ -498,7 +515,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    * {@link Byteable#toBytes()} method for GNSApp packets.
    *
    * @param msgBytes
-   * @return
+   * @return a request
    * @throws RequestParseException
    */
   private static Request fromBytes(byte[] msgBytes)
@@ -515,17 +532,32 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     }
   }
 
+  /**
+   *
+   * @param msgBytes
+   * @param header
+   * @return the request
+   * @throws RequestParseException
+   */
   @Override
   public Request getRequest(byte[] msgBytes, NIOHeader header)
           throws RequestParseException {
     return getRequestStatic(msgBytes, header, nodeConfig);
   }
 
+  /**
+   *
+   * @return a set of packet types
+   */
   @Override
   public Set<IntegerPacketType> getRequestTypes() {
     return new HashSet<>(Arrays.asList(types));
   }
 
+  /**
+   *
+   * @return a set of packet types
+   */
   @Override
   public Set<IntegerPacketType> getMutualAuthRequestTypes() {
     Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(mutualAuthTypes));
@@ -535,6 +567,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return maTypes;
   }
 
+  /**
+   *
+   * @param request
+   * @return true if the command successfully executes
+   */
   @Override
   public boolean execute(Request request) {
     return this.execute(request, false);
@@ -546,6 +583,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     curValueRequestFields.add(NameRecord.VALUES_MAP);
   }
 
+  /**
+   *
+   * @param name
+   * @return the record
+   */
   @Override
   public String checkpoint(String name) {
     try {
@@ -638,21 +680,44 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return null; // new StopPacket(name, epoch);
   }
 
+  /**
+   *
+   * @param name
+   * @param epoch
+   * @return the state
+   */
   @Override
   public String getFinalState(String name, int epoch) {
     throw new RuntimeException("This method should not have been called");
   }
 
+  /**
+   *
+   * @param name
+   * @param epoch
+   * @param state
+   */
   @Override
   public void putInitialState(String name, int epoch, String state) {
     throw new RuntimeException("This method should not have been called");
   }
 
+  /**
+   *
+   * @param name
+   * @param epoch
+   * @return the state
+   */
   @Override
   public boolean deleteFinalState(String name, int epoch) {
     throw new RuntimeException("This method should not have been called");
   }
 
+  /**
+   *
+   * @param name
+   * @return the epoch
+   */
   @Override
   public Integer getEpoch(String name) {
     throw new RuntimeException("This method should not have been called");
@@ -676,6 +741,9 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return nodeConfig;
   }
 
+  /**
+   *
+   */
   protected static final boolean DELEGATE_CLIENT_MESSAGING = true;
 
   /**

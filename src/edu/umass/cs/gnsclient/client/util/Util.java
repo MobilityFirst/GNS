@@ -35,41 +35,97 @@ import java.util.logging.Level;
  */
 public class Util {
 
+  /**
+   *
+   */
   public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.#");
+
+  /**
+   *
+   */
   public static final double ALPHA = 0.05;
 
+  /**
+   *
+   * @param d
+   * @return the value formated as decimal value
+   */
   public static final String df(double d) {
     return DECIMAL_FORMAT.format(d);
   }
 
+  /**
+   *
+   * @param d
+   * @return the value formated as decimal value
+   */
   public static final String mu(double d) {
     return DECIMAL_FORMAT.format(d * 1000) + "us";
   } // milli to microseconds
 
+  /**
+   *
+   * @param sample
+   * @param historicalAverage
+   * @param alpha
+   * @return the moving average
+   */
   public static final double movingAverage(double sample, double historicalAverage, double alpha) {
     return (1 - alpha) * historicalAverage + alpha * sample;
   }
 
+  /**
+   *
+   * @param sample
+   * @param historicalAverage
+   * @return the moving average
+   */
   public static final double movingAverage(double sample, double historicalAverage) {
     return movingAverage(sample, historicalAverage, ALPHA);
   }
 
+  /**
+   *
+   * @param sample
+   * @param historicalAverage
+   * @return the moving average
+   */
   public static final double movingAverage(long sample, double historicalAverage) {
     return movingAverage((double) sample, historicalAverage);
   }
 
+  /**
+   *
+   * @param sample
+   * @param historicalAverage
+   * @param alpha
+   * @return the moving average
+   */
   public static final double movingAverage(long sample, double historicalAverage, double alpha) {
     return movingAverage((double) sample, historicalAverage, alpha);
   }
 
+  /**
+   *
+   * @param id
+   * @return the key
+   */
   public static String refreshKey(String id) {
     return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
   }
 
+  /**
+   *
+   * @param d
+   * @return the rounded value
+   */
   public static int roundToInt(double d) {
     return (int) Math.round(d);
   }
 
+  /**
+   *
+   */
   public static void assertAssertionsEnabled() {
     boolean assertOn = false;
     // *assigns* true if assertions are on.
@@ -79,6 +135,12 @@ public class Util {
     }
   }
 
+  /**
+   *
+   * @param className
+   * @param arguments
+   * @return the new object
+   */
   @SuppressWarnings("unchecked")
   public static Object createObject(String className, Object... arguments) {
     Object object;
@@ -98,6 +160,11 @@ public class Util {
     return null;
   }
 
+  /**
+   *
+   * @param query
+   * @return a map of the query string values
+   */
   public static Map<String, String> parseURIQueryString(String query) {
     Map<String, String> result = new HashMap<>();
     QueryStringParser parser = new QueryStringParser(query);
@@ -107,6 +174,12 @@ public class Util {
     return result;
   }
 
+  /**
+   *
+   * @param str
+   * @param prefixLength
+   * @return the prefix
+   */
   public static String prefix(String str, int prefixLength) {
     if (str == null || str.length() <= prefixLength) {
       return str;
@@ -114,6 +187,11 @@ public class Util {
     return str.substring(0, prefixLength);
   }
 
+  /**
+   *
+   * @param array
+   * @return a set of integers
+   */
   public static Set<Integer> arrayToIntSet(int[] array) {
     TreeSet<Integer> set = new TreeSet<>();
     for (int i = 0; i < array.length; i++) {
@@ -122,6 +200,11 @@ public class Util {
     return set;
   }
 
+  /**
+   *
+   * @param set
+   * @return a set of strings
+   */
   public static Set<String> nodeIdSetToStringSet(Set<String> set) {
     Set<String> result = new HashSet<>();
     for (Object id : set) {
@@ -130,6 +213,11 @@ public class Util {
     return result;
   }
 
+  /**
+   *
+   * @param set
+   * @return an array of integers
+   */
   public static int[] setToIntArray(Set<Integer> set) {
     int[] array = new int[set.size()];
     int i = 0;
@@ -139,6 +227,11 @@ public class Util {
     return array;
   }
 
+  /**
+   *
+   * @param set
+   * @return an array of node ids
+   */
   public static Object[] setToNodeIdArray(Set<?> set) {
     Object[] array = new Object[set.size()];
     int i = 0;
@@ -148,6 +241,11 @@ public class Util {
     return array;
   }
 
+  /**
+   *
+   * @param set
+   * @return an array of integers
+   */
   public static Integer[] setToIntegerArray(Set<Integer> set) {
     Integer[] array = new Integer[set.size()];
     int i = 0;
@@ -157,6 +255,11 @@ public class Util {
     return array;
   }
 
+  /**
+   *
+   * @param string
+   * @return an array of integers
+   */
   public static int[] stringToIntArray(String string) {
     string = string.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\\s", "");
     String[] tokens = string.split(",");
@@ -167,6 +270,11 @@ public class Util {
     return array;
   }
 
+  /**
+   *
+   * @param array
+   * @return an array of integers
+   */
   public static Integer[] intToIntegerArray(int[] array) {
     if (array == null) {
       return null;
@@ -181,6 +289,11 @@ public class Util {
     return retarray;
   }
 
+  /**
+   *
+   * @param objects
+   * @return an array of integers
+   */
   public static Integer[] objectToIntegerArray(Object[] objects) {
     if (objects == null) {
       return null;
@@ -195,6 +308,11 @@ public class Util {
     return array;
   }
 
+  /**
+   *
+   * @param array
+   * @return a set of strings
+   */
   public static Set<String> arrayOfIntToStringSet(int[] array) {
     Set<String> set = new HashSet<>();
     for (Integer member : array) {
@@ -203,6 +321,11 @@ public class Util {
     return set;
   }
 
+  /**
+   *
+   * @param array
+   * @return a string
+   */
   public static String arrayOfIntToString(int[] array) {
     String s = "[";
     for (int i = 0; i < array.length; i++) {
@@ -212,6 +335,12 @@ public class Util {
     return s;
   }
 
+  /**
+   *
+   * @param member
+   * @param array
+   * @return true if the array contains integer
+   */
   public static boolean contains(int member, int[] array) {
     for (int i = 0; i < array.length; i++) {
       if (array[i] == member) {
@@ -221,6 +350,11 @@ public class Util {
     return false;
   }
 
+  /**
+   *
+   * @param array
+   * @return a set of strings
+   */
   public static Set<String> arrayOfNodeIdsToStringSet(Object[] array) {
     Set<String> set = new HashSet<>();
     for (Object member : array) {
@@ -249,6 +383,9 @@ public class Util {
     return sb.toString();
   }
 
+  /**
+   *
+   */
   public void assertEnabled() {
     try {
       assert (false);
@@ -270,6 +407,10 @@ public class Util {
             + (stackTrace.length > 8 ? stackTrace[8].toString() + "\n" : "");
   }
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args) {
     int[] members = {23, 44, 53, 21};
     System.out.println(Util.arrayOfIntToString(members));

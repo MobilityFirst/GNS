@@ -25,14 +25,21 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  *
+ * Also in the PHP client:
+ * hash('sha256', $password . "42shabiz" . $username)
  * @author westy
  */
 public class Password {
 
-  // Code is duplicated in the client.
-  // From the PHP code hash('sha256', $password . "42shabiz" . $username);
   private static final String SALT = "42shabiz";
 
+  /**
+   *
+   * @param password
+   * @param alias
+   * @return the password encrypted and encoded using base64
+   * @throws NoSuchAlgorithmException
+   */
   public static String encryptAndEncodePassword(String password, String alias) throws NoSuchAlgorithmException {
     MessageDigest md = MessageDigest.getInstance("SHA-256");
     md.update((password + SALT + alias).getBytes());

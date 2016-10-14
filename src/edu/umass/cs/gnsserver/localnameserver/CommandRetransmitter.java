@@ -73,6 +73,10 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     LOG.log(Level.FINE, "CommandSender starting: {0}", key);
   }
 
+  /**
+   *
+   * @return the task
+   */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
@@ -95,6 +99,10 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     }
   }
 
+  /**
+   *
+   * @return the task
+   */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     InetSocketAddress address = handler.getClosestReplica(actives, activesAlreadyContacted);
@@ -112,16 +120,30 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     return Long.toString(requestId);
   }
 
+  /**
+   *
+   * @return a set of packet types
+   */
   @Override
   public Set<PacketType> getEventTypes() {
     return new HashSet<>();
   }
 
+  /**
+   *
+   * @return the key
+   */
   @Override
   public String getKey() {
     return this.key;
   }
 
+  /**
+   *
+   * @param event
+   * @param ptasks
+   * @return an array of tasks
+   */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
           ProtocolEvent event,
@@ -134,6 +156,10 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     return this.getClass().getSimpleName() + " " + requestId;
   }
 
+  /**
+   *
+   * @return the period
+   */
   @Override
   public long getPeriod() {
     return RESTART_PERIOD;

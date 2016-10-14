@@ -70,6 +70,10 @@ public class GNSClient {
           GNSConfig.DEFAULT_RECONFIGURATOR_PORT);
 
   // ReconfigurableAppClientAsync instance, protected and nonfinal so BadClient in an admin test can override this.
+
+  /**
+   *
+   */
   protected AsyncClient asyncClient;
   // local name server
   private InetSocketAddress GNSProxy = null;
@@ -239,6 +243,14 @@ public class GNSClient {
     }
   }
 
+  /**
+   *
+   * @param packet
+   * @param timeout
+   * @return the request
+   * @throws IOException
+   * @throws ClientException
+   */
   protected Request sendSync(CommandPacket packet, final long timeout)
           throws IOException, ClientException {
     ClientRequest request = packet
@@ -256,6 +268,13 @@ public class GNSClient {
     return defaultHandleAndCheckResponse(packet, response);
   }
 
+  /**
+   *
+   * @param packet
+   * @return the request
+   * @throws IOException
+   * @throws ClientException
+   */
   protected Request sendSync(CommandPacket packet) throws IOException,
           ClientException {
     return this.sendSync(packet, 0);
@@ -365,6 +384,14 @@ public class GNSClient {
     static final Set<IntegerPacketType> clientPacketTypes = new HashSet<>(
             Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
 
+    /**
+     *
+     * @param reconfigurators
+     * @param sslMode
+     * @param clientPortOffset
+     * @param checkConnectivity
+     * @throws IOException
+     */
     public AsyncClient(Set<InetSocketAddress> reconfigurators,
             SSL_MODES sslMode, int clientPortOffset,
             boolean checkConnectivity) throws IOException {
@@ -372,6 +399,12 @@ public class GNSClient {
       this.enableJSONPackets();
     }
 
+    /**
+     *
+     * @param msg
+     * @return the request
+     * @throws RequestParseException
+     */
     @Override
     public Request getRequest(String msg) throws RequestParseException {
       Request response = null;
@@ -385,6 +418,12 @@ public class GNSClient {
       return response;
     }
 
+    /**
+     *
+     * @param json
+     * @return the request
+     * @throws RequestParseException
+     */
     @Override
     public Request getRequestFromJSON(JSONObject json)
             throws RequestParseException {
@@ -408,6 +447,10 @@ public class GNSClient {
       return response;
     }
 
+    /**
+     *
+     * @return the request types
+     */
     @Override
     public Set<IntegerPacketType> getRequestTypes() {
       return clientPacketTypes;
@@ -417,6 +460,7 @@ public class GNSClient {
      * FIXME: This should return a separate packet type meant for
      * admin commands that is different from {@link Packet.PacketType#COMMAND}
      * and carries {@link CommandType} types corresponding to admin commands.
+     * @return 
      */
     @SuppressWarnings("javadoc")
     @Override
@@ -429,6 +473,13 @@ public class GNSClient {
       return types;
     }
 
+    /**
+     *
+     * @param bytes
+     * @param header
+     * @return the request
+     * @throws RequestParseException
+     */
     @Override
     public Request getRequest(byte[] bytes, NIOHeader header)
             throws RequestParseException {

@@ -52,17 +52,15 @@ public class GetParameter extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.GetParameter;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return GET_PARAMETER;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {

@@ -55,17 +55,15 @@ public class GetGroups extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.GetGroups;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return GET_GROUPS;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {

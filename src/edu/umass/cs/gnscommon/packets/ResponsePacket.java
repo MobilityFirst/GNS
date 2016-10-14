@@ -286,6 +286,10 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     return clientRequestId;
   }
 
+  /**
+   *
+   * @return the service name
+   */
   @Override
   public String getServiceName() {
     return serviceName;
@@ -309,16 +313,28 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     return errorCode;
   }
 
+  /**
+   *
+   * @return the client request
+   */
   @Override
   public ClientRequest getResponse() {
     return this.response;
   }
 
+  /**
+   *
+   * @return the request id
+   */
   @Override
   public long getRequestID() {
     return clientRequestId;
   }
 
+  /**
+   *
+   * @return the summary
+   */
   @Override
   public Object getSummary() {
     return new Object() {

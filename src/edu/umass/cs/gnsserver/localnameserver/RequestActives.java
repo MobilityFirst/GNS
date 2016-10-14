@@ -78,6 +78,10 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     LOG.log(Level.FINE, "~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: {0}", key);
   }
 
+  /**
+   *
+   * @return a list of tasks
+   */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
@@ -123,6 +127,10 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     }
   }
 
+  /**
+   *
+   * @return a list of tasks
+   */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
@@ -148,16 +156,30 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     return lnsRequestInfo.getServiceName() + " | " + Long.toString(lnsRequestInfo.getLNSReqID());
   }
 
+  /**
+   *
+   * @return a set of packet types
+   */
   @Override
   public Set<PacketType> getEventTypes() {
     return new HashSet<>();
   }
 
+  /**
+   *
+   * @return the key
+   */
   @Override
   public String getKey() {
     return this.key;
   }
 
+  /**
+   *
+   * @param event
+   * @param ptasks
+   * @return an array of tasks
+   */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
           ProtocolEvent event,
@@ -170,6 +192,10 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     return this.getClass().getSimpleName() + " " + lnsRequestInfo.getServiceName() + " " + lnsRequestInfo.getLNSReqID();
   }
 
+  /**
+   *
+   * @return the period
+   */
   @Override
   public long getPeriod() {
     return RESTART_PERIOD;

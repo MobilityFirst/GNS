@@ -63,6 +63,7 @@ public class GuidList extends ConsoleCommand
   }
 
   /**
+   * @throws java.lang.Exception
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#execute(java.lang.String)
    */
   @Override

@@ -44,6 +44,9 @@ public class RemoveAccountWithPasswordTest {
   private static GNSClientCommands client;
   private static GuidEntry accountToRemoveGuid;
 
+  /**
+   *
+   */
   public RemoveAccountWithPasswordTest() {
     if (client == null) {
       try {
@@ -55,6 +58,9 @@ public class RemoveAccountWithPasswordTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_35_RemoveAccountWithPasswordCreateAccount() {
     try {
@@ -64,6 +70,9 @@ public class RemoveAccountWithPasswordTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_36_RemoveAccountWithPasswordCheckAccount() {
     try {
@@ -76,6 +85,9 @@ public class RemoveAccountWithPasswordTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_37_RemoveAccountWithPasswordRemoveAccount() {
     try {
@@ -85,6 +97,9 @@ public class RemoveAccountWithPasswordTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_38_RemoveAccountWithPasswordCheckAccountAfterRemove() {
     try {

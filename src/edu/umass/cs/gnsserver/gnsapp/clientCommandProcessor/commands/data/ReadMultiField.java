@@ -36,6 +36,10 @@ public class ReadMultiField extends Read {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.ReadMultiField;

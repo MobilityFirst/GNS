@@ -159,6 +159,12 @@ public abstract class AbstractGNSClient {
                     ((ActiveReplicaError) result).getResponseMessage());
   }
 
+  /**
+   *
+   * @param me
+   * @param commandPacket
+   * @return a response packet
+   */
   protected static ResponsePacket getTimeoutResponse(AbstractGNSClient me, CommandPacket commandPacket) {
     GNSClientConfig.getLogger().log(Level.INFO,
             "{0} timed out after {1}ms on {2}: {3}",
@@ -172,6 +178,10 @@ public abstract class AbstractGNSClient {
     return this.desktopSendCommmandNoWait(command, generateNextRequestID());
   }
 
+  /**
+   *
+   * @return true if force coordinated reads is true
+   */
   protected abstract boolean isForceCoordinatedReads();
 
   private CommandPacket desktopSendCommmandNoWait(JSONObject command, long id) throws IOException {
@@ -289,6 +299,14 @@ public abstract class AbstractGNSClient {
           = new ConcurrentHashMap<>();
 
   // arun: Made sendAsync abstract instead of sendCommandPacket
+
+  /**
+   *
+   * @param packet
+   * @param callback
+   * @return returns a RequestFuture
+   * @throws IOException
+   */
   protected abstract RequestFuture<CommandPacket> sendAsync(CommandPacket packet,
           Callback<Request, CommandPacket> callback) throws IOException;
 

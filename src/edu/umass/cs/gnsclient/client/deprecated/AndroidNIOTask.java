@@ -34,20 +34,37 @@ public class AndroidNIOTask extends AsyncTask<Object, Void, String>
   // Needed to pass back to caller.
   private long id;
   
+  /**
+   *
+   * @return a command packet
+   */
   public CommandPacket getCommandPacket() {
 	  throw new RuntimeException("Unimplemented");
   }
 
+  /**
+   *
+   * @return the id
+   */
   public long getId() 
   {
     return id;
   }
 
+  /**
+   *
+   * @param id
+   */
   public void setId(long id) 
   {
     this.id = id;
   }
   
+  /**
+   *
+   * @param args
+   * @return the result of executing the command
+   */
   @SuppressWarnings("unchecked")
   @Override
   protected String doInBackground(Object... args)

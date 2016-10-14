@@ -45,23 +45,57 @@ public class SSHClient {
 
   private static boolean verbose = true;
 
+  /**
+   *
+   */
   public static void exec() {
     exec(null, null, null, null, false, null);
   }
 
+  /**
+   *
+   * @param command
+   */
   public static void exec(String command) {
     exec(null, null, null, command, false, null);
   }
 
+  /**
+   *
+   * @param user
+   * @param host
+   * @param keyFile
+   * @param command
+   */
   public static void exec(String user, String host, File keyFile, String command) {
     exec(user, host, keyFile, command, false, null);
   }
 
+  /**
+   *
+   * @param user
+   * @param host
+   * @param keyFile
+   * @param command
+   */
   public static void execWithSudoNoPass(String user, String host, File keyFile, String command) {
     exec(user, host, keyFile, command, true, null);
   }
+
+  /**
+   *
+   */
   public static final int MAXCOMMANDBYTES = 4096;
 
+  /**
+   *
+   * @param user
+   * @param host
+   * @param keyFile
+   * @param command
+   * @param useSudo
+   * @param sudoPasswd
+   */
   public static void exec(String user, String host, File keyFile, String command, boolean useSudo, String sudoPasswd) {
     if (verbose) {
       System.out.println("Remote execute command on " + host + (useSudo ? " as root user: " : " as user " + user + ": ") + command);
@@ -152,6 +186,14 @@ public class SSHClient {
     }
   }
 
+  /**
+   *
+   * @param user
+   * @param host
+   * @param keyFile
+   * @param lfile
+   * @param rfile
+   */
   public static void scpTo(String user, String host, File keyFile, String lfile, String rfile) {
     if (verbose) {
       System.out.println("Remote copy file from " + lfile + " to " + host + "@" + user + ":" + rfile);
@@ -256,6 +298,15 @@ public class SSHClient {
     }
   }
 
+  /**
+   *
+   * @param jsch
+   * @param user
+   * @param host
+   * @param keyFile
+   * @return the session
+   * @throws JSchException
+   */
   public static Session authenticateWithKey(JSch jsch, String user, String host, File keyFile) throws JSchException {
     if (keyFile == null) {
       JFileChooser chooser = new JFileChooser();
@@ -278,6 +329,14 @@ public class SSHClient {
 
   }
 
+  /**
+   *
+   * @param jsch
+   * @param user
+   * @param host
+   * @return the session
+   * @throws JSchException
+   */
   public static Session authenticateWithPassword(JSch jsch, String user, String host) throws JSchException {
 
     if (host == null || user == null) {
@@ -328,14 +387,26 @@ public class SSHClient {
     return b;
   }
 
+  /**
+   *
+   * @return true if verbose
+   */
   public static boolean isVerbose() {
     return verbose;
   }
 
+  /**
+   *
+   * @param verbose
+   */
   public static void setVerbose(boolean verbose) {
     SSHClient.verbose = verbose;
   }
 
+  /**
+   *
+   * @param arg
+   */
   public static void main(String[] arg) {
     String host = "23.21.160.80";
     String scriptPath = "/Users/westy/Documents/Code/GNRS-westy/scripts/5nodesregions/";

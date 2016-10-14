@@ -64,6 +64,7 @@ public class KeyDelete extends ConsoleCommand
 
   /**
    * Override execute to not check for existing connectivity
+   * @throws java.lang.Exception
    */
   @Override
   public void execute(String commandText) throws Exception

@@ -58,7 +58,6 @@ public class ActiveCodeHandler {
 	
 	/**
 	 * Initializes an ActiveCodeHandler
-	 * @param app
 	 */
 	public ActiveCodeHandler() {
 		String configFile = System.getProperty("activeFile");
@@ -155,7 +154,7 @@ public class ActiveCodeHandler {
 	 * @param guid
 	 * @param valuesMap
 	 * @param app
-	 * @return
+	 * @return a values map
 	 */
 	public ValuesMap handleActiveCode(InternalRequestHeader header,
 			List<String> fields, String guid, ValuesMap valuesMap, GNSApp app) {

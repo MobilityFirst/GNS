@@ -46,6 +46,9 @@ public class SingleRemoveGuidTest {
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public SingleRemoveGuidTest() {
     if (client == null) {
        try {
@@ -62,6 +65,9 @@ public class SingleRemoveGuidTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_RemoveGuidUsingAccount() {
     String testGuidName = "testGUID" + RandomString.randomString(6);

@@ -39,8 +39,7 @@ public class ActiveWorker {
 	 * @param ifile
 	 * @param ofile
 	 * @param id 
-	 * @param numThread 
-	 * @param isTest
+	 * @param numThread
 	 */
 	protected ActiveWorker(String ifile, String ofile, int id, int numThread) {
 		this.id = id;

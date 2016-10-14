@@ -38,12 +38,13 @@ public class SelectGroupSetupQueryWithGuidAndInterval extends SelectGroupSetupQu
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.SelectGroupSetupQueryWithGuidAndInterval;
   }
-
-  
-
-  
+ 
 }

@@ -206,6 +206,7 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param lastUpdate
+   * @param handler
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
@@ -220,6 +221,7 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param minRefresh
+   * @param handler
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
@@ -293,6 +295,14 @@ public class NSGroupAccess {
     return getGroupFieldAsString(guid, GROUP_QUERY_STRING, handler);
   }
 
+  /**
+   *
+   * @param guid
+   * @param field
+   * @param handler
+   * @return the field
+   * @throws FailedDBOperationException
+   */
   public static String getGroupFieldAsString(String guid, String field, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
     ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, field, handler.getApp());
@@ -308,6 +318,15 @@ public class NSGroupAccess {
     return null;
   }
   
+  /**
+   *
+   * @param guid
+   * @param field
+   * @param defaultValue
+   * @param handler
+   * @return the field
+   * @throws FailedDBOperationException
+   */
   public static Number getGroupFieldAsNumber(String guid, String field, Number defaultValue, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
     ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, field, handler.getApp());

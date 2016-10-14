@@ -50,6 +50,9 @@ public class ReadTest {
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
 
+  /**
+   *
+   */
   public ReadTest() {
     if (client == null) {
        try {
@@ -66,6 +69,9 @@ public class ReadTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateEntity() {
     try {
@@ -75,6 +81,9 @@ public class ReadTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_CreateField() {
     try {
@@ -117,6 +126,9 @@ public class ReadTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_03_ACLPartOne() {
     //testCreateField();

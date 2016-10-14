@@ -45,6 +45,9 @@ public class CreateGuidTest {
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public CreateGuidTest() {
 
     if (client == null) {
@@ -63,6 +66,9 @@ public class CreateGuidTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateEntity() {
     String alias = "testGUID" + RandomString.randomString(6);

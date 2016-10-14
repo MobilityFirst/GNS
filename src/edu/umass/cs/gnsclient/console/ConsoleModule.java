@@ -73,6 +73,10 @@ public class ConsoleModule {
   private final TreeSet<ConsoleCommand> commands;
   private boolean quit = false;
   private boolean useGnsDefaults = true;
+
+  /**
+   *
+   */
   @SuppressWarnings("javadoc")
   protected Completor consoleCompletor;
   private String promptString = CONSOLE_PROMPT + "not connected>";
@@ -602,7 +606,7 @@ public class ConsoleModule {
   /**
    * Returns the verified status of the current GUID.
    *
-   * @return
+   * @return true if the account is verified
    */
   public boolean isAccountVerified() {
     return accountVerified;
@@ -629,7 +633,7 @@ public class ConsoleModule {
   /**
    * Returns true if the current GUID is set and the account has been verified
    *
-   * @return
+   * @return true if the current GUID is set and the account has been verified
    */
   public boolean isCurrentGuidSetAndVerified() {
     if (currentGuid == null) {
@@ -777,10 +781,18 @@ public class ConsoleModule {
     }
   }
 
+  /**
+   *
+   * @return true if use defaults is true
+   */
   public boolean isUseGnsDefaults() {
     return useGnsDefaults;
   }
 
+  /**
+   *
+   * @param useGnsDefaults
+   */
   public void setUseGnsDefaults(boolean useGnsDefaults) {
     this.useGnsDefaults = useGnsDefaults;
   }

@@ -36,6 +36,10 @@ public class HelpTcp extends Help {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.HelpTcp;

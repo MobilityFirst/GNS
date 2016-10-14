@@ -71,6 +71,9 @@ public class ClientFullTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
+  /**
+   *
+   */
   public ClientFullTest() {
     if (client == null) {
       try {
@@ -95,6 +98,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateEntity() {
     String alias = "testGUID" + RandomString.randomString(6);
@@ -108,6 +114,9 @@ public class ClientFullTest {
     assertEquals(alias, guidEntry.getEntityName());
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_RemoveGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
@@ -149,6 +158,9 @@ public class ClientFullTest {
 //    }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_03_RemoveGuidSansAccountInfo() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
@@ -173,6 +185,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_04_LookupPrimaryGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
@@ -189,6 +204,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_05_CreateSubGuid() {
     try {
@@ -199,6 +217,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_06_FieldNotFoundException() {
     try {
@@ -211,6 +232,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_07_FieldExistsFalse() {
     try {
@@ -220,6 +244,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_08_CreateFieldForFieldExists() {
     try {
@@ -230,6 +257,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_09_FieldExistsTrue() {
     try {
@@ -239,6 +269,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_10_CreateFields() {
     try {
@@ -276,6 +309,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_11_ACLPartOne() {
     //testCreateField();
@@ -303,6 +339,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_12_ACLPartTwo() {
     try {
@@ -363,6 +402,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_13_ACLALLFields() {
     //testACL();
@@ -389,6 +431,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_14_DB() {
     //testCreateEntity();
@@ -448,6 +493,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_15_DBUpserts() {
     HashSet<String> expected = null;
@@ -503,6 +551,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_16_Substitute() {
     String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(6);
@@ -545,6 +596,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_17_SubstituteList() {
     String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(6);
@@ -590,6 +644,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_18_Group() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
@@ -645,6 +702,9 @@ public class ClientFullTest {
 
   }
 
+  /**
+   *
+   */
   @Test
   public void test_19_GroupAndACL() {
     //testGroup();
@@ -717,6 +777,9 @@ public class ClientFullTest {
 
   private static final String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
 
+  /**
+   *
+   */
   @Test
   public void test_20_AliasAdd() {
     try {
@@ -738,6 +801,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_21_AliasRemove() {
     try {
@@ -775,6 +841,9 @@ public class ClientFullTest {
 //    }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_31_BasicSelect() {
     try {
@@ -786,6 +855,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_32_GeoSpatialSelect() {
     try {
@@ -828,6 +900,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_33_QuerySelect() {
     String fieldName = "testQuery";
@@ -872,6 +947,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_44_WriteAccess() {
     String fieldName = "whereAmI";
@@ -915,6 +993,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_45_UnsignedRead() {
     String unsignedReadFieldName = "allreadaccess";
@@ -938,6 +1019,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_46_UnsignedWrite() {
     String unsignedWriteFieldName = "allwriteaccess";
@@ -960,6 +1044,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_47_RemoveField() {
     String fieldToDelete = "fieldToDelete";
@@ -991,6 +1078,9 @@ public class ClientFullTest {
 
   }
 
+  /**
+   *
+   */
   @Test
   public void test_48_ListOrderAndSetElement() {
     try {
@@ -1025,6 +1115,9 @@ public class ClientFullTest {
   private static String queryOne = "~" + groupTestFieldName + " : {$gt: 20}";
   private static String queryTwo = "~" + groupTestFieldName + " : 0";
 
+  /**
+   *
+   */
   @Test
   public void test_50_QueryRemovePreviousTestFields() {
     // find all the guids that have our field and remove it from them
@@ -1042,6 +1135,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_51_QuerySetupGuids() {
     try {
@@ -1078,6 +1174,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_52_QuerySetupGroup() {
     try {
@@ -1096,6 +1195,10 @@ public class ClientFullTest {
   }
 
   // make a second group that is empty
+
+  /**
+   *
+   */
   @Test
   public void test_53_QuerySetupSecondGroup() {
     try {
@@ -1113,6 +1216,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_54_QueryLookupGroup() {
     try {
@@ -1124,6 +1230,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_55_QueryLookupGroupAgain() {
     try {
@@ -1135,6 +1244,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_56_QueryLookupGroupAgain2() {
     try {
@@ -1146,6 +1258,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_57_QueryLookupGroupAgain3() {
     try {
@@ -1169,6 +1284,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   // Change all the testQuery fields except 1 to be equal to zero
   public void test_58_QueryAlterGroup() {
@@ -1187,6 +1305,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_59_QueryLookupGroupAfterAlterations() {
     try {
@@ -1206,6 +1327,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   // Check to see if the second group has members now... it should.
   public void test_60_QueryLookupSecondGroup() {
@@ -1226,6 +1350,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_70_SetFieldNull() {
     String field = "fieldToSetToNull";
@@ -1261,6 +1388,9 @@ public class ClientFullTest {
 
   private static GuidEntry updateEntry;
 
+  /**
+   *
+   */
   @Test
   public void test_71_JSONUpdate() {
     try {
@@ -1373,6 +1503,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_72_NewRead() {
     try {
@@ -1434,6 +1567,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_73_NewUpdate() {
     try {
@@ -1515,6 +1651,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_74_MultiFieldLookup() {
     try {
@@ -1529,6 +1668,9 @@ public class ClientFullTest {
   private static GuidEntry indirectionGroupGuid;
   private static JSONArray indirectionGroupMembers = new JSONArray();
 
+  /**
+   *
+   */
   @Test
   public void test_75_IndirectionSetupGuids() {
     try {
@@ -1555,6 +1697,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_76_IndirectionTestRead() {
     try {
@@ -1568,6 +1713,9 @@ public class ClientFullTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_77_Stop() {
     try {

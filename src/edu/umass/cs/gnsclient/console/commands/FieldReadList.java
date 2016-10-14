@@ -67,6 +67,7 @@ public class FieldReadList extends ConsoleCommand
 
   /**
    * Override execute to check for existing connectivity
+   * @throws java.lang.Exception
    */
   @Override
   public void execute(String commandText) throws Exception

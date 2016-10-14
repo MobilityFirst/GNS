@@ -30,6 +30,10 @@ import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
+/**
+ *
+ * @author westy
+ */
 public class BatchCreateOpsFail extends DefaultTest {
 
 	private static int numGuidsPerAccount;
@@ -48,7 +52,11 @@ public class BatchCreateOpsFail extends DefaultTest {
 
 	private static Logger log = GNSClientConfig.getLogger();
 
-	public BatchCreateOpsFail() throws Exception {
+  /**
+   *
+   * @throws Exception
+   */
+  public BatchCreateOpsFail() throws Exception {
 		initParameters();
 		setupClientsAndGuids();
 	}
@@ -154,11 +162,18 @@ public class BatchCreateOpsFail extends DefaultTest {
 				+ " pre-existing sub-guids " + Arrays.asList(guidEntries));
 	}
 
-	public void testSingleRead() {
+  /**
+   *
+   */
+  public void testSingleRead() {
 
 	}
 
-	@After
+  /**
+   *
+   * @throws Exception
+   */
+  @After
 	public void cleanup() throws Exception {
 		Thread.sleep(2000);
 		assert (clients != null && clients[0] != null);
@@ -202,7 +217,12 @@ public class BatchCreateOpsFail extends DefaultTest {
 				TESTPaxosConfig.DEFAULT_TESTING_CONFIG_FILE);
 	}
 
-	public static void main(String[] args) throws IOException {
+  /**
+   *
+   * @param args
+   * @throws IOException
+   */
+  public static void main(String[] args) throws IOException {
 		Util.assertAssertionsEnabled();
 		processArgs(args);
 		Result result = JUnitCore.runClasses(BatchCreateOpsFail.class);

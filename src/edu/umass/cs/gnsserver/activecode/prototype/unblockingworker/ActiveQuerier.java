@@ -48,6 +48,7 @@ public class ActiveQuerier implements Querier {
 	/**
 	 * @param guid
 	 * @param ttl
+   * @param id
 	 */
 	protected void resetQuerier(String guid, int ttl, long id){
 		this.currentGuid = guid;
@@ -148,7 +149,12 @@ public class ActiveQuerier implements Querier {
 			}
 	}
 	
-	protected void release(ActiveMessage response, boolean isDone){
+  /**
+   *
+   * @param response
+   * @param isDone
+   */
+  protected void release(ActiveMessage response, boolean isDone){
 		monitor.setResult(response, isDone);
 	}
 	

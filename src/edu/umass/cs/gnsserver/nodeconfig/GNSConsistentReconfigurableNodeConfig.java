@@ -66,28 +66,52 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
     this.CH_AR = new ConsistentHashing<>(this.activeReplicas);
   }
 
+  /**
+   *
+   * @param strNodes
+   * @return a set of nodes
+   */
   @Override
   public Set<NodeIDType> getValuesFromStringSet(Set<String> strNodes) {
     return this.nodeConfig.getValuesFromStringSet(strNodes);
   }
 
+  /**
+   *
+   * @param array
+   * @return a set of node ids
+   * @throws JSONException
+   */
   @Override
   public Set<NodeIDType> getValuesFromJSONArray(JSONArray array)
           throws JSONException {
     return this.nodeConfig.getValuesFromJSONArray(array);
   }
 
+  /**
+   *
+   * @return a set of node ids
+   * @deprecated
+   */
   @Override
   @Deprecated
   public Set<NodeIDType> getNodeIDs() {
     throw new RuntimeException("The use of this method is not permitted");
   }
 
+  /**
+   *
+   * @return a set of node ids
+   */
   @Override
   public Set<NodeIDType> getActiveReplicas() {
     return this.nodeConfig.getActiveReplicas();
   }
 
+  /**
+   *
+   * @return a set of node ids
+   */
   @Override
   public Set<NodeIDType> getReconfigurators() {
     return this.nodeConfig.getReconfigurators();

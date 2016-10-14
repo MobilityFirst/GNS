@@ -50,7 +50,7 @@ public class AcceptConnectionQueue
    * 
    * @param Type
    * @param ReadySocket
-   * @return
+   * @return the element
    */
   public synchronized Object getFromQueue(int Type, Object ReadySocket)
   {

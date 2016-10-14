@@ -30,6 +30,11 @@ public class RandomString {
   private static final Random RANDOM = new Random(System.currentTimeMillis());
   private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+  /**
+   *
+   * @param len
+   * @return the string of length len
+   */
   public static String randomString(int len) {
     StringBuilder sb = new StringBuilder(len);
     for (int i = 0; i < len; i++) {

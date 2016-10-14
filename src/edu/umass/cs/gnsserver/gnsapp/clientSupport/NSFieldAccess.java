@@ -78,6 +78,7 @@ public class NSFieldAccess {
    *
    * Returns the value of a field in a GUID as a ValuesMap.
    *
+   * @param header
    * @param guid
    * @param field
    * @param gnsApp
@@ -135,6 +136,16 @@ public class NSFieldAccess {
     return null;
   }
 
+  /**
+   *
+   * @param header
+   * @param guid
+   * @param fields
+   * @param returnFormat
+   * @param handler
+   * @return a values map
+   * @throws FailedDBOperationException
+   */
   public static ValuesMap lookupFieldsLocalNoAuth(InternalRequestHeader header, String guid, List<String> fields,
           ColumnFieldType returnFormat, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
@@ -142,6 +153,17 @@ public class NSFieldAccess {
 	  
   }
 
+  /**
+   *
+   * @param header
+   * @param guid
+   * @param fields
+   * @param returnFormat
+   * @param handler
+   * @param handleActiveCode
+   * @return a values map
+   * @throws FailedDBOperationException
+   */
   public static ValuesMap lookupFieldsLocalNoAuth(InternalRequestHeader header, String guid, List<String> fields,
           ColumnFieldType returnFormat, ClientRequestHandlerInterface handler, boolean handleActiveCode)
           throws FailedDBOperationException {

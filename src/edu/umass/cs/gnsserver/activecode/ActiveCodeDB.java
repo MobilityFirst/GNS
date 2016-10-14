@@ -13,6 +13,7 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 /**
  *
+ * @author westy
  */
 public class ActiveCodeDB implements ActiveDBInterface {
 	

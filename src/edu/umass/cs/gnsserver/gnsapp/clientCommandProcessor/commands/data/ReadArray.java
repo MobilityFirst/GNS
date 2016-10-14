@@ -62,17 +62,15 @@ public class ReadArray extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.ReadArray;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return READ_ARRAY;
-//  }
   @Override
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {

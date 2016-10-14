@@ -763,6 +763,12 @@ public class Format {
     return formatDateISO8601.get().format(date);
   }
 
+  /**
+   *
+   * @param text
+   * @return the date
+   * @throws ParseException
+   */
   public static Date parseDateISO8601(String text) throws ParseException {
     return formatDateISO8601.get().parse(text);
   }
@@ -790,6 +796,12 @@ public class Format {
     return formatDateISO8601.get().format(date);
   }
 
+  /**
+   *
+   * @param text
+   * @return the date
+   * @throws ParseException
+   */
   public static Date parseDateISO8601UTC(String text) throws ParseException {
     return formatDateISO8601.get().parse(text);
   }

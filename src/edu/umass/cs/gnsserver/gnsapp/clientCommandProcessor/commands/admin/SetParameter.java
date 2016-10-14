@@ -53,17 +53,15 @@ public class SetParameter extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.SetParameter;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return SET_PARAMETER;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {

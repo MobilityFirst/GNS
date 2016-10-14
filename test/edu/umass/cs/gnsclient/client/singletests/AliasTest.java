@@ -51,6 +51,9 @@ public class AliasTest {
   private static GuidEntry masterGuid;
   private static final String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
 
+  /**
+   *
+   */
   public AliasTest() {
     if (client == null) {
       try {
@@ -62,6 +65,9 @@ public class AliasTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateAccount() {
     try {
@@ -71,6 +77,9 @@ public class AliasTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_AliasAdd() {
     try {
@@ -92,6 +101,9 @@ public class AliasTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_03_AliasRemove() {
     try {

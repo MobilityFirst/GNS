@@ -26,10 +26,22 @@ import org.json.JSONObject;
  */
 public interface CommandInterface {
 
+  /**
+   *
+   * @return the command type
+   */
   public CommandType getCommandType();
 
+  /**
+   *
+   * @return the command parameters
+   */
   public String[] getCommandParameters();
 
+  /**
+   *
+   * @return the command description
+   */
   public String getCommandDescription();
 
   /**

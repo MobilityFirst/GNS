@@ -14,7 +14,10 @@ public class GNSException extends Exception {
 	 */
 	private static final long serialVersionUID = 6816831396928147083L;
 
-	protected GNSException() {
+  /**
+   *
+   */
+  protected GNSException() {
 		super();
 		this.code = null;
 	}

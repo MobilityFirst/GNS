@@ -7,6 +7,7 @@ package edu.umass.cs.gnsclient.jsonassert;
  * A ValueMatcher extension that provides location in form of prefix to the equals method.
  * 
  * @author Duncan Mackinder
+ * @param <T>
  *
  */
 public interface LocationAwareValueMatcher<T> extends ValueMatcher<T> {

@@ -72,7 +72,7 @@ public class BackgroundEmptyQueueThread  implements Runnable
 	  * 
 	  * Returns true if queues not empty, false 
 	  * otherwise.
-	  * @return
+	  * @return true if queues not empty
 	  */
 	  private boolean queuesNotEmpty()
 	  {

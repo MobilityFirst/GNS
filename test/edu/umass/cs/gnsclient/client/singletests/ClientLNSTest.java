@@ -48,6 +48,9 @@ public class ClientLNSTest {
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public ClientLNSTest() {
     if (client == null) {
       try {
@@ -60,6 +63,9 @@ public class ClientLNSTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateAccount() {
     try {
@@ -69,6 +75,9 @@ public class ClientLNSTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_CheckAccount() {
     String guidString = null;

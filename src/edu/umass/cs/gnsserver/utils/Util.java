@@ -244,7 +244,7 @@ public class Util {
    *
    * @param text
    * @param max
-   * @return
+   * @return a string
    */
   public static String ellipsize(String text, int max) {
     return text.substring(0, max - EXPLANATION_SIZE) + " [" + (text.length() - max) + " more chars] ...";

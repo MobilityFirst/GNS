@@ -181,6 +181,10 @@ public class GNSConfig {
     //
     // NO SQL BACKING DATABASE
     //
+
+    /**
+     *
+     */
     MONGO_PORT(27017),
     /**
      * The class used to represent NoSQL records.
@@ -314,6 +318,11 @@ public class GNSConfig {
       this.defaultValue = defaultValue;
     }
 
+    /**
+     *
+     *  
+     * @return the default value
+     */
     @Override
     public Object getDefaultValue() {
       return this.defaultValue;
@@ -349,11 +358,20 @@ public class GNSConfig {
     }
 
     // FIXME: a better default name?
+
+    /**
+     *
+     * @return the config file key
+     */
     @Override
     public String getConfigFileKey() {
       return "gigapaxosConfig";
     }
 
+    /**
+     *
+     * @return the default config file
+     */
     @Override
     public String getDefaultConfigFile() {
       return "gns.server.properties";

@@ -94,6 +94,10 @@ public class LNSProxyTest extends DefaultTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
+  /**
+   *
+   * @param alias
+   */
   public static void setAccountAlias(String alias) {
     accountAlias = alias;
   }
@@ -198,6 +202,10 @@ public class LNSProxyTest extends DefaultTest {
    */
   private static long WAIT_TILL_ALL_SERVERS_READY = 5000;
 
+  /**
+   *
+   * @throws Exception
+   */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Run the server.
@@ -292,6 +300,10 @@ public class LNSProxyTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   * @throws Exception
+   */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
 
@@ -392,6 +404,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_010_CreateEntity() {
     String alias = "testGUID" + RandomString.randomString(12);
     GuidEntry guidEntry = null;
@@ -405,6 +421,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_020_RemoveGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
@@ -431,6 +451,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_030_RemoveGuidSansAccountInfo() {
     String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
@@ -457,6 +481,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_040_LookupPrimaryGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
@@ -475,6 +503,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_050_CreateSubGuid() {
     try {
       subGuidEntry = client.guidCreate(masterGuid, "subGuid"
@@ -486,6 +518,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_060_FieldNotFoundException() {
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(),
@@ -499,6 +535,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_070_FieldExistsFalse() {
     try {
       assertFalse(client.fieldExists(subGuidEntry.getGuid(),
@@ -511,6 +551,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_080_CreateFieldForFieldExists() {
     try {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(),
@@ -522,6 +566,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_090_FieldExistsTrue() {
     try {
       assertTrue(client.fieldExists(subGuidEntry.getGuid(),
@@ -532,6 +580,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_100_ACLCreateGuids() {
     try {
       westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
@@ -561,6 +613,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_101_ACLCreateFields() {
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
@@ -593,6 +649,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_104_ACLReadMyFields() {
     try {
       // read my own field
@@ -627,6 +687,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_106_ACLNotReadOtherGuidFieldTest() {
     try {
       try {
@@ -643,6 +707,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_110_ACLPartOne() {
     try {
       try {
@@ -665,6 +733,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_120_ACLPartTwo() {
     try {
       String barneyName = "barney" + RandomString.randomString(6);
@@ -733,6 +805,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_130_ACLALLFields() {
     //testACL();
     String superUserName = "superuser" + RandomString.randomString(6);
@@ -760,6 +836,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_140_ACLCreateDeeperField() {
     try {
       try {
@@ -790,6 +870,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_170_DB() {
     // testCreateEntity();
     try {
@@ -863,6 +947,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_180_DBUpserts() {
     HashSet<String> expected = null;
     HashSet<String> actual = null;
@@ -927,6 +1015,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_190_Substitute() {
     String testSubstituteGuid = "testSubstituteGUID"
             + RandomString.randomString(12);
@@ -980,6 +1072,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_200_SubstituteList() {
     String testSubstituteListGuid = "testSubstituteListGUID"
             + RandomString.randomString(12);
@@ -1035,6 +1131,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(12);
     try {
@@ -1053,6 +1153,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_211_GroupAdd() {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(),
@@ -1084,6 +1188,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_212_GroupRemoveGuid() {
     // now remove a guid and check for group updates
     try {
@@ -1104,6 +1212,10 @@ public class LNSProxyTest extends DefaultTest {
   private static GuidEntry groupAccessUserEntry = null;
 
   //@Test
+
+  /**
+   *
+   */
   public void test_220_GroupAndACLCreateGuids() {
     // testGroup();
     String groupAccessUserName = "groupAccessUser"
@@ -1149,6 +1261,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_221_GroupAndACLTestBadAccess() {
     try {
       try {
@@ -1166,6 +1282,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_222_GroupAndACLTestGoodAccess() {
     try {
       assertEquals("whoville", client.fieldReadArrayFirstElement(
@@ -1177,6 +1297,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_223_GroupAndACLTestRemoveGuid() {
     try {
       try {
@@ -1201,6 +1325,10 @@ public class LNSProxyTest extends DefaultTest {
           + "@blah.org";
 
   //@Test
+
+  /**
+   *
+   */
   public void test_230_AliasAdd() {
     try {
       // KEEP IN MIND THAT CURRENTLY ONLY ACCOUNT GUIDS HAVE ALIASES
@@ -1214,6 +1342,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_231_AliasRemove() {
     try {
       // grab all the alias from the guid
@@ -1233,6 +1365,10 @@ public class LNSProxyTest extends DefaultTest {
 	}
 
   //@Test
+
+  /**
+   *
+   */
   public void test_232_AliasCheck() {
     try {
       // an make sure it is gone
@@ -1247,6 +1383,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_240_WriteAccess() {
     String fieldName = "whereAmI";
     try {
@@ -1300,6 +1440,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_250_UnsignedRead() {
     String unsignedReadFieldName = "allreadaccess";
     String standardReadFieldName = "standardreadaccess";
@@ -1332,6 +1476,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_260_UnsignedWrite() {
     String unsignedWriteFieldName = "allwriteaccess";
     String standardWriteFieldName = "standardwriteaccess";
@@ -1361,6 +1509,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_270_RemoveField() {
     String fieldToDelete = "fieldToDelete";
     try {
@@ -1396,6 +1548,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_280_ListOrderAndSetElement() {
     try {
       westyEntry = client.guidCreate(masterGuid,
@@ -1453,6 +1609,10 @@ public class LNSProxyTest extends DefaultTest {
   // }
   // }
   //@Test
+
+  /**
+   *
+   */
   public void test_320_GeoSpatialSelect() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
@@ -1506,6 +1666,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_330_QuerySelect() {
     String fieldName = "testQuery";
     try {
@@ -1555,6 +1719,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_400_SetFieldNull() {
     String field = "fieldToSetToNull";
     try {
@@ -1594,6 +1762,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_410_JSONUpdate() {
     try {
       westyEntry = client.guidCreate(masterGuid,
@@ -1719,6 +1891,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_420_NewRead() {
     try {
       JSONObject json = new JSONObject();
@@ -1786,6 +1962,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_430_NewUpdate() {
     try {
       client.fieldUpdate(westyEntry.getGuid(), "flapjack.sally.right",
@@ -1884,6 +2064,10 @@ public class LNSProxyTest extends DefaultTest {
   private static byte[] byteTestValue;
 
   //@Test
+
+  /**
+   *
+   */
   public void test_440_CreateBytesField() {
     try {
       byteTestValue = RandomUtils.nextBytes(16000);
@@ -1896,6 +2080,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_441_ReadBytesField() {
     try {
       String string = client.fieldRead(masterGuid, BYTE_TEST_FIELD);
@@ -1910,6 +2098,10 @@ public class LNSProxyTest extends DefaultTest {
   private static GuidEntry accountGuidForBatch = null;
 
   //@Test
+
+  /**
+   *
+   */
   public void test_510_CreateBatchAccountGuid() {
     // can change the number to create on the command line
     if (System.getProperty("count") != null
@@ -1927,6 +2119,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_511_CreateBatch() {
     Set<String> aliases = new HashSet<>();
     for (int i = 0; i < numberTocreate; i++) {
@@ -1945,6 +2141,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_512_CheckBatch() {
     try {
       JSONObject accountRecord = client
@@ -1958,6 +2158,10 @@ public class LNSProxyTest extends DefaultTest {
   private static String createIndexTestField;
 
   //@Test
+
+  /**
+   *
+   */
   public void test_540_CreateField() {
     createIndexTestField = "testField" + RandomString.randomString(12);
     try {
@@ -1970,6 +2174,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_550_CreateIndex() {
     try {
       client.fieldCreateIndex(masterGuid, createIndexTestField,
@@ -1980,6 +2188,10 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   //@Test
+
+  /**
+   *
+   */
   public void test_610_SelectPass() {
     try {
       JSONArray result = client.selectQuery(buildQuery(
@@ -1997,6 +2209,10 @@ public class LNSProxyTest extends DefaultTest {
 
   // test to check context service triggers.
   // these two attributes right now are supported by CS
+
+  /**
+   *
+   */
   @Test
   public void test_620_contextServiceTest() {
     // run it only when CS is enabled
@@ -2164,6 +2380,9 @@ public class LNSProxyTest extends DefaultTest {
             + createGeoJSONPolygon(coordinates).toString() + "}" + "}";
   }
 
+  /**
+   *
+   */
   @Test
   public void test_9999_Stop() {
     try {
@@ -2173,6 +2392,10 @@ public class LNSProxyTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args) {
     Result result = JUnitCore.runClasses(LNSProxyTest.class);
     System.out.println("\n\n-----------Completed all "

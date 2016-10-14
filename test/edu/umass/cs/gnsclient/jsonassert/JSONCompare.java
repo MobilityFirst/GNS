@@ -87,6 +87,7 @@ public final class JSONCompare {
      *
      * @param expected Expected {@code JSONstring}
      * @param actual   {@code JSONstring} to compare
+   * @return 
      */
     public static JSONCompareResult compareJson(final JSONString expected, final JSONString actual) {
         final JSONCompareResult result = new JSONCompareResult();
@@ -104,6 +105,7 @@ public final class JSONCompare {
      * @param expectedStr Expected JSON string
      * @param actualStr   JSON string to compare
      * @param mode        Defines comparison behavior
+   * @return 
      * @throws JSONException
      */
     public static JSONCompareResult compareJSON(String expectedStr, String actualStr, JSONCompareMode mode)
@@ -117,6 +119,7 @@ public final class JSONCompare {
      * @param expected Expected JSONObject
      * @param actual   JSONObject to compare
      * @param mode     Defines comparison behavior
+   * @return 
      * @throws JSONException
      */
     public static JSONCompareResult compareJSON(JSONObject expected, JSONObject actual, JSONCompareMode mode)
@@ -131,6 +134,7 @@ public final class JSONCompare {
      * @param expected Expected JSONArray
      * @param actual   JSONArray to compare
      * @param mode     Defines comparison behavior
+   * @return 
      * @throws JSONException
      */
     public static JSONCompareResult compareJSON(JSONArray expected, JSONArray actual, JSONCompareMode mode)

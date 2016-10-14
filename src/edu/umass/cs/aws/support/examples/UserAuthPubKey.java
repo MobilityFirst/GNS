@@ -39,6 +39,10 @@ import javax.swing.JOptionPane;
  */
 public class UserAuthPubKey {
 
+  /**
+   *
+   * @param arg
+   */
   public static void main(String[] arg) {
 
     try {

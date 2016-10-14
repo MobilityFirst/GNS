@@ -37,17 +37,13 @@ public class AclAddSelf extends AclAdd {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.AclAddSelf;
   }
-
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return ACL_ADD;
-//  }
-
   
 }

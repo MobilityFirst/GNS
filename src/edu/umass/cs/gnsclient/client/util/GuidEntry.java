@@ -93,6 +93,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
   }
 
   /**
+   * @param o
    * @return @see java.lang.Object#equals(java.lang.Object)
    */
   @Override

@@ -8,8 +8,16 @@ import java.util.ArrayList;
  *
  */
 public class MessageStats {
-	protected static final ArrayList<Long> latency = new ArrayList<Long>();
-	protected static final ArrayList<Long> mal_request = new ArrayList<Long>();
+
+  /**
+   *
+   */
+  protected static final ArrayList<Long> latency = new ArrayList<Long>();
+
+  /**
+   *
+   */
+  protected static final ArrayList<Long> mal_request = new ArrayList<Long>();
 	
 	/**
 	 * total time is 10s

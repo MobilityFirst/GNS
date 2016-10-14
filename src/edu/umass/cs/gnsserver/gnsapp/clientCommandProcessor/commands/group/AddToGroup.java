@@ -53,17 +53,15 @@ public class AddToGroup extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.AddToGroup;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return ADD_TO_GROUP;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {

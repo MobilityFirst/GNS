@@ -42,6 +42,10 @@ import javax.swing.JTextField;
  */
 public class Sudo {
 
+  /**
+   *
+   * @param arg
+   */
   public static void main(String[] arg) {
     try {
       JSch jsch = new JSch();

@@ -47,6 +47,9 @@ public class SingleReadArrayTest {
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
 
+  /**
+   *
+   */
   public SingleReadArrayTest() {
     if (client == null) {
       try {
@@ -63,6 +66,9 @@ public class SingleReadArrayTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateEntity() {
     try {
@@ -72,6 +78,9 @@ public class SingleReadArrayTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_CreateSubGuid() {
     try {
@@ -82,6 +91,9 @@ public class SingleReadArrayTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_03_CreateField() {
     try {
@@ -92,6 +104,9 @@ public class SingleReadArrayTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_04_ReadFieldTwice() {
     try {

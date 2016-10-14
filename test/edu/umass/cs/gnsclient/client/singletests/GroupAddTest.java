@@ -54,6 +54,9 @@ public class GroupAddTest {
   private static GuidEntry samEntry;
   private static GuidEntry mygroupEntry;
 
+  /**
+   *
+   */
   public GroupAddTest() {
     if (client == null) {
        try {
@@ -70,6 +73,9 @@ public class GroupAddTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_testCreateGuids() {
     try {
@@ -84,6 +90,9 @@ public class GroupAddTest {
 
   private static GuidEntry guidToDeleteEntry;
 
+  /**
+   *
+   */
   @Test
   public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
@@ -100,6 +109,9 @@ public class GroupAddTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_211_GroupAddWesty() {
     try {
@@ -109,6 +121,9 @@ public class GroupAddTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_212_GroupAddSam() {
     try {
@@ -118,6 +133,9 @@ public class GroupAddTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_213_GroupAddGuidToDelete() {
     try {

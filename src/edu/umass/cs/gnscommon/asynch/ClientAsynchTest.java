@@ -45,6 +45,10 @@ public class ClientAsynchTest {
     }
   };
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String args[]) {
     ClientAsynchBase client;
     try {

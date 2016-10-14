@@ -43,6 +43,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
+   * @throws java.io.IOException
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#parse(java.lang.String)
    */
   public void parse(String commandText) throws IOException
@@ -51,6 +52,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandName()
    */
   public String getCommandName()
@@ -59,6 +61,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandDescription()
    */
   public String getCommandDescription()
@@ -73,6 +76,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
+   * @throws java.lang.Exception
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#execute(java.lang.String)
    */
   public void execute(String commandText) throws Exception

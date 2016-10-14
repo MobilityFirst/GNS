@@ -37,6 +37,10 @@ public class AppendWithDuplicationUnsigned extends AbstractUpdate {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.AppendWithDuplicationUnsigned;

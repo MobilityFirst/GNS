@@ -95,6 +95,10 @@ public class ServerIntegrationTest extends DefaultTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
+  /**
+   *
+   * @param alias
+   */
   public static void setAccountAlias(String alias) {
     accountAlias = alias;
   }
@@ -199,6 +203,10 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   private static long WAIT_TILL_ALL_SERVERS_READY = 5000;
 
+  /**
+   *
+   * @throws Exception
+   */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Run the server.
@@ -293,6 +301,10 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   * @throws Exception
+   */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
 
@@ -392,6 +404,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_010_CreateEntity() {
     String alias = "testGUID" + RandomString.randomString(12);
@@ -405,6 +420,9 @@ public class ServerIntegrationTest extends DefaultTest {
     assertEquals(alias, guidEntry.getEntityName());
   }
 
+  /**
+   *
+   */
   @Test
   public void test_020_RemoveGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(12);
@@ -431,6 +449,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_030_RemoveGuidSansAccountInfo() {
     String testGuidName = "testGUID" + RandomString.randomString(12);
@@ -461,6 +482,9 @@ public class ServerIntegrationTest extends DefaultTest {
   private static final String REMOVE_ACCOUNT_PASSWORD = "removalPassword";
   private static GuidEntry accountToRemoveGuid;
   
+  /**
+   *
+   */
   @Test
   public void test_035_RemoveAccountWithPasswordCreateAccount() {
     try {
@@ -470,6 +494,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_036_RemoveAccountWithPasswordCheckAccount() {
     try {
@@ -482,6 +509,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_037_RemoveAccountWithPasswordRemoveAccount() {
     try {
@@ -491,6 +521,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_038_RemoveAccountWithPasswordCheckAccountAfterRemove() {
     try {
@@ -503,6 +536,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_040_LookupPrimaryGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(12);
@@ -521,6 +557,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_050_CreateSubGuid() {
     try {
@@ -532,6 +571,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_060_FieldNotFoundException() {
     try {
@@ -545,6 +587,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_070_FieldExistsFalse() {
     try {
@@ -557,6 +602,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_080_CreateFieldForFieldExists() {
     try {
@@ -568,6 +616,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_090_FieldExistsTrue() {
     try {
@@ -578,6 +629,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_100_ACLCreateGuids() {
     try {
@@ -607,6 +661,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_101_ACLCreateFields() {
     try {
@@ -620,6 +677,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   /**
    * This one insures that we can use ALL_FIELDS to read all the fields of another guid.
@@ -639,6 +699,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_104_ACLReadMyFields() {
     try {
@@ -655,6 +718,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   /**
    * This one insures that we can't read using ALL_FIELDS when the other guid hasn't given us access.
@@ -673,6 +739,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_106_ACLNotReadOtherGuidFieldTest() {
     try {
@@ -689,6 +758,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_110_ACLPartOne() {
     try {
@@ -711,6 +783,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_120_ACLPartTwo() {
     try {
@@ -779,6 +854,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_130_ACLALLFields() {
     //testACL();
@@ -806,6 +884,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_140_ACLCreateDeeperField() {
     try {
@@ -836,6 +917,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_170_DB() {
     // testCreateEntity();
@@ -909,6 +993,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_180_DBUpserts() {
     HashSet<String> expected = null;
@@ -973,6 +1060,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_190_Substitute() {
     String testSubstituteGuid = "testSubstituteGUID"
@@ -1026,6 +1116,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_200_SubstituteList() {
     String testSubstituteListGuid = "testSubstituteListGUID"
@@ -1081,6 +1174,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(12);
@@ -1099,6 +1195,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_211_GroupAdd() {
     try {
@@ -1130,6 +1229,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_212_GroupRemoveGuid() {
     // now remove a guid and check for group updates
@@ -1150,6 +1252,9 @@ public class ServerIntegrationTest extends DefaultTest {
 
   private static GuidEntry groupAccessUserEntry = null;
 
+  /**
+   *
+   */
   @Test
   public void test_220_GroupAndACLCreateGuids() {
     // testGroup();
@@ -1195,6 +1300,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_221_GroupAndACLTestBadAccess() {
     try {
@@ -1212,6 +1320,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_222_GroupAndACLTestGoodAccess() {
     try {
@@ -1223,6 +1334,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_223_GroupAndACLTestRemoveGuid() {
     try {
@@ -1247,6 +1361,9 @@ public class ServerIntegrationTest extends DefaultTest {
   private static String alias = "ALIAS-" + RandomString.randomString(4)
           + "@blah.org";
 
+  /**
+   *
+   */
   @Test
   public void test_230_AliasAdd() {
     try {
@@ -1260,6 +1377,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_231_AliasRemove() {
     try {
@@ -1279,6 +1399,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_232_AliasCheck() {
     try {
@@ -1293,6 +1416,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_240_WriteAccess() {
     String fieldName = "whereAmI";
@@ -1354,6 +1480,9 @@ public class ServerIntegrationTest extends DefaultTest {
   private static final String unsignedOneReadFieldName = "allonereadaccess";
   private static final String standardOneReadFieldName = "standardonereadaccess";
 
+  /**
+   *
+   */
   @Test
   public void test_250_UnsignedReadCreateGuids() {
     try {
@@ -1381,6 +1510,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_251_UnsignedRead() {
 
@@ -1412,6 +1544,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_252_UnsignedReadOne() {
     try {
@@ -1446,6 +1581,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_260_UnsignedWrite() {
     String unsignedWriteFieldName = "allwriteaccess";
@@ -1475,6 +1613,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_270_RemoveField() {
     String fieldToDelete = "fieldToDelete";
@@ -1510,6 +1651,9 @@ public class ServerIntegrationTest extends DefaultTest {
 
   }
 
+  /**
+   *
+   */
   @Test
   public void test_280_ListOrderAndSetElement() {
     try {
@@ -1567,6 +1711,10 @@ public class ServerIntegrationTest extends DefaultTest {
   // fail("Exception when we were not expecting it: " , e);
   // }
   // }
+
+  /**
+   *
+   */
   @Test
   public void test_320_GeoSpatialSelect() {
     try {
@@ -1620,6 +1768,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_330_QuerySelect() {
     String fieldName = "testQuery";
@@ -1669,6 +1820,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_400_SetFieldNull() {
     String field = "fieldToSetToNull";
@@ -1708,6 +1862,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_410_JSONUpdate() {
     try {
@@ -1833,6 +1990,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_420_NewRead() {
     try {
@@ -1900,6 +2060,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_430_NewUpdate() {
     try {
@@ -1998,6 +2161,9 @@ public class ServerIntegrationTest extends DefaultTest {
   private static final String BYTE_TEST_FIELD = "testBytes";
   private static byte[] byteTestValue;
 
+  /**
+   *
+   */
   @Test
   public void test_440_CreateBytesField() {
     try {
@@ -2010,6 +2176,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_441_ReadBytesField() {
     try {
@@ -2024,6 +2193,9 @@ public class ServerIntegrationTest extends DefaultTest {
   private static int numberTocreate = 100;
   private static GuidEntry accountGuidForBatch = null;
 
+  /**
+   *
+   */
   @Test
   public void test_510_CreateBatchAccountGuid() {
     // can change the number to create on the command line
@@ -2041,6 +2213,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_511_CreateBatch() {
     Set<String> aliases = new HashSet<>();
@@ -2059,6 +2234,9 @@ public class ServerIntegrationTest extends DefaultTest {
     assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
   }
 
+  /**
+   *
+   */
   @Test
   public void test_512_CheckBatch() {
     try {
@@ -2072,6 +2250,9 @@ public class ServerIntegrationTest extends DefaultTest {
 
   private static String createIndexTestField;
 
+  /**
+   *
+   */
   @Test
   public void test_540_CreateField() {
     createIndexTestField = "testField" + RandomString.randomString(12);
@@ -2084,6 +2265,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_541_CreateIndex() {
     try {
@@ -2114,6 +2298,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_551_QueryRemovePreviousTestFields() {
     // find all the guids that have our field and remove it from them
@@ -2131,6 +2318,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_552_QuerySetupGuids() {
     try {
@@ -2167,6 +2357,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_553_QuerySetupGroup() {
     try {
@@ -2185,6 +2378,10 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   // make a second group that is empty
+
+  /**
+   *
+   */
   @Test
   public void test_554_QuerySetupSecondGroup() {
     try {
@@ -2202,6 +2399,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_555_QueryLookupGroup() {
     try {
@@ -2213,6 +2413,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_556_QueryLookupGroupAgain() {
     try {
@@ -2224,6 +2427,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_557_LookupGroupAgain2() {
     try {
@@ -2235,6 +2441,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_558_QueryLookupGroupAgain3() {
     try {
@@ -2246,6 +2455,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   // Change all the testQuery fields except 1 to be equal to zero
   public void test_559_QueryAlterGroup() {
@@ -2264,6 +2476,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_560_QueryLookupGroupAfterAlterations() {
     // Westy - Added this to see if it helps with failures...
@@ -2289,6 +2504,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   // Check to see if the second group has members now... it should.
   public void test_561_QueryLookupSecondGroup() {
@@ -2309,6 +2527,9 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_610_SelectPass() {
     try {
@@ -2327,6 +2548,10 @@ public class ServerIntegrationTest extends DefaultTest {
 
   // test to check context service triggers.
   // these two attributes right now are supported by CS
+
+  /**
+   *
+   */
   @Test
   public void test_620_contextServiceTest() {
     // run it only when CS is enabled
@@ -2493,6 +2718,9 @@ public class ServerIntegrationTest extends DefaultTest {
             + createGeoJSONPolygon(coordinates).toString() + "}" + "}";
   }
 
+  /**
+   *
+   */
   @Test
   public void test_9999_Stop() {
     try {
@@ -2502,6 +2730,10 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args) {
     Result result = JUnitCore.runClasses(ServerIntegrationTest.class);
     System.out.println("\n\n-----------Completed all "

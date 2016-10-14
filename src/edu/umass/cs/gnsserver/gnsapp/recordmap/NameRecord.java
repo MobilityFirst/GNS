@@ -392,6 +392,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    *
    * @param recordMap
    * @param record
+   * @throws org.json.JSONException
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws edu.umass.cs.gnscommon.exceptions.server.RecordExistsException
    */
@@ -492,6 +493,10 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     return result;
   }
 
+  /**
+   *
+   * @return the summary object
+   */
   @Override
   public Object getSummary() {
     return Util.truncate(NameRecord.this, 64, 64);

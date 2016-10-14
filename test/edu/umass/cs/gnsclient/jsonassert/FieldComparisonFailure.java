@@ -8,21 +8,39 @@ public class FieldComparisonFailure {
     private final Object _expected;
     private final Object _actual;
 
-    public FieldComparisonFailure(String field, Object expected, Object actual) {
+  /**
+   *
+   * @param field
+   * @param expected
+   * @param actual
+   */
+  public FieldComparisonFailure(String field, Object expected, Object actual) {
         this._field = field;
         this._expected = expected;
         this._actual = actual;
     }
 
-    public String getField() {
+  /**
+   *
+   * @return the field
+   */
+  public String getField() {
         return _field;
     }
 
-    public Object getExpected() {
+  /**
+   *
+   * @return the expected
+   */
+  public Object getExpected() {
         return _expected;
     }
 
-    public Object getActual() {
+  /**
+   *
+   * @return the actual
+   */
+  public Object getActual() {
         return _actual;
     }
 }

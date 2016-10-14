@@ -49,7 +49,14 @@ public class ActiveCode {
    */
   public static final String ON_WRITE = InternalField.makeInternalFieldString("on_write");
 
+  /**
+   *
+   */
   public static final String READ_ACTION = "read";
+
+  /**
+   *
+   */
   public static final String WRITE_ACTION = "write";
 
   /**

@@ -87,7 +87,11 @@ public class ActiveRunner {
 		return valuesMap;
 	}
 	
-	protected void release(ActiveMessage am){
+  /**
+   *
+   * @param am
+   */
+  protected void release(ActiveMessage am){
 		querier.release(am, true);
 	}
 	

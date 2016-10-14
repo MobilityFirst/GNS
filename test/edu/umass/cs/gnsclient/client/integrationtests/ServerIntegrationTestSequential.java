@@ -51,6 +51,7 @@ public class ServerIntegrationTestSequential {
 	};
 	/**
 	 * Runs each of the ServerIntegrationTest tests numRuns times sequentially.
+   * @throws java.lang.Exception
 	 */
 	@Test
 	public void test_01_SequentialServerIntegrationTest() throws Exception{

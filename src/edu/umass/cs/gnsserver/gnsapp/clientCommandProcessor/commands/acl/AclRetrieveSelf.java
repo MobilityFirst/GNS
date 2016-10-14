@@ -37,17 +37,12 @@ public class AclRetrieveSelf extends AclRetrieve {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.AclRetrieveSelf;
   }
-
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return ACL_RETRIEVE;
-//  }
-
-  
 }

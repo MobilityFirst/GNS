@@ -49,6 +49,12 @@ public class FailedDBOperationException extends ServerException {
     this.message = null;
   }
   
+  /**
+   *
+   * @param collection
+   * @param name
+   * @param message
+   */
   public FailedDBOperationException(String collection, String name, String message) {
     this.collection = collection;
     this.name = name;

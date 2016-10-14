@@ -75,17 +75,28 @@ import org.json.JSONObject;
  */
 public class GNSHttpServer {
 
+  /**
+   *
+   */
   protected static final String GNS_PATH = Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH);
   private HttpServer httpServer = null;
   private int port;
   // handles command processing
   private final CommandModule commandModule;
+
+  /**
+   *
+   */
   protected final ClientRequestHandlerInterface requestHandler;
   private final Date serverStartDate = new Date();
 
   private final static Logger LOG = Logger.getLogger(GNSHttpServer.class.getName());
   
-
+  /**
+   *
+   * @param port
+   * @param requestHandler
+   */
   public GNSHttpServer(int port, ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
@@ -94,6 +105,7 @@ public class GNSHttpServer {
 
   /**
    * Start the server.
+   * @param startingPort
    */
   public final void runServer(int startingPort) {
     int cnt = 0;
@@ -107,6 +119,9 @@ public class GNSHttpServer {
     } while (cnt++ < 100);
   }
   
+  /**
+   *
+   */
   public void stop() {
     if (httpServer != null) {
       httpServer.stop(0);
@@ -141,8 +156,15 @@ public class GNSHttpServer {
     }
   }
 
+  /**
+   *
+   */
   protected class DefaultHandler implements HttpHandler {
 
+    /**
+     *
+     * @param exchange
+     */
     @Override
     public void handle(HttpExchange exchange) {
       try {
@@ -244,6 +266,11 @@ public class GNSHttpServer {
    */
   protected class EchoHandler implements HttpHandler {
 
+    /**
+     *
+     * @param exchange
+     * @throws IOException
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
       String requestMethod = exchange.getRequestMethod();

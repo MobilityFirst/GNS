@@ -70,6 +70,17 @@ public class GNSQuickStart {
   // > openssl pkcs8 -topk8 -inform PEM -outform DER -in <input file>  -nocrypt > <output file>
   private static final String privateKeyFile = "/Users/Westy/test_key";
 
+  /**
+   *
+   * @param args
+   * @throws IOException
+   * @throws InvalidKeySpecException
+   * @throws NoSuchAlgorithmException
+   * @throws ClientException
+   * @throws InvalidKeyException
+   * @throws SignatureException
+   * @throws Exception
+   */
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {

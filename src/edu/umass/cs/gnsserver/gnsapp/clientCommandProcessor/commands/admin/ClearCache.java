@@ -52,17 +52,15 @@ public class ClearCache extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.ClearCache;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return CLEAR_CACHE;
-//  }
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,

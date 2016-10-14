@@ -53,6 +53,9 @@ public class GuidAndGroupsRemoveTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
+  /**
+   *
+   */
   public GuidAndGroupsRemoveTest() {
     if (client == null) {
       try {
@@ -77,6 +80,9 @@ public class GuidAndGroupsRemoveTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_10_CreateGuids() {
     try {
@@ -89,6 +95,9 @@ public class GuidAndGroupsRemoveTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
@@ -105,6 +114,9 @@ public class GuidAndGroupsRemoveTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_211_GroupAdd() {
     try {
@@ -128,6 +140,9 @@ public class GuidAndGroupsRemoveTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_212_GroupRemoveGuid() {
     // now remove a guid and check for group updates
@@ -146,6 +161,9 @@ public class GuidAndGroupsRemoveTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_213_GroupRemoveCheck() {
     try {
@@ -159,6 +177,9 @@ public class GuidAndGroupsRemoveTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_999_Stop() {
     try {

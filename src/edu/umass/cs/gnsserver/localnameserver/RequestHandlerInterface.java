@@ -65,6 +65,7 @@ public interface RequestHandlerInterface {
    * 
    * @param id
    * @param requestInfo
+   * @param header
    */
   public void addRequestInfo(long id, LNSRequestInfo requestInfo, NIOHeader header);
 

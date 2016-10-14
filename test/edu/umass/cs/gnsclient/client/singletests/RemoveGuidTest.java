@@ -45,6 +45,9 @@ public class RemoveGuidTest {
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public RemoveGuidTest() {
     if (client == null) {
       try {
@@ -61,6 +64,9 @@ public class RemoveGuidTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_RemoveGuidUsingAccount() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
@@ -88,6 +94,9 @@ public class RemoveGuidTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_RemoveGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
@@ -112,6 +121,9 @@ public class RemoveGuidTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_03_RemoveAccount() {
     try {
@@ -121,6 +133,9 @@ public class RemoveGuidTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_04_CheckForRemoval() {
     try {

@@ -66,6 +66,7 @@ import java.util.Set;
 
 /**
  *
+ * @author westy
  */
 public class AWSStatusCheck {
 
@@ -101,6 +102,11 @@ public class AWSStatusCheck {
                   "ec2.ap-northeast-1.amazonaws.com",
                   "ec2.sa-east-1.amazonaws.com"));
 
+  /**
+   *
+   * @param args
+   * @throws Exception
+   */
   public static void main(String[] args) throws Exception {
 
     init();

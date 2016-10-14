@@ -55,6 +55,9 @@ public class SelectClientTest {
   private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public SelectClientTest() {
     if (client == null) {
        try {
@@ -71,6 +74,9 @@ public class SelectClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_testQuerySelect() {
     String fieldName = "testQuery";

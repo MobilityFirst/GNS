@@ -66,6 +66,7 @@ public class ActiveCodeSet extends ConsoleCommand
 
   /**
    * Override execute to check for a selected guid
+   * @throws java.lang.Exception
    */
   @Override
   public void execute(String commandText) throws Exception

@@ -54,6 +54,9 @@ public class SelectSingleTest {
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
 
+  /**
+   *
+   */
   public SelectSingleTest() {
     if (client == null) {
       try {
@@ -78,6 +81,9 @@ public class SelectSingleTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_1_CreateGuids() {
     try {
@@ -90,6 +96,9 @@ public class SelectSingleTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_2_cats() {
     try {
@@ -135,6 +144,9 @@ public class SelectSingleTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_3_BasicSelect() {
     try {
@@ -146,6 +158,9 @@ public class SelectSingleTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_999_Stop() {
     try {

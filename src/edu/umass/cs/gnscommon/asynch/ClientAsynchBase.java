@@ -103,6 +103,9 @@ import java.util.logging.Level;
 // FIXME: This might be redundant with the AsyncClient internal class used in GNSClient.
 public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
 
+  /**
+   *
+   */
   public static final Set<IntegerPacketType> CLIENT_PACKET_TYPES
           = new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND,
                   Packet.PacketType.COMMAND_RETURN_VALUE,
@@ -158,6 +161,12 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
 
   private static Stringifiable<String> unstringer = new StringifiableDefault<>("");
 
+  /**
+   *
+   * @param stringified
+   * @return the request
+   * @throws RequestParseException
+   */
   @Override
   // This needs to return null for packet types that we don't want to handle.
   public Request getRequest(String stringified) throws RequestParseException {
@@ -170,6 +179,12 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     return request;
   }
 
+  /**
+   *
+   * @param json
+   * @return return the request or null if we're not handling this request type
+   * @throws RequestParseException
+   */
   @Override
   // This needs to return null for packet types that we don't want to handle.
   public Request getRequestFromJSON(JSONObject json) throws RequestParseException {
@@ -184,6 +199,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     return request;
   }
 
+  /**
+   *
+   * @return a set of all the request types
+   */
   @Override
   public Set<IntegerPacketType> getRequestTypes() {
     return Collections.unmodifiableSet(CLIENT_PACKET_TYPES);
@@ -367,7 +386,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    *
    * @param guid the guid to remove
    * @param callback
-   * @return
+   * @return the id of the request
    * @throws Exception
    */
   public long guidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
@@ -381,7 +400,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    * @param accountGuid
    * @param guidToRemove
    * @param callback
-   * @return
+   * @return the id of the request
    * @throws Exception
    */
   public long guidRemove(GuidEntry accountGuid, String guidToRemove, RequestCallback callback) throws Exception {
@@ -395,7 +414,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    *
    * @param alias
    * @param callback
-   * @return
+   * @return the id of the request
    * @throws IOException
    * @throws org.json.JSONException
    * @throws UnsupportedEncodingException
@@ -702,7 +721,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   /**
    * Return a new request id. Probably should use longs here.
    *
-   * @return
+   * @return the id
    */
   public synchronized long generateNextRequestID() {
     return randomID.nextLong();

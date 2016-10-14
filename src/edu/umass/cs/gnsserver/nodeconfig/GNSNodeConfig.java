@@ -392,6 +392,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
   }
 
+  /**
+   *
+   * @param id
+   * @return an address
+   */
   @Override
   public InetAddress getBindAddress(NodeIDType id) {
     // handle special case for CCP node
@@ -570,6 +575,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
   }
 
+  /**
+   *
+   * @param strNodes
+   * @return a set of nodes
+   */
   @Override
   public Set<NodeIDType> getValuesFromStringSet(Set<String> strNodes
   ) {
@@ -580,6 +590,12 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return nodes;
   }
 
+  /**
+   *
+   * @param array
+   * @return a set of nodes
+   * @throws JSONException
+   */
   @Override
   public Set<NodeIDType> getValuesFromJSONArray(JSONArray array) throws JSONException {
     Set<NodeIDType> nodes = new HashSet<>();
@@ -774,6 +790,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     System.exit(0);
   }
 
+  /**
+   *
+   * @param node2
+   * @return the delay
+   */
   @Override
   public long getEmulatedDelay(NodeIDType node2) {
     return this.getPingLatency(node2);

@@ -36,6 +36,10 @@ public class ReadArrayOne extends ReadArray {
     super(module);
   }
   
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.ReadArrayOne;

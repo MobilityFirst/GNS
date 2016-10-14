@@ -37,17 +37,13 @@ public class RemoveFromGroupSelf extends RemoveFromGroup {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.RemoveFromGroupSelf;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return REMOVE_FROM_GROUP;
-//  }
-
-  
 }

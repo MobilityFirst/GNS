@@ -66,6 +66,12 @@ public class RemoteQuery extends ClientAsynchBase {
   private final String myID;
   private final InetSocketAddress myAddr;
 
+  /**
+   *
+   * @param myID
+   * @param isa
+   * @throws IOException
+   */
   public RemoteQuery(String myID, InetSocketAddress isa) throws IOException {
     super();
     this.myID = myID;
@@ -83,12 +89,28 @@ public class RemoteQuery extends ClientAsynchBase {
             + (this.myID != null ? ":" + this.myID : "");
   }
 
+  /**
+   *
+   */
   public static interface RequestCallbackWithRequest extends RequestCallback {
 
+    /**
+     *
+     * @param request
+     * @return the request
+     */
     public RequestCallbackWithRequest setRequest(Request request);
 
+    /**
+     *
+     * @return the request
+     */
     public Request getRequest();
 
+    /**
+     *
+     * @return the request
+     */
     public Request getResponse();
   }
 
@@ -363,7 +385,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @param names
    * @param states
    * @param handler
-   * @return
+   * @return an array of packets
    * @throws JSONException
    */
   private static CreateServiceName[] makeBatchedCreateNameRequest(Set<String> names,

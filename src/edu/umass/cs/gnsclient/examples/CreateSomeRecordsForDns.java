@@ -40,6 +40,17 @@ public class CreateSomeRecordsForDns {
   private static GNSClientCommands client;
   private static GuidEntry accountGuid;
 
+  /**
+   *
+   * @param args
+   * @throws IOException
+   * @throws InvalidKeySpecException
+   * @throws NoSuchAlgorithmException
+   * @throws ClientException
+   * @throws InvalidKeyException
+   * @throws SignatureException
+   * @throws Exception
+   */
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {

@@ -24,6 +24,10 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.utils.Util;
 
+/**
+ *
+ * @author westy
+ */
 public class ActiveCodeGet extends ConsoleCommand {
 
   /**
@@ -52,6 +56,7 @@ public class ActiveCodeGet extends ConsoleCommand {
 
   /**
    * Override execute to check for a selected guid
+   * @throws java.lang.Exception
    */
   @Override
   public void execute(String commandText) throws Exception {

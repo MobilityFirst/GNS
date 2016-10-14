@@ -38,12 +38,13 @@ public class SelectGroupSetupQueryWithGuid extends SelectGroupSetupQuery {
     super(module);
   }
   
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.SelectGroupSetupQueryWithGuid;
   }
 
-  
-
-  
 }

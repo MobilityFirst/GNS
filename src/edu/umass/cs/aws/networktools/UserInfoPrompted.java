@@ -38,11 +38,20 @@ import javax.swing.JTextField;
  */
 public class UserInfoPrompted implements UserInfo, UIKeyboardInteractive {
 
+  /**
+   *
+   * @return the password
+   */
   @Override
   public String getPassword() {
     return passwd;
   }
 
+  /**
+   *
+   * @param str
+   * @return true if the user says yes
+   */
   @Override
   public boolean promptYesNo(String str) {
     Object[] options = {"yes", "no"};
@@ -57,16 +66,30 @@ public class UserInfoPrompted implements UserInfo, UIKeyboardInteractive {
   private String passwd;
   private final JTextField passwordField = new JPasswordField(20);
 
+  /**
+   *
+   * @return the pass phrase
+   */
   @Override
   public String getPassphrase() {
     return null;
   }
 
+  /**
+   *
+   * @param message
+   * @return the user response
+   */
   @Override
   public boolean promptPassphrase(String message) {
     return true;
   }
 
+  /**
+   *
+   * @param message
+   * @return true if the user confirms
+   */
   @Override
   public boolean promptPassword(String message) {
     Object[] ob = {passwordField};
@@ -81,6 +104,10 @@ public class UserInfoPrompted implements UserInfo, UIKeyboardInteractive {
     }
   }
 
+  /**
+   *
+   * @param message
+   */
   @Override
   public void showMessage(String message) {
     JOptionPane.showMessageDialog(null, message);
@@ -92,6 +119,15 @@ public class UserInfoPrompted implements UserInfo, UIKeyboardInteractive {
                   new Insets(0, 0, 0, 0), 0, 0);
   private Container panel;
 
+  /**
+   *
+   * @param destination
+   * @param name
+   * @param instruction
+   * @param prompt
+   * @param echo
+   * @return the array of strings
+   */
   @Override
   public String[] promptKeyboardInteractive(String destination,
           String name,

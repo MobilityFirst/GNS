@@ -64,11 +64,19 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
     return true;
   }
 
+  /**
+   *
+   * @return a set of nodes
+   */
   @Override
   public Set<NodeIDType> getActiveReplicas() {
     return this.nodeConfig.getActiveReplicas();
   }
 
+  /**
+   *
+   * @return a set of nodes
+   */
   @Override
   public Set<NodeIDType> getReconfigurators() {
     return this.nodeConfig.getReconfigurators();
@@ -85,21 +93,41 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
     return this.CH.getReplicatedServers(name);
   }
 
+  /**
+   *
+   * @param id
+   * @return true if the node exists
+   */
   @Override
   public boolean nodeExists(NodeIDType id) {
     return this.nodeConfig.nodeExists(id);
   }
 
+  /**
+   *
+   * @param id
+   * @return an address
+   */
   @Override
   public InetAddress getNodeAddress(NodeIDType id) {
     return this.nodeConfig.getNodeAddress(id);
   }
 
+  /**
+   *
+   * @param id
+   * @return an address
+   */
   @Override
   public InetAddress getBindAddress(NodeIDType id) {
     return this.nodeConfig.getBindAddress(id);
   }
 
+  /**
+   *
+   * @param id
+   * @return a port
+   */
   @Override
   public int getNodePort(NodeIDType id) {
     return this.nodeConfig.getNodePort(id);
@@ -131,6 +159,12 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
   }
 
   // FIXME: disallow the use of this method
+
+  /**
+   *
+   * @return a set of node ids
+   * @deprecated
+   */
   @Override
   @Deprecated
   public Set<NodeIDType> getNodeIDs() {
@@ -138,16 +172,32 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
     //return this.nodeConfig.getNodeIDs();
   }
 
+  /**
+   *
+   * @param strValue
+   * @return a node
+   */
   @Override
   public NodeIDType valueOf(String strValue) {
     return this.nodeConfig.valueOf(strValue);
   }
 
+  /**
+   *
+   * @param strNodes
+   * @return a node
+   */
   @Override
   public Set<NodeIDType> getValuesFromStringSet(Set<String> strNodes) {
     return this.nodeConfig.getValuesFromStringSet(strNodes);
   }
 
+  /**
+   *
+   * @param array
+   * @return a set of nodes
+   * @throws JSONException
+   */
   @Override
   public Set<NodeIDType> getValuesFromJSONArray(JSONArray array)
           throws JSONException {

@@ -74,42 +74,82 @@ public abstract class LNSConsistentNodeConfig implements
     return this.CH.getReplicatedServers(name);
   }
 
+  /**
+   *
+   * @param id
+   * @return true if the node exists
+   */
   @Override
   public boolean nodeExists(InetSocketAddress id) {
     return this.nodeConfig.nodeExists(id);
   }
 
+  /**
+   *
+   * @param id
+   * @return the node address
+   */
   @Override
   public InetAddress getNodeAddress(InetSocketAddress id) {
     return this.nodeConfig.getNodeAddress(id);
   }
 
+  /**
+   *
+   * @param id
+   * @return the band address
+   */
   @Override
   public InetAddress getBindAddress(InetSocketAddress id) {
     return this.nodeConfig.getBindAddress(id);
   }
 
+  /**
+   *
+   * @param id
+   * @return the port
+   */
   @Override
   public int getNodePort(InetSocketAddress id) {
     return this.nodeConfig.getNodePort(id);
   }
 
+  /**
+   *
+   * @return a set of address
+   */
   @Override
   public Set<InetSocketAddress> getNodeIDs() {
     throw new RuntimeException("The use of this method is not permitted");
     //return this.nodeConfig.getNodeIDs();
   }
 
+  /**
+   *
+   * @param strValue
+   * @return the address
+   */
   @Override
   public InetSocketAddress valueOf(String strValue) {
     return this.nodeConfig.valueOf(strValue);
   }
 
+  /**
+   *
+   * @param strNodes
+   * @return a set of addresses
+   */
   @Override
   public Set<InetSocketAddress> getValuesFromStringSet(Set<String> strNodes) {
     return this.nodeConfig.getValuesFromStringSet(strNodes);
   }
 
+  /**
+   *
+   * @param array
+   * @return a set of addresses
+   * @throws JSONException
+   */
   @Override
   public Set<InetSocketAddress> getValuesFromJSONArray(JSONArray array)
           throws JSONException {

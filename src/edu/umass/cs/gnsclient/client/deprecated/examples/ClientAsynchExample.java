@@ -71,6 +71,17 @@ public class ClientAsynchExample {
 
   private static final String ACCOUNT_ALIAS = "gnstest@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
 
+  /**
+   *
+   * @param args
+   * @throws IOException
+   * @throws InvalidKeySpecException
+   * @throws NoSuchAlgorithmException
+   * @throws ClientException
+   * @throws InvalidKeyException
+   * @throws SignatureException
+   * @throws Exception
+   */
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {

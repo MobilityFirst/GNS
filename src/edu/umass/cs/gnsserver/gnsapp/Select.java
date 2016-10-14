@@ -141,7 +141,7 @@ public class Select {
    *
    * @param packet
    * @param app
-   * @return
+   * @return a select response packet
    * @throws JSONException
    * @throws UnknownHostException
    * @throws FailedDBOperationException

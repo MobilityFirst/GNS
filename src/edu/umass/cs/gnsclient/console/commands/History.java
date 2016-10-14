@@ -45,6 +45,7 @@ public class History extends ConsoleCommand
 
   /**
    * Override execute to not check for existing connectivity
+   * @throws java.lang.Exception
    */
   public void execute(String commandText) throws Exception
   {
@@ -52,6 +53,7 @@ public class History extends ConsoleCommand
   }
 
   /**
+   * @throws java.lang.Exception
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#parse(java.lang.String)
    */
   public void parse(String commandText) throws Exception
@@ -75,6 +77,7 @@ public class History extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see edu.umass.cs.gnsclient.console.commands.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandName()
    */
   @Override
@@ -84,6 +87,7 @@ public class History extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see edu.umass.cs.gnsclient.ConsoleCommand#getCommandDescription()
    */
   @Override
@@ -93,6 +97,7 @@ public class History extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see edu.umass.cs.gnsclient.ConsoleCommand#getCommandParameters()
    */
   @Override

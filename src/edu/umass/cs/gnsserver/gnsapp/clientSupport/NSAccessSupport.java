@@ -295,7 +295,7 @@ public class NSAccessSupport {
    * @param field
    * @param accessorGuid
    * @param activeReplica
-   * @return
+   * @return true if access is allowed
    * @throws FailedDBOperationException 
    */
   private static boolean checkForAccess(MetaDataTypeName accessType, String guid, String field, String accessorGuid,
@@ -333,7 +333,7 @@ public class NSAccessSupport {
    * @param accessorGuid - the guid that we are checking for access
    * @param allowedUsers - the list of publickeys that are in the acl
    * @param activeReplica
-   * @return
+   * @return true if the guid is in the allowed users
    * @throws FailedDBOperationException
    */
   private static boolean checkAllowedUsers(String accessorGuid,

@@ -48,6 +48,9 @@ public class WriteReadBytesTest {
   private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public WriteReadBytesTest() {
     if (client == null) {
       try {
@@ -68,6 +71,9 @@ public class WriteReadBytesTest {
   private static final String TEST_FIELD = "testBytes";
   private static byte[] testValue;
 
+  /**
+   *
+   */
   @Test
   public void test_01_CreateBytesField() {
     try {
@@ -80,6 +86,9 @@ public class WriteReadBytesTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_ReadBytesField() {
     try {

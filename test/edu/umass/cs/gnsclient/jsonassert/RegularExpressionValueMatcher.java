@@ -12,6 +12,7 @@ import java.util.regex.PatternSyntaxException;
  * specify regular expression pattern that actual value must match.
  * 
  * @author Duncan Mackinder
+ * @param <T>
  * 
  */
 public class RegularExpressionValueMatcher<T> implements ValueMatcher<T> {
@@ -53,7 +54,13 @@ public class RegularExpressionValueMatcher<T> implements ValueMatcher<T> {
 		}
 	}
 
-	@Override
+  /**
+   *
+   * @param actual
+   * @param expected
+   * @return true if equal
+   */
+  @Override
 	public boolean equal(T actual, T expected) {
 		String actualString = actual.toString();
 		String expectedString = expected.toString();

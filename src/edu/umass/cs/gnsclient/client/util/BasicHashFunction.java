@@ -28,6 +28,11 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
  */
 public abstract class BasicHashFunction implements HashFunction {
   
+  /**
+   *
+   * @param key
+   * @return a long 
+   */
   @Override
   public long hashToLong(String key) {
     // assumes the first byte is the most significant

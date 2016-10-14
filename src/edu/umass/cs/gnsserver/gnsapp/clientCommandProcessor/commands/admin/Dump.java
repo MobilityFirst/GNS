@@ -48,6 +48,10 @@ public class Dump extends AbstractCommand {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.Dump;
@@ -58,8 +62,6 @@ public class Dump extends AbstractCommand {
 	  String[] params = {NAME};
 	  return params;
   }
-
-  
 
   @Override
   @SuppressWarnings("unchecked")

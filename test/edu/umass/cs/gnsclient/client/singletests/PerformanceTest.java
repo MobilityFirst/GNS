@@ -33,6 +33,10 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+/**
+ *
+ * @author westy
+ */
 public class PerformanceTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
@@ -40,6 +44,9 @@ public class PerformanceTest {
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public PerformanceTest() {
     if (client == null) {
        try {
@@ -56,6 +63,9 @@ public class PerformanceTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void performanceTest() {
     int numGuids = 1;

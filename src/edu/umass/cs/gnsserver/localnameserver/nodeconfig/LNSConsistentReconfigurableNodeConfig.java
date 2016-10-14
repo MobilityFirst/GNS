@@ -66,28 +66,51 @@ public class LNSConsistentReconfigurableNodeConfig extends
     this.CH_AR = new ConsistentHashing<>(this.activeReplicas); 
   }
 
+  /**
+   *
+   * @param strNodes
+   * @return a set of addresses
+   */
   @Override
   public Set<InetSocketAddress> getValuesFromStringSet(Set<String> strNodes) {
     return this.nodeConfig.getValuesFromStringSet(strNodes);
   }
 
+  /**
+   *
+   * @param array
+   * @return a set of addresses
+   * @throws JSONException
+   */
   @Override
   public Set<InetSocketAddress> getValuesFromJSONArray(JSONArray array)
           throws JSONException {
     return this.nodeConfig.getValuesFromJSONArray(array);
   }
 
+  /**
+   *
+   * @return a set of addresses
+   */
   @Override
   public Set<InetSocketAddress> getNodeIDs() {
     return this.nodeConfig.getNodeIDs();
     //throw new RuntimeException("The use of this method is not permitted");
   }
 
+  /**
+   *
+   * @return a set of addresses
+   */
   @Override
   public Set<InetSocketAddress> getActiveReplicas() {
     return this.nodeConfig.getActiveReplicas();
   }
 
+  /**
+   *
+   * @return a set of addresses
+   */
   @Override
   public Set<InetSocketAddress> getReconfigurators() {
     return this.nodeConfig.getReconfigurators();
@@ -159,23 +182,45 @@ public class LNSConsistentReconfigurableNodeConfig extends
     return this.reconfigurators = curReconfigurators;
   }
 
+  /**
+   *
+   * @param id
+   * @param sockAddr
+   * @return an address
+   */
   @Override
   public InetSocketAddress addReconfigurator(InetSocketAddress id,
           InetSocketAddress sockAddr) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  /**
+   *
+   * @param id
+   * @return an address
+   */
   @Override
   public InetSocketAddress removeReconfigurator(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  /**
+   *
+   * @param id
+   * @param sockAddr
+   * @return an address
+   */
   @Override
   public InetSocketAddress addActiveReplica(InetSocketAddress id,
           InetSocketAddress sockAddr) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  /**
+   *
+   * @param id
+   * @return an address
+   */
   @Override
   public InetSocketAddress removeActiveReplica(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet.");

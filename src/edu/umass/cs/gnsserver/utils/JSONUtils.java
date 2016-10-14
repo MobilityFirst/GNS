@@ -41,7 +41,7 @@ public class JSONUtils {
    * Much better than new JSONObject(record.toString()).
    *
    * @param record
-   * @return
+   * @return a JSON Object
    * @throws JSONException
    */
   public static JSONObject copyJsonObject(JSONObject record) throws JSONException {

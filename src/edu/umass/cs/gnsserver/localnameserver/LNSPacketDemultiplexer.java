@@ -62,6 +62,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * Create an instance of the LNSPacketDemultiplexer.
    *
    * @param handler
+   * @param asyncClient
    */
   public LNSPacketDemultiplexer(RequestHandlerInterface handler, ReconfigurableAppClientAsync<Request> asyncClient) {
     this.handler = handler;
@@ -78,6 +79,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * It de-multiplexes packets based on their packet type and forwards to appropriate classes.
    *
    * @param json
+   * @param header
    * @return false if an invalid packet type is received
    */
   @Override
@@ -153,6 +155,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * Handles a command packet that has come in from a client.
    *
    * @param json
+   * @param header
    * @throws JSONException
    * @throws IOException
    */
@@ -188,6 +191,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * Handles a command packet that has come in from a client.
    *
    * @param json
+   * @param header
    * @throws JSONException
    * @throws IOException
    */

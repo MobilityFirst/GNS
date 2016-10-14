@@ -103,10 +103,25 @@ public class Email {
 
   private static final String SMTP_HOST = "smtp.gmail.com";
 
+  /**
+   *
+   * @param subject
+   * @param recipient
+   * @param text
+   * @return true if the mail was sent
+   */
   public static boolean simpleMail(String subject, String recipient, String text) {
     return simpleMail(subject, recipient, text, true);
   }
 
+  /**
+   *
+   * @param subject
+   * @param recipient
+   * @param text
+   * @param suppressWarning
+   * @return true if the mail was sent
+   */
   public static boolean simpleMail(String subject, String recipient, String text, boolean suppressWarning) {
     try {
       MailSSLSocketFactory sf = new MailSSLSocketFactory();
@@ -329,6 +344,10 @@ public class Email {
     }
   }
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args) {
     email("hello", "westy@cs.umass.edu", 
             "This is another email on " + Format.formatPrettyDateUTC(new Date()) + "."

@@ -69,7 +69,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
    * We need to sort the commands to put the longer ones with the same command name first.
    *
    * @param otherCommand
-   * @return
+   * @return an int
    */
   // 
   @Override
@@ -169,7 +169,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   /**
    * Returns a string showing the HTML client usage of the command.
    *
-   * @return
+   * @return the HTML as a string
    */
   private String getHTMLForm() {
     StringBuilder result = new StringBuilder();
@@ -193,7 +193,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   /**
    * Returns a string showing the TCP client usage of the command.
    *
-   * @return
+   * @return the doc as a string
    */
   private String getTCPForm() {
     StringBuilder result = new StringBuilder();
@@ -215,7 +215,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   /**
    * Outputs the command information in a format that can be used on a Media Wiki page.
    *
-   * @return
+   * @return the wiki string
    */
   private String getTCPWikiForm() {
     StringBuilder result = new StringBuilder();
@@ -239,7 +239,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   /**
    * Returns a string describing the parameters of the command.
    *
-   * @return
+   * @return the parameters as a string
    */
   public String getCommandParametersString() {
     StringBuilder result = new StringBuilder();
@@ -261,6 +261,10 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
             + getCommandParametersString() + "]";
   }
 
+  /**
+   *
+   * @return the summary
+   */
   @Override
   public Object getSummary() {
     return new Object() {

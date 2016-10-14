@@ -60,6 +60,9 @@ public class SelectTest {
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
 
+  /**
+   *
+   */
   public SelectTest() {
     if (client == null) {
       try {
@@ -84,6 +87,9 @@ public class SelectTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_1_CreateGuids() {
     try {
@@ -96,6 +102,9 @@ public class SelectTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_2_cats() {
     try {
@@ -141,6 +150,9 @@ public class SelectTest {
     }
   }
   
+  /**
+   *
+   */
   @Test
   public void test_3_BasicSelect() {
     try {
@@ -152,6 +164,9 @@ public class SelectTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_4_GeoSpatialSelect() {
     try {
@@ -194,6 +209,9 @@ public class SelectTest {
     }
   }
   
+  /**
+   *
+   */
   @Test
   public void test_5_QuerySelect() {
     String fieldName = "testQuery";
@@ -240,6 +258,9 @@ public class SelectTest {
   
   private static String createIndexTestField;
   
+  /**
+   *
+   */
   @Test
   public void test_6_CreateField() {
     createIndexTestField = "testField" + RandomString.randomString(6);
@@ -251,6 +272,9 @@ public class SelectTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_7_CreateIndex() {
     try {
@@ -260,6 +284,9 @@ public class SelectTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_8_SelectPass() {
     try {
@@ -319,6 +346,9 @@ public class SelectTest {
             + "}";
   }
 
+  /**
+   *
+   */
   @Test
   public void test_999_Stop() {
     try {

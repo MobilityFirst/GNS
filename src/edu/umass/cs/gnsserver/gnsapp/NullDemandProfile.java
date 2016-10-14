@@ -90,15 +90,29 @@ public class NullDemandProfile extends AbstractDemandProfile {
     return new NullDemandProfile(name);
   }
 
+  /**
+   *
+   * @param request
+   * @param sender
+   * @param nodeConfig
+   */
   @Override
   public void register(Request request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
   }
 
+  /**
+   *
+   * @return false
+   */
   @Override
   public boolean shouldReport() {
     return false;
   }
 
+  /**
+   *
+   * @return the stats
+   */
   @Override
   public JSONObject getStats() {
     JSONObject json = new JSONObject();
@@ -110,6 +124,9 @@ public class NullDemandProfile extends AbstractDemandProfile {
     return json;
   }
 
+  /**
+   *
+   */
   @Override
   public void reset() {
   }
@@ -119,17 +136,29 @@ public class NullDemandProfile extends AbstractDemandProfile {
     return new NullDemandProfile(this);
   }
 
+  /**
+   *
+   * @param dp
+   */
   @Override
   public void combine(AbstractDemandProfile dp) {
   }
 
-  
+  /**
+   *
+   * @param curActives
+   * @param nodeConfig
+   * @return  a list of addresses we should reconfigure
+   */
   @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
           InterfaceGetActiveIPs nodeConfig) {
     return null;
   }
 
+  /**
+   *
+   */
   @Override
   public void justReconfigured() {
   }

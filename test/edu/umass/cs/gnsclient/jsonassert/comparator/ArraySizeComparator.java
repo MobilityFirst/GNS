@@ -51,6 +51,11 @@ public class ArraySizeComparator extends DefaultComparator {
 	 * maximum and minimum valid lengths of the actual array. If expected array
 	 * contains a single integer value, then the actual array must contain
 	 * exactly that number of elements.
+   * @param prefix
+   * @param expected
+   * @param actual
+   * @param result
+   * @throws org.json.JSONException
 	 */
 	@Override
 	public void compareJSONArray(String prefix, JSONArray expected,

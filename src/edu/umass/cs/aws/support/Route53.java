@@ -49,6 +49,11 @@ public class Route53 {
   private static final String CALLER_REFERENCE = "GNS";
   private static final String HOSTED_ZONE_ID = "Z10LUHH9502F33";
 
+  /**
+   *
+   * @param args
+   * @throws Exception
+   */
   public static void main(String[] args) throws Exception {
     AWSCredentials credentials = new PropertiesCredentials(
             AWSEC2.class.getResourceAsStream("resources/AwsCredentials.properties"));

@@ -98,16 +98,28 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
     return json;
   }
 
+  /**
+   *
+   * @return the epoch number
+   */
   @Override
   public int getEpochNumber() {
     return version;
   }
 
+  /**
+   *
+   * @return true if it's a stop
+   */
   @Override
   public boolean isStop() {
     return true;
   }
 
+  /**
+   *
+   * @return the service name
+   */
   @Override
   public String getServiceName() {
     return name;
@@ -138,6 +150,10 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
     this.needsCoordination = needsCoordination;
   }
 
+  /**
+   *
+   * @return the request id
+   */
   @Override
   public long getRequestID() {
     return this.requestID;

@@ -37,6 +37,14 @@ public class JSONDotNotation {
     return LOG;
   }
 
+  /**
+   *
+   * @param destination
+   * @param key
+   * @param value
+   * @return true if we were able to put the value
+   * @throws JSONException
+   */
   public static boolean putWithDotNotation(JSONObject destination, String key, Object value) throws JSONException {
     JSONDotNotation.getLogger().log(Level.FINER, "###fullkey={0} dest={1}", 
             new Object[]{key, destination});
@@ -60,6 +68,13 @@ public class JSONDotNotation {
     }
   }
 
+  /**
+   *
+   * @param key
+   * @param json
+   * @return the value
+   * @throws JSONException
+   */
   public static Object getWithDotNotation(String key, Object json) throws JSONException {
     JSONDotNotation.getLogger().log(Level.FINER, "CLASS IS " + json.getClass());
     JSONDotNotation.getLogger().log(Level.FINER, "###fullkey={0} json={1}", new Object[]{key, json});
@@ -85,6 +100,12 @@ public class JSONDotNotation {
     }
   }
 
+  /**
+   *
+   * @param key
+   * @param json
+   * @return true if the value is found
+   */
   public static boolean containsFieldDotNotation(String key, Object json) {
     try {
       return getWithDotNotation(key, json) != null;
@@ -94,6 +115,12 @@ public class JSONDotNotation {
   }
 
   // Test Code
+
+  /**
+   *
+   * @param args
+   * @throws JSONException
+   */
   public static void main(String[] args) throws JSONException {
     JSONObject json = new JSONObject();
     json.put("name", "frank");

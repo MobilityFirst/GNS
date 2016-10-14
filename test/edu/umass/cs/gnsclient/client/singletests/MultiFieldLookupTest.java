@@ -53,6 +53,9 @@ public class MultiFieldLookupTest {
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
 
+  /**
+   *
+   */
   public MultiFieldLookupTest() {
     if (client == null) {
       try {
@@ -69,6 +72,9 @@ public class MultiFieldLookupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01_JSONUpdate() {
     try {
@@ -93,6 +99,9 @@ public class MultiFieldLookupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_02_MultiFieldLookup() {
     try {

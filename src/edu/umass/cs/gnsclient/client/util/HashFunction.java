@@ -25,9 +25,20 @@ package edu.umass.cs.gnsclient.client.util;
 public interface HashFunction
 {
 
+  /**
+   *
+   * @param key
+   * @return a byte array
+   */
   public byte[] hash(String key);
 
   // public byte[] hash(byte[] bytes);
+
+  /**
+   *
+   * @param key
+   * @return the long value
+   */
 
   public long hashToLong(String key);
 

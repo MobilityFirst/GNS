@@ -60,8 +60,9 @@ public class SelectAutoGroupTest {
   private String queryOne = "~" + groupTestFieldName + " : {$gt: 20}";
   private String queryTwo = "~" + groupTestFieldName + " : 0";
   
-  
-
+  /**
+   *
+   */
   public SelectAutoGroupTest() {
     if (client == null) {
        try {
@@ -78,6 +79,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_551_QueryRemovePreviousTestFields() {
     // find all the guids that have our field and remove it from them
@@ -95,6 +99,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_552_QuerySetupGuids() {
     try {
@@ -131,6 +138,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_553_QuerySetupGroup() {
     try {
@@ -149,6 +159,10 @@ public class SelectAutoGroupTest {
   }
 
   // make a second group that is empty
+
+  /**
+   *
+   */
   @Test
   public void test_554_QuerySetupSecondGroup() {
     try {
@@ -166,6 +180,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_555_QueryLookupGroup() {
     try {
@@ -177,6 +194,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_556_QueryLookupGroupAgain() {
     try {
@@ -188,6 +208,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_557_LookupGroupAgain2() {
     try {
@@ -199,6 +222,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_558_QueryLookupGroupAgain3() {
     try {
@@ -210,6 +236,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   // Change all the testQuery fields except 1 to be equal to zero
   public void test_559_QueryAlterGroup() {
@@ -228,6 +257,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_560_QueryLookupGroupAfterAlterations() {
     try {
@@ -247,6 +279,9 @@ public class SelectAutoGroupTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   // Check to see if the second group has members now... it should.
   public void test_561_QueryLookupSecondGroup() {

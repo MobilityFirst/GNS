@@ -36,6 +36,10 @@ public class ReadUnsigned extends Read {
     super(module);
   }
 
+  /**
+   *
+   * @return the command type
+   */
   @Override
   public CommandType getCommandType() {
     return CommandType.ReadUnsigned;

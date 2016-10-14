@@ -54,6 +54,10 @@ public class TestSignatureTest {
   private static GNSClientCommands client;
   private static GuidEntry guid;
 
+  /**
+   *
+   * @throws EncryptionException
+   */
   public TestSignatureTest() throws EncryptionException {
     if (client == null) {
        try {
@@ -98,6 +102,9 @@ public class TestSignatureTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_01() {
     try {

@@ -42,6 +42,11 @@ public abstract class BasicPacketWithSignatureInfo extends BasicPacketWithClient
   private final String signature;
   private final String message;
 
+  /**
+   *
+   * @param json
+   * @throws JSONException
+   */
   public BasicPacketWithSignatureInfo(JSONObject json) throws JSONException {
     super(json);
     this.accessor = json.optString(ACCESSOR, null);

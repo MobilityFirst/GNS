@@ -341,6 +341,10 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
     this.query = query;
   }
 
+  /**
+   *
+   * @return the service name
+   */
   @Override
   public String getServiceName() {
     if (query != null) {
@@ -370,16 +374,28 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
     return minRefreshInterval;
   }
 
+  /**
+   *
+   * @return the response
+   */
   @Override
   public ClientRequest getResponse() {
     return this.response;
   }
 
+  /**
+   *
+   * @return the request id
+   */
   @Override
   public long getRequestID() {
     return requestId;
   }
 
+  /**
+   *
+   * @return the summary object
+   */
   @Override
   public Object getSummary() {
     return new Object() {

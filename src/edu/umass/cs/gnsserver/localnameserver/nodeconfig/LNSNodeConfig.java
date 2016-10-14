@@ -232,6 +232,11 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
             && getNodeInfoForAnyNode(address) != null;
   }
 
+  /**
+   *
+   * @param address
+   * @return an address
+   */
   @Override
   public InetAddress getNodeAddress(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
@@ -241,6 +246,11 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     }
   }
 
+  /**
+   *
+   * @param address
+   * @return an address
+   */
   @Override
   public InetAddress getBindAddress(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
@@ -250,6 +260,11 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     }
   }
 
+  /**
+   *
+   * @param address
+   * @return the port
+   */
   @Override
   public int getNodePort(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
@@ -259,6 +274,10 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     }
   }
 
+  /**
+   *
+   * @return a set of addresses
+   */
   @Override
   public Set<InetSocketAddress> getNodeIDs() {
     return getActiveReplicas();
@@ -420,16 +439,32 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
             + hostInfoMapping + '}';
   }
 
+  /**
+   *
+   * @param strValue
+   * @return an address
+   */
   @Override
   public InetSocketAddress valueOf(String strValue) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  /**
+   *
+   * @param strNodes
+   * @return a set of addresses
+   */
   @Override
   public Set<InetSocketAddress> getValuesFromStringSet(Set<String> strNodes) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  /**
+   *
+   * @param array
+   * @return a set of addresses
+   * @throws JSONException
+   */
   @Override
   public Set<InetSocketAddress> getValuesFromJSONArray(JSONArray array)
           throws JSONException {

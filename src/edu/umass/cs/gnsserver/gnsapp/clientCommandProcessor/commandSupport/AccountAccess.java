@@ -132,7 +132,7 @@ public class AccountAccess {
    *
    * @param guid
    * @param handler
-   * @return
+   * @return the account info
    */
   public static AccountInfo lookupAccountInfoFromGuidLocally(String guid,
           ClientRequestHandlerInterface handler) {
@@ -145,7 +145,7 @@ public class AccountAccess {
    *
    * @param guid
    * @param handler
-   * @return
+   * @return the account info
    */
   public static AccountInfo lookupAccountInfoFromGuidAnywhere(String guid,
           ClientRequestHandlerInterface handler) {
@@ -572,6 +572,16 @@ public class AccountAccess {
     return emailOK;
   }
 
+  /**
+   *
+   * @param accountInfo
+   * @param guid
+   * @param signature
+   * @param message
+   * @param handler
+   * @return a command response
+   * @throws UnknownHostException
+   */
   public static CommandResponse resendAuthenticationEmail(AccountInfo accountInfo,
           String guid, String signature, String message,
           ClientRequestHandlerInterface handler) throws UnknownHostException {
@@ -1021,7 +1031,7 @@ public class AccountAccess {
    * @param accountInfo
    * @param accountGuidInfo
    * @param handler
-   * @return
+   * @return a command response
    */
   public static CommandResponse addMultipleGuids(List<String> names,
           List<String> publicKeys, AccountInfo accountInfo,
@@ -1122,7 +1132,7 @@ public class AccountAccess {
    * @param accountGuidInfo
    * @param count
    * @param handler
-   * @return
+   * @return a command response
    */
   public static CommandResponse addMultipleGuidsFasterAllRandom(int count,
           AccountInfo accountInfo, GuidInfo accountGuidInfo,
@@ -1564,6 +1574,11 @@ public class AccountAccess {
   }
 
   // test code
+
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args) {
     String name = "westy@cs.umass.edu";
     //String verifyCode = "000000";

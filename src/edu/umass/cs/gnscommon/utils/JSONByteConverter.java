@@ -42,7 +42,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
+/**
+ *
+ * @author westy
+ */
 public class JSONByteConverter {
 	//private static ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory()).setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 	private static ObjectMapper objectMapperJackson = new ObjectMapper().setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
@@ -304,6 +307,16 @@ public class JSONByteConverter {
 		return json;
 	}
 	// FIXME: eliminate copyOfRange
+
+  /**
+   *
+   * @param bbuf
+   * @return a json object
+   * @throws JsonParseException
+   * @throws JsonMappingException
+   * @throws IOException
+   * @throws JSONException
+   */
 	public static JSONObject fromBytesMsgpack(ByteBuffer bbuf) throws JsonParseException, JsonMappingException, IOException, JSONException{
 		return fromBytesMsgpack(Arrays.copyOfRange(bbuf.array(), bbuf.position(), bbuf.limit())); 
 	}
@@ -626,7 +639,14 @@ public class JSONByteConverter {
 		JSONObject obj = (JSONObject) valueFromBytes(byteBuffer);
 		return obj;
 	}
-	public static JSONObject fromBytesHardcoded(ByteBuffer bbuf) throws JSONException{
+
+  /**
+   *
+   * @param bbuf
+   * @return a json object
+   * @throws JSONException
+   */
+  public static JSONObject fromBytesHardcoded(ByteBuffer bbuf) throws JSONException{
 		return (JSONObject)valueFromBytes(bbuf);
 	}
 

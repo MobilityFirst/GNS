@@ -159,6 +159,10 @@ public class Packet {
       this.className = className;
     }
 
+    /**
+     *
+     * @return the int
+     */
     @Override
     public int getInt() {
       return number;
