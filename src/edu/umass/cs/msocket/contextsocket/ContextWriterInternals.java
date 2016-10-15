@@ -221,6 +221,7 @@ public class ContextWriterInternals
 
 
   /**
+   * Create group.
    */
   public synchronized void createGroup()
 	{
@@ -374,6 +375,7 @@ public class ContextWriterInternals
 	}
 	
   /**
+   * Close it.
    */
   public void close()
 	{

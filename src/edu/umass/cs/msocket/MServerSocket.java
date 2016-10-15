@@ -409,7 +409,6 @@ public class MServerSocket extends ServerSocket
   }
 
   /**
-   * @return 
    * @return  
    * @see java.net.ServerSocket#isClosed()
    */
@@ -548,7 +547,6 @@ public class MServerSocket extends ServerSocket
    * @param proxySelectionPolicy the proxy selection policy to use when
    *          migrating the sockets
    * @throws java.io.IOException
-   * @throws Exception
    */
   public void migrate(InetAddress localAddress, int localPort, 
 		  ProxySelectionPolicy proxySelectionPolicy)

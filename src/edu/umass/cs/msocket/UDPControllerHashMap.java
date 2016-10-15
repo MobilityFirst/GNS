@@ -159,7 +159,7 @@ public class UDPControllerHashMap
    * update controller
    * 
    * @param NewIPAddress
-   * @param OldIPAddress
+   * @param flowID
    * @throws SocketException
    */
   public static synchronized void updateWithController(InetAddress NewIPAddress, long flowID) throws SocketException

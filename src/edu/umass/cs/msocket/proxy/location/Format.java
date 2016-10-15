@@ -38,7 +38,7 @@ public class Format
 {
 
   /**
-   *
+   * Format methods.
    */
   public Format()
   {
@@ -404,7 +404,6 @@ public class Format
    * Format is yyyyMMddHHmmss"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatDate(Date date)
@@ -431,7 +430,6 @@ public class Format
    * Format is yyyyMMddHHmmss"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatDateUTC(Date date)
@@ -494,7 +492,6 @@ public class Format
    * Format is dd/MM/yy HH:mm:ss"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatShortDate(Date date)
@@ -567,7 +564,6 @@ public class Format
    * Format is HH:mm:ss"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatDateTimeOnly(Date date)
@@ -608,7 +604,6 @@ public class Format
    * Format is HH:mm:ss"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatDateTimeOnlyUTC(Date date)
@@ -623,7 +618,6 @@ public class Format
    * Format is yyyy.MM.dd H:mm:ss zzz [HH:mm:ss]"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatDualDate(Date date)
@@ -662,7 +656,6 @@ public class Format
    * Format is HH:mm:ss.SSS"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatDateTimeOnlyMilleUTC(Date date)
@@ -700,7 +693,6 @@ public class Format
    * Java log file format. Format is yyyy-MM-dd'T'HH:mm:ss"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatLogDate(Date date)
@@ -738,7 +730,6 @@ public class Format
    * MySQL likes this. Format is yyyy-MM-dd HH:mm:ss"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatMYSQLDate(Date date)
@@ -778,7 +769,6 @@ public class Format
    * yyyy-MM-dd-HH-mm-ss"
    * 
    * @param date
-   * @param x
    * @return
    */
   public static String formatFilenameDate(Date date)

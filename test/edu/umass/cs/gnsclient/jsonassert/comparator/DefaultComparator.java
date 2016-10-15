@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 
 /**
- * This class is the default json comparator implementation. <p/>
+ * This class is the default json comparator implementation.
  * Comparison is performed according to  {@link JSONCompareMode} that is passed as constructor's argument.
  */
 public class DefaultComparator extends AbstractComparator {

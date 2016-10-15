@@ -54,7 +54,7 @@ public class NoSQLTest {
   private static GNSRecordMap<String> recordMap;
 
   /**
-   *
+   * The NoSQLTest.
    */
   public NoSQLTest() {
     if (instance == null) {

@@ -95,7 +95,7 @@ public class LoadMonitorServer
   static MSocket              msocket        = null;
 
   /**
-   *
+   * Tests the server connection.
    */
   public static class TestServerConnection implements Runnable
   {

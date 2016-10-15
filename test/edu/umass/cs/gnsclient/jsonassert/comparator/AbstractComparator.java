@@ -11,7 +11,7 @@ import java.util.HashSet;
 
 /**
  * This class provides a skeletal implementation of the {@link JSONComparator}
- * interface, to minimize the effort required to implement this interface. <p/>
+ * interface, to minimize the effort required to implement this interface.
  */
 public abstract class AbstractComparator implements JSONComparator {
 

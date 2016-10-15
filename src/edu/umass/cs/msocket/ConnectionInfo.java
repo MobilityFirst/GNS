@@ -2405,7 +2405,6 @@ public class ConnectionInfo
    * 
    * @param remoteAddress
    * @param remotePort
-   * @throws Exception
    */
   public void migrateRemote(InetAddress remoteAddress, int remotePort)
   {
@@ -3027,7 +3026,6 @@ public class ConnectionInfo
   /**
    * returns sum of send buffer size among all active flowpaths
    * 
-   * @param size
    * @return 
    * @throws SocketException
    */
@@ -3060,7 +3058,6 @@ public class ConnectionInfo
   /**
    * returns sum of send buffer size among all active flowpaths
    * 
-   * @param size
    * @return 
    * @throws SocketException
    */

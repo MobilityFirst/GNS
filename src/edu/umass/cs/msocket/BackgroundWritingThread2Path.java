@@ -72,7 +72,7 @@ public class BackgroundWritingThread2Path
   }
 
   /**
-   *
+   * Run it.
    */
   public void run()
   {

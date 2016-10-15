@@ -58,7 +58,7 @@ public class FlowIDToControllerMapping implements Runnable
   private KeepAliveThread               kat                     = null;
 
   /**
-   *
+   * Keep alive thread.
    */
   public class KeepAliveThread implements Runnable
   {
@@ -105,7 +105,7 @@ public class FlowIDToControllerMapping implements Runnable
   }
 
   /**
-   *
+   * Start it.
    */
   public void startKeepAliveThread()
   {
@@ -113,7 +113,7 @@ public class FlowIDToControllerMapping implements Runnable
   }
 
   /**
-   *
+   * Close it.
    */
   public void closeUDPController()
   {

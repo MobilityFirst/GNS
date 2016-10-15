@@ -80,7 +80,7 @@ public class BothMember2WriterExp
 	}
 	
   /**
-   *
+   * GroupMemberThread.
    */
   public class GroupMemberThread implements Runnable
 	{
@@ -144,7 +144,7 @@ public class BothMember2WriterExp
 	}
 	
   /**
-   *
+   * GroupWriterThread.
    */
   public class GroupWriterThread implements Runnable
 	{

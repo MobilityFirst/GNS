@@ -108,7 +108,7 @@ public class ConnectionToProxyServer
   }
 
   /**
-   *
+   * Close the connection.
    */
   public void closeProxyConnection()
   {

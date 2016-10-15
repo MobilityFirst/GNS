@@ -556,7 +556,7 @@ public class ProxyForwarder
   }
 
   /**
-   *
+   * Stop it.
    */
   public void StopAcceptPool()
   {

@@ -93,6 +93,7 @@ public class ContextWriter {
   }
 
   /**
+   * Close it.
    */
   public void close() {
     msocketGroupWriterInternalsObj.close();

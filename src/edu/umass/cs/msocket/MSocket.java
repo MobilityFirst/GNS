@@ -148,7 +148,7 @@ public class MSocket extends Socket implements MultipathInterface
 
    * @param address - the remote address
    * @param port - the remote port
-   * @param the local port the socket is bound to or zero for a system selected free port.
+   * @param localAddr
    * @param localPort
    * @throws IOException - if an I/O error occurs when creating the socket.
    */

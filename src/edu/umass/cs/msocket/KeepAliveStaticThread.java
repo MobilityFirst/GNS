@@ -108,7 +108,7 @@ public class KeepAliveStaticThread implements Runnable
 	}
 	
   /**
-   *
+   * Stop it.
    */
   public static void stopKeepAlive()
 	{

@@ -53,7 +53,7 @@ public class AcceptConnectionQueue
   public static final int GET      = 3;
 
   /**
-   *
+   * Accept the connection queue.
    */
   public AcceptConnectionQueue()
   {

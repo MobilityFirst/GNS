@@ -41,7 +41,7 @@ public class FlowPath
   /**
    * Creates a new <code>FlowPath</code> object
    * 
-   * @param flowId the unique flow path id
+   * @param flowPathId
    * @param localEndpoint local socket address for this flow path
    * @param remoteEndpoint remote socket address for this flow path
    */

@@ -110,6 +110,7 @@ public class ContextMemberInternals {
   }
 
   /**
+   * Close it.
    */
   public void close() {
     //FIXME: not correct close, but closes some threads.

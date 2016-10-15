@@ -89,7 +89,7 @@ public class ClientCoreTest {
   }
 
   /**
-   *
+   * The ClientCoreTest.
    */
   public ClientCoreTest() {
     if (client == null) {

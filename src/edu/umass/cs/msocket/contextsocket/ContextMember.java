@@ -114,6 +114,7 @@ public class ContextMember {
   }
 
   /**
+   * Close it.
    */
   public void close() {
     msocketGroupMemberInternalsObj.close();
