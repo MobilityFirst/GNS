@@ -62,7 +62,6 @@ public class ProxyPublisher extends Thread
   /**
    * Creates a new <code>ProxyGnsPublisher</code> object
    * 
-   * @param gnsCredentials GNS connection and account GUID to use
    * @param proxyName Entity name this proxy is known as in the GNS
    * @param proxyGroupName Entity name of the group GUID for the proxy group
    *          this proxy belongs to

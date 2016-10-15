@@ -64,8 +64,6 @@ public class Integration
    * @param name Human readable name of the service (needs to be unique
    *          GNS-wide)
    * @param saddr The IP address to store for this service
-   * @param credentials The GNS credentials to use, usually the account GUID and
-   *          default GNS (if null default GNS credentials are used)
    * @throws IOException
    */
   public static void registerWithGNS(String name, InetSocketAddress saddr) throws Exception
@@ -128,9 +126,8 @@ public class Integration
    * throws UnknownHostException, so that it is similar to
    * exception thrown on DNS failure
    * @param name Human readable name of the MServerSocket
-   * @param gnsCredentials GNS credentials to use
    * @return list of IP addresses or null if not found
-   * @throws Exception
+   * @throws java.net.UnknownHostException
    */
   public static List<InetSocketAddress> getSocketAddressFromGNS(String name)
       throws UnknownHostException
@@ -186,8 +183,7 @@ public class Integration
    * Clear the list contained in the given field name from the GNS.
    * 
    * @param name field name to clear
-   * @param gnsCredentials GNS access credentials
-   * @throws Exception if a GNS error occurs
+   * @throws java.io.IOException
    */
   public static void unregisterWithGNS(String name) throws IOException
   {
@@ -226,7 +222,6 @@ public class Integration
    * 
    * @param name Human readable name of the MServerSocket
    * @param saddr address to remove from the GNS
-   * @param gnsCredentials GNS credentials to use
    * @throws Exception
    */
   public static void unregisterWithGNS(String name, InetSocketAddress saddr)
@@ -271,7 +266,7 @@ public class Integration
   /**
    * Returns the default proxy policy to use if no policy has been specified
    * @return a default proxy proxy
-   * @throws Exception if default GNS credentials cannot be found
+   * @throws java.io.IOException
    */
   public static ProxySelectionPolicy getDefaultProxyPolicy() throws IOException
   {
@@ -324,7 +319,6 @@ public class Integration
    * throws UnknownHostException, so that it is similar to
    * exception thrown on DNS failure
    * @param alias
-   * @param gnsCredentials
    * @return
    * @throws UnknownHostException
    */

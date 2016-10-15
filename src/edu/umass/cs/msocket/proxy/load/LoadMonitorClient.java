@@ -38,21 +38,55 @@ import edu.umass.cs.msocket.MultipathPolicy;
  */
 public class LoadMonitorClient
 {
+
+  /**
+   *
+   */
   public static final int    filesize   = 20000000;             // filesize
                                                                  // temporary
                                                                  // hardcoded
 
+  /**
+   *
+   */
   public static final String ServerName = "ananas.cs.umass.edu";
+
+  /**
+   *
+   */
   public static final int    ServerPort = 3520;
+
+  /**
+   *
+   */
   public static final int    writesize  = 1000;
 
+  /**
+   *
+   */
   public static int          current    = 0;
+
+  /**
+   *
+   */
   public static boolean      MSStart    = false;
+
+  /**
+   *
+   */
   public static boolean      MSStop     = false;
+
+  /**
+   *
+   */
   public static long         start      = 0;
 
   static MSocket             ms;
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args)
   {
 

@@ -71,6 +71,10 @@ public class ConsoleModule {
   ConsoleReader console;
   TreeSet<ConsoleCommand> commands;
   boolean quit = false;
+
+  /**
+   *
+   */
   protected Completor consoleCompletor;
   private String promptString = CONSOLE_PROMPT + "not connected to GNS>";
   private GNSClientCommands gnsClient;
@@ -544,6 +548,10 @@ public class ConsoleModule {
     return silent;
   }
 
+  /**
+   *
+   * @param silent
+   */
   public void setSilent(boolean silent) {
     this.silent = silent;
   }

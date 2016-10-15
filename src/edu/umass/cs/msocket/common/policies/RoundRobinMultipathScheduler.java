@@ -29,7 +29,10 @@ import edu.umass.cs.msocket.ConnectionInfo;
 import edu.umass.cs.msocket.MWrappedOutputStream;
 import edu.umass.cs.msocket.logger.MSocketLogger;
 
-
+/**
+ *
+ * @author westy
+ */
 public class RoundRobinMultipathScheduler extends MultipathSchedulerInterface
 {
 	// keeps numBytes transferred on that path,<PathID, NumBytes>map
@@ -38,7 +41,11 @@ public class RoundRobinMultipathScheduler extends MultipathSchedulerInterface
 	// returns path in round robin manner
 	private int nextPathIndex				  			= 0;
 	
-	public RoundRobinMultipathScheduler(ConnectionInfo cinfo)
+  /**
+   *
+   * @param cinfo
+   */
+  public RoundRobinMultipathScheduler(ConnectionInfo cinfo)
 	{
 		this.cinfo = cinfo;
 		chunkInfoMap = new HashMap<Integer, ChunkInformation>();

@@ -36,10 +36,25 @@ import java.util.Queue;
 public class AcceptConnectionQueue
 {
   private Queue<Object>   AcceptQueue;
+
+  /**
+   *
+   */
   public static final int GET_SIZE = 1;
+
+  /**
+   *
+   */
   public static final int PUT      = 2;
+
+  /**
+   *
+   */
   public static final int GET      = 3;
 
+  /**
+   *
+   */
   public AcceptConnectionQueue()
   {
     AcceptQueue = new LinkedList<Object>();

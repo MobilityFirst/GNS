@@ -24,10 +24,22 @@ package edu.umass.cs.msocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ *
+ * @author westy
+ */
 public class TemporaryTasksES
 {
-	public static final int							BACKGROUND_RETRANSMIT	= 1;
-	public static final int							EMPTY_QUEUE				= 2;
+
+  /**
+   *
+   */
+  public static final int							BACKGROUND_RETRANSMIT	= 1;
+
+  /**
+   *
+   */
+  public static final int							EMPTY_QUEUE				= 2;
 	
 	
 	private static ExecutorService     				pool;
@@ -76,7 +88,10 @@ public class TemporaryTasksES
       }
     }
     
-    public synchronized static void shutdownES()
+  /**
+   *
+   */
+  public synchronized static void shutdownES()
     {
     	if(pool!=null)
     		pool.shutdown();

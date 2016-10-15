@@ -43,6 +43,10 @@ import edu.umass.cs.msocket.logger.MSocketLogger;
 public class SetupControlMessage
 {
   // client sends these
+
+  /**
+   *
+   */
   public static final int  NEW_CON_MESG         = 1;                  // mainly
                                                                           // negotiation
                                                                           // of
@@ -57,6 +61,10 @@ public class SetupControlMessage
                                                                           // not
                                                                           // here
                                                                           // much
+
+  /**
+   *
+   */
   public static final int  ADD_SOCKET           = 2;                     // Add
                                                                           // one
                                                                           // more
@@ -78,6 +86,10 @@ public class SetupControlMessage
                                                                           // client
                                                                           // and
                                                                           // server
+
+  /**
+   *
+   */
   public static final int  MIGRATE_SOCKET       = 3;                     // migrates
                                                                           // socket
                                                                           // with
@@ -94,6 +106,10 @@ public class SetupControlMessage
                                                                           // socket
 
   // server sends these
+
+  /**
+   *
+   */
   public static final int  NEW_CON_MESG_REPLY   = 4;                     // mainly
                                                                           // negotiation
                                                                           // of
@@ -108,6 +124,10 @@ public class SetupControlMessage
                                                                           // not
                                                                           // here
                                                                           // much
+
+  /**
+   *
+   */
   public static final int  ADD_SOCKET_REPLY     = 5;                     // Add
                                                                           // one
                                                                           // more
@@ -129,6 +149,10 @@ public class SetupControlMessage
                                                                           // client
                                                                           // and
                                                                           // server
+
+  /**
+   *
+   */
   public static final int  MIGRATE_SOCKET_REPLY = 6;                     // migrates
                                                                           // socket
                                                                           // with
@@ -144,6 +168,9 @@ public class SetupControlMessage
                                                                           // accepted
                                                                           // socket
 
+  /**
+   *
+   */
   public static final int  CONTROL_SOCKET       = 7;                     // control
                                                                           // socket
                                                                           // that
@@ -151,8 +178,15 @@ public class SetupControlMessage
                                                                           // open
                                                                           // with
                                                                           // proxy
+
+  /**
+   *
+   */
   public static final int  CONTROL_SOCKET_REPLY = 8;                     // reply
 
+  /**
+   *
+   */
   public static final int  NEW_CON_REQ          = 9;                     // control
                                                                           // socket
                                                                           // that
@@ -161,8 +195,19 @@ public class SetupControlMessage
                                                                           // with
                                                                           // proxy
 
+  /**
+   *
+   */
   public static final int  MIGRATE_SOCKET_REQ   = 10;
+
+  /**
+   *
+   */
   public static final int  ADD_SOCKET_REQ       = 11;
+
+  /**
+   *
+   */
   public static final int  KEEP_ALIVE           = 12;                    // keep
                                                                           // alive
                                                                           // message
@@ -172,9 +217,14 @@ public class SetupControlMessage
                                                                           // to
                                                                           // server
 
+  /**
+   *
+   */
   public static final int  MIGRATE_SOCKET_RESET = 13;
   
-
+  /**
+   *
+   */
   public static final int  SIZE_OF_GUID         = 20;                     // 20
                                                                           // bytes
                                                                           // is
@@ -183,19 +233,48 @@ public class SetupControlMessage
                                                                           // of
                                                                           // GUID, right coversion requires 1 more byte, from 20 to 20
 
+  /**
+   *
+   */
   public static final int  SIZE                 = ControlMessage.INET_ADDR_SIZE + (Integer.SIZE * 5 + Long.SIZE) / 8
                                                     + SIZE_OF_GUID;
 
+  /**
+   *
+   */
   public final InetAddress iaddr;                                        // src
                                                                           // ip
+
+  /**
+   *
+   */
   public final int         port;                                         // udp
                                                                           // controller
                                                                           // port
+
+  /**
+   *
+   */
   public final long        connID;
+
+  /**
+   *
+   */
   public final int         ackSeq;
+
+  /**
+   *
+   */
   public final int         mesgType;
+
+  /**
+   *
+   */
   public final int         socketID;
 
+  /**
+   *
+   */
   public final int         proxyID;                                      // ID
                                                                           // of
                                                                           // the
@@ -206,8 +285,22 @@ public class SetupControlMessage
                                                                           // by
                                                                           // proxy
 
+  /**
+   *
+   */
   public final byte[]      GUID                 = new byte[SIZE_OF_GUID];
 
+  /**
+   *
+   * @param ia
+   * @param p
+   * @param connid
+   * @param as
+   * @param mstype
+   * @param socketid
+   * @param proxyid
+   * @param guid
+   */
   public SetupControlMessage(InetAddress ia, int p, long connid, 
 		  int as, int mstype, int socketid,
       int proxyid, byte[] guid)
@@ -223,6 +316,11 @@ public class SetupControlMessage
     System.arraycopy(guid, 0, this.GUID, 0, SIZE_OF_GUID);
   }
 
+  /**
+   *
+   * @return
+   * @throws UnknownHostException
+   */
   public byte[] getBytes() throws UnknownHostException
   {
     ByteBuffer buf = ByteBuffer.allocate(SetupControlMessage.SIZE);
@@ -238,6 +336,12 @@ public class SetupControlMessage
     return buf.array();
   }
 
+  /**
+   *
+   * @param b
+   * @return
+   * @throws UnknownHostException
+   */
   public static SetupControlMessage getSetupControlMessage(byte[] b) throws UnknownHostException
   {
     if (b == null)
@@ -355,6 +459,10 @@ public class SetupControlMessage
 	    MSocketLogger.getLogger().fine("Sent IP:port " + ControllerPort + "; ackSeq = " + (cinfo != null ? DataAckSeq : 0));
 	  }
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args)
   {
     try

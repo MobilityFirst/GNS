@@ -77,7 +77,6 @@ public class UDPControllerHashMap
   /**
    * @param ControllerIPAddress
    * @param cinfo
-   * @throws SocketException
    */
   public static synchronized void unregisterWithController(InetAddress ControllerIPAddress, ConnectionInfo cinfo)
   {
@@ -128,8 +127,6 @@ public class UDPControllerHashMap
   }
 
   /**
-   * @param ControllerIPAddress
-   * @throws SocketException
    */
   public static synchronized void stopAllUDPControllers()
   {
@@ -148,7 +145,7 @@ public class UDPControllerHashMap
 
   /**
    * @param ControllerIPAddress
-   * @param cinfo
+   * @return 
    * @throws SocketException
    */
   public static synchronized int getUDPContollerPort(InetAddress ControllerIPAddress) throws SocketException
@@ -161,9 +158,8 @@ public class UDPControllerHashMap
   /**
    * update controller
    * 
-   * @param OldIPAddress
    * @param NewIPAddress
-   * @param flowID
+   * @param OldIPAddress
    * @throws SocketException
    */
   public static synchronized void updateWithController(InetAddress NewIPAddress, long flowID) throws SocketException

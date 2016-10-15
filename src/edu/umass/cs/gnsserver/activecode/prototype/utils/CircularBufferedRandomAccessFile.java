@@ -257,7 +257,7 @@ public class CircularBufferedRandomAccessFile {
 	}
 	
 	/**
-	 * 
+	 * Shut things down.
 	 */
 	public void shutdown() {
 		try {

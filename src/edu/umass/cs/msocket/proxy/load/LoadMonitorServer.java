@@ -44,23 +44,59 @@ public class LoadMonitorServer
 {
 
   // name of the proxy, that it will load monitor
+
+  /**
+   *
+   */
   public static String        ProxyName      = "ananas.cs.umass.edu";
+
+  /**
+   *
+   */
   public static int           ProxyPort      = 11989;
+
+  /**
+   *
+   */
   public static int           ServerPort     = 11990;
+
+  /**
+   *
+   */
   public static final int     writesize      = 1000;
+
+  /**
+   *
+   */
   public static final int     numRTTAverage  = 3;
+
+  /**
+   *
+   */
   public static final int     measureFreq    = 1000;                   // every
                                                                         // 1000
                                                                         // msec
+
+  /**
+   *
+   */
   public static long[]        LoadInducedRTT = new long[numRTTAverage];
 
   /*
    * The sub-class TestServerConnection below spawns a thread for each new
    * accepted connection.
    */
+
+  /**
+   *
+   */
+
   public static MServerSocket mss            = null;
   static MSocket              msocket        = null;
 
+  /**
+   *
+   */
   public static class TestServerConnection implements Runnable
   {
 
@@ -141,8 +177,16 @@ public class LoadMonitorServer
 
   // End TestServerConnection
 
+  /**
+   *
+   */
+
   public static BufferedWriter ServerMigrationWritter = null;
 
+  /**
+   *
+   * @param timer
+   */
   public static void startTimer(Timer timer)
   {
 
@@ -156,6 +200,11 @@ public class LoadMonitorServer
     }, 1000, 1000);
   }
 
+  /**
+   *
+   * @param args
+   * @throws IOException
+   */
   public static void main(String[] args) throws IOException
   {
 	  System.out.println("Max Heap memory" + java.lang.Runtime.getRuntime().maxMemory());

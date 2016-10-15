@@ -35,9 +35,21 @@ import java.nio.channels.SocketChannel;
 public class RegisterQueueInfo
 {
 
+  /**
+   *
+   */
   public ProxyMSocket  Socket        = null;
+
+  /**
+   *
+   */
   public SocketChannel socketChannel = null;
 
+  /**
+   *
+   * @param socket
+   * @param socketChannel
+   */
   public RegisterQueueInfo(ProxyMSocket socket, SocketChannel socketChannel)
   {
     this.Socket = socket;

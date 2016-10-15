@@ -96,7 +96,7 @@ public class DerbyControl {
   }
 
   /**
-   *
+   * Shut things down.
    */
   public void shutdown() {
     /*

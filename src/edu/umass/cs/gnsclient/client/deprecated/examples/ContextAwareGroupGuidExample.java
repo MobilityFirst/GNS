@@ -45,7 +45,7 @@ import org.json.JSONArray;
  * The context aware group guid functionality allows one to create a group guid using
  * a query. The GNS will automatically maintain the membership of this group guid using
  * the query. Queries are specified using a syntax similar to that used by MongoDB. See
- * <link>https://gns.name/wiki/index.php?title=Query_Syntax</link> for a description of the
+ * https://gns.name/wiki/index.php?title=Query_Syntax for a description of the
  * query syntax.
  * <p>
  * The main method in this class will create five example guids that have a field containing

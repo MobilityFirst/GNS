@@ -57,7 +57,7 @@ public class GNSConfig {
   public static int activeCodeWorkerCount = 1;
 
   /**
-   *
+   * The GNS Config.
    */
   public static enum GNSC implements Config.ConfigurableEnum {
     /**

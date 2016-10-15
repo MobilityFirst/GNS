@@ -48,6 +48,7 @@ public enum ServiceStatus
   STATUS_UNKNOWN;
 
   /**
+   * @return 
    * @see java.lang.Enum#toString()
    */
   @Override

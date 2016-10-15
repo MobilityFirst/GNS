@@ -96,49 +96,86 @@ public class MSocketInstrumenter {
 	
 	private static boolean enabled							= true;
 	
-	public static void addMultiSocketReadSample(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void addMultiSocketReadSample(long currentSample) {
 		multiSocketReadTime = multiSocketReadTime + currentSample;
 		multiSocketReadNumSamples++;
 	}
 	
-	public static void addDataAckSendSample(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void addDataAckSendSample(long currentSample) {
 		dataAckSendTime = dataAckSendTime + currentSample;
 		dataAckSendNumSamples++;
 	}
 	
-	public static void addSingleSocketReadSample(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void addSingleSocketReadSample(long currentSample) {
 		singleSocketReadTime = singleSocketReadTime + currentSample;
 		singleSocketReadNumSamples++;
 	}
 	
-	public static void addInbufferReadSample(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void addInbufferReadSample(long currentSample) {
 		inbufferReadTime = inbufferReadTime + currentSample;
 		inbufferReadNumSamples++;
 	}
 	
-	public static void addActualSingleSample(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void addActualSingleSample(long currentSample) {
 		actualSingleSocketReadTime = actualSingleSocketReadTime + currentSample;
 		actualSingleSocketReadNumSamples++;
 	}
 	
-	public static void addDataMessageHeaderSample(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void addDataMessageHeaderSample(long currentSample) {
 		dataMessageHeaderReadTime = dataMessageHeaderReadTime + currentSample;
 		dataMessageHeaderNumSamples++;
 	}
 	
-	public static void addInbufferInsertSample(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void addInbufferInsertSample(long currentSample) {
 		inbufferInsertTime = inbufferInsertTime + currentSample;
 		inbufferInsertNumSamples++;
 	}
 	
-	public static void updateMaxInbufferSize(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void updateMaxInbufferSize(long currentSample) {
 		if( currentSample > maxInbufferSize ) 
 		{
 			maxInbufferSize = currentSample;
 		}
 	}
 	
-	public static void updateSocketReads(long currentSample, int socketID) {
+  /**
+   *
+   * @param currentSample
+   * @param socketID
+   */
+  public static void updateSocketReads(long currentSample, int socketID) {
 		switch(socketID) 
 		{
 			case 1:
@@ -157,7 +194,12 @@ public class MSocketInstrumenter {
 		}
 	}
 	
-	public static void updateRecvBufferSize(long currentSample, int socketID) {
+  /**
+   *
+   * @param currentSample
+   * @param socketID
+   */
+  public static void updateRecvBufferSize(long currentSample, int socketID) {
 		switch(socketID)
 		{
 			case 1:
@@ -176,23 +218,40 @@ public class MSocketInstrumenter {
 		}
 	}
 	
-	public static void updateNumConnAttempt() {
+  /**
+   *
+   */
+  public static void updateNumConnAttempt() {
 		numOfConnAttempts++;
 	}
 	
-	public static void updateSocketAddressFromGNS(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void updateSocketAddressFromGNS(long currentSample) {
 		socketAddressFromGNS = currentSample;
 	}
 	
-	public static void updateGetGUID(long currentSample) {
+  /**
+   *
+   * @param currentSample
+   */
+  public static void updateGetGUID(long currentSample) {
 		getGUID = currentSample;
 	}
 	
-	public void disable() {
+  /**
+   *
+   */
+  public void disable() {
 		enabled = false;
 	}
 	
-	public void enable() {
+  /**
+   *
+   */
+  public void enable() {
 		enabled = true;
 	}
 	

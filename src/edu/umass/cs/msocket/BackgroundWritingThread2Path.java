@@ -57,6 +57,11 @@ public class BackgroundWritingThread2Path
   private Vector<SocketInfo> finishedPaths             = null;
   private Vector<SocketInfo> unfinishedPaths           = null;
 
+  /**
+   *
+   * @param endSeqNum
+   * @param cinfo
+   */
   public BackgroundWritingThread2Path(long endSeqNum, ConnectionInfo cinfo)
   {
     this.endSeqNum = endSeqNum;
@@ -66,6 +71,9 @@ public class BackgroundWritingThread2Path
     unfinishedPaths = new Vector<SocketInfo>();
   }
 
+  /**
+   *
+   */
   public void run()
   {
     long runStart = System.currentTimeMillis();

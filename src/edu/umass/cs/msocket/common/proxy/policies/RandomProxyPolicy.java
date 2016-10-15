@@ -64,7 +64,6 @@ public class RandomProxyPolicy extends ProxySelectionPolicy
    * 
    * @param proxyGroupName the proxy group name as registered in the GNS
    * @param numProxy number of proxies to pick randomly (must be >=1)
-   * @param gnsCredentials GNS credentials to use
    */
   public RandomProxyPolicy(String proxyGroupName, int numProxy)
   {

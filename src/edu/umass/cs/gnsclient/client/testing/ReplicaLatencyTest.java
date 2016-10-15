@@ -232,7 +232,7 @@ public class ReplicaLatencyTest {
   /**
    *
    */
-  public void performRead() {
+  private void performRead() {
     try {
       client.fieldRead(subGuidEntry, "environment");
     } catch (Exception e) {

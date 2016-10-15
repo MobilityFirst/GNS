@@ -33,13 +33,21 @@ import edu.umass.cs.msocket.proxy.console.ConsoleModule;
  */
 public abstract class ConsoleCommand implements Comparable<ConsoleCommand>
 {
+
+  /**
+   *
+   */
   protected ConsoleModule module;
+
+  /**
+   *
+   */
   protected ConsoleReader console;
 
   /**
    * Creates a new <code>ConsoleCommand</code> object
    * 
-   * @param reader the console reader we are attached to
+   * @param module
    */
   public ConsoleCommand(ConsoleModule module)
   {

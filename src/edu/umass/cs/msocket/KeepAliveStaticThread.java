@@ -55,7 +55,7 @@ public class KeepAliveStaticThread implements Runnable
 	/**
 	 * MSockets register for keep alives
 	 * 
-	 * @param cInfo
+   * @param cinfo
 	 */
 	public synchronized static void registerForKeepAlive(ConnectionInfo cinfo)
 	{
@@ -78,7 +78,11 @@ public class KeepAliveStaticThread implements Runnable
 		//registeredMSockets.add(storeinfo);
 	}
 	
-	public synchronized static void unregisterForKeepAlive(ConnectionInfo cinfo)
+  /**
+   *
+   * @param cinfo
+   */
+  public synchronized static void unregisterForKeepAlive(ConnectionInfo cinfo)
 	{
 		createSingleton();
 		
@@ -93,13 +97,20 @@ public class KeepAliveStaticThread implements Runnable
 		//registeredMSockets.remove(cinfo.getFlowID());
 	}
 	
-	public synchronized static long getLocalClock()
+  /**
+   *
+   * @return
+   */
+  public synchronized static long getLocalClock()
 	{
 		createSingleton();
 		return localClock;
 	}
 	
-	public static void stopKeepAlive()
+  /**
+   *
+   */
+  public static void stopKeepAlive()
 	{
 		runstatus = false;
 	}

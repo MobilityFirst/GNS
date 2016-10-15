@@ -39,6 +39,10 @@ public class BackgroundWritingThread implements Runnable
 {
   // thread can remain idle(if no write happens) for 5 seconds,
   // after that thread exits.
+
+  /**
+   *
+   */
   public static final int    BACKGROUND_THREAD_IDLE_TIME = 5000;
 
   private ConnectionInfo     cinfo                       = null;
@@ -65,6 +69,10 @@ public class BackgroundWritingThread implements Runnable
 
   private boolean            runningStatus               = true;
 
+  /**
+   *
+   * @param cinfo
+   */
   public BackgroundWritingThread(ConnectionInfo cinfo)
   {
     this.cinfo = cinfo;

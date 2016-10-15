@@ -33,8 +33,8 @@ import org.json.JSONException;
  * To verify that the 'id' attribute of first element of array 'a' is '1':</p>
  *
  * <code>
- * JSONComparator comparator = new DefaultComparator(JSONCompareMode.LENIENT);<br/>
- * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator, 0));<br/>
+ * JSONComparator comparator = new DefaultComparator(JSONCompareMode.LENIENT);<br>
+ * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator, 0));<br>
  * JSONAssert.assertEquals("{a:[{id:1}]}", ARRAY_OF_JSONOBJECTS, new CustomComparator(JSONCompareMode.LENIENT, customization));
  * </code>
  *
@@ -45,8 +45,8 @@ import org.json.JSONException;
  * To verify that the 'type' attribute of second and third elements of array 'a' is 'row':</p>
  *
  * <code>
- * JSONComparator comparator = new DefaultComparator(JSONCompareMode.LENIENT);<br/>
- * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator, 1, 2));<br/>
+ * JSONComparator comparator = new DefaultComparator(JSONCompareMode.LENIENT);<br>
+ * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator, 1, 2));<br>
  * JSONAssert.assertEquals("{a:[{type:row}]}", ARRAY_OF_JSONOBJECTS, new CustomComparator(JSONCompareMode.LENIENT, customization));
  * </code>
  *
@@ -54,8 +54,8 @@ import org.json.JSONException;
  * To verify that the 'type' attribute of every element of array 'a' is 'row':</p>
  *
  * <code>
- * JSONComparator comparator = new DefaultComparator(JSONCompareMode.LENIENT);<br/>
- * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator));<br/>
+ * JSONComparator comparator = new DefaultComparator(JSONCompareMode.LENIENT);<br>
+ * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator));<br>
  * JSONAssert.assertEquals("{a:[{type:row}]}", ARRAY_OF_JSONOBJECTS, new CustomComparator(JSONCompareMode.LENIENT, customization));
  * </code>
  *
@@ -63,8 +63,8 @@ import org.json.JSONException;
  * To verify that the 'background' attribute of every element of array 'a' alternates between 'white' and 'grey' starting with first element 'background' being 'white':</p>
  *
  * <code>
- * JSONComparator comparator = new DefaultComparator(JSONCompareMode.LENIENT);<br/>
- * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator));<br/>
+ * JSONComparator comparator = new DefaultComparator(JSONCompareMode.LENIENT);<br>
+ * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator));<br>
  * JSONAssert.assertEquals("{a:[{background:white},{background:grey}]}", ARRAY_OF_JSONOBJECTS, new CustomComparator(JSONCompareMode.LENIENT, customization));
  * </code>
  *
@@ -80,8 +80,8 @@ import org.json.JSONException;
  * To verify that the first three elements of JSON array 'a' are JSON arrays of length 3:</p>
  *
  * <code>
- * JSONComparator comparator = new ArraySizeComparator(JSONCompareMode.STRICT_ORDER);<br/>
- * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator, 0, 2));<br/>
+ * JSONComparator comparator = new ArraySizeComparator(JSONCompareMode.STRICT_ORDER);<br>
+ * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator, 0, 2));<br>
  * JSONAssert.assertEquals("{a:[[3]]}", ARRAY_OF_JSONARRAYS, new CustomComparator(JSONCompareMode.LENIENT, customization));
  * </code>
  *
@@ -92,9 +92,9 @@ import org.json.JSONException;
  * To verify that the second elements of JSON array 'a' is a JSON array whose first element has the value 9:</p>
  *
  * <code>
- * Customization innerCustomization = new Customization("a[1]", new ArrayValueMatcher&lt;Object&gt;(comparator, 0));<br/>
- * JSONComparator comparator = new CustomComparator(JSONCompareMode.LENIENT, innerCustomization);<br/>
- * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator, 1));<br/>
+ * Customization innerCustomization = new Customization("a[1]", new ArrayValueMatcher&lt;Object&gt;(comparator, 0));<br>
+ * JSONComparator comparator = new CustomComparator(JSONCompareMode.LENIENT, innerCustomization);<br>
+ * Customization customization = new Customization("a", new ArrayValueMatcher&lt;Object&gt;(comparator, 1));<br>
  * JSONAssert.assertEquals("{a:[[9]]}", ARRAY_OF_JSONARRAYS, new CustomComparator(JSONCompareMode.LENIENT, customization));
  * </code>
  *

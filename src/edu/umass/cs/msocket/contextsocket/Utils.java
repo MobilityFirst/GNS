@@ -26,9 +26,18 @@ import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.Vector;
 
+/**
+ *
+ * @author westy
+ */
 public class Utils 
 {
-	public static Vector<InetAddress> getActiveInterfaceInetAddresses()
+
+  /**
+   *
+   * @return
+   */
+  public static Vector<InetAddress> getActiveInterfaceInetAddresses()
 	  {
 	    Vector<InetAddress> CurrentInterfaceIPs = new Vector<InetAddress>();
 	    try

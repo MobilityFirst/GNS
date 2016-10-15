@@ -34,19 +34,31 @@ public class RequestStorageClass
 	private final ContextWriterInternals writerInternal;
 	private final JSONArray userGivenArray;
 	
-	
-	public RequestStorageClass(ContextWriterInternals writerInternal, JSONArray userGivenArray)
+  /**
+   *
+   * @param writerInternal
+   * @param userGivenArray
+   */
+  public RequestStorageClass(ContextWriterInternals writerInternal, JSONArray userGivenArray)
 	{
 		this.writerInternal = writerInternal;
 		this.userGivenArray = userGivenArray;
 	}
 	
-	public ContextWriterInternals getMSocketGroupWriterInternals()
+  /**
+   *
+   * @return
+   */
+  public ContextWriterInternals getMSocketGroupWriterInternals()
 	{
 		return writerInternal;
 	}
 	
-	public JSONArray getUserGivenArray()
+  /**
+   *
+   * @return
+   */
+  public JSONArray getUserGivenArray()
 	{
 		return userGivenArray;
 	}

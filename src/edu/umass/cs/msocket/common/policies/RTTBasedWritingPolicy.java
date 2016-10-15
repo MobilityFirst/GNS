@@ -43,6 +43,11 @@ import edu.umass.cs.msocket.logger.MSocketLogger;
  */
 public class RTTBasedWritingPolicy extends MultipathWritingPolicy
 {
+
+  /**
+   *
+   * @param cinfo
+   */
   public RTTBasedWritingPolicy(ConnectionInfo cinfo)
   {
     this.cinfo = cinfo;
@@ -207,7 +212,12 @@ public class RTTBasedWritingPolicy extends MultipathWritingPolicy
 	  //cinfo.emptyTheWriteQueues();
   }
 
-protected SocketInfo getNextSocketToWrite() throws IOException {
+  /**
+   *
+   * @return
+   * @throws IOException
+   */
+  protected SocketInfo getNextSocketToWrite() throws IOException {
 	
 	Vector<SocketInfo> socketMapValues = new Vector<SocketInfo>();
     socketMapValues.addAll(cinfo.getAllSocketInfo());

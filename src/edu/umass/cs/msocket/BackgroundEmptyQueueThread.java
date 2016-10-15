@@ -36,7 +36,11 @@ public class BackgroundEmptyQueueThread  implements Runnable
 	private ConnectionInfo cinfo				= null;
 	private boolean runningStatus				= true;
 	
-	public BackgroundEmptyQueueThread(ConnectionInfo cinfo)
+  /**
+   *
+   * @param cinfo
+   */
+  public BackgroundEmptyQueueThread(ConnectionInfo cinfo)
 	{
 		this.cinfo = cinfo;
 	}

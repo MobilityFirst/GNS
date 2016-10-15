@@ -91,6 +91,7 @@ public class MWrappedOutputStream extends OutputStream
 
   /**
     *
+   * @throws java.io.IOException
     */
   public void write(byte[] b) throws IOException
   {
@@ -101,7 +102,6 @@ public class MWrappedOutputStream extends OutputStream
    * @param b
    * @param mgType
    * @throws IOException
-   * @throws InterruptedException
    */
   public void write(byte[] b, int mgType) throws IOException
   { // for sending the close message
@@ -110,6 +110,9 @@ public class MWrappedOutputStream extends OutputStream
 
   /**
     *
+   * @param length
+   * @param offset
+   * @throws java.io.IOException
     */
   public void write(byte[] b, int offset, int length) throws IOException
   { // application calls this function to send data message
@@ -123,7 +126,6 @@ public class MWrappedOutputStream extends OutputStream
    * @param length
    * @param MesgType
    * @throws IOException
-   * @throws InterruptedException
    */
   public synchronized void write(byte[] b, int offset, int length, int MesgType) throws IOException
   {
@@ -207,6 +209,7 @@ public class MWrappedOutputStream extends OutputStream
   }
 
   /**
+   * @throws java.io.IOException
    * @see java.io.OutputStream#write(int)
    */
   public void write(int b) throws IOException

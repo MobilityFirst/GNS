@@ -47,6 +47,9 @@ import edu.umass.cs.msocket.logger.MSocketLogger;
 public class ConnectionToProxyServer
 {
 
+  /**
+   *
+   */
   public static final int         GET                  = 1;                                                        // GET
                                                                                                                     // PUT
                                                                                                                     // operation
@@ -54,11 +57,30 @@ public class ConnectionToProxyServer
                                                                                                                     // shared
                                                                                                                     // data
                                                                                                                     // structures
+
+  /**
+   *
+   */
   public static final int         PUT                  = 2;
+
+  /**
+   *
+   */
   public static final int         SIZE                 = 3;
 
+  /**
+   *
+   */
   public final Object             addProxyMonitor      = new Object();
+
+  /**
+   *
+   */
   public final Object             removeProxyMonitor   = new Object();
+
+  /**
+   *
+   */
   public final Object             registerQueueMonitor = new Object();
 
   private MServerSocketController serverController     = null;
@@ -70,6 +92,12 @@ public class ConnectionToProxyServer
   // uses selector for splicing
   private Selector                proxySelector        = null;
 
+  /**
+   *
+   * @param guid
+   * @param serverController
+   * @throws IOException
+   */
   public ConnectionToProxyServer(String guid, MServerSocketController serverController) throws IOException
   {
     this.serverGuid = guid;
@@ -79,6 +107,9 @@ public class ConnectionToProxyServer
     proxySelector = Selector.open();
   }
 
+  /**
+   *
+   */
   public void closeProxyConnection()
   {
     try
@@ -91,11 +122,21 @@ public class ConnectionToProxyServer
     }
   }
 
+  /**
+   *
+   * @return
+   */
   public String getServerName()
   {
     return serverController.getMServerSocket().getServerName();
   }
 
+  /**
+   *
+   * @param Key
+   * @param Obj
+   * @throws IOException
+   */
   public void addProxy(String Key, ProxyInfo Obj) throws IOException
   {
     synchronized (addProxyMonitor)
@@ -114,6 +155,12 @@ public class ConnectionToProxyServer
 
   }
 
+  /**
+   *
+   * @param Key
+   * @param Obj
+   * @throws IOException
+   */
   public void removeProxy(String Key, ProxyInfo Obj) throws IOException
   {
     synchronized (removeProxyMonitor)
@@ -128,6 +175,11 @@ public class ConnectionToProxyServer
     }
   }
 
+  /**
+   *
+   * @return
+   * @throws IOException
+   */
   public MSocket accept() throws IOException
   {
     MSocketLogger.getLogger().fine("Proxy accept() called");

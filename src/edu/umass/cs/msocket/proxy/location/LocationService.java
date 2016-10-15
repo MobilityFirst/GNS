@@ -63,7 +63,6 @@ public class LocationService extends Thread
    * 
    * @param proxyGroupName
    * @param locationServiceName
-   * @param gnsCredentials
    */
   public LocationService(String proxyGroupName, String locationServiceName)
   {

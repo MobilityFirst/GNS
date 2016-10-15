@@ -43,37 +43,67 @@ public class ProxyInfo
 
   private SelectionKey  selectorKey   = null;
 
+  /**
+   *
+   * @param proxyName
+   * @param proxyPort
+   */
   public ProxyInfo(String proxyName, int proxyPort)
   {
     setProxyInfo(proxyName, proxyPort);
   }
 
+  /**
+   *
+   * @param proxyName
+   * @param proxyPort
+   */
   public synchronized void setProxyInfo(String proxyName, int proxyPort)
   {
     this.proxyName = proxyName;
     this.proxyPort = proxyPort;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getProxyInfo()
   {
     return proxyName + ":" + proxyPort;
   }
 
+  /**
+   *
+   * @return
+   */
   public SocketChannel getUnderlyingChannel()
   {
     return proxyChannel;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getProxyName()
   {
     return proxyName;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getProxyPort()
   {
     return proxyPort;
   }
 
+  /**
+   *
+   * @param lastKeepAlive
+   */
   public synchronized void setLastKeepAlive(long lastKeepAlive)
   {
     if (lastKeepAlive > this.lastKeepAlive)
@@ -82,31 +112,57 @@ public class ProxyInfo
     }
   }
 
+  /**
+   *
+   * @return
+   */
   public long getLastKeepAlive()
   {
     return this.lastKeepAlive;
   }
 
+  /**
+   *
+   * @param value
+   */
   public synchronized void setActive(boolean value)
   {
     active = value;
   }
 
+  /**
+   *
+   * @return
+   */
   public boolean getActive()
   {
     return active;
   }
 
+  /**
+   *
+   * @param selectorKey
+   */
   public synchronized void setSelectorKey(SelectionKey selectorKey)
   {
     this.selectorKey = selectorKey;
   }
 
+  /**
+   *
+   * @return
+   */
   public SelectionKey getSelectorKey()
   {
     return selectorKey;
   }
 
+  /**
+   *
+   * @param proxyName
+   * @param proxyPort
+   * @throws IOException
+   */
   public void connectChannel(String proxyName, int proxyPort) throws IOException
   {
     proxyChannel = SocketChannel.open();
@@ -115,6 +171,9 @@ public class ProxyInfo
       ;
   }
 
+  /**
+   *
+   */
   public void closeChannel()
   {
     try

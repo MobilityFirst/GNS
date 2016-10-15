@@ -52,6 +52,11 @@ public class BackgroudMultiPathWritingThread
   private Vector<SocketInfo> finishedPaths           = null;
   private Vector<SocketInfo> unfinishedPaths         = null;
 
+  /**
+   *
+   * @param endSeqNum
+   * @param cinfo
+   */
   public BackgroudMultiPathWritingThread(long endSeqNum, ConnectionInfo cinfo)
   {
     this.endSeqNum = endSeqNum;
@@ -62,6 +67,9 @@ public class BackgroudMultiPathWritingThread
     unfinishedPaths = new Vector<SocketInfo>();
   }
 
+  /**
+   *
+   */
   public void run()
   {
     Vector<SocketInfo> socketList = new Vector<SocketInfo>();

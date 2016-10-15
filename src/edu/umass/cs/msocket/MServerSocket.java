@@ -161,9 +161,7 @@ public class MServerSocket extends ServerSocket
    * given name is published in the GNS as an alias to be looked up by clients.
    * 
    * @param serverName the name to give to this socket in the GNS
-   * @param gnsCredentials the GNS credentials to use to register the name in
-   *          the GNS
-   * @throws Exception
+   * @throws java.io.IOException
    */
   public MServerSocket(String serverName) throws IOException
   {
@@ -179,7 +177,7 @@ public class MServerSocket extends ServerSocket
    * @param serverName the name to give to this socket in the GNS
    * @param proxySelection a {@link ProxySelectionPolicy} defining how to choose
    *          a proxy
-   * @throws Exception
+   * @throws java.io.IOException
    */
   public MServerSocket(String serverName, ProxySelectionPolicy proxySelection) throws IOException
   {
@@ -192,15 +190,11 @@ public class MServerSocket extends ServerSocket
    * published in the GNS as an alias to be looked up by clients.
    * 
    * @param serverName the name of the service/server to register in the GNS
-   * @param serverPort the port number to bind
    * @param proxyPolicy a {@link ProxySelectionPolicy} defining how to choose a
    *          proxy
-   * @param gnsCredentials GNS credentials to use for this connection
-   * @param endpoint The IP address & port number to bind to (null to let the
-   *          system choose).
+   * @param endpoint
    * @param backlog The listen backlog length (0 for default)
-   * @throws Exception If NoProxyPolicy is used and the machine IP is behind a
-   *           NAT
+   * @throws java.io.IOException
    */
   public MServerSocket(String serverName, ProxySelectionPolicy proxyPolicy,
       SocketAddress endpoint, int backlog) throws IOException
@@ -211,6 +205,9 @@ public class MServerSocket extends ServerSocket
   /**
    * Call accept to start accepting connections
    * 
+   * @return 
+   * @throws java.io.IOException 
+   * @throws java.net.SocketTimeoutException 
    * @see java.net.ServerSocket#accept()
    */
   public MSocket accept() throws IOException, SocketTimeoutException
@@ -259,6 +256,7 @@ public class MServerSocket extends ServerSocket
    * Closes the MServerSocket, closes all accepted connections and frees the
    * state. MServerSocket close doesn't close MobilityManagerServer
    * 
+   * @throws java.io.IOException
    * @see java.net.ServerSocket#close()
    */
   public void close() throws IOException
@@ -291,8 +289,7 @@ public class MServerSocket extends ServerSocket
    * @param serverName the name of the service/server to register in the GNS
    * @param endpoint The IP address & port number to bind to.
    * @param backlog The listen backlog length.
-   * @param gnsCredentials GNS credentials to use for this connection
-   * @throws Exception If the socket is already bound
+   * @throws java.io.IOException
    * @see java.net.ServerSocket#bind(java.net.SocketAddress, int)
    */
   public void bind(String serverName, SocketAddress endpoint, int backlog)
@@ -306,6 +303,7 @@ public class MServerSocket extends ServerSocket
 
   /**
    * 
+   * @throws java.io.IOException
    * @see java.net.ServerSocket#bind(java.net.SocketAddress)
    */
   public void bind(SocketAddress endpoint) throws IOException
@@ -318,6 +316,7 @@ public class MServerSocket extends ServerSocket
    * given, so the server is not registered in GNS, nor is connected to the
    * proxies. Mainly, to support legacy operations.
    * 
+   * @throws java.io.IOException
    * @see java.net.ServerSocket#bind(java.net.SocketAddress, int)
    */
   public void bind(SocketAddress endpoint, int backlog) throws IOException
@@ -362,6 +361,7 @@ public class MServerSocket extends ServerSocket
   /**
    * Returns the address to which the server socket is locally bounded
    * 
+   * @return 
    * @see java.net.ServerSocket#getInetAddress()
    */
   public InetAddress getInetAddress()
@@ -370,6 +370,7 @@ public class MServerSocket extends ServerSocket
   }
 
   /**
+   * @return 
    * @see java.net.ServerSocket#getLocalPort()
    */
   public int getLocalPort()
@@ -378,6 +379,7 @@ public class MServerSocket extends ServerSocket
   }
 
   /**
+   * @return 
    * @see java.net.ServerSocket#getLocalSocketAddress()
    */
   public SocketAddress getLocalSocketAddress()
@@ -389,6 +391,7 @@ public class MServerSocket extends ServerSocket
    * MServerSocket can't return channel to the application, this method will
    * always return null
    * 
+   * @return 
    * @see java.net.ServerSocket#getChannel()
    */
   public ServerSocketChannel getChannel()
@@ -397,6 +400,7 @@ public class MServerSocket extends ServerSocket
   }
 
   /**
+   * @return 
    * @see java.net.ServerSocket#isBound()
    */
   public boolean isBound()
@@ -405,6 +409,8 @@ public class MServerSocket extends ServerSocket
   }
 
   /**
+   * @return 
+   * @return  
    * @see java.net.ServerSocket#isClosed()
    */
   public boolean isClosed()
@@ -416,6 +422,7 @@ public class MServerSocket extends ServerSocket
    * Sets SO_TIMEOUT of accept for the MServerSocket MServerSocket accept will
    * throw an exception after SO_TIMEOUT
    * 
+   * @throws java.net.SocketException
    * @see java.net.ServerSocket#setSoTimeout(int)
    */
   public void setSoTimeout(int timeout) throws SocketException
@@ -425,6 +432,8 @@ public class MServerSocket extends ServerSocket
   }
 
   /**
+   * @return 
+   * @throws java.io.IOException 
    * @see java.net.ServerSocket#getSoTimeout()
    */
   public int getSoTimeout() throws IOException
@@ -436,6 +445,7 @@ public class MServerSocket extends ServerSocket
    * mSockets currently do not support timeouts. This method systematically
    * throws a SocketException.
    * 
+   * @throws java.net.SocketException
    * @see java.net.ServerSocket#setReuseAddress(boolean)
    */
   public void setReuseAddress(boolean on) throws SocketException
@@ -447,6 +457,8 @@ public class MServerSocket extends ServerSocket
    * mSockets currently do not support reuse address. This method systematically
    * returns false.
    * 
+   * @return 
+   * @throws java.net.SocketException
    * @see java.net.ServerSocket#getReuseAddress()
    */
   public boolean getReuseAddress() throws SocketException
@@ -455,6 +467,7 @@ public class MServerSocket extends ServerSocket
   }
 
   /**
+   * @return 
    * @see java.net.ServerSocket#toString()
    */
   public String toString()
@@ -463,6 +476,7 @@ public class MServerSocket extends ServerSocket
   }
 
   /**
+   * @throws java.net.SocketException
    * @see java.net.ServerSocket#setReceiveBufferSize(int)
    */
   public void setReceiveBufferSize(int size) throws SocketException
@@ -471,6 +485,8 @@ public class MServerSocket extends ServerSocket
   }
 
   /**
+   * @return 
+   * @throws java.net.SocketException
    * @see java.net.ServerSocket#getReceiveBufferSize()
    */
   public int getReceiveBufferSize() throws SocketException
@@ -516,7 +532,7 @@ public class MServerSocket extends ServerSocket
    * 
    * @param localAddress new local address to bind the listening socket
    * @param localPort new local port to bind the listening socket
-   * @throws Exception if no proxy can be found or the migration failed
+   * @throws java.io.IOException
    */
   public void migrate(InetAddress localAddress, int localPort) throws IOException
   {
@@ -531,6 +547,7 @@ public class MServerSocket extends ServerSocket
    * @param localPort new local port to bind the listening socket
    * @param proxySelectionPolicy the proxy selection policy to use when
    *          migrating the sockets
+   * @throws java.io.IOException
    * @throws Exception
    */
   public void migrate(InetAddress localAddress, int localPort, 

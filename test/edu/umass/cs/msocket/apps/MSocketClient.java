@@ -7,9 +7,19 @@ import java.io.OutputStream;
 import edu.umass.cs.msocket.MSocket;
 import edu.umass.cs.msocket.mobility.MobilityManagerClient;
 
+/**
+ *
+ * @author westy
+ */
 public class MSocketClient
 {
-	public static void main(String[] args) throws IOException
+
+  /**
+   *
+   * @param args
+   * @throws IOException
+   */
+  public static void main(String[] args) throws IOException
 	{
 		String serverName = args[0];
 		MSocket msock = new MSocket(serverName, 0);

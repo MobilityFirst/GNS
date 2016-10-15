@@ -28,14 +28,22 @@ import edu.umass.cs.msocket.contextsocket.ContextMember;
 import edu.umass.cs.msocket.contextsocket.ContextSocket;
 import edu.umass.cs.msocket.contextsocket.ContextWriter;
 
-
+/**
+ *
+ * @author westy
+ */
 public class BothMember2WriterExp
 {
 	private ContextMember groupMember1;
 	private ContextMember groupMember2;
 	private ContextWriter groupWriter;
 	
-	public static void main(String[] args) throws InterruptedException
+  /**
+   *
+   * @param args
+   * @throws InterruptedException
+   */
+  public static void main(String[] args) throws InterruptedException
 	{
 		String memberName1 = args[0];
 		String memberName2 = args[1];
@@ -45,7 +53,14 @@ public class BothMember2WriterExp
 		obj.startProcess(memberName1, memberName2, writerName);
 	}
 	
-	public void startProcess(String memberName1, String memberName2, String writerName) throws InterruptedException
+  /**
+   *
+   * @param memberName1
+   * @param memberName2
+   * @param writerName
+   * @throws InterruptedException
+   */
+  public void startProcess(String memberName1, String memberName2, String writerName) throws InterruptedException
 	{
 		GroupMemberThread memObj1  = new GroupMemberThread(memberName1, 1);
 		GroupMemberThread memObj2  = new GroupMemberThread(memberName2, 2);
@@ -64,12 +79,20 @@ public class BothMember2WriterExp
 		groupMember2.setAttributes("contextATT0", 50);
 	}
 	
-	public class GroupMemberThread implements Runnable
+  /**
+   *
+   */
+  public class GroupMemberThread implements Runnable
 	{
 		private final String memberName;
 		private final int id;
 		
-		public GroupMemberThread(String name, int id)
+          /**
+           *
+           * @param name
+           * @param id
+           */
+          public GroupMemberThread(String name, int id)
 		{
 			this.memberName = name;
 			this.id = id;
@@ -120,10 +143,22 @@ public class BothMember2WriterExp
 		}
 	}
 	
-	public class GroupWriterThread implements Runnable
+  /**
+   *
+   */
+  public class GroupWriterThread implements Runnable
 	{
-		public final String writerName;
-		public GroupWriterThread(String name)
+
+          /**
+           *
+           */
+          public final String writerName;
+
+          /**
+           *
+           * @param name
+           */
+          public GroupWriterThread(String name)
 		{
 			this.writerName = name;
 		}

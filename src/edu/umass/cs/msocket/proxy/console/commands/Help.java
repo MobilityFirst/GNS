@@ -46,6 +46,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
+   * @throws java.io.IOException
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#parse(java.lang.String)
    */
   public void parse(String commandText) throws IOException
@@ -54,6 +55,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandName()
    */
   public String getCommandName()
@@ -62,6 +64,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandDescription()
    */
   public String getCommandDescription()
@@ -76,6 +79,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
+   * @throws java.lang.Exception
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#execute(java.lang.String)
    */
   public void execute(String commandText) throws Exception

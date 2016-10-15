@@ -21,6 +21,10 @@
 
 package edu.umass.cs.msocket.proxy.legacyforwarder;
 
+/**
+ *
+ * @author westy
+ */
 public class LegacyProxyMSocket 
 {
 	/*public static final int GET            			= 1;

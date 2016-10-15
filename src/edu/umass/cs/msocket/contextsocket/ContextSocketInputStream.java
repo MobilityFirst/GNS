@@ -26,6 +26,10 @@ import java.io.InputStream;
 
 import edu.umass.cs.msocket.MSocket;
 
+/**
+ *
+ * @author westy
+ */
 public class ContextSocketInputStream extends InputStream
 {
 	// maximum size of read chunk
@@ -39,7 +43,11 @@ public class ContextSocketInputStream extends InputStream
 	// dones't read all bytes in chunks.
 	private int numBytesRem 									= 0;
 	
-	public ContextSocketInputStream(MSocket thisMSocket)
+  /**
+   *
+   * @param thisMSocket
+   */
+  public ContextSocketInputStream(MSocket thisMSocket)
 	{
 		this.thisMSocket = thisMSocket;
 	}

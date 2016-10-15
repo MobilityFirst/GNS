@@ -107,6 +107,11 @@ public class GlobalCoordinate implements Comparable<GlobalCoordinate>, Serializa
   }
 
   // synonym
+
+  /**
+   *
+   * @return
+   */
   public double getLat()
   {
     return getLatitude();
@@ -135,6 +140,11 @@ public class GlobalCoordinate implements Comparable<GlobalCoordinate>, Serializa
   }
 
   // synonym
+
+  /**
+   *
+   * @return
+   */
   public double getLong()
   {
     return getLongitude();
@@ -203,7 +213,6 @@ public class GlobalCoordinate implements Comparable<GlobalCoordinate>, Serializa
   /**
    * Compare these coordinates to another object for equality.
    * 
-   * @param other
    * @return
    */
   @Override

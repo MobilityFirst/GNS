@@ -46,14 +46,8 @@ public class SSHClient {
   private static boolean verbose = true;
 
   /**
-   *
-   */
-  public static void exec() {
-    exec(null, null, null, null, false, null);
-  }
-
-  /**
-   *
+   * Execute the command.
+   * 
    * @param command
    */
   public static void exec(String command) {
@@ -61,7 +55,8 @@ public class SSHClient {
   }
 
   /**
-   *
+   * Execute the command.
+   * 
    * @param user
    * @param host
    * @param keyFile
@@ -72,7 +67,8 @@ public class SSHClient {
   }
 
   /**
-   *
+   * Execute the command.
+   * 
    * @param user
    * @param host
    * @param keyFile

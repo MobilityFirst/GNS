@@ -34,16 +34,34 @@ import java.util.Vector;
 public class ProxyTCPSplicer
 {
 
+  /**
+   *
+   */
   public static final int      GET         = 1;
+
+  /**
+   *
+   */
   public static final int      PUT         = 2;
 
+  /**
+   *
+   */
   public static final int      SERVER_SIDE = 1;
+
+  /**
+   *
+   */
   public static final int      CLIENT_SIDE = 2;
 
   private Vector<ProxyMSocket> ClientSide  = null;
   private Vector<ProxyMSocket> ServerSide  = null;
   private final int            proxyId;
 
+  /**
+   *
+   * @param ProxyId
+   */
   public ProxyTCPSplicer(int ProxyId)
   {
     ClientSide = new Vector<ProxyMSocket>();
@@ -51,6 +69,13 @@ public class ProxyTCPSplicer
     this.proxyId = ProxyId;
   }
 
+  /**
+   *
+   * @param Oper
+   * @param ServerOrClient
+   * @param Socket
+   * @return
+   */
   public synchronized ProxyMSocket ProxyTCPSplicerOperation(int Oper, int ServerOrClient, ProxyMSocket Socket)
   {
     switch (Oper)
@@ -83,6 +108,10 @@ public class ProxyTCPSplicer
     return null;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getProxyId()
   {
     return proxyId;

@@ -55,7 +55,7 @@ import edu.umass.cs.utils.Util;
 public class GNSTestingConfig {
 
   /**
-   *
+   * Load.
    */
   protected static void load() {
     // testing specific config parameters

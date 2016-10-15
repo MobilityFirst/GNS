@@ -4,6 +4,9 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 
+/**
+ * The ContextServiceGNSInterface.
+ */
 public interface ContextServiceGNSInterface {
 
   /**

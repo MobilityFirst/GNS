@@ -111,7 +111,7 @@ public class AMIRecord {
   }
 
   /**
-   *
+   * Initialize the record.
    */
   public static void init() {
     records = new EnumMap<>(AMIRecordType.class);

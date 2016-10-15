@@ -18,10 +18,17 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.logger.MSocketLogger;
 
-
+/**
+ *
+ * @author westy
+ */
 public class GNSCalls
 {
 	// should be same as defined in context service code
+
+  /**
+   *
+   */
 	public static final String NOTIFICATION_SET               	= "NOTIFICATION_SET";
 	
 	//private static final String defaultGns = KeyPairUtils.getDefaultGnsFromPreferences();
@@ -29,6 +36,13 @@ public class GNSCalls
 	//			= new GNSClientCommands(defaultGns.split(":")[0], Integer.parseInt(defaultGns.split(":")[1]));
 	
 	//private static final GuidEntry myGuidEntry = KeyPairUtils.getDefaultGuidEntryFromPreferences(defaultGns);
+
+  /**
+   *
+   * @param localAlias
+   * @param Lat
+   * @param Longi
+   */
 	
 	public static void updateMyLocationInGns(String localAlias, double Lat, double Longi)
 	{
@@ -60,6 +74,7 @@ public class GNSCalls
 	 * Takes alias of group, which is query and reads group members
 	 * , if reading from gns fails then request is sent to contextservice
 	 * @param query
+   * @param groupGUID
 	 * @return guids of group members
 	 * @throws ClientException
 	 * @throws IOException
@@ -79,7 +94,15 @@ public class GNSCalls
 		return grpMem;
 	}
 	
-	public static String getGroupGUID(String query) throws 
+  /**
+   *
+   * @param query
+   * @return
+   * @throws UnsupportedEncodingException
+   * @throws IOException
+   * @throws ClientException
+   */
+  public static String getGroupGUID(String query) throws 
 										UnsupportedEncodingException, IOException, ClientException
 	{
 		String queryHash = getSHA1(query);
@@ -91,7 +114,14 @@ public class GNSCalls
 		return guidString;
 	}
 	
-	public static void writeKeyValue(String localName,
+  /**
+   *
+   * @param localName
+   * @param key
+   * @param value
+   * @throws Exception
+   */
+  public static void writeKeyValue(String localName,
 		      String key, double value) throws Exception
 	{
 		    String GNSKey   = key;
@@ -164,7 +194,14 @@ public class GNSCalls
 			}
 	}
 	
-	public static void writeKeyValue(String localName,
+  /**
+   *
+   * @param localName
+   * @param key
+   * @param value
+   * @throws Exception
+   */
+  public static void writeKeyValue(String localName,
 		      String key, String value) throws Exception
 	{
 		    String GNSKey   = key;
@@ -227,7 +264,14 @@ public class GNSCalls
 			}
 	}
 	  
-	  public static String getKeyValue(String guid, String field) throws Exception
+  /**
+   *
+   * @param guid
+   * @param field
+   * @return
+   * @throws Exception
+   */
+  public static String getKeyValue(String guid, String field) throws Exception
 	  {
 		  GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute
 				  	(GNSCommand.fieldReadArray(guid, field, null));
@@ -242,7 +286,13 @@ public class GNSCalls
 		  }
 	  }
 	  
-	  public static String getAlias(String guid) throws Exception
+  /**
+   *
+   * @param guid
+   * @return
+   * @throws Exception
+   */
+  public static String getAlias(String guid) throws Exception
 	  {
 		  GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute
 				  	(GNSCommand.lookupGUIDRecord(guid));
@@ -250,7 +300,12 @@ public class GNSCalls
 	      return record.getString("name");
 	  }
 	  
-	  public static String getSHA1(String stringToHash) 
+  /**
+   *
+   * @param stringToHash
+   * @return
+   */
+  public static String getSHA1(String stringToHash) 
 	  {
 		   //Hashing.consistentHash(input, buckets);
 		   MessageDigest md=null;
@@ -280,6 +335,7 @@ public class GNSCalls
 	   * adds the given address in the notification set
 	   * @param socketAddress
 	   * @param groupQuery
+   * @param groupGUID
 	   */
 		public static void updateNotificationSetOfAGroup(InetSocketAddress socketAddress, String groupQuery, String groupGUID)
 		{

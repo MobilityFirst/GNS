@@ -56,7 +56,6 @@ public class ProxyStatusThread extends Thread
    * Creates a new <code>ProxyStatusThread</code> object
    * 
    * @param proxyGroupName
-   * @param gnsCredentials
    * @throws Exception if a GNS error occurs
    */
   public ProxyStatusThread(String proxyGroupName) throws Exception

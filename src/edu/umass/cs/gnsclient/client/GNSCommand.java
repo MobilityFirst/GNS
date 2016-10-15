@@ -1985,7 +1985,6 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * @param passkey
    * @return CommandPacket
    * @throws ClientException
    */

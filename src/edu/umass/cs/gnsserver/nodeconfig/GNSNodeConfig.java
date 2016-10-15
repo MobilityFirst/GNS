@@ -133,12 +133,12 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     readHostsFile(hostsFile);
     // Informational purposes
     for (Entry<NodeIDType, NodeInfo<NodeIDType>> hostInfoEntry : hostInfoMapping.entrySet()) {
-      GNSConfig.getLogger().log(Level.INFO, 
-              "For {0} Id: {1} Host Name:{2} IP:{3} Start Port:{4}", 
-              new Object[]{nameServerID == null ? "CPP" : nameServerID.toString(), 
-                hostInfoEntry.getValue().getId().toString(), 
-                hostInfoEntry.getValue().getIpAddress(), 
-                hostInfoEntry.getValue().getExternalIPAddress(), 
+      GNSConfig.getLogger().log(Level.INFO,
+              "For {0} Id: {1} Host Name:{2} IP:{3} Start Port:{4}",
+              new Object[]{nameServerID == null ? "CPP" : nameServerID.toString(),
+                hostInfoEntry.getValue().getId().toString(),
+                hostInfoEntry.getValue().getIpAddress(),
+                hostInfoEntry.getValue().getExternalIPAddress(),
                 hostInfoEntry.getValue().getStartingPortNumber()});
     }
     startCheckingForUpdates();
@@ -317,13 +317,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
       // Special case for Reconfigurator
     } else if ((nodeInfo = getReconfiguratorInfo(id)) != null) {
       return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.RECONFIGURATOR_PORT.getOffset();
-    }
-    // arun: the above takes precedence
-    else if ((nodeInfo=copy) != null) {
-        return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.NS_TCP_PORT.getOffset();
-        // Special case for ActiveReplica
-      } 
-    else {
+    } // arun: the above takes precedence
+    else if ((nodeInfo = copy) != null) {
+      return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.NS_TCP_PORT.getOffset();
+      // Special case for ActiveReplica
+    } else {
       GNSConfig.getLogger().log(Level.WARNING, "NodeId {0} not a valid Id!", id.toString());
       return INVALID_PORT;
     }
@@ -553,11 +551,14 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   }
 
   // Implement the Stringifiable interface
-  @SuppressWarnings("unchecked")
-  @Override
   /**
    * Converts a string representation of a node id into the appropriate node id type.
+   *
+   * @param nodeAsString
+   * @return 
    */
+  @SuppressWarnings("unchecked")
+  @Override
   public NodeIDType valueOf(String nodeAsString) throws IllegalArgumentException {
     switch (getNodeIDType()) {
       case String:
@@ -716,7 +717,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     },
             updateCheckPeriod, // run first occurrence later
             updateCheckPeriod);
-    GNSConfig.getLogger().log(Level.INFO, 
+    GNSConfig.getLogger().log(Level.INFO,
             "Checking for hosts updates every {0} seconds", updateCheckPeriod / 1000);
   }
 

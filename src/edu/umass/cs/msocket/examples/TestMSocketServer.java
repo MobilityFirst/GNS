@@ -7,9 +7,19 @@ import edu.umass.cs.msocket.MServerSocket;
 import edu.umass.cs.msocket.MSocket;
 import edu.umass.cs.msocket.mobility.MobilityManagerServer;
 
+/**
+ *
+ * @author westy
+ */
 public class TestMSocketServer 
 {
-	public static void main(String[] args) throws IOException
+
+  /**
+   *
+   * @param args
+   * @throws IOException
+   */
+  public static void main(String[] args) throws IOException
     {
 		String serverName = args[0];
 		MServerSocket mserv = new MServerSocket(serverName);

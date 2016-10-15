@@ -33,11 +33,19 @@ import edu.umass.cs.msocket.MultipathPolicy;
 import edu.umass.cs.msocket.SocketInfo;
 import edu.umass.cs.msocket.logger.MSocketLogger;
 
+/**
+ *
+ * @author westy
+ */
 public class RoundRobinWritingPolicy extends MultipathWritingPolicy 
 {	
 	private int                      defaultPolicyInterfaceNum  = 0;
 	
-	public RoundRobinWritingPolicy(ConnectionInfo cinfo)
+  /**
+   *
+   * @param cinfo
+   */
+  public RoundRobinWritingPolicy(ConnectionInfo cinfo)
 	{
 	    this.cinfo = cinfo;
 	    //cinfo.startRetransmissionThread();
@@ -216,7 +224,12 @@ public class RoundRobinWritingPolicy extends MultipathWritingPolicy
 		return closingRemoved;
 	}
 
-	protected SocketInfo getNextSocketToWrite() throws IOException 
+  /**
+   *
+   * @return
+   * @throws IOException
+   */
+  protected SocketInfo getNextSocketToWrite() throws IOException 
 	{
 		Vector<SocketInfo> socketMapValues = removeClosingFPsFromList();
 	    

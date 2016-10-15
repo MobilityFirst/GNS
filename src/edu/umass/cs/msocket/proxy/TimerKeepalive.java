@@ -49,7 +49,6 @@ public class TimerKeepalive extends Thread
   /**
    * Creates a new <code>GnsTimerKeepalive</code> object
    * 
-   * @param gnsCredentials
    * @param myGuid
    * @param publishFrequency
    * @throws Exception if a GNS error occurs

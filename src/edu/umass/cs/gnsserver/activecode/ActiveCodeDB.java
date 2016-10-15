@@ -17,10 +17,10 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
  */
 public class ActiveCodeDB implements ActiveDBInterface {
 	
-	ActiveGNSClient client;
+	private ActiveGNSClient client;
 
 	/**
-	 * 
+	 * Create the active code.
 	 */
 	public ActiveCodeDB(){
 		try {

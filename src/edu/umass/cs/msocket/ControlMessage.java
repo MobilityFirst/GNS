@@ -37,13 +37,35 @@ import java.util.Arrays;
  */
 public class ControlMessage
 {
+
+  /**
+   *
+   */
   public static final short    KEEP_ALIVE          = 0;
+
+  /**
+   *
+   */
   public static final short    ACK_ONLY            = 1;
+
+  /**
+   *
+   */
   public static final short    REBIND_ADDRESS_PORT = 2;
 
+  /**
+   *
+   */
   public static final String[] msgStr              = {"KEEP_ALIVE", "ACK_ONLY", "REBIND_ADDRESS_PORT", "CLOSING"};
 
+  /**
+   *
+   */
   public static final int      INET_ADDR_SIZE      = 4;
+
+  /**
+   *
+   */
   public static final int      SIZE                = (Integer.SIZE * 5 + Long.SIZE) / 8 + INET_ADDR_SIZE;
 
   final int                    sendseq;
@@ -77,6 +99,11 @@ public class ControlMessage
     UDPPort = udpport;
   }
 
+  /**
+   *
+   * @return
+   * @throws UnknownHostException
+   */
   public byte[] getBytes() throws UnknownHostException
   {
     ByteBuffer buf = ByteBuffer.allocate(ControlMessage.SIZE);
@@ -92,6 +119,12 @@ public class ControlMessage
     return buf.array();
   }
 
+  /**
+   *
+   * @param b
+   * @return
+   * @throws UnknownHostException
+   */
   public static ControlMessage getControlMessage(byte[] b) throws UnknownHostException
   {
     if (b == null)
@@ -117,41 +150,73 @@ public class ControlMessage
     return s;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getSendseq()
   {
     return sendseq;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getAckseq()
   {
     return ackseq;
   }
 
+  /**
+   *
+   * @return
+   */
   public long getFlowID()
   {
     return flowID;
   }
 
+  /**
+   *
+   * @return
+   */
   public InetAddress getInetAddress()
   {
     return iaddr;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getRemoteUDPControlPort()
   {
     return UDPPort;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getPort()
   {
     return port;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getType()
   {
     return type;
   }
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args)
   {
     try

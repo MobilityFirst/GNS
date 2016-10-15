@@ -49,7 +49,7 @@ public class GNSClientConfig {
   }
 
   /**
-   *
+   * The GNS Client Config.
    */
   public static enum GNSCC implements Config.ConfigurableEnum {
     /**

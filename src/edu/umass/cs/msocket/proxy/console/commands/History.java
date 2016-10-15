@@ -48,6 +48,7 @@ public class History extends ConsoleCommand
 
   /**
    * Override execute to not check for existing connectivity
+   * @throws java.lang.Exception
    */
   public void execute(String commandText) throws Exception
   {
@@ -55,6 +56,7 @@ public class History extends ConsoleCommand
   }
 
   /**
+   * @throws java.lang.Exception
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#parse(java.lang.String)
    */
   public void parse(String commandText) throws Exception
@@ -78,6 +80,7 @@ public class History extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandName()
    */
   public String getCommandName()
@@ -86,6 +89,7 @@ public class History extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandDescription()
    */
   public String getCommandDescription()
@@ -94,6 +98,7 @@ public class History extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandParameters()
    */
   public String getCommandParameters()

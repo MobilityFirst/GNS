@@ -519,7 +519,7 @@ public class ThroughputAsynchMultiClientTest {
   }
 
   /**
-   *
+   * WorkerTask.
    */
   public class WorkerTask implements Runnable {
 

@@ -57,6 +57,7 @@ public class ApproveGuid extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see edu.umass.cs.msocket.proxy.console.commands.ConsoleCommand#getCommandName()
    */
   @Override
@@ -66,6 +67,7 @@ public class ApproveGuid extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see edu.umass.cs.msocket.proxy.console.commands.ConsoleCommand#getCommandParameters()
    */
   @Override
@@ -75,6 +77,7 @@ public class ApproveGuid extends ConsoleCommand
   }
 
   /**
+   * @return 
    * @see edu.umass.cs.msocket.proxy.console.commands.ConsoleCommand#getCommandDescription()
    */
   @Override
@@ -84,6 +87,7 @@ public class ApproveGuid extends ConsoleCommand
   }
 
   /**
+   * @throws java.lang.Exception
    * @see edu.umass.cs.msocket.proxy.console.commands.ConsoleCommand#parse(java.lang.String)
    */
   @Override

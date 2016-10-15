@@ -60,7 +60,6 @@ public class WatchdogWatcherThread extends Thread
    * @param gnsClient GNS connection
    * @param watchdogGuid GUID entry for this watchdog service
    * @param targetGuid GUID of the listname we have to read
-   * @param listName name of the field where the list is stored
    * @param suspiciousTimeout timeout in ms before the target is declared
    *          suspicious
    * @param failureTimeout timeout in ms before the target is declared

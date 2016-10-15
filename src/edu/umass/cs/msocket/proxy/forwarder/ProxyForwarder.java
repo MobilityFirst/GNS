@@ -54,6 +54,10 @@ import edu.umass.cs.msocket.logger.MSocketLogger;
  */
 public class ProxyForwarder
 {
+
+  /**
+   *
+   */
   public static final int                   LISTEN_THREAD          = 1;                                               // Proxy
                                                                                                                        // thread
                                                                                                                        // types,
@@ -62,6 +66,10 @@ public class ProxyForwarder
                                                                                                                        // connections
                                                                                                                        // at
                                                                                                                        // proxy
+
+  /**
+   *
+   */
   public static final int                   SPLICING_THREAD        = 2;                                               // Proxy
                                                                                                                        // thread
                                                                                                                        // types,
@@ -75,6 +83,10 @@ public class ProxyForwarder
                                                                                                                        // splices
                                                                                                                        // the
                                                                                                                        // channels
+
+  /**
+   *
+   */
   public static final int                   GET                    = 1;                                               // GET
                                                                                                                        // PUT
                                                                                                                        // operation
@@ -82,14 +94,30 @@ public class ProxyForwarder
                                                                                                                        // shared
                                                                                                                        // data
                                                                                                                        // structures
+
+  /**
+   *
+   */
   public static final int                   PUT                    = 2;
+
+  /**
+   *
+   */
   public static final int                   CONTROL_SOC            = 1;                                               // socket
                                                                                                                        // types
                                                                                                                        // of
                                                                                                                        // the
                                                                                                                        // accepted
                                                                                                                        // sockets
+
+  /**
+   *
+   */
   public static final int                   DATA_SOC               = 2;
+
+  /**
+   *
+   */
   public static final int                   ChannelReadSize        = 10000;                                           // tries
                                                                                                                        // to
                                                                                                                        // read
@@ -97,12 +125,20 @@ public class ProxyForwarder
                                                                                                                        // bytes
                                                                                                                        // at
                                                                                                                        // once
+
+  /**
+   *
+   */
   public static final int                   keepAliveFreq          = 2;                                               // after
                                                                                                                        // every
                                                                                                                        // 5
                                                                                                                        // sec
 
   // register queue operations apart from GET and PUT
+
+  /**
+   *
+   */
   public static final int                   SIZE                   = 3;
 
   private static final int                  TimerTick              = 1000;                                            // TImer
@@ -157,6 +193,13 @@ public class ProxyForwarder
   private final ExecutorService             pool;
   private boolean                           runstatus              = true;
 
+  /**
+   *
+   * @param ProxyName
+   * @param ProxyPort
+   * @throws SocketException
+   * @throws IOException
+   */
   public ProxyForwarder(String ProxyName, int ProxyPort) throws SocketException, IOException
   {
 	this.ProxyName = ProxyName;
@@ -204,11 +247,24 @@ public class ProxyForwarder
     new ProxyForwarder(args[0], Integer.parseInt(args[1]));
   }
 
+  /**
+   *
+   * @return
+   */
   public Selector getSelector()
   {
     return SpliceSelector;
   }
 
+  /**
+   *
+   * @param Key
+   * @param Oper
+   * @param ServerOrClient
+   * @param Socket
+   * @return
+   * @throws IOException
+   */
   public synchronized Object SpliceMapOperations(int Key, int Oper, int ServerOrClient, ProxyMSocket Socket)
       throws IOException
   {
@@ -270,6 +326,13 @@ public class ProxyForwarder
     return null;
   }
 
+  /**
+   *
+   * @param Oper
+   * @param Key
+   * @param Socket
+   * @return
+   */
   public synchronized ProxyMSocket ProxyControlChannelMap(int Oper, String Key, ProxyMSocket Socket)
   {
     switch (Oper)
@@ -492,6 +555,9 @@ public class ProxyForwarder
     return null;
   }
 
+  /**
+   *
+   */
   public void StopAcceptPool()
   {
     runstatus = false;

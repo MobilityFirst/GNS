@@ -55,6 +55,10 @@ public class MWrappedInputStream extends InputStream
 
   /**
     *
+   * @param offset
+   * @param length
+   * @return 
+   * @throws java.io.IOException
     */
   public synchronized int read(byte[] b, int offset, int length) throws IOException
   {
@@ -120,6 +124,14 @@ public class MWrappedInputStream extends InputStream
     return nread;
   }
   
+  /**
+   *
+   * @param b
+   * @param offset
+   * @param length
+   * @return
+   * @throws IOException
+   */
   public synchronized int nonBlockingRead(byte[] b, int offset, int length) throws IOException
   {
     if (cinfo == null)
@@ -173,6 +185,8 @@ public class MWrappedInputStream extends InputStream
   }
 
   /**
+   * @return 
+   * @throws java.io.IOException
    * @Override
    * @see java.io.InputStream#read()
    */

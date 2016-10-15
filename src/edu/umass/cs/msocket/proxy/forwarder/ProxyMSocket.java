@@ -43,7 +43,15 @@ import edu.umass.cs.msocket.logger.MSocketLogger;
  */
 public class ProxyMSocket extends Socket
 {
+
+  /**
+   *
+   */
   public static final int GET            		= 1;
+
+  /**
+   *
+   */
   public static final int SET            		= 2;
 
   private SocketChannel   TCPChannel     			= null;
@@ -75,6 +83,12 @@ public class ProxyMSocket extends Socket
                                                                                            		// or
                                                                                            		// not
 
+  /**
+   *
+   * @param sc
+   * @param PForwarder
+   * @throws IOException
+   */
   public ProxyMSocket(SocketChannel sc, ProxyForwarder PForwarder) throws IOException
   {
     GUID = new byte[SetupControlMessage.SIZE_OF_GUID];
@@ -83,28 +97,59 @@ public class ProxyMSocket extends Socket
     setupControlServer(TCPChannel);
   }
 
+  /**
+   *
+   * @param ServerOrClient
+   * @param ProxyId
+   */
   public synchronized void setProxyInfo(int ServerOrClient, int ProxyId)
   {
     this.ProxyId = ProxyId;
     this.ServerOrClient = ServerOrClient;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getProxyId()
   {
     return ProxyId;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getServerOrClient()
   {
     return ServerOrClient;
   }
 
+  /**
+   *
+   * @return
+   */
   public SocketChannel getUnderlyingChannel()
   {
     return TCPChannel;
   }
 
   // Write local port, address, and flowID
+
+  /**
+   *
+   * @param ClientIP
+   * @param ClientUDPPort
+   * @param FlowID
+   * @param AckSeqNum
+   * @param MesgType
+   * @param SocketId
+   * @param ProxyId
+   * @param GUID
+   * @param SCToUse
+   * @throws IOException
+   */
   public void setupControlWrite(InetAddress ClientIP, int ClientUDPPort, long FlowID, int AckSeqNum, int MesgType,
 		  int SocketId, int ProxyId, byte[] GUID, SocketChannel SCToUse) throws IOException
   {
@@ -121,16 +166,28 @@ public class ProxyMSocket extends Socket
     } // SocketChannel writes may write less than requested*/
   }
 
+  /**
+   *
+   * @return
+   */
   public int getSocketType()
   {
     return SocketType;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getStringGUID()
   {
     return CommonMethods.bytArrayToHex(GUID);
   }
 
+  /**
+   *
+   * @return
+   */
   public byte[] getByteGUID()
   {
     return GUID;
@@ -140,7 +197,7 @@ public class ProxyMSocket extends Socket
    * true for acquire, false for realease
    * 
    * @param acquireOrRelease
-   * @throws InterruptedException
+   * @return 
    */
   public synchronized boolean grabLockOrgetBlocked(boolean acquireOrRelease)
   {
@@ -166,6 +223,12 @@ public class ProxyMSocket extends Socket
     return false;
   }
 
+  /**
+   *
+   * @param operationType
+   * @param value
+   * @return
+   */
   public synchronized boolean workingperations(int operationType, boolean value)
   {
     switch (operationType)

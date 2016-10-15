@@ -84,6 +84,7 @@ public class ProxyServerSocket extends ServerSocket
   /**
    * @param ServerName
    * @param port
+   * @param PForwarder
    * @throws IOException
    * @throws SocketException
    */
@@ -102,6 +103,10 @@ public class ProxyServerSocket extends ServerSocket
     (new Thread(AcceptThreadPoolObj)).start();
   }  
 
+  /**
+   *
+   * @return
+   */
   public InetSocketAddress getProxyListeningAddress()
   {
     return (InetSocketAddress) ss.getLocalSocketAddress();
@@ -109,6 +114,7 @@ public class ProxyServerSocket extends ServerSocket
 
   /**
    * 
+   * @return 
    */
   public InetAddress getInetAddress()
   {
@@ -122,6 +128,7 @@ public class ProxyServerSocket extends ServerSocket
 
   /**
 	 * 
+   * @throws java.io.IOException
 	 */
   public void bind(SocketAddress endpoint) throws IOException, SecurityException, IllegalArgumentException
   {
@@ -138,6 +145,9 @@ public class ProxyServerSocket extends ServerSocket
 
   /**
    * proxy accept function
+   * @return 
+   * @throws java.io.IOException 
+   * @throws java.net.SocketTimeoutException 
    */
   public ProxyMSocket accept() throws IOException, SocketTimeoutException
   {

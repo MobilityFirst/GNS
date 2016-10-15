@@ -34,6 +34,11 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
   private NoopCallBack csNoopCallBack;
   private NoopUpdateReply csNoopUpdateReply;
 
+  /**
+   *
+   * @param hostName
+   * @param portNum
+   */
   public ContextServiceGNSClient(String hostName, int portNum) 
   {
     // catching everything here, otherwise exception doesn't get printed in executor service.

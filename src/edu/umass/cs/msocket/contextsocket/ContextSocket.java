@@ -26,6 +26,10 @@ import java.io.OutputStream;
 
 import edu.umass.cs.msocket.MSocket;
 
+/**
+ *
+ * @author westy
+ */
 public class ContextSocket
 {
 	private ContextSocketInputStream  mcIn   	=  null;
@@ -33,12 +37,20 @@ public class ContextSocket
 	
 	private MSocket accptMSocket;
 	
-	public ContextSocket(MSocket accptMSocket)
+  /**
+   *
+   * @param accptMSocket
+   */
+  public ContextSocket(MSocket accptMSocket)
 	{
 		this.accptMSocket = accptMSocket;
 	}
 	
-	public InputStream getInputStream()
+  /**
+   *
+   * @return
+   */
+  public InputStream getInputStream()
 	{
 		if(mcIn == null)
 		{
@@ -47,7 +59,11 @@ public class ContextSocket
 		return mcIn;
 	}
 	
-	public OutputStream getOutputStream()
+  /**
+   *
+   * @return
+   */
+  public OutputStream getOutputStream()
 	{
 		if(mcOut == null)
 		{

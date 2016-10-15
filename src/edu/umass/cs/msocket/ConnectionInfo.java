@@ -68,13 +68,35 @@ public class ConnectionInfo
   
   
   // states of MSocket
+
+  /**
+   *
+   */
   protected static final int       ALL_READY                  = 0;
+
+  /**
+   *
+   */
   protected static final int       READ_WRITE                 = 1;
+
+  /**
+   *
+   */
   protected static final int       CLOSED                     = 2;
 
+  /**
+   *
+   */
   protected static final String[]  msgStr                     = {"ALL_READY", "READ_WRITE", "CLOSED"};
 
+  /**
+   *
+   */
   protected static final int       BLOCKING_MULTIREAD         = 1;
+
+  /**
+   *
+   */
   protected static final int       NONBLOCKING_MULTIREAD      = 2;
 
   /**
@@ -236,7 +258,8 @@ public class ConnectionInfo
   /**
    * Creates a new <code>ConnectionInfo</code> object
    * 
-   * @param s
+   * @param connID
+   * @param serverController
    */
   public ConnectionInfo(long connID , MServerSocketController serverController)
   {
@@ -287,8 +310,10 @@ public class ConnectionInfo
     return this.msocketState;
   }
   
-  
-
+  /**
+   *
+   * @return
+   */
   public boolean getTimerStatus()
   {
     return timerRunning;
@@ -314,21 +339,37 @@ public class ConnectionInfo
     return serverOrClient;
   }
 
+  /**
+   *
+   * @param serverOrClient
+   */
   public void setServerOrClient(int serverOrClient)
   {
     this.serverOrClient = serverOrClient;
   }
 
+  /**
+   *
+   * @return
+   */
   public Selector getInputStreamSelector()
   {
     return inputStreamSelector;
   }
 
+  /**
+   *
+   * @return
+   */
   public Selector getOutputStreamSelector()
   {
     return outputStreamSelector;
   }
 
+  /**
+   *
+   * @return
+   */
   public SocketInfo inputQueueGetSocketInfo()
   {
     synchronized (inputStreamQueueMonitor)
@@ -337,6 +378,10 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   * @return
+   */
   public int inputQueueGetSize()
   {
     synchronized (inputStreamQueueMonitor)
@@ -346,6 +391,10 @@ public class ConnectionInfo
 
   }
 
+  /**
+   *
+   * @param sockInfo
+   */
   public void inputQueuePutSocketInfo(SocketInfo sockInfo)
   {
     synchronized (inputStreamQueueMonitor)
@@ -358,6 +407,10 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   * @return
+   */
   public SocketInfo outputQueueGetSocketInfo()
   {
     synchronized (outputStreamQueueMonitor)
@@ -366,6 +419,10 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   * @return
+   */
   public int outputQueueGetSize()
   {
     synchronized (outputStreamQueueMonitor)
@@ -374,6 +431,10 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   * @param sockInfo
+   */
   public void outputQueuePutSocketInfo(SocketInfo sockInfo)
   {
     synchronized (outputStreamQueueMonitor)
@@ -386,11 +447,19 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   * @param policy
+   */
   public void setMultipathPolicy(MultipathPolicy policy)
   {
     currentPolicy = policy;
   }
 
+  /**
+   *
+   * @return
+   */
   public MultipathPolicy getMultipathPolicy()
   {
     return currentPolicy;
@@ -400,11 +469,21 @@ public class ConnectionInfo
    * flowID is set just once in the beginning by MSocket, so no synchronization
    * is needed.
    */
+
+  /**
+   *
+   * @return
+   */
+
   public long getConnID()
   {
     return this.connID;
   }
 
+  /**
+   *
+   * @param value
+   */
   public void setblockingFlag(boolean value)
   {
     synchronized (getBlockingFlagMonitor())
@@ -417,6 +496,10 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   * @return
+   */
   public boolean getblockingFlag()
   {
     return blockingFlag;
@@ -426,81 +509,150 @@ public class ConnectionInfo
    * The methods below are invoked by just one thread, the MSocket thread, so no
    * synchronization is needed.
    */
+
+  /**
+   *
+   * @param p
+   */
+
   public void setRemoteControlPort(int p)
   {
     remoteControlPort = p;
   }
 
+  /**
+   *
+   * @param iaddr
+   */
   public void setRemoteControlAddress(InetAddress iaddr)
   {
     remoteControlAddress = iaddr;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getRemoteControlPort()
   {
     return remoteControlPort;
   }
 
+  /**
+   *
+   * @return
+   */
   public InetAddress getRemoteControlAddress()
   {
     return remoteControlAddress;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getCtrlSendSeq()
   {
     return ctrlSendSeq;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getCtrlBaseSeq()
   {
     return ctrlBaseSeq;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getCtrlAckSeq()
   {
     return ctrlAckSeq;
   }
 
+  /**
+   *
+   * @param s
+   */
   public void setCtrlSendSeq(int s)
   {
     ctrlSendSeq = s;
   }
 
+  /**
+   *
+   * @param s
+   */
   public void setCtrlBaseSeq(int s)
   {
     ctrlBaseSeq = s;
   }
 
+  /**
+   *
+   * @param s
+   */
   public void setCtrlAckSeq(int s)
   {
     ctrlAckSeq = s;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getDataAckSeq()
   {
     return dataAckSeq;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getDataSendSeq()
   {
     return dataSendSeq;
   }
 
+  /**
+   *
+   * @param startSeqNum
+   * @param EndSeqNum
+   * @return
+   */
   public byte[] getDataFromOutBuffer(long startSeqNum, long EndSeqNum)
   {
     return getObuffer().getDataFromOutBuffer(startSeqNum, EndSeqNum);
   }
 
+  /**
+   *
+   * @param s
+   */
   public synchronized void updateDataSendSeq(int s)
   {
     dataSendSeq += s;
   }
 
+  /**
+   *
+   * @param s
+   */
   public synchronized void updateDataAckSeq(int s)
   {
     dataAckSeq += s;
   }
 
+  /**
+   *
+   * @param Obj
+   * @return
+   */
   public boolean notAckedInAWhile(SocketInfo Obj)
   {
     if ((Obj.getRecvdBytes() - Obj.getLastNumBytesRecv()) >= ACK_SEND_THRESH)
@@ -509,6 +661,10 @@ public class ConnectionInfo
       return false;
   }
 
+  /**
+   *
+   * @return
+   */
   public long getDataBaseSeq()
   {
     // obuffer.setDataBaseSeq(bs);
@@ -517,12 +673,22 @@ public class ConnectionInfo
 
   // OutBuffer internally synchronized, so no synchronization needed
 
+  /**
+   *
+   * @param bs
+   * @return
+   */
+
   public byte[] getUnacked(int bs)
   {
     getObuffer().setDataBaseSeq(bs);
     return getObuffer().getUnacked();
   }
 
+  /**
+   *
+   * @return
+   */
   public byte[] getUnacked()
   {
     return getObuffer().getUnacked();
@@ -530,89 +696,167 @@ public class ConnectionInfo
 
   // Only called and read by Controller, so no synchronization needed
 
+  /**
+   *
+   * @param b
+   */
+
   public void setMigrateRemote(boolean b)
   {
     migrateRemote = b;
   }
 
+  /**
+   *
+   * @return
+   */
   public boolean getMigrateRemote()
   {
     return migrateRemote;
   }
 
   // OutBuffer is internally synchronized, so no synchronization needed
+
+  /**
+   *
+   * @param buf
+   * @param offset
+   * @param length
+   * @return
+   */
   public boolean addOutBuffer(byte[] buf, int offset, int length)
   {
     // TODO: modify this part to restrict outbuffer based on system's heap size
     return getObuffer().add(buf, offset, length);
   }
 
+  /**
+   *
+   * @param value
+   */
   public void setCloseInOutbuffer(boolean value)
   {
     getObuffer().Close_Obuffer = value;
   }
 
+  /**
+   *
+   * @param value
+   */
   public void setACKInOutbuffer(boolean value)
   {
     getObuffer().ACK_Obuffer = value;
   }
 
+  /**
+   *
+   * @return
+   */
   public boolean getCloseInOutbuffer()
   {
     return getObuffer().Close_Obuffer;
   }
 
+  /**
+   *
+   * @return
+   */
   public boolean getACKInOutbuffer()
   {
     return getObuffer().ACK_Obuffer;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getOutBufferSize()
   {
     return getObuffer().getOutbufferSize();
   }
 
+  /**
+   *
+   */
   public void releaseOutBuffer()
   {
     getObuffer().releaseOutBuffer();
   }
 
+  /**
+   *
+   * @param ack
+   */
   public void ackOutBuffer(long ack)
   {
     getObuffer().ack(ack);
   }
 
+  /**
+   *
+   * @param Obj
+   * @return
+   */
   public boolean addInBuffer(InBufferStorageChunk Obj)
   {
 
     return ibuffer.putInBuffer(Obj);
   }
 
+  /**
+   *
+   * @param b
+   * @param offset
+   * @param length
+   * @return
+   */
   public int readInBuffer(byte[] b, int offset, int length)
   {
     return ibuffer.getInBuffer(b, offset, length);
   }
 
+  /**
+   *
+   * @return
+   */
   public long getInBufferSize()
   {
     return ibuffer.getInBufferSize();
   }
 
+  /**
+   *
+   * @return
+   */
   public int getState()
   {
     return state;
   }
 
+  /**
+   *
+   * @return
+   */
   public synchronized boolean getBackgroundThreadStatus()
   {
     return this.backgroundThreadStatus;
   }
 
+  /**
+   *
+   * @param status
+   */
   public synchronized void setBackgroundThreadStatus(boolean status)
   {
     this.backgroundThreadStatus = status;
   }
 
+  /**
+   *
+   * @param s
+   * @param blocking
+   * @return
+   */
   public boolean setState(int s, boolean blocking)
   {
     synchronized (stateMonitor)
@@ -681,7 +925,10 @@ public class ConnectionInfo
 //    return msocket;
 //  }
   
-  
+  /**
+   *
+   * @param status
+   */
   public void setBackgroundThreadActive(boolean status)
   {
 	  synchronized(this.backgroundThreadMonitor)
@@ -690,6 +937,10 @@ public class ConnectionInfo
 	  }
   }
   
+  /**
+   *
+   * @return
+   */
   public boolean getBackgroundThreadActive()
   {
 	  synchronized(this.backgroundThreadMonitor)
@@ -698,6 +949,10 @@ public class ConnectionInfo
 	  }
   }
   
+  /**
+   *
+   * @param status
+   */
   public void setEmptyQueueActive(boolean status)
   {
 	  synchronized(this.emptyQueueThreadMonitor)
@@ -706,6 +961,10 @@ public class ConnectionInfo
 	  }
   }
   
+  /**
+   *
+   * @return
+   */
   public boolean getEmptyQueueActive()
   {
 	  synchronized(this.emptyQueueThreadMonitor)
@@ -728,11 +987,19 @@ public class ConnectionInfo
     }
   }
   
+  /**
+   *
+   * @param writingPolicy
+   */
   public void setMultipathWritingPolicy(MultipathWritingPolicy writingPolicy)
   {
 	  this.multipathPolicy = writingPolicy;
   }
   
+  /**
+   *
+   * @return
+   */
   public MultipathWritingPolicy getMultipathWritingPolicy()
   {
 	  return this.multipathPolicy;
@@ -786,6 +1053,11 @@ public class ConnectionInfo
     }
   }
   
+  /**
+   *
+   * @param writePolicy
+   * @return
+   */
   public SocketInfo getActiveSocket(MultipathPolicy writePolicy)
   {
     // synchronization reqd mainly for the default policy
@@ -916,8 +1188,8 @@ public class ConnectionInfo
 
   /**
    * @param flowID
-   * @param dataChannel
-   * @throws IOException
+   * @param Obj
+   * @param ackForSeqNum
    */
   public void sendDataAckOnly(long flowID, SocketInfo Obj, int ackForSeqNum) 
   {
@@ -981,6 +1253,7 @@ public class ConnectionInfo
    * reads from multiple sockets, each message should be completely till whole
    * length mentioned in data header, partially read messages may get discarded.
    * 
+   * @return 
    * @throws IOException
    */
   public int multiSocketRead() throws IOException
@@ -1107,6 +1380,7 @@ public class ConnectionInfo
    * re arranges the socket vector to read from the one that has stream seq num
    * closer to datareadseq num. to give preference to inordered reads
    * 
+   * @param socketVect
    * @return
    */
   public Vector<SocketInfo> rearrangeSocketVector(Vector<SocketInfo> socketVect)
@@ -1136,6 +1410,10 @@ public class ConnectionInfo
    * reads from multiple sockets, each message should be completely till whole
    * length mentioned in data header, partially read messages may get discarded.
    * 
+   * @param b
+   * @param length
+   * @param offset
+   * @return 
    * @throws IOException
    */
   public int multiSocketRead(byte[] b, int offset, int length) throws IOException
@@ -1324,6 +1602,10 @@ public class ConnectionInfo
     return readInAppBuffer;
   }
 
+  /**
+   *
+   * @return
+   */
   public int multiSocketKeepAliveRead()
   {
     // Not in active read or write state, must be in closing state
@@ -1376,6 +1658,10 @@ public class ConnectionInfo
     return totalread;
   }
 
+  /**
+   *
+   * @throws IOException
+   */
   public void closeAll() throws IOException
   {
     Vector<SocketInfo> vect = new Vector<SocketInfo>();
@@ -1392,6 +1678,9 @@ public class ConnectionInfo
     }
   }
   
+  /**
+   *
+   */
   public void sendKeepAliveOnAllPaths()
   {
     Vector<SocketInfo> vect = new Vector<SocketInfo>();
@@ -1475,6 +1764,9 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   */
   public void resetDupAckCounter()
   {
     numDupAckRecv = 0;
@@ -1982,6 +2274,11 @@ public class ConnectionInfo
 	    return retObj;
 	  }
   
+  /**
+   *
+   * @param Obj
+   * @throws IOException
+   */
   public void attemptSocketWrite(SocketInfo Obj) throws IOException
   {
     Obj.getDataChannel().configureBlocking(false);
@@ -2047,8 +2344,7 @@ public class ConnectionInfo
    * @param rebindPort
    * @param SocketId
    * @param MigrationType
-   * @throws IOException
-   * @throws InterruptedException
+   * @return
    */
   public boolean migrateSocketwithId(InetAddress rebindAddress, int rebindPort, 
 		  int SocketId, int MigrationType)
@@ -2082,6 +2378,10 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   * @param SocketId
+   */
   public void closeAll(int SocketId)
   {
     MSocketLogger.getLogger().fine("inside close");
@@ -2131,6 +2431,16 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   * @param flowID
+   * @param Operation
+   * @param socketId
+   * @param rebindAddress
+   * @param rebindPort
+   * @param MigrationType
+   * @return
+   */
   public FlowPathResult addSocketToFlow(long flowID, int Operation, int socketId, InetAddress rebindAddress,
 	      int rebindPort, int MigrationType)
 	  {
@@ -2398,6 +2708,10 @@ public class ConnectionInfo
     socketObj.releaseLock();
   }
 
+  /**
+   *
+   * @param scm
+   */
   public void setupClientController(SetupControlMessage scm)
   {
     MSocketLogger.getLogger().fine("Received IP:port " + scm.port + ":" + scm.iaddr + "; ackSeq = " + scm.ackSeq);
@@ -2405,7 +2719,9 @@ public class ConnectionInfo
     setRemoteControlPort(scm.port);
   }
 
-  
+  /**
+   *
+   */
   public void internalClose()
   {
     if (serverOrClient == MSocketConstants.CLIENT)
@@ -2476,6 +2792,11 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   * @param NewChannel
+   * @param estRTT
+   */
   public void addSocketHashMap(SocketChannel NewChannel, long estRTT)
   {
     SocketInfo sockInfo = new SocketInfo(NewChannel, NewChannel.socket(), nextSocketIdentifier);
@@ -2547,51 +2868,91 @@ public class ConnectionInfo
     return scm;
   }
 
+  /**
+   *
+   * @param alias
+   */
   public void setServerAlias(String alias)
   {
     this.serverAlias = alias;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getServerAlias()
   {
     return this.serverAlias;
   }
 
+  /**
+   *
+   * @param servIP
+   */
   public void setServerIP(InetAddress servIP)
   {
     this.serverIP = servIP;
   }
 
+  /**
+   *
+   * @return
+   */
   public InetAddress getServerIP()
   {
     return this.serverIP;
   }
 
+  /**
+   *
+   * @param serverPort
+   */
   public void setServerPort(int serverPort)
   {
     this.serverPort = serverPort;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getServerPort()
   {
     return this.serverPort;
   }
 
+  /**
+   *
+   * @param typeOfCon
+   */
   public void setTypeOfCon(int typeOfCon)
   {
     this.typeOfCon = typeOfCon;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getTypeOfCon()
   {
     return this.typeOfCon;
   }
 
+  /**
+   *
+   * @param stringGUID
+   */
   public void setServerGUID(String stringGUID)
   {
     this.serverGUID = stringGUID;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getServerGUID()
   {
     return this.serverGUID;
@@ -2667,6 +3028,7 @@ public class ConnectionInfo
    * returns sum of send buffer size among all active flowpaths
    * 
    * @param size
+   * @return 
    * @throws SocketException
    */
   public int getSendBufferSize() throws SocketException
@@ -2699,6 +3061,7 @@ public class ConnectionInfo
    * returns sum of send buffer size among all active flowpaths
    * 
    * @param size
+   * @return 
    * @throws SocketException
    */
   public int getReceiveBufferSize() throws SocketException
@@ -2817,6 +3180,9 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   */
   public void blockOnInputStreamSelector()
   {
     MSocketLogger.getLogger().fine(this.getServerOrClient() + " blockOnInputStreamSelector called");
@@ -2871,6 +3237,9 @@ public class ConnectionInfo
     }
   }
 
+  /**
+   *
+   */
   public void blockOnOutputStreamSelector()
   {
     MSocketLogger.getLogger().fine(this.getServerOrClient() + " blockOnOutputStreamSelector called");

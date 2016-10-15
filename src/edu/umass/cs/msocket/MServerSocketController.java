@@ -153,6 +153,11 @@ public class MServerSocketController implements Runnable
     }
   }
 
+  /**
+   *
+   * @param flowId
+   * @return
+   */
   public ConnectionInfo getConnectionInfo(Long flowId)
   {
     synchronized (cinfoMapOprMonitor)
@@ -262,6 +267,10 @@ public class MServerSocketController implements Runnable
     return 0;
   }
   
+  /**
+   *
+   * @return
+   */
   public DatagramSocket getDatagramSocket()
   {
     return ctrlSocket;

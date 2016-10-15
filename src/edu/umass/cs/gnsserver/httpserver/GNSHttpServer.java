@@ -120,7 +120,7 @@ public class GNSHttpServer {
   }
   
   /**
-   *
+   * Stop everything.
    */
   public void stop() {
     if (httpServer != null) {
@@ -157,7 +157,7 @@ public class GNSHttpServer {
   }
 
   /**
-   *
+   * The default handler.
    */
   protected class DefaultHandler implements HttpHandler {
 

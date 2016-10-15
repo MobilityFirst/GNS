@@ -74,10 +74,7 @@ public class CreateGuidTest {
     CreateEntity();
   }
 
-  /**
-   *
-   */
-  public void CreateEntity() {
+  private void CreateEntity() {
     String alias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {

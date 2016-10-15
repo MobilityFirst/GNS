@@ -124,7 +124,7 @@ public class Util {
   }
 
   /**
-   *
+   * Insure that assertions are enabled.
    */
   public static void assertAssertionsEnabled() {
     boolean assertOn = false;
@@ -384,7 +384,7 @@ public class Util {
   }
 
   /**
-   *
+   * Insure that assertions are enabled.
    */
   public void assertEnabled() {
     try {

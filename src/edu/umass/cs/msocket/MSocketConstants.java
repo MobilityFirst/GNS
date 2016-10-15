@@ -32,34 +32,97 @@ public class MSocketConstants
 {
 
   // indicates whether it is client or server migration
+
+  /**
+   *
+   */
   public static final int CLIENT_MIG     = 1;
+
+  /**
+   *
+   */
   public static final int SERVER_MIG     = 2;
 
   // denotes whether MSocket is at server or client side, used mainly in case of
   // proxy, as server needs to send keep alive and client needs to receive on a
   // timer
+
+  /**
+   *
+   */
   public static final int SERVER         = 1;
+
+  /**
+   *
+   */
   public static final int CLIENT         = 2;
 
+  /**
+   *
+   */
   public static final int ACTIVE         = 0;
+
+  /**
+   *
+   */
   public static final int FIN_WAIT_1     = 1;
+
+  /**
+   *
+   */
   public static final int FIN_WAIT_2     = 2;
+
+  /**
+   *
+   */
   public static final int CLOSING        = 3;
+
+  /**
+   *
+   */
   public static final int TIME_WAIT      = 4;
+
+  /**
+   *
+   */
   public static final int CLOSE_WAIT     = 5;
+
+  /**
+   *
+   */
   public static final int LAST_ACK       = 6;
+
+  /**
+   *
+   */
   public static final int CLOSED         = 7;
 
   // serverIP was given in MSocket constructor
+
+  /**
+   *
+   */
   public static final int CON_TO_IP      = 1;
 
   // server DNS name was given in MSocket constructor
+
+  /**
+   *
+   */
   public static final int CON_TO_DNSNAME = 2;
 
   // server GNS name was given in MSocket constructor
+
+  /**
+   *
+   */
   public static final int CON_TO_GNSNAME = 3;
 
   // server GNS GUID was given in MSocket constructor
+
+  /**
+   *
+   */
   public static final int CON_TO_GNSGUID = 4;
 
 }

@@ -73,12 +73,22 @@ public class GlobalPosition extends GlobalCoordinate
   }
 
   // synonym
+
+  /**
+   *
+   * @return
+   */
   public double getAltitude()
   {
     return getElevation();
   }
 
   // synonym
+
+  /**
+   *
+   * @return
+   */
   public double getAlt()
   {
     return getElevation();
@@ -94,6 +104,10 @@ public class GlobalPosition extends GlobalCoordinate
     mElevation = elevation;
   }
 
+  /**
+   *
+   * @param altitude
+   */
   public void setAltitude(double altitude)
   {
     setElevation(altitude);
@@ -148,7 +162,6 @@ public class GlobalPosition extends GlobalCoordinate
   /**
    * Compare this position to another object for equality.
    * 
-   * @param other
    * @return
    */
   @Override
@@ -166,6 +179,7 @@ public class GlobalPosition extends GlobalCoordinate
 
   /**
    * Get position as a string.
+   * @return 
    */
   @Override
   public String toString()

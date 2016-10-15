@@ -90,7 +90,7 @@ public class RemoteQuery extends ClientAsynchBase {
   }
 
   /**
-   *
+   * The RequestCallbackWithRequest.
    */
   public static interface RequestCallbackWithRequest extends RequestCallback {
 

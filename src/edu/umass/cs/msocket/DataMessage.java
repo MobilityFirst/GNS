@@ -37,19 +37,60 @@ import edu.umass.cs.msocket.logger.MSocketLogger;
  */
 public class DataMessage
 {
+
+  /**
+   *
+   */
   public static final int      DATA_MESG     = 0;
+
+  /**
+   *
+   */
   public static final int      DATA_ACK_REQ  = 2;
 
+  /**
+   *
+   */
   public static final int      FIN           = 1;
+
+  /**
+   *
+   */
   public static final int      ACK           = 3;
+
+  /**
+   *
+   */
   public static final int      ACK_FIN       = 4;
+
+  /**
+   *
+   */
   public static final int      DATA_ACK_REP  = 5;
+
+  /**
+   *
+   */
   public static final int      KEEP_ALIVE    = 6;
+
+  /**
+   *
+   */
   public static final int      CLOSE_FP    	 = 7;
+
+  /**
+   *
+   */
   public static final int      CLOSE_FP_ACK  = 8;
 
+  /**
+   *
+   */
   public static final String[] Mesg_Type_Str = {"DATA_MESG", "FIN", "DATA_ACK_REQ", "ACK", "ACK_FIN"};
 
+  /**
+   *
+   */
   public static final int      HEADER_SIZE   = (Integer.SIZE * 4) / 8 + Long.SIZE / 8;
   final int                    sendSeq;
   final int                    ackSeq;
@@ -88,6 +129,18 @@ public class DataMessage
    * We need to allow length>0 and msg==null in the case of a header-only
    * DataMessage.
    */
+
+  /**
+   *
+   * @param Type
+   * @param s
+   * @param a
+   * @param l
+   * @param RecvdBytes
+   * @param b
+   * @param offset
+   */
+
   public DataMessage(int Type, int s, int a, int l, long RecvdBytes, byte[] b, int offset)
   {
     this.Type = Type;
@@ -102,16 +155,28 @@ public class DataMessage
     msg = b;
   }
 
+  /**
+   *
+   * @return
+   */
   public static int sizeofHeader()
   {
     return HEADER_SIZE;
   }
 
+  /**
+   *
+   * @return
+   */
   public int size()
   {
     return sizeofHeader() + length;
   }
 
+  /**
+   *
+   * @return
+   */
   public byte[] getBytes()
   {
     ByteBuffer buf = ByteBuffer.allocate(DataMessage.HEADER_SIZE + (msg != null ? length : 0));
@@ -137,6 +202,13 @@ public class DataMessage
    * DataMessage object, i.e., there is no excess bytes beyond the header and
    * the message body. If that is not the case, it will return null.
    */
+
+  /**
+   *
+   * @param b
+   * @return
+   */
+
   public static DataMessage getDataMessage(byte[] b)
   {
     if (b == null || b.length < DataMessage.HEADER_SIZE)
@@ -147,6 +219,11 @@ public class DataMessage
     return dm;
   }
 
+  /**
+   *
+   * @param b
+   * @return
+   */
   public static DataMessage getDataMessageHeader(byte[] b)
   {
     if (b == null || b.length < DataMessage.HEADER_SIZE)
@@ -162,6 +239,10 @@ public class DataMessage
     return s;
   }
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args)
   {
     byte[] b = "Testing the waters to get a feel".getBytes();

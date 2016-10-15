@@ -21,7 +21,10 @@
 
 package edu.umass.cs.msocket.common.policies;
 
-
+/**
+ *
+ * @author westy
+ */
 public class ChunkInformation {
 	
 	// contains the chunk start seq num, 
@@ -32,24 +35,42 @@ public class ChunkInformation {
 	
 	private final long bytesRecvd;
 	
-	public ChunkInformation(int chunkStartSeqNum, int pathID, long bytesRecvd)
+  /**
+   *
+   * @param chunkStartSeqNum
+   * @param pathID
+   * @param bytesRecvd
+   */
+  public ChunkInformation(int chunkStartSeqNum, int pathID, long bytesRecvd)
 	{
 		this.chunkStartSeqNum = chunkStartSeqNum;
 		this.pathID = pathID;
 		this.bytesRecvd = bytesRecvd;
 	}
 	
-	public int getChunkStartSeqNum()
+  /**
+   *
+   * @return
+   */
+  public int getChunkStartSeqNum()
 	{
 		return chunkStartSeqNum;
 	}
 
-	public int getPathID()
+  /**
+   *
+   * @return
+   */
+  public int getPathID()
 	{
 		return pathID;
 	}
 	
-	public long getBytesRecvd()
+  /**
+   *
+   * @return
+   */
+  public long getBytesRecvd()
 	{
 		return this.bytesRecvd;
 	}

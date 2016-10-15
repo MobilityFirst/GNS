@@ -71,11 +71,6 @@ public class GeoLoadProxyPolicy extends ProxySelectionPolicy
    * Creates a new <code>GeoLoadProxyPolicy</code> object
    * 
    * @param proxyGroupName name of the proxy group
-   * @param gnsCredentials The GNS credentials to use, usually the account GUID
-   *          and default GNS (if null default GNS credentials are used). If the
-   *          guid entry is null in the credentials, the code will attempt a
-   *          non-signed read of active location services (only works if field
-   *          is readable for all).
    * @param numProxies number of proxies to return (this is a maximum, less
    *          proxies can be returned if not enough proxies match the criteria)
    * @param maxTCPConn maximum TCP connections that a proxy can have at the time
@@ -93,6 +88,7 @@ public class GeoLoadProxyPolicy extends ProxySelectionPolicy
   }
 
   /**
+   * @return 
    * @throws Exception if a GNS error occurs
    * @see edu.umass.cs.msocket.common.proxy.policies.ProxySelectionPolicy#getNewProxy()
    */

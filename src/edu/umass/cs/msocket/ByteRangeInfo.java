@@ -43,16 +43,28 @@ public class ByteRangeInfo
     this.socketId = socketId;
   }
 
+  /**
+   *
+   * @return
+   */
   public long getStartSeqNum()
   {
     return startSeqNum;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getLength()
   {
     return length;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getSocketId()
   {
     return socketId;

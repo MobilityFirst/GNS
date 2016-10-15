@@ -26,12 +26,19 @@ import java.io.OutputStream;
 
 import edu.umass.cs.msocket.MSocket;
 
-
+/**
+ *
+ * @author westy
+ */
 public class ContextSocketOutputStream extends OutputStream
 {
 	private final MSocket thisMSocket;
 
-	public ContextSocketOutputStream(MSocket accptMSocket) 
+  /**
+   *
+   * @param accptMSocket
+   */
+  public ContextSocketOutputStream(MSocket accptMSocket) 
 	{
 		this.thisMSocket = accptMSocket;
 	}

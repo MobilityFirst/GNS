@@ -32,18 +32,31 @@ public class FlowPathResult {
 	private int socketID 		= -1;
 	private boolean successful			= false;
 	
-	public FlowPathResult(int socketID, boolean successful)
+  /**
+   *
+   * @param socketID
+   * @param successful
+   */
+  public FlowPathResult(int socketID, boolean successful)
 	{
 		this.socketID   = socketID;
 		this.successful = successful;
 	}
 	
-	public int getSocketID()
+  /**
+   *
+   * @return
+   */
+  public int getSocketID()
 	{
 		return socketID;
 	}
 	
-	public boolean getSuccessful()
+  /**
+   *
+   * @return
+   */
+  public boolean getSuccessful()
 	{
 		return successful;
 	}	

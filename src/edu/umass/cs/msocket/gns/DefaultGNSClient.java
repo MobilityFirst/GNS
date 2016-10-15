@@ -48,10 +48,21 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
  */
 public class DefaultGNSClient
 {
-	public static final String GNS_CONFIG_DIRNAME	= "gnsConfigFiles";
+
+  /**
+   *
+   */
+  public static final String GNS_CONFIG_DIRNAME	= "gnsConfigFiles";
 	
-	public static final int PROXY_PORT			  	= 3033;
-	public static final String PROXY_NAME 		  	= "ananas.cs.umass.edu";
+  /**
+   *
+   */
+  public static final int PROXY_PORT			  	= 3033;
+
+  /**
+   *
+   */
+  public static final String PROXY_NAME 		  	= "ananas.cs.umass.edu";
 	
 	private static DefaultGNSClient defualtObj    	= null;
 	private static final Object lockObj 	      	= new Object();
@@ -295,7 +306,11 @@ public class DefaultGNSClient
     	
 	}
 	
-	public static String getDefaultGNSName()
+  /**
+   *
+   * @return
+   */
+  public static String getDefaultGNSName()
 	{
 		if(defualtObj == null)
 		{
@@ -305,7 +320,11 @@ public class DefaultGNSClient
 		return gnsClient.getGNSProvider();
 	}
 	
-	public static GNSClient getGnsClient()
+  /**
+   *
+   * @return
+   */
+  public static GNSClient getGnsClient()
 	{
 		if(defualtObj == null)
 		{
@@ -315,7 +334,11 @@ public class DefaultGNSClient
 		return gnsClient;
 	}
 	
-	public static GuidEntry getMyGuidEntry()
+  /**
+   *
+   * @return
+   */
+  public static GuidEntry getMyGuidEntry()
 	{
 		if(defualtObj == null)
 		{
@@ -336,8 +359,11 @@ public class DefaultGNSClient
 		}
 	}
 	
-	
-	public static void main(String [] args)
+  /**
+   *
+   * @param args
+   */
+  public static void main(String [] args)
 	{
 		GNSClient gnsClient = DefaultGNSClient.getGnsClient();
 		System.out.println("GNS name "+gnsClient.getGNSProvider());

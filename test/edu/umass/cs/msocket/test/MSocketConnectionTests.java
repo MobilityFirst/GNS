@@ -127,6 +127,13 @@ public class MSocketConnectionTests
     }
   }
 
+  /**
+   *
+   * @param is
+   * @param os
+   * @param value
+   * @throws IOException
+   */
   protected void echoTest(InputStream is, OutputStream os, int value) throws IOException
   {
 	  System.out.println("MSocket writing " + value);

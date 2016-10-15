@@ -31,15 +31,36 @@ package edu.umass.cs.msocket;
  * @version 1.0
  */
 public class SingleSocketReadReturnInfo {
-	public static final int MINUSONE 		  =1;
-	public static final int DATAMESSAGEHEADER =2;
-	public static final int COPIEDINPUTBUFFER =3;
-	public static final int COPIEDAPPBUFFER   =4;
+
+  /**
+   *
+   */
+  public static final int MINUSONE 		  =1;
+
+  /**
+   *
+   */
+  public static final int DATAMESSAGEHEADER =2;
+
+  /**
+   *
+   */
+  public static final int COPIEDINPUTBUFFER =3;
+
+  /**
+   *
+   */
+  public static final int COPIEDAPPBUFFER   =4;
 	
 	int typeOfRead   =-1;
 	int numBytesRead =-1;
 	
-	public SingleSocketReadReturnInfo(int typeOfRead, int numBytesRead) {
+  /**
+   *
+   * @param typeOfRead
+   * @param numBytesRead
+   */
+  public SingleSocketReadReturnInfo(int typeOfRead, int numBytesRead) {
 		this.typeOfRead = typeOfRead;
 		this.numBytesRead = numBytesRead;
 	}

@@ -283,7 +283,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   }
 
   /**
-   *
+   * Reset everything.
    */
   @Override
   public void reset() {
@@ -329,7 +329,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   }
 
   /**
-   *
+   * Was this just rconfigured.
    */
   @Override
   public void justReconfigured() {

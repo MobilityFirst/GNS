@@ -1456,7 +1456,7 @@ public enum CommandType {
   private CommandType[] invokedCommands;
 
   /**
-   *
+   * The command category.
    */
   public enum CommandCategory {
 
@@ -2015,12 +2015,12 @@ public enum CommandType {
   }
 
   /**
-   *
+   * The CommandTypeTest.
    */
   public static class CommandTypeTest extends DefaultTest {
 
     /**
-     *
+     * Enforce checks.
      */
     @Test
     public void enforceChecks() {

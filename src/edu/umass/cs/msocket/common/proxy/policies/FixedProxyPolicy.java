@@ -53,6 +53,7 @@ public class FixedProxyPolicy extends ProxySelectionPolicy
   }
 
   /**
+   * @return 
    * @see edu.umass.cs.msocket.common.proxy.policies.ProxySelectionPolicy#getNewProxy()
    */
   @Override

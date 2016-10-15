@@ -31,18 +31,38 @@ public class ContextSocketConfig
 {
 	// indicates usage of GNS to send the value update, if set to
 	// false value update is directly sent o CS.
+
+  /**
+   *
+   */
 	public static final boolean USE_GNS					= false;
 	
 	
 	// if set to true, a thread in ContextServiceSingleton periodically
 	// checks for refreshes in any group.
+
+  /**
+   *
+   */
 	public static final boolean PERIODIC_GROUP_UPDATE	= true;
 	
 	// per 1 sec
+
+  /**
+   *
+   */
 	public static final int	GROUP_UPDATE_DELAY			= 1000;
 	
 	//FIXME: need some good to determine this info. or some global address like GNS
+
+  /**
+   *
+   */
 	public static final String contextNodeIP			= "127.0.0.1";
-	public static final int contextNodePort				= 5000;
+
+  /**
+   *
+   */
+  public static final int contextNodePort				= 5000;
 	
 }

@@ -79,6 +79,7 @@ public class StartWatchdog extends ConsoleCommand
 
   /**
    * Override execute to not check for existing connectivity
+   * @throws java.lang.Exception
    */
   public void execute(String commandText) throws Exception
   {

@@ -96,6 +96,7 @@ public class ProxyInfo
   }
 
   /**
+   * @return 
    * @see java.lang.Object#toString()
    */
   @Override

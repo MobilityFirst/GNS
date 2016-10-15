@@ -61,7 +61,12 @@ public class InBufferHeapImpl {
 	    rbuf = new PriorityQueue<InBufferStorageChunk>(10, comparator);
 	}
 
-	  public synchronized boolean putInBuffer(InBufferStorageChunk Obj)
+  /**
+   *
+   * @param Obj
+   * @return
+   */
+  public synchronized boolean putInBuffer(InBufferStorageChunk Obj)
 	  {
 		MSocketLogger.getLogger().fine("putInBuffer "+rbuf.size());
 	    byteRecvInInbuffer += Obj.chunkSize; // may not be accurate if there are
@@ -77,12 +82,24 @@ public class InBufferHeapImpl {
 	    return true;
 	  }
 	
-	  public int getInBuffer(byte[] b)
+  /**
+   *
+   * @param b
+   * @return
+   */
+  public int getInBuffer(byte[] b)
 	  {
 	    return getInBuffer(b, 0, b.length);
 	  }
 	
-	  public synchronized int getInBuffer(byte[] b, int offset, int length)
+  /**
+   *
+   * @param b
+   * @param offset
+   * @param length
+   * @return
+   */
+  public synchronized int getInBuffer(byte[] b, int offset, int length)
 	  {
 		MSocketLogger.getLogger().fine("getInBuffer called  "+ " size "+ rbuf.size());
 	    int numread = 0;
@@ -165,6 +182,8 @@ public class InBufferHeapImpl {
 	 * if that is the case then it is returned directly from stream
 	 * and not stored in input buffer.
 	 * 
+   * @param chunckStartSeq
+   * @param chunkLength
 	 * @return
 	 */
 	public synchronized boolean isDataInOrder(int chunckStartSeq, int chunkLength) {
@@ -181,10 +200,12 @@ public class InBufferHeapImpl {
 	 * Copy data read from stream to the app buffer. Also updates the dataReadSeqNum 
 	 * It bypasses the storing of data in input buffer
 	 * @param readFromStream
-	 * @param srcLen
+   * @param startSeqNum
 	 * @param appBuffer
+   * @param chunkLen
 	 * @param offset
 	 * @param appLen
+   * @return 
 	 */
 	public synchronized int copyOrderedDataToAppBuffer(byte[] readFromStream, int startSeqNum, 
 			int chunkLen, byte[] appBuffer, int offset, int appLen) 
@@ -207,7 +228,11 @@ public class InBufferHeapImpl {
 		return actualCopied;
 	}
 		
-	public long getDataReadSeqNum() {
+  /**
+   *
+   * @return
+   */
+  public long getDataReadSeqNum() {
 		return dataReadSeq;
 	}
 		
@@ -219,7 +244,11 @@ public class InBufferHeapImpl {
 		return rbuf.size();
 	}
 	
-	public static void main(String[] args)
+  /**
+   *
+   * @param args
+   */
+  public static void main(String[] args)
     {
     }
 	

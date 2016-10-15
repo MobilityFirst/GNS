@@ -57,6 +57,9 @@ public class FlowIDToControllerMapping implements Runnable
   private boolean                       isClosed                = false;
   private KeepAliveThread               kat                     = null;
 
+  /**
+   *
+   */
   public class KeepAliveThread implements Runnable
   {
     FlowIDToControllerMapping Obj = null;
@@ -90,6 +93,7 @@ public class FlowIDToControllerMapping implements Runnable
   }
 
   /**
+   * @param UDPSocketAddress
    * @throws SocketException
    */
   public FlowIDToControllerMapping(InetAddress UDPSocketAddress) throws SocketException
@@ -100,11 +104,17 @@ public class FlowIDToControllerMapping implements Runnable
     kat = new KeepAliveThread(this);
   }
 
+  /**
+   *
+   */
   public void startKeepAliveThread()
   {
     (new Thread(kat)).start();
   }
 
+  /**
+   *
+   */
   public void closeUDPController()
   {
     isClosed = true;
@@ -115,7 +125,8 @@ public class FlowIDToControllerMapping implements Runnable
   }
 
   /**
-   * @return
+   * @param flowID
+   * @param cinfo
    */
   public void addControllerMapping(Long flowID, ConnectionInfo cinfo)
   {
@@ -124,7 +135,7 @@ public class FlowIDToControllerMapping implements Runnable
 
   /**
    * @param flowID
-   * @param cinfo
+   * @return 
    */
   public ConnectionInfo removeControllerMapping(Long flowID)
   {

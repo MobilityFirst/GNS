@@ -42,12 +42,32 @@ import edu.umass.cs.msocket.MSocket;
 import edu.umass.cs.msocket.gns.GNSCalls;
 import edu.umass.cs.msocket.logger.MSocketLogger;
 
+/**
+ *
+ * @author westy
+ */
 public class ContextWriterInternals
 {
-	public static final int GET 										= 1;
-	public static final int PUT 										= 2;
-	public static final int GET_ALL 									= 3;
-	public static final int REMOVE  									= 4;
+
+  /**
+   *
+   */
+  public static final int GET 										= 1;
+
+  /**
+   *
+   */
+  public static final int PUT 										= 2;
+
+  /**
+   *
+   */
+  public static final int GET_ALL 									= 3;
+
+  /**
+   *
+   */
+  public static final int REMOVE  									= 4;
 	
 	private final String writerName;
 	private final String writerGUID;
@@ -67,8 +87,10 @@ public class ContextWriterInternals
 	
 	private ConcurrentMap<String, ContextSocket> memberConnectionMap 	= null;
 	
-	
-	public boolean csQueryLockFlag										= false;
+  /**
+   *
+   */
+  public boolean csQueryLockFlag										= false;
 	
 	private final ExecutorService     connectionSetupPool;
 	
@@ -76,8 +98,13 @@ public class ContextWriterInternals
 	// for exp measurements
 	//private long startTime 											= 0;
 
-	
-	public ContextWriterInternals(String writerName, String groupQuery) throws Exception
+  /**
+   *
+   * @param writerName
+   * @param groupQuery
+   * @throws Exception
+   */
+  public ContextWriterInternals(String writerName, String groupQuery) throws Exception
 	{
 		csClient 
 			= new ContextServiceClient<Integer>(ContextSocketConfig.contextNodeIP, ContextSocketConfig.contextNodePort);
@@ -113,7 +140,11 @@ public class ContextWriterInternals
 		//System.out.println("MSocketGroupWriterInternals "+(lend-lstart));
 	}
 	
-	public ConcurrentMap<String, ContextSocket> getConnectionMap()
+  /**
+   *
+   * @return
+   */
+  public ConcurrentMap<String, ContextSocket> getConnectionMap()
 	{
 		return memberConnectionMap;
 	}
@@ -187,8 +218,11 @@ public class ContextWriterInternals
 	{
 		System.out.println(groupMembers);
 	}*/
-	
-	public synchronized void createGroup()
+
+
+  /**
+   */
+  public synchronized void createGroup()
 	{
 		MSocketLogger.getLogger().fine("group creation started");
 		if(ContextSocketConfig.USE_GNS)
@@ -214,22 +248,41 @@ public class ContextWriterInternals
 		//System.out.println("group creation complete "+(end - startTime) );
 	}
 	
-	public String getGroupQuery()
+  /**
+   *
+   * @return
+   */
+  public String getGroupQuery()
 	{
 		return groupQuery;
 	}
 	
-	public void setGroupUpdateDelay(int delay) 
+  /**
+   *
+   * @param delay
+   */
+  public void setGroupUpdateDelay(int delay) 
 	{
 		GROUP_UPDATE_DELAY = delay;
 	}
 	
-	public int getGroupUpdateDelay()
+  /**
+   *
+   * @return
+   */
+  public int getGroupUpdateDelay()
 	{
 		return GROUP_UPDATE_DELAY;
 	}
 	
-	public synchronized Object writerConnectionMapOperations(int typeOfOper, String aliasMember, ContextSocket toPut)
+  /**
+   *
+   * @param typeOfOper
+   * @param aliasMember
+   * @param toPut
+   * @return
+   */
+  public synchronized Object writerConnectionMapOperations(int typeOfOper, String aliasMember, ContextSocket toPut)
 	{
 		switch(typeOfOper)
 		{
@@ -257,7 +310,11 @@ public class ContextWriterInternals
 		return null;
 	}
 	
-	public void setGroupGUID(String grpGUID)
+  /**
+   *
+   * @param grpGUID
+   */
+  public void setGroupGUID(String grpGUID)
 	{
 		this.groupGUID = grpGUID;
 	}
@@ -316,13 +373,21 @@ public class ContextWriterInternals
 		return numAttr;
 	}
 	
-	public void close()
+  /**
+   */
+  public void close()
 	{
 		//contextServCalls.stopThis();
 		//FIXME: need to close existing msockets.
 	}
 	
-	public void writeAll(byte[] arrayToWrite, int offset, int length)
+  /**
+   *
+   * @param arrayToWrite
+   * @param offset
+   * @param length
+   */
+  public void writeAll(byte[] arrayToWrite, int offset, int length)
 	{
 		// so that we don't need to do iterator, which can be used only in 
 		// one thread at once.

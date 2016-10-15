@@ -33,13 +33,20 @@ import edu.umass.cs.msocket.MultipathPolicy;
 import edu.umass.cs.msocket.SocketInfo;
 import edu.umass.cs.msocket.logger.MSocketLogger;
 
+/**
+ *
+ * @author westy
+ */
 public class ContigousWritingPolicy extends MultipathWritingPolicy {
 
 	// represents the current SocketID on which data is being written into.
 	private int currSocketID				= -1;
 	
-	
-	public ContigousWritingPolicy(ConnectionInfo cinfo)
+  /**
+   *
+   * @param cinfo
+   */
+  public ContigousWritingPolicy(ConnectionInfo cinfo)
 	{
 	    this.cinfo = cinfo;
 	    //cinfo.startRetransmissionThread();
@@ -202,7 +209,12 @@ public class ContigousWritingPolicy extends MultipathWritingPolicy {
 		  
 	}
 
-	protected SocketInfo getNextSocketToWrite() throws IOException {
+  /**
+   *
+   * @return
+   * @throws IOException
+   */
+  protected SocketInfo getNextSocketToWrite() throws IOException {
 		
 		// socket has free space in sendbuffers
 		if( (currSocketID != -1) && ( (Integer)cinfo.getSocketInfo(currSocketID).queueOperations(SocketInfo.QUEUE_SIZE, null) == 0) 

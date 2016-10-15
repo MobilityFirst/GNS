@@ -62,7 +62,17 @@ public class MSocket extends Socket implements MultipathInterface
 	 * @version 1.0
 	 */
 	
-  public static enum MSocketType {MSOCKET_SERVER, LEGACY_SERVER};
+  public static enum MSocketType {
+
+    /**
+     *
+     */
+    MSOCKET_SERVER, 
+
+    /**
+     *
+     */
+    LEGACY_SERVER};
   /**
    * MSocket handshake timeout (used when connecting to a non MServerSocket to
    * not be blocked)
@@ -85,6 +95,9 @@ public class MSocket extends Socket implements MultipathInterface
   private boolean             isBound;
   private boolean             isClosed;
   
+  /**
+   *
+   */
   protected ConnectionInfo    connectionInfo			= null;
 
   /**
@@ -135,8 +148,8 @@ public class MSocket extends Socket implements MultipathInterface
 
    * @param address - the remote address
    * @param port - the remote port
-   * @param localAddr - the local address the socket is bound to, or null for the anyLocal address.
    * @param the local port the socket is bound to or zero for a system selected free port.
+   * @param localPort
    * @throws IOException - if an I/O error occurs when creating the socket.
    */
   public MSocket(InetAddress address, int port, InetAddress localAddr, int localPort) throws IOException
@@ -362,6 +375,7 @@ public class MSocket extends Socket implements MultipathInterface
    * 
    * @param address - the IP address.
    * @param port - the port number.
+   * @param serverType
    * @throws IOException - if an I/O error occurs when creating the socket.
    */
   public MSocket(InetAddress address, int port, MSocketType serverType) throws IOException
@@ -393,6 +407,7 @@ public class MSocket extends Socket implements MultipathInterface
   /**
    * Binds the MSocket locally to the specified address
    * 
+   * @throws java.io.IOException
    * @see java.net.Socket#bind(java.net.SocketAddress)
    */
   public void bind(SocketAddress bindpoint) throws IOException
@@ -409,6 +424,7 @@ public class MSocket extends Socket implements MultipathInterface
    * Closes the MSocket and releases the state of the socket. MSocket close()
    * doesn't close MobilityManagerClient
    * 
+   * @throws java.io.IOException
    * @see java.net.Socket#close()
    */
   public void close() throws IOException
@@ -469,6 +485,7 @@ public class MSocket extends Socket implements MultipathInterface
   
   /**
    * Connects this socket to the server.
+   * @throws java.io.IOException
    * @see java.net.Socket#connect(java.net.SocketAddress)
    */
   public void connect(SocketAddress endpoint) throws IOException
@@ -480,6 +497,7 @@ public class MSocket extends Socket implements MultipathInterface
    * Connects this socket to the server with a specified timeout value.
    * timeout is ignored and it blocks until the connection completes
    * The connection will then block until established or an error occurs.
+   * @throws java.io.IOException
    */
   public void connect(SocketAddress endpoint, int timeout) throws IOException
   {
@@ -522,6 +540,7 @@ public class MSocket extends Socket implements MultipathInterface
   }
   
   /**
+   * @return 
    * @see java.net.Socket#getInetAddress()
    */
   public InetAddress getInetAddress()
@@ -537,6 +556,7 @@ public class MSocket extends Socket implements MultipathInterface
   /**
    * Local address of any flowpath is returned
    * 
+   * @return 
    * @see java.net.Socket#getLocalAddress()
    */
   public InetAddress getLocalAddress()
@@ -552,6 +572,7 @@ public class MSocket extends Socket implements MultipathInterface
 
   /**
    * Remote port of any flowpath is returned
+   * @return 
    * @see java.net.Socket#getPort()
    */
   public int getPort()
@@ -568,6 +589,7 @@ public class MSocket extends Socket implements MultipathInterface
   /**
    * Local port of any flowpath is returned
    * 
+   * @return 
    * @see java.net.Socket#getLocalPort()
    */
   public int getLocalPort()
@@ -584,6 +606,7 @@ public class MSocket extends Socket implements MultipathInterface
   /**
    * Remote socket address of any flowpath is returned
    * 
+   * @return 
    * @see java.net.Socket#getRemoteSocketAddress()
    */
   public SocketAddress getRemoteSocketAddress()
@@ -600,6 +623,7 @@ public class MSocket extends Socket implements MultipathInterface
   /**
    * Local socket address of any flowpath is returned
    * 
+   * @return 
    * @see java.net.Socket#getLocalSocketAddress()
    */
   public SocketAddress getLocalSocketAddress()
@@ -627,6 +651,7 @@ public class MSocket extends Socket implements MultipathInterface
   /**
    * MSocket doesn't exposes underlying socket channels.
    * 
+   * @return 
    * @see java.net.Socket#getChannel()
    * @throws UnsupportedOperationException
    */
@@ -639,6 +664,8 @@ public class MSocket extends Socket implements MultipathInterface
   /**
    * Returns the Input stream, should be used for all MSocket read operations
    * 
+   * @return 
+   * @throws java.io.IOException 
    * @see java.net.Socket#getInputStream()
    */
   public InputStream getInputStream() throws IOException
@@ -655,6 +682,8 @@ public class MSocket extends Socket implements MultipathInterface
   /**
    * Returns the output stream, should be used for all mSocket write operations
    * 
+   * @return 
+   * @throws java.io.IOException 
    * @see java.net.Socket#getOutputStream()
    */
   public OutputStream getOutputStream() throws IOException
@@ -672,6 +701,7 @@ public class MSocket extends Socket implements MultipathInterface
    * Sets TcpNodelay on all the active flow paths, between the server and
    * client
    * 
+   * @throws java.net.SocketException
    * @see java.net.Socket#setTcpNoDelay(boolean)
    */
   public void setTcpNoDelay(boolean on) throws SocketException
@@ -688,6 +718,8 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
+   * @throws java.net.SocketException
    * @see java.net.Socket#getTcpNoDelay()
    */
   public boolean getTcpNoDelay() throws SocketException
@@ -699,6 +731,7 @@ public class MSocket extends Socket implements MultipathInterface
    * sets SoLinger on all the active flow paths, between the server and the
    * client
    * 
+   * @throws java.net.SocketException
    * @see java.net.Socket#setSoLinger(boolean, int)
    */
   public void setSoLinger(boolean on, int linger) throws SocketException
@@ -715,6 +748,8 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
+   * @throws java.net.SocketException
    * @see java.net.Socket#getSoLinger()
    */
   public int getSoLinger() throws SocketException
@@ -726,6 +761,7 @@ public class MSocket extends Socket implements MultipathInterface
    * mSockets do not support urgent data. This method systematically throws an
    * IOException.
    * 
+   * @throws java.io.IOException
    * @see java.net.Socket#sendUrgentData(int)
    */
   public void sendUrgentData(int data) throws IOException
@@ -737,6 +773,7 @@ public class MSocket extends Socket implements MultipathInterface
    * mSockets do not support urgent data. This method systematically throws a
    * SocketException.
    * 
+   * @throws java.net.SocketException
    * @see java.net.Socket#setOOBInline(boolean)
    */
   public void setOOBInline(boolean on) throws SocketException
@@ -748,6 +785,8 @@ public class MSocket extends Socket implements MultipathInterface
    * mSockets do not support urgent data. This method systematically returns
    * false.
    * 
+   * @return 
+   * @throws java.net.SocketException
    * @see java.net.Socket#getOOBInline()
    */
   public boolean getOOBInline() throws SocketException
@@ -759,6 +798,7 @@ public class MSocket extends Socket implements MultipathInterface
    * mSockets currently do not support timeouts. This method systematically
    * throws a SocketException.
    * 
+   * @throws java.net.SocketException
    * @see java.net.Socket#setSoTimeout(int)
    */
   public void setSoTimeout(int timeout) throws SocketException
@@ -770,6 +810,8 @@ public class MSocket extends Socket implements MultipathInterface
    * mSockets currently do not support timeouts. This method systematically
    * returns 0.
    * 
+   * @return 
+   * @throws java.net.SocketException 
    * @see java.net.Socket#getSoTimeout()
    */
   public int getSoTimeout() throws SocketException
@@ -780,6 +822,7 @@ public class MSocket extends Socket implements MultipathInterface
   /**
    * Sets the send buffer size on all active flow paths, between the server the
    * client
+   * @throws java.net.SocketException
    */
   public void setSendBufferSize(int size) throws SocketException
   {
@@ -795,6 +838,8 @@ public class MSocket extends Socket implements MultipathInterface
 
   /**
    * returns the sum of sendbuffer sizes on all flowpaths
+   * @return 
+   * @throws java.net.SocketException 
    */
   public int getSendBufferSize() throws SocketException
   {
@@ -809,6 +854,7 @@ public class MSocket extends Socket implements MultipathInterface
    * Sets the recv buffer size on all the active flowpaths, between the server
    * and the client
    * 
+   * @throws java.net.SocketException
    * @see java.net.Socket#setReceiveBufferSize(int)
    */
   public void setReceiveBufferSize(int size) throws SocketException
@@ -824,6 +870,8 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
+   * @throws java.net.SocketException
    * @see java.net.Socket#getReceiveBufferSize()
    */
   public int getReceiveBufferSize() throws SocketException
@@ -836,6 +884,8 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
+   * @throws java.net.SocketException 
    * @see java.net.Socket#getTrafficClass()
    */
   public int getTrafficClass() throws SocketException
@@ -847,6 +897,7 @@ public class MSocket extends Socket implements MultipathInterface
    * Sets the traffic class on all the active flow paths, between the server and
    * the client
    * 
+   * @throws java.net.SocketException
    * @see java.net.Socket#setTrafficClass(int)
    */
   public void setTrafficClass(int tc) throws SocketException
@@ -866,6 +917,7 @@ public class MSocket extends Socket implements MultipathInterface
    * Sets keep alive on all the active flow paths, between the server and the
    * client.
    * 
+   * @throws java.net.SocketException
    * @see java.net.Socket#setKeepAlive(boolean)
    */
   public void setKeepAlive(boolean on) throws SocketException
@@ -882,6 +934,8 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
+   * @throws java.net.SocketException 
    * @see java.net.Socket#getKeepAlive()
    */
   public boolean getKeepAlive() throws SocketException
@@ -893,6 +947,7 @@ public class MSocket extends Socket implements MultipathInterface
    * mSockets currently do not support timeouts. This method systematically
    * throws a SocketException.
    * 
+   * @throws java.net.SocketException
    * @see java.net.Socket#setReuseAddress(boolean)
    */
   public void setReuseAddress(boolean on) throws SocketException
@@ -904,6 +959,8 @@ public class MSocket extends Socket implements MultipathInterface
    * mSockets currently do not support reuse address. This method systematically
    * returns false.
    * 
+   * @return 
+   * @throws java.net.SocketException
    * @see java.net.Socket#getReuseAddress()
    */
   public boolean getReuseAddress() throws SocketException
@@ -912,6 +969,7 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @throws java.io.IOException
    * @see java.net.Socket#shutdownInput()
    */
   public void shutdownInput() throws IOException
@@ -920,6 +978,7 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @throws java.io.IOException
    * @see java.net.Socket#shutdownOutput()
    */
   public void shutdownOutput() throws IOException
@@ -936,6 +995,7 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
    * @see java.net.Socket#isConnected()
    */
   public boolean isConnected()
@@ -944,6 +1004,7 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
    * @see java.net.Socket#isBound()
    */
   public boolean isBound()
@@ -952,6 +1013,7 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
    * @see java.net.Socket#isClosed()
    */
   public boolean isClosed()
@@ -960,6 +1022,7 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
    * @see java.net.Socket#isInputShutdown()
    */
   public boolean isInputShutdown()
@@ -968,6 +1031,7 @@ public class MSocket extends Socket implements MultipathInterface
   }
 
   /**
+   * @return 
    * @see java.net.Socket#isOutputShutdown()
    */
   public boolean isOutputShutdown()

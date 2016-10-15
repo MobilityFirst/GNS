@@ -43,7 +43,12 @@ import edu.umass.cs.msocket.logger.MSocketLogger;
  */
 public class FullDuplicationWritingPolicy extends MultipathWritingPolicy 
 {	
-	public FullDuplicationWritingPolicy(ConnectionInfo cinfo)
+
+  /**
+   *
+   * @param cinfo
+   */
+  public FullDuplicationWritingPolicy(ConnectionInfo cinfo)
 	  {
 	    this.cinfo = cinfo;
 	  }
@@ -241,7 +246,12 @@ public class FullDuplicationWritingPolicy extends MultipathWritingPolicy
       cinfo.emptyTheWriteQueues();
 	}
 
-	protected SocketInfo getNextSocketToWrite() throws IOException {
+  /**
+   *
+   * @return
+   * @throws IOException
+   */
+  protected SocketInfo getNextSocketToWrite() throws IOException {
 		
 		return null;
 	}

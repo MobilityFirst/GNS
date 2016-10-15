@@ -21,6 +21,10 @@
 
 package edu.umass.cs.msocket.proxy.legacyforwarder;
 
+/**
+ *
+ * @author westy
+ */
 public class LegacyProxyServerSocket 
 {
 	  /*private ServerSocketChannel   	ssc        = null;

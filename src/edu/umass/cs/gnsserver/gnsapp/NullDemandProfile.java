@@ -125,7 +125,7 @@ public class NullDemandProfile extends AbstractDemandProfile {
   }
 
   /**
-   *
+   * Reset this.
    */
   @Override
   public void reset() {
@@ -157,7 +157,7 @@ public class NullDemandProfile extends AbstractDemandProfile {
   }
 
   /**
-   *
+   * * Was this just rconfigured.
    */
   @Override
   public void justReconfigured() {

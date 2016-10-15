@@ -67,10 +67,7 @@ public class MobilityManagerClient implements Runnable
   /**
    * registers client side MSocket with the mobility manager
    * 
-   * @param ControllerIPAddress
    * @param cInfo
-   * @throws SocketException
-   * @throws UnknownHostException
    */
   public synchronized static void registerWithManager(ConnectionInfo cInfo)
   {
@@ -88,10 +85,7 @@ public class MobilityManagerClient implements Runnable
   /**
    * registers client side MSocket with the mobility manager
    * 
-   * @param ControllerIPAddress
    * @param cInfo
-   * @throws SocketException
-   * @throws UnknownHostException
    */
   public synchronized static void unregisterWithManager(ConnectionInfo cInfo)
   {

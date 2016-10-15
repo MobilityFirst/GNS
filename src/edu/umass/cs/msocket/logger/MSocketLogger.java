@@ -4,6 +4,10 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ *
+ * @author westy
+ */
 public class MSocketLogger 
 {
 	//private static Logger LOGGER = Logger.getLogger(ContextServiceLogger.class.getName());
@@ -22,7 +26,11 @@ public class MSocketLogger
         l0.removeHandler(l0.getHandlers()[0]);
 	}
 	
-	public static Logger getLogger()
+  /**
+   *
+   * @return
+   */
+  public static Logger getLogger()
 	{
 		return LOGGER;
 			

@@ -36,6 +36,10 @@ import edu.umass.cs.msocket.logger.MSocketLogger;
 
 public class OutBuffer
 {
+
+  /**
+   *
+   */
   public static final int MAX_OUTBUFFER_SIZE = 30000000;                                   // 30MB
 
   ArrayList<byte[]>       sbuf               = null;
@@ -93,6 +97,13 @@ public class OutBuffer
     sbuf = new ArrayList<byte[]>();
   }
 
+  /**
+   *
+   * @param src
+   * @param offset
+   * @param length
+   * @return
+   */
   public synchronized boolean add(byte[] src, int offset, int length)
   {
     if (src.length < offset + length)
@@ -113,6 +124,10 @@ public class OutBuffer
     return true;
   }
 
+  /**
+   *
+   * @return
+   */
   public synchronized int getOutbufferSize()
   {
     int i = 0;
@@ -124,11 +139,21 @@ public class OutBuffer
     return sizeinbytes;
   }
 
+  /**
+   *
+   * @param b
+   * @return
+   */
   public boolean add(byte[] b)
   {
     return add(b, 0, b.length);
   }
 
+  /**
+   *
+   * @param ack
+   * @return
+   */
   public synchronized boolean ack(long ack)
   {
     if (ack - dataBaseSeq <= 0 || ack - dataSendSeq > 0)
@@ -148,6 +173,9 @@ public class OutBuffer
     return true;
   }
 
+  /**
+   *
+   */
   public void freeOutBuffer()
   {
     long curStart = dataStartSeq;
@@ -172,16 +200,27 @@ public class OutBuffer
     }
   }
 
+  /**
+   *
+   */
   public synchronized void releaseOutBuffer()
   {
     sbuf.clear();
   }
 
+  /**
+   *
+   * @return
+   */
   public synchronized long getDataBaseSeq()
   {
     return dataBaseSeq;
   }
 
+  /**
+   *
+   * @param bs
+   */
   public synchronized void setDataBaseSeq(long bs)
   {
     if ((bs - dataStartSeq >= 0) && (bs - dataSendSeq <= 0) && (bs > dataBaseSeq))
@@ -191,6 +230,10 @@ public class OutBuffer
     }
   }
 
+  /**
+   *
+   * @return
+   */
   public synchronized byte[] getUnacked()
   {
     if (dataSendSeq - dataBaseSeq <= 0)
@@ -212,6 +255,12 @@ public class OutBuffer
     return buf.array();
   }
 
+  /**
+   *
+   * @param startSeqNum
+   * @param EndSeqNum
+   * @return
+   */
   public synchronized byte[] getDataFromOutBuffer(long startSeqNum, long EndSeqNum)
   {
     if (EndSeqNum - startSeqNum <= 0)
@@ -257,6 +306,10 @@ public class OutBuffer
     return s;
   }
 
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args)
   {
 

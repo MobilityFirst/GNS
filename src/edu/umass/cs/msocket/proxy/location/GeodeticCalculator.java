@@ -34,6 +34,12 @@ public class GeodeticCalculator
 {
   private final static double TwoPi = 2.0 * Math.PI;
 
+  /**
+   *
+   * @param start
+   * @param end
+   * @return
+   */
   public static GeodeticMeasurement calculateGeodeticMeasurement(GlobalPosition start, GlobalPosition end)
   {
     return calculateGeodeticMeasurement(Ellipsoid.WGS84, start, end);
