@@ -72,7 +72,7 @@ public class ClientFullTest {
   private static GuidEntry guidToDeleteEntry;
 
   /**
-   *
+   * Run the exhaustive client test.
    */
   public ClientFullTest() {
     if (client == null) {

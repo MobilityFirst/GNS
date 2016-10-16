@@ -369,7 +369,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * A test that pulls together a bunch of end--to-end tests.
    */
   public ServerIntegrationTest() {
 
@@ -405,7 +405,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Creates a guid.
    */
   @Test
   public void test_010_CreateEntity() {
@@ -421,7 +421,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Removes a guid.
    */
   @Test
   public void test_020_RemoveGuid() {
@@ -450,7 +450,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Removes a guid not using an account guid.
    */
   @Test
   public void test_030_RemoveGuidSansAccountInfo() {
@@ -477,13 +477,13 @@ public class ServerIntegrationTest extends DefaultTest {
       failWithStackTrace("Exception while doing Lookup testGuid: ", e);
     }
   }
-  
+
   private static String ACCOUNT_TO_REMOVE_WITH_PASSWORD = "passwordremovetest@gns.name";
   private static final String REMOVE_ACCOUNT_PASSWORD = "removalPassword";
   private static GuidEntry accountToRemoveGuid;
-  
+
   /**
-   *
+   * Create an account to remove using the password.
    */
   @Test
   public void test_035_RemoveAccountWithPasswordCreateAccount() {
@@ -495,7 +495,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Check the account to remove using the password.
    */
   @Test
   public void test_036_RemoveAccountWithPasswordCheckAccount() {
@@ -510,7 +510,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Remove the account using the password.
    */
   @Test
   public void test_037_RemoveAccountWithPasswordRemoveAccount() {
@@ -522,7 +522,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Check the account removed using the password.
    */
   @Test
   public void test_038_RemoveAccountWithPasswordCheckAccountAfterRemove() {
@@ -537,7 +537,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Look up a primary guid.
    */
   @Test
   public void test_040_LookupPrimaryGuid() {
@@ -558,7 +558,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Create a sub guid.
    */
   @Test
   public void test_050_CreateSubGuid() {
@@ -572,7 +572,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Check field not found exception.
    */
   @Test
   public void test_060_FieldNotFoundException() {
@@ -588,7 +588,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Test fieldExists.
    */
   @Test
   public void test_070_FieldExistsFalse() {
@@ -603,7 +603,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Create a field for fieldExists.
    */
   @Test
   public void test_080_CreateFieldForFieldExists() {
@@ -617,7 +617,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Create a field for fieldExists true.
    */
   @Test
   public void test_090_FieldExistsTrue() {
@@ -630,7 +630,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Create guids for ACL tests.
    */
   @Test
   public void test_100_ACLCreateGuids() {
@@ -662,7 +662,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Create fields for ACL tests.
    */
   @Test
   public void test_101_ACLCreateFields() {
@@ -678,12 +678,9 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
-   */
-  @Test
-  /**
    * This one insures that we can use ALL_FIELDS to read all the fields of another guid.
    */
+  @Test
   public void test_102_ACLReadAllFields() {
     try {
       JSONObject expected = new JSONObject();
@@ -700,7 +697,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * This one insures I can read all my own fields.
    */
   @Test
   public void test_104_ACLReadMyFields() {
@@ -719,12 +716,9 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
-   */
-  @Test
-  /**
    * This one insures that we can't read using ALL_FIELDS when the other guid hasn't given us access.
    */
+  @Test
   public void test_105_ACLNotReadOtherGuidAllFieldsTest() {
     try {
       try {
@@ -740,7 +734,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * This one insures that we can't read a single field when the other guid hasn't given us access.
    */
   @Test
   public void test_106_ACLNotReadOtherGuidFieldTest() {
@@ -759,7 +753,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * This one insures we can read a field when given access.
    */
   @Test
   public void test_110_ACLPartOne() {
@@ -784,7 +778,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests a bunch of field access.
    */
   @Test
   public void test_120_ACLPartTwo() {
@@ -855,11 +849,10 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests a bunch of field access.
    */
   @Test
   public void test_130_ACLALLFields() {
-    //testACL();
     String superUserName = "superuser" + RandomString.randomString(6);
     try {
       try {
@@ -885,7 +878,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests ACL access of dotted fields.
    */
   @Test
   public void test_140_ACLCreateDeeperField() {
@@ -918,11 +911,10 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests a bunch of different access methods.
    */
   @Test
   public void test_170_DB() {
-    // testCreateEntity();
     try {
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), "cats",
@@ -959,20 +951,6 @@ public class ServerIntegrationTest extends DefaultTest {
       waitSettle();
       assertEquals("maya", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), "cats", westyEntry));
-
-      // try {
-      // client.fieldCreateOneElementList(westyEntry, "cats", "maya");
-      // fail("Should have got an exception when trying to create the field westy / cats.");
-      // } catch (ClientException e) {
-      // }
-      // this one always fails... check it out
-      // try {
-      // client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "frogs",
-      // "freddybub",
-      // westyEntry);
-      // fail("Should have got an exception when trying to create the field westy / frogs.");
-      // } catch (ClientException e) {
-      // }
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats",
               "fred", westyEntry);
       waitSettle();
@@ -994,12 +972,12 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests a bunch of different DB upsert methods.
    */
   @Test
   public void test_180_DBUpserts() {
-    HashSet<String> expected = null;
-    HashSet<String> actual = null;
+    HashSet<String> expected;
+    HashSet<String> actual;
     try {
 
       client.fieldAppendOrCreate(westyEntry.getGuid(), "dogs", "bear",
@@ -1061,7 +1039,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests different DB substitute methods.
    */
   @Test
   public void test_190_Substitute() {
@@ -1117,7 +1095,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests different DB substitute list methods.
    */
   @Test
   public void test_200_SubstituteList() {
@@ -1175,7 +1153,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Create a group to test.
    */
   @Test
   public void test_210_GroupCreate() {
@@ -1196,7 +1174,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Add guids to a group.
    */
   @Test
   public void test_211_GroupAdd() {
@@ -1230,7 +1208,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Remove a guid from a group.
    */
   @Test
   public void test_212_GroupRemoveGuid() {
@@ -1253,7 +1231,7 @@ public class ServerIntegrationTest extends DefaultTest {
   private static GuidEntry groupAccessUserEntry = null;
 
   /**
-   *
+   * Update some ACLs for group tests.
    */
   @Test
   public void test_220_GroupAndACLCreateGuids() {
@@ -1301,7 +1279,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Test a a group access that should be denied.
    */
   @Test
   public void test_221_GroupAndACLTestBadAccess() {
@@ -1321,7 +1299,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Test an group access that should be allowed.
    */
   @Test
   public void test_222_GroupAndACLTestGoodAccess() {
@@ -1335,7 +1313,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Remove a guid and test that it was.
    */
   @Test
   public void test_223_GroupAndACLTestRemoveGuid() {
@@ -1362,7 +1340,7 @@ public class ServerIntegrationTest extends DefaultTest {
           + "@blah.org";
 
   /**
-   *
+   * Add an alias.
    */
   @Test
   public void test_230_AliasAdd() {
@@ -1378,10 +1356,10 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Test that recently added alias is present.
    */
   @Test
-  public void test_231_AliasRemove() {
+  public void test_231_AliasIsPresent() {
     try {
       // grab all the alias from the guid
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
@@ -1400,12 +1378,12 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Check that removed alias is gone.
    */
   @Test
-  public void test_232_AliasCheck() {
+  public void test_232_AliasCheckRemove() {
     try {
-      // an make sure it is gone
+      // and make sure it is gone
       try {
         client.lookupGuid(alias);
         failWithStackTrace(alias + " should not exist");
@@ -1417,7 +1395,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Write access checks.
    */
   @Test
   public void test_240_WriteAccess() {
@@ -1481,7 +1459,7 @@ public class ServerIntegrationTest extends DefaultTest {
   private static final String standardOneReadFieldName = "standardonereadaccess";
 
   /**
-   *
+   * Create some guids for unsigned read tests.
    */
   @Test
   public void test_250_UnsignedReadCreateGuids() {
@@ -1511,6 +1489,11 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
+   * Runs these tests:<br>
+   * Insure that we can read a world readable field without a guid.<br>
+   * Insure that we can't read non-world-readable field without a guid.<br>
+   * <br>
+   * <br>
    *
    */
   @Test
@@ -1545,12 +1528,14 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Runs these tests:<br>
+   * Insure that we can read a world readable field without a guid.<br>
    */
   @Test
   public void test_252_UnsignedReadOne() {
     try {
       // Insures that we can read a world readable field without a guid
+      // Insure that we can't read non-world-readable field without a guid
       client.fieldCreateOneElementList(unsignedReadTestGuid.getGuid(),
               unsignedOneReadFieldName, "funkadelicread", unsignedReadTestGuid);
       client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedOneReadFieldName, GNSCommandProtocol.ALL_GUIDS);
@@ -1582,7 +1567,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Unsigned write tests.
    */
   @Test
   public void test_260_UnsignedWrite() {
@@ -1614,7 +1599,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Test removing a field.
    */
   @Test
   public void test_270_RemoveField() {
@@ -1652,7 +1637,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests that lists work correctly.
    */
   @Test
   public void test_280_ListOrderAndSetElement() {
@@ -1711,9 +1696,8 @@ public class ServerIntegrationTest extends DefaultTest {
   // fail("Exception when we were not expecting it: " , e);
   // }
   // }
-
   /**
-   *
+   * Tests that selectNear and selectWithin work.
    */
   @Test
   public void test_320_GeoSpatialSelect() {
@@ -1769,7 +1753,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests that selectQuery works.
    */
   @Test
   public void test_330_QuerySelect() {
@@ -1821,7 +1805,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests fieldSetNull.
    */
   @Test
   public void test_400_SetFieldNull() {
@@ -1863,7 +1847,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests update using JSON.
    */
   @Test
   public void test_410_JSONUpdate() {
@@ -1991,7 +1975,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests that dotted field reads work.
    */
   @Test
   public void test_420_NewRead() {
@@ -2061,7 +2045,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests that dotted field updates work.
    */
   @Test
   public void test_430_NewUpdate() {
@@ -2162,7 +2146,7 @@ public class ServerIntegrationTest extends DefaultTest {
   private static byte[] byteTestValue;
 
   /**
-   *
+   * Tests that updating a field with bytes.
    */
   @Test
   public void test_440_CreateBytesField() {
@@ -2177,7 +2161,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Tests reading a field as bytes.
    */
   @Test
   public void test_441_ReadBytesField() {
@@ -2194,7 +2178,7 @@ public class ServerIntegrationTest extends DefaultTest {
   private static GuidEntry accountGuidForBatch = null;
 
   /**
-   *
+   * Create an account for batch test.
    */
   @Test
   public void test_510_CreateBatchAccountGuid() {
@@ -2214,7 +2198,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Create some guids with batch create.
    */
   @Test
   public void test_511_CreateBatch() {
@@ -2235,7 +2219,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Check the batch creation.
    */
   @Test
   public void test_512_CheckBatch() {
@@ -2251,7 +2235,7 @@ public class ServerIntegrationTest extends DefaultTest {
   private static String createIndexTestField;
 
   /**
-   *
+   * Create a field for test index.
    */
   @Test
   public void test_540_CreateField() {
@@ -2266,7 +2250,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Create an index.
    */
   @Test
   public void test_541_CreateIndex() {
@@ -2275,6 +2259,23 @@ public class ServerIntegrationTest extends DefaultTest {
               "2dsphere");
     } catch (Exception e) {
       failWithStackTrace("Exception while creating index: ", e);
+    }
+  }
+  
+  /**
+   * Insure that the indexed field can be used.
+   */
+  @Test
+  public void test_610_SelectPass() {
+    try {
+      JSONArray result = client.selectQuery(buildQuery(
+              createIndexTestField, AREA_EXTENT));
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      assertThat(result.length(), greaterThanOrEqualTo(1));
+    } catch (Exception e) {
+      failWithStackTrace("Exception executing second selectNear: ", e);
     }
   }
 
@@ -2299,7 +2300,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Remove any old fields from previous tests for group tests.
    */
   @Test
   public void test_551_QueryRemovePreviousTestFields() {
@@ -2319,7 +2320,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Setup some guids for group testing.
    */
   @Test
   public void test_552_QuerySetupGuids() {
@@ -2358,7 +2359,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Setup some grouos for group testing.
    */
   @Test
   public void test_553_QuerySetupGroup() {
@@ -2377,10 +2378,8 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
-  // make a second group that is empty
-
   /**
-   *
+   * Setup some empty group guids for group testing.
    */
   @Test
   public void test_554_QuerySetupSecondGroup() {
@@ -2400,7 +2399,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Lookup the group members.
    */
   @Test
   public void test_555_QueryLookupGroup() {
@@ -2414,7 +2413,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Lookup the group members again.
    */
   @Test
   public void test_556_QueryLookupGroupAgain() {
@@ -2428,7 +2427,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Lookup the group members again.
    */
   @Test
   public void test_557_LookupGroupAgain2() {
@@ -2442,7 +2441,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Lookup the group members again.
    */
   @Test
   public void test_558_QueryLookupGroupAgain3() {
@@ -2456,7 +2455,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Change the value that the group is triggered on.
    */
   @Test
   // Change all the testQuery fields except 1 to be equal to zero
@@ -2477,7 +2476,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Lookup the group members again after the change.
    */
   @Test
   public void test_560_QueryLookupGroupAfterAlterations() {
@@ -2505,10 +2504,9 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Check to see if the second group has members now... it should.
    */
   @Test
-  // Check to see if the second group has members now... it should.
   public void test_561_QueryLookupSecondGroup() {
     try {
       JSONArray result = client.selectLookupGroupQuery(groupTwoGuid.getGuid());
@@ -2528,30 +2526,9 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Test to check context service triggers.
    */
-  @Test
-  public void test_610_SelectPass() {
-    try {
-      JSONArray result = client.selectQuery(buildQuery(
-              createIndexTestField, AREA_EXTENT));
-      for (int i = 0; i < result.length(); i++) {
-        System.out.println(result.get(i).toString());
-      }
-      // best we can do should be at least 5, but possibly more objects in
-      // results
-      assertThat(result.length(), greaterThanOrEqualTo(1));
-    } catch (Exception e) {
-      failWithStackTrace("Exception executing second selectNear: ", e);
-    }
-  }
-
-  // test to check context service triggers.
   // these two attributes right now are supported by CS
-
-  /**
-   *
-   */
   @Test
   public void test_620_contextServiceTest() {
     // run it only when CS is enabled
@@ -2719,7 +2696,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   *
+   * Stops the client.
    */
   @Test
   public void test_9999_Stop() {
