@@ -15,7 +15,7 @@
  * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * This class defines an AclException.
@@ -30,7 +30,7 @@ public class AclException extends ClientException {
 	 * @param code
 	 * @param message
 	 */
-	public AclException(GNSResponseCode code, String message) {
+	public AclException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -38,7 +38,7 @@ public class AclException extends ClientException {
 	 * @param message
 	 */
 	public AclException(String message) {
-		super(GNSResponseCode.ACCESS_ERROR, message);
+		super(ResponseCode.ACCESS_ERROR, message);
 	}
 
 }

@@ -39,7 +39,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSWORD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -86,20 +86,20 @@ public class RemoveAccountWithPassword extends AbstractCommand {
     String password = json.getString(PASSWORD);
     String guid = AccountAccess.lookupGuidAnywhere(name, handler);
     if (guid == null) {
-      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + name);
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + name);
     }
     try {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(name, handler);
       if (accountInfo == null) {
-        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
+        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
       }
       if (!password.equals(accountInfo.getPassword())) {
-        return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED);
+        return new CommandResponse(ResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED);
       } else {
         return AccountAccess.removeAccount(accountInfo, handler);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " "
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " "
               + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }

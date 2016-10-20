@@ -37,7 +37,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
 import java.io.IOException;
@@ -86,7 +86,7 @@ public class RemoveAccount extends AbstractCommand {
     GuidInfo guidInfo;
     // Fixme: verify that we might need to look remotely for this.
     if ((guidInfo = AccountAccess.lookupGuidInfoAnywhere(guid, handler)) == null) {
-      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     try {
       if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
@@ -95,13 +95,13 @@ public class RemoveAccount extends AbstractCommand {
         if (accountInfo != null) {
           return AccountAccess.removeAccount(accountInfo, handler);
         } else {
-          return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
+          return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
         }
       } else {
-        return new CommandResponse(GNSResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

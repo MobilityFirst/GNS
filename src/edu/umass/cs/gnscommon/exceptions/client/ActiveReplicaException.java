@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * This class defines a ActiveReplicaException
@@ -34,7 +34,7 @@ public class ActiveReplicaException extends ClientException
 	 * @param code
 	 * @param message
 	 */
-	public ActiveReplicaException(GNSResponseCode code, String message) {
+	public ActiveReplicaException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -42,6 +42,6 @@ public class ActiveReplicaException extends ClientException
 	 * @param message
 	 */
 	public ActiveReplicaException(String message) {
-		super(GNSResponseCode.ACTIVE_REPLICA_EXCEPTION, message);
+		super(ResponseCode.ACTIVE_REPLICA_EXCEPTION, message);
 	}
 }

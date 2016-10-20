@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
@@ -87,9 +87,9 @@ public class ActiveCode {
    * @param message
    * @param timestamp
    * @param handler
-   * @return a {@link GNSResponseCode}
+   * @return a {@link ResponseCode}
    */
-  public static GNSResponseCode setCode(String guid, String action, String code, String writer,
+  public static ResponseCode setCode(String guid, String action, String code, String writer,
           String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     JSONObject json;
@@ -97,9 +97,9 @@ public class ActiveCode {
       json = new JSONObject();
       json.put(getCodeField(action), code);
     } catch (JSONException e) {
-      return GNSResponseCode.JSON_PARSE_ERROR;
+      return ResponseCode.JSON_PARSE_ERROR;
     }
-    GNSResponseCode response = FieldAccess.updateUserJSON(null, guid, json,
+    ResponseCode response = FieldAccess.updateUserJSON(null, guid, json,
             writer, signature, message, timestamp, handler);
     return response;
   }
@@ -114,14 +114,14 @@ public class ActiveCode {
    * @param message
    * @param timestamp
    * @param handler
-   * @return a {@link GNSResponseCode}
+   * @return a {@link ResponseCode}
    */
-  public static GNSResponseCode clearCode(String guid, String action,
+  public static ResponseCode clearCode(String guid, String action,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     String field = getCodeField(action);
 
-    GNSResponseCode response = FieldAccess.update(null, guid, field, "", null, -1,
+    ResponseCode response = FieldAccess.update(null, guid, field, "", null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, 
             message, timestamp, handler);
     return response;
@@ -143,7 +143,7 @@ public class ActiveCode {
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     String field = getCodeField(action);
-    GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return GNSCommandProtocol.NULL_RESPONSE;

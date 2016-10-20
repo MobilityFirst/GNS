@@ -25,8 +25,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -77,7 +77,7 @@ public class DeleteAllRecords extends AbstractCommand {
 //        return new CommandResponse(BAD_RESPONSE);
 //      }
 //    }
-    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+    return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand " + getCommandType().toString());
   }
 

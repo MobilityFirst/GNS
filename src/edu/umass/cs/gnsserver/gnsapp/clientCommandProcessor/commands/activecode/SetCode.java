@@ -35,8 +35,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.text.ParseException;
 import java.util.Date;
@@ -77,13 +77,13 @@ public class SetCode extends AbstractCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    GNSResponseCode response = ActiveCode.setCode(guid, action,
+    ResponseCode response = ActiveCode.setCode(guid, action,
             code, writer, signature, message, timestamp, handler);
 
     if (response.isExceptionOrError()) {
       return new CommandResponse(response, BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     }
   }
 

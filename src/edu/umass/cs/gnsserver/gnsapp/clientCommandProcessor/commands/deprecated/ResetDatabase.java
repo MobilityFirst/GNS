@@ -26,8 +26,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnscommon.CommandType;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -79,7 +79,7 @@ public class ResetDatabase extends AbstractCommand {
 //        return new CommandResponse(BAD_RESPONSE);
 //      }
 //    }
-    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+    return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand " + getCommandType().toString());
   }
 

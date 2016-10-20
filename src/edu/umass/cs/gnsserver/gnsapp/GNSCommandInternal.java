@@ -11,7 +11,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
@@ -91,12 +91,12 @@ public class GNSCommandInternal extends InternalCommandPacket {
           throws InternalRequestException {
     if (header.getTTL() == 0) {
       throw new InternalRequestException(
-              GNSResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
+              ResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
     }
     if (header.hasBeenCoordinatedOnce()
             && gnsCommandInternal.needsCoordination()) {
       throw new InternalRequestException(
-              GNSResponseCode.INTERNAL_REQUEST_EXCEPTION,
+              ResponseCode.INTERNAL_REQUEST_EXCEPTION,
               "Attempting a second coordinated request in a chain with "
               + gnsCommandInternal.getSummary());
     }

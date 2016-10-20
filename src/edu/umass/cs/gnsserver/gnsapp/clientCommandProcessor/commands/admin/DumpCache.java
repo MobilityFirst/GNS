@@ -25,8 +25,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -64,7 +64,7 @@ public class DumpCache extends AbstractCommand {
   @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, handler.getAdmintercessor().sendDumpCache(handler));
+      return new CommandResponse(ResponseCode.NO_ERROR, handler.getAdmintercessor().sendDumpCache(handler));
   }
 
   

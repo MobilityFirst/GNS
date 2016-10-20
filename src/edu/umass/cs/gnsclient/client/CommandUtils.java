@@ -19,7 +19,7 @@ import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.AclException;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -384,7 +384,7 @@ public class CommandUtils {
 	public static ResponsePacket checkResponse(
 			ResponsePacket responsePacket, CommandPacket command) throws ClientException {
 
-		GNSResponseCode code = responsePacket.getErrorCode();
+		ResponseCode code = responsePacket.getErrorCode();
 		String returnValue = responsePacket.getReturnValue();
 		GNSConfig.getLogger().log(Level.FINE, "New check response: {0} {1}",
 				new Object[] { code, responsePacket.getSummary() });

@@ -27,12 +27,13 @@ import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
+import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -87,7 +88,7 @@ public class GuidUtils {
     return lookupOrCreateAccountGuid(client, name, password, false);
   }
 
-  private static final int NUM_VERIFICATION_ATTEMPTS = 3;
+  private static final int NUM_VERIFICATION_ATTEMPTS = 10;
 
   /**
    * Creates a GuidEntry associating an alias with a new key pair and stores
@@ -182,7 +183,7 @@ public class GuidUtils {
                           createVerificationCode(name)))
                   .getResultString();
         } catch (ClientException e) {
-          if (e.getCode() != GNSResponseCode.ALREADY_VERIFIED_EXCEPTION) {
+          if (e.getCode() != ResponseCode.ALREADY_VERIFIED_EXCEPTION) {
             e.printStackTrace();
             throw e;
           } else {

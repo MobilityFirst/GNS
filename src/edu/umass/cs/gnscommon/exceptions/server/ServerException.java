@@ -15,7 +15,7 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnscommon.exceptions.server;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.GNSException;
 
 /**
@@ -35,7 +35,7 @@ public class ServerException extends GNSException {
 	 * @param code
 	 * @param message
 	 */
-	public ServerException(GNSResponseCode code, String message) {
+	public ServerException(ResponseCode code, String message) {
 		super(code, message);
 	}
 

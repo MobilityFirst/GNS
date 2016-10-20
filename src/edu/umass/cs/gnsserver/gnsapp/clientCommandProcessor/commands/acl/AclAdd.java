@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
@@ -29,10 +28,24 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESSER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACL_TYPE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACL_TYPE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.EVERYONE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
-
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -66,8 +79,6 @@ public class AclAdd extends AbstractCommand {
     return CommandType.AclAdd;
   }
 
-  
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -84,7 +95,7 @@ public class AclAdd extends AbstractCommand {
 
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse(GNSResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE
+      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE
               + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
     // Lookup the public key of the guid that we're giving access to the field.
@@ -94,20 +105,27 @@ public class AclAdd extends AbstractCommand {
     } else {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accesser, handler)) == null) {
-        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
+        return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
     }
     // This is where we update the ACL. Put the public key of the accessing guid in the appropriate ACL list.
-    GNSResponseCode responseCode;
+    ResponseCode responseCode;
     if (!(responseCode = FieldMetaData.add(access, guid, field,
             accessorPublicKey, writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+      if (responseCode.isOKResult()
+              && Config.getGlobalBoolean(GNSConfig.GNSC.REMOVE_GUIDS_FROM_ENTIRE_RECORD_ACL)) {
+//        // Remove the guid from the ENTIRE_RECORD ACL
+//        FieldMetaData.remove(access, guid, GNSCommandProtocol.ENTIRE_RECORD, 
+//                Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), 
+//                null, null, 
+//                message, timestamp, handler);
+      }
+      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {
       return new CommandResponse(responseCode, responseCode.getProtocolCode());
     }
   }
 
-  
 }

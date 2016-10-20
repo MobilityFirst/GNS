@@ -20,7 +20,7 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -501,6 +501,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_036_RemoveAccountWithPasswordCheckAccount() {
     try {
       // this should be using the guid
+      ThreadUtils.sleep(100);
       client.lookupAccountRecord(accountToRemoveGuid.getGuid());
     } catch (ClientException e) {
       fail("lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " failed.");
@@ -645,7 +646,7 @@ public class ServerIntegrationTest extends DefaultTest {
     }
     try {
       // remove default read access for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
       failWithStackTrace("Exception while removing ACL in ACLCreateGuids: " + e);
       e.printStackTrace();
@@ -653,7 +654,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(masterGuid.getGuid())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
-              GNSCommandProtocol.ALL_FIELDS, westyEntry.getGuid());
+              GNSCommandProtocol.ENTIRE_RECORD, westyEntry.getGuid());
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       failWithStackTrace("Exception while retrieving ACL in ACLCreateGuids: " + e);
@@ -678,7 +679,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   * This one insures that we can use ALL_FIELDS to read all the fields of another guid.
+   * This one insures that we can use ENTIRE_RECORD to read all the fields of another guid.
    */
   @Test
   public void test_102_ACLReadAllFields() {
@@ -688,7 +689,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected.put("password", new JSONArray(new ArrayList<>(Arrays.asList("666flapJack"))));
       expected.put("ssn", new JSONArray(new ArrayList<>(Arrays.asList("000-00-0000"))));
       expected.put("address", new JSONArray(new ArrayList<>(Arrays.asList("100 Hinkledinkle Drive"))));
-      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ALL_FIELDS, masterGuid));
+      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ENTIRE_RECORD, masterGuid));
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading all fields in ACLReadAllFields: " + e);
@@ -716,13 +717,13 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   * This one insures that we can't read using ALL_FIELDS when the other guid hasn't given us access.
+   * This one insures that we can't read using ENTIRE_RECORD when the other guid hasn't given us access.
    */
   @Test
   public void test_105_ACLNotReadOtherGuidAllFieldsTest() {
     try {
       try {
-        String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ALL_FIELDS, samEntry);
+        String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ENTIRE_RECORD, samEntry);
         failWithStackTrace("Result of read of all of westy's fields by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
@@ -795,7 +796,7 @@ public class ServerIntegrationTest extends DefaultTest {
       barneyEntry = client.guidCreate(masterGuid, barneyName);
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
-              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
@@ -830,7 +831,7 @@ public class ServerIntegrationTest extends DefaultTest {
         failWithStackTrace("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
-        if (e.getCode() == GNSResponseCode.ACCESS_ERROR) {
+        if (e.getCode() == ResponseCode.ACCESS_ERROR) {
           System.out
                   .print("This was expected for null querier trying to ReadUnsigned "
                           + barneyEntry.getGuid()
@@ -864,7 +865,7 @@ public class ServerIntegrationTest extends DefaultTest {
       GuidEntry superuserEntry = client.guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ENTIRE_RECORD, superuserEntry.getGuid());
 
       assertEquals("413-555-1234",
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
@@ -890,7 +891,7 @@ public class ServerIntegrationTest extends DefaultTest {
         e.printStackTrace();
       }
       try {
-        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSCommandProtocol.ALL_FIELDS);
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSCommandProtocol.ENTIRE_RECORD);
       } catch (Exception e) {
         failWithStackTrace("Problem adding acl: " + e);
         e.printStackTrace();
@@ -898,7 +899,7 @@ public class ServerIntegrationTest extends DefaultTest {
       try {
         JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSCommandProtocol.ALL_FIELDS)));
+        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSCommandProtocol.ENTIRE_RECORD)));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         failWithStackTrace("Problem reading acl: " + e);
@@ -1253,7 +1254,7 @@ public class ServerIntegrationTest extends DefaultTest {
               groupAccessUserName);
       // remove all fields read by all
       client.aclRemove(AclAccessType.READ_WHITELIST,
-              groupAccessUserEntry, GNSCommandProtocol.ALL_FIELDS,
+              groupAccessUserEntry, GNSCommandProtocol.ENTIRE_RECORD,
               GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
       failWithStackTrace("Exception creating group user: ", e);
@@ -1472,7 +1473,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       // For this test we remove default all access for reading
       client.aclRemove(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
-              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
       failWithStackTrace("Exception while removing ACL in UnsignedReadCreateGuids: ", e);
     }
@@ -1480,7 +1481,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
-              GNSCommandProtocol.ALL_FIELDS, unsignedReadTestGuid.getGuid());
+              GNSCommandProtocol.ENTIRE_RECORD, unsignedReadTestGuid.getGuid());
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       failWithStackTrace("Exception while retrieving ACL in UnsignedReadCreateGuids: ", e);

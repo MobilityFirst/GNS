@@ -35,8 +35,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin;
 import java.io.IOException;
@@ -95,9 +95,9 @@ public class ClearTagged extends AbstractCommand {
           AccountAccess.removeAccount(accountInfo, handler);
         }
       }
-      return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } catch (ClientException | IOException e) {
-      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

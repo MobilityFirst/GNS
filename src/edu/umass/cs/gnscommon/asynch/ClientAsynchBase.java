@@ -67,7 +67,6 @@ import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.CommandType;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCOUNT_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.CODE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.EVERYONE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
@@ -94,6 +93,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
 
 /**
  * This class defines a basic asynchronous client to communicate with a GNS instance over TCP.
@@ -254,7 +254,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     // set up ACL to look like this
     //"_GNS_ACL": {
     //  "READ_WHITELIST": {"+ALL+": {"MD": "+ALL+"]}}}
-    JSONObject acl = AccountAccess.createACL(ALL_FIELDS, Arrays.asList(EVERYONE), null, null);
+    JSONObject acl = AccountAccess.createACL(ENTIRE_RECORD, Arrays.asList(EVERYONE), null, null);
     // prefix is the same for all acls so just pick one to use here
     jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
 
@@ -323,8 +323,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     //"_GNS_ACL": {
     //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
     //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
-    JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE, accountGuid.getPublicKeyString()),
-            ALL_FIELDS, Arrays.asList(accountGuid.getPublicKeyString()));
+    JSONObject acl = createACL(ENTIRE_RECORD, Arrays.asList(EVERYONE, accountGuid.getPublicKeyString()),
+            ENTIRE_RECORD, Arrays.asList(accountGuid.getPublicKeyString()));
     // prefix is the same for all acls so just pick one to use here
     jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
 
@@ -368,8 +368,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
       //"_GNS_ACL": {
       //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
       //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
-      JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE, accountGuid.getPublicKeyString()),
-              ALL_FIELDS, Arrays.asList(accountGuid.getPublicKeyString()));
+      JSONObject acl = createACL(ENTIRE_RECORD, Arrays.asList(EVERYONE, accountGuid.getPublicKeyString()),
+              ENTIRE_RECORD, Arrays.asList(accountGuid.getPublicKeyString()));
       // prefix is the same for all acls so just pick one to use here
       jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
       state.put(alias, jsonHRN.toString());

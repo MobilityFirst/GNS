@@ -15,7 +15,7 @@
  * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.GNSException;
 
 /**
@@ -31,7 +31,7 @@ public class ClientException extends GNSException {
 	 * @param code
 	 * @param message
 	 */
-	public ClientException(GNSResponseCode code, String message) {
+	public ClientException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -72,7 +72,7 @@ public class ClientException extends GNSException {
 	 * @param message
 	 * @param cause
 	 */
-	public ClientException(GNSResponseCode code, String message, Throwable cause) {
+	public ClientException(ResponseCode code, String message, Throwable cause) {
 		super(code, message, cause);
 	}
 

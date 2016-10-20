@@ -31,8 +31,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.JSON_PARSE_ERROR;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -65,18 +65,18 @@ public class LookupAccountRecord extends AbstractCommand {
     String guid = json.getString(GUID);
     AccountInfo acccountInfo;
     if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
-      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     }
     if (acccountInfo != null) {
       try {
         // the true below omits the list of guids which might be too big to send back to the client
-        return new CommandResponse(GNSResponseCode.NO_ERROR, acccountInfo.toJSONObject(true).toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, acccountInfo.toJSONObject(true).toString());
         //return new CommandResponse(acccountInfo.toJSONObject().toString());
       } catch (JSONException e) {
-        return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + JSON_PARSE_ERROR);
+        return new CommandResponse(ResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + JSON_PARSE_ERROR);
       }
     } else {
-      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
   }
 

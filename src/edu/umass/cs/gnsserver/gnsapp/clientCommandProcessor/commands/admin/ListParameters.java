@@ -33,8 +33,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESS_DENIED;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,7 +64,7 @@ public class ListParameters extends AbstractCommand {
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, SystemParameter.listParameters());
+      return new CommandResponse(ResponseCode.NO_ERROR, SystemParameter.listParameters());
   }
 
   

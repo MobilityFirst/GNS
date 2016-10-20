@@ -15,7 +15,7 @@
  * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * This class defines a GnsDupplicateNameException
@@ -31,7 +31,7 @@ public class VerificationException extends ClientException {
 	 * @param code
 	 * @param message
 	 */
-	public VerificationException(GNSResponseCode code, String message) {
+	public VerificationException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -39,6 +39,6 @@ public class VerificationException extends ClientException {
 	 * @param message
 	 */
 	public VerificationException(String message) {
-		super(GNSResponseCode.VERIFICATION_ERROR, message);
+		super(ResponseCode.VERIFICATION_ERROR, message);
 	}
 }

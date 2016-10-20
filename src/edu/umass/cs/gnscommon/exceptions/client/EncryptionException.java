@@ -15,7 +15,7 @@
  * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * This class defines a EncryptionException
@@ -30,7 +30,7 @@ public class EncryptionException extends ClientException {
 	 * @param code
 	 * @param message
 	 */
-	public EncryptionException(GNSResponseCode code, String message) {
+	public EncryptionException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -38,7 +38,7 @@ public class EncryptionException extends ClientException {
 	 * @param message
 	 */
 	public EncryptionException(String message) {
-		super(GNSResponseCode.SIGNATURE_ERROR, message);
+		super(ResponseCode.SIGNATURE_ERROR, message);
 	}
 
 	/**
@@ -46,7 +46,7 @@ public class EncryptionException extends ClientException {
 	 * @param cause
 	 */
 	public EncryptionException(String message, Throwable cause) {
-		super(GNSResponseCode.SIGNATURE_ERROR, message, cause);
+		super(ResponseCode.SIGNATURE_ERROR, message, cause);
 	}
 
 }

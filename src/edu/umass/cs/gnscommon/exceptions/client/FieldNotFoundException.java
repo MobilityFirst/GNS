@@ -15,7 +15,7 @@
  * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * This class defines a FieldNotFoundException
@@ -29,7 +29,7 @@ public class FieldNotFoundException extends ClientException {
 	 * @param code
 	 * @param message
 	 */
-	public FieldNotFoundException(GNSResponseCode code, String message) {
+	public FieldNotFoundException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -37,6 +37,6 @@ public class FieldNotFoundException extends ClientException {
 	 * @param message
 	 */
 	public FieldNotFoundException(String message) {
-		super(GNSResponseCode.FIELD_NOT_FOUND_EXCEPTION, message);
+		super(ResponseCode.FIELD_NOT_FOUND_EXCEPTION, message);
 	}
 }

@@ -25,7 +25,7 @@ import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
@@ -623,7 +623,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
               : getResultValueFromString(responseStr);
       return retval;
     } catch (JSONException e) {
-      throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+      throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
               e.getMessage());
     }
   }
@@ -646,7 +646,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
       JSONObject json = new JSONObject(responseStr);
       return json;
     } catch (JSONException e) {
-      throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+      throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
               e.getMessage() + " while parsing response string "
               + responseStr);
     }
@@ -662,7 +662,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
       Map<String, ?> map = Util.JSONObjectToMap(new JSONObject(responseStr));
       return map;
     } catch (JSONException e) {
-      throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+      throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
               e.getMessage());
     }
   }
@@ -677,7 +677,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
       List<?> list = Util.JSONArrayToList(new JSONArray(responseStr));
       return list;
     } catch (JSONException e) {
-      throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+      throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
               e.getMessage());
     }
   }
@@ -691,7 +691,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     try {
       return new JSONArray(responseStr);
     } catch (JSONException e) {
-      throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+      throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
               e.getMessage());
     }
   }
@@ -705,7 +705,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     if (obj != null && obj instanceof Boolean) {
       return (boolean) obj;
     }
-    throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+    throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
             "Unable to parse response as boolean");
   }
 
@@ -718,7 +718,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     if (obj != null && obj instanceof Integer) {
       return (int) obj;
     }
-    throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+    throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
             "Unable to parse response as boolean");
   }
 
@@ -731,7 +731,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     if (obj != null && obj instanceof Long) {
       return (long) obj;
     }
-    throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+    throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
             "Unable to parse response as boolean");
   }
 
@@ -744,7 +744,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     if (obj != null && obj instanceof Double) {
       return (double) obj;
     }
-    throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+    throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
             "Unable to parse response as boolean");
   }
 

@@ -93,7 +93,7 @@ public class ClientACLExample {
     
     // Remove default read access from guid
     client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, guid, 
-        GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS));
+        GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS));
     System.out.println("\n// Remove default read access from guid\n"
         + "client.aclRemove(READ_WHITELIST, guid, ALL_FIELDS, ALL_GUIDS)");
     
@@ -110,7 +110,7 @@ public class ClientACLExample {
     
     // Give phoneGuid read access to fields in guid
     // If we had not removed the default read access from guid this step would be unnecessary
-    client.execute(GNSCommand.aclAdd(AclAccessType.READ_WHITELIST, guid, GNSCommandProtocol.ALL_FIELDS, phoneGuid.getGuid()));
+    client.execute(GNSCommand.aclAdd(AclAccessType.READ_WHITELIST, guid, GNSCommandProtocol.ENTIRE_RECORD, phoneGuid.getGuid()));
     JSONObject result = client.execute(GNSCommand.read(guid.getGuid(), phoneGuid)).getResultJSONObject();
     System.out.println("\n// Give phoneGuid read access to fields in guid and read guid entry as phoneGuid\n"
         + "client.aclAdd(READ_WHITELIST, guid, ALL_FIELDS, phoneGuid)\n"
@@ -129,7 +129,7 @@ public class ClientACLExample {
         + "client.fieldRead(guid.getGuid(), \"location\", phoneGuid) -> " + field_result);
 
     // Remove phoneGuid from ACL
-    client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, guid, GNSCommandProtocol.ALL_FIELDS, phoneGuid.getGuid()));
+    client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, guid, GNSCommandProtocol.ENTIRE_RECORD, phoneGuid.getGuid()));
     client.execute(GNSCommand.aclRemove(AclAccessType.WRITE_WHITELIST, guid, "location", phoneGuid.getGuid()));
     System.out.println("\n// Remove phoneGuid from guid's read and write whitelists \n"
         + "client.aclRemove(READ_WHITELIST, guid, ALL_FIELDS, phoneGuid))\n"

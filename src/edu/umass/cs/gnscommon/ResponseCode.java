@@ -34,7 +34,7 @@ import java.util.logging.Level;
  * @author arun, westy
  *
  */
-public enum GNSResponseCode implements Serializable {
+public enum ResponseCode implements Serializable {
   /**
    * A positive acknowledgment. This indicates that the
    * return value contains the result of the command or in
@@ -213,10 +213,10 @@ public enum GNSResponseCode implements Serializable {
   ;
 
   // stash the codes in a lookup table
-  private static final Map<Integer, GNSResponseCode> responseCodes = new HashMap<>();
+  private static final Map<Integer, ResponseCode> responseCodes = new HashMap<>();
 
   static {
-    for (GNSResponseCode code : GNSResponseCode.values()) {
+    for (ResponseCode code : ResponseCode.values()) {
       if (responseCodes.get(code.getCodeValue()) != null) {
         GNSConfig.getLogger().log(Level.INFO, "DUPLICATE RESPONSE CODE {0} : {1}",
                 new Object[]{code.name(), code.getCodeValue()});
@@ -233,7 +233,7 @@ public enum GNSResponseCode implements Serializable {
    * @param codeValue
    * @return the NSResponseCode
    */
-  public static GNSResponseCode getResponseCode(int codeValue) {
+  public static ResponseCode getResponseCode(int codeValue) {
     return responseCodes.get(codeValue);
   }
 
@@ -261,7 +261,7 @@ public enum GNSResponseCode implements Serializable {
     ERROR;
   };
 
-  private GNSResponseCode(int codeValue, String protocolCode, TYPE type) {
+  private ResponseCode(int codeValue, String protocolCode, TYPE type) {
     this.codeValue = codeValue;
     this.protocolCode = protocolCode;
     this.type = type;
@@ -275,7 +275,7 @@ public enum GNSResponseCode implements Serializable {
    * @param msg
    * @return this
    */
-  public GNSResponseCode setMessage(String msg) {
+  public ResponseCode setMessage(String msg) {
     this.message = msg;
     return this;
   }

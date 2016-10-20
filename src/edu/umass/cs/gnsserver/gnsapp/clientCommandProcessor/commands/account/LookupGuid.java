@@ -27,8 +27,8 @@ import edu.umass.cs.gnscommon.CommandType;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,9 +63,9 @@ public class LookupGuid extends AbstractCommand {
     // look for an account guid
     String result = AccountAccess.lookupGuidLocally(name, handler);
     if (result != null) {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, result);
+      return new CommandResponse(ResponseCode.NO_ERROR, result);
     } else {
-      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
     }
   }
 

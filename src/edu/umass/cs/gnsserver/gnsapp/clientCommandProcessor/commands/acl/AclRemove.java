@@ -30,8 +30,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaD
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -81,10 +81,10 @@ public class AclRemove extends AbstractCommand {
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse(GNSResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE
+      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE
               + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
-    GNSResponseCode responseCode;
+    ResponseCode responseCode;
     // We need the public key
 
     String accessorPublicKey;
@@ -93,7 +93,7 @@ public class AclRemove extends AbstractCommand {
     } else {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accesser, handler)) == null) {
-        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
+        return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
@@ -101,7 +101,7 @@ public class AclRemove extends AbstractCommand {
     if (!(responseCode = FieldMetaData.remove(access,
             guid, field, accessorPublicKey,
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {
       return new CommandResponse(responseCode, responseCode.getProtocolCode());
     }

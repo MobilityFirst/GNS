@@ -58,7 +58,8 @@ public class NSFieldAccess {
    * Active code is automatically handled during this call.
    *
    * Returns the value of a field in a GUID as a ValuesMap.
- * @param header 
+   *
+   * @param header
    *
    * @param guid
    * @param field
@@ -105,7 +106,7 @@ public class NSFieldAccess {
     // Try to look up the value in the database
     try {
       // Check for the case where we're returning all the fields the entire record.
-      if (GNSCommandProtocol.ALL_FIELDS.equals(field)) {
+      if (GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
         ClientSupportConfig.getLogger().log(Level.FINE, "ALL FIELDS: Format={0}",
                 new Object[]{returnFormat});
         // need everything so just grab all the fields
@@ -118,11 +119,12 @@ public class NSFieldAccess {
         // otherwise grab the field the user wanted
         nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
                 returnFormat, field);
-        if(Util.oneIn(100))
-        	DelayProfiler.updateDelayNano("getNameRecordMultiUserFields", t);
+        if (Util.oneIn(100)) {
+          DelayProfiler.updateDelayNano("getNameRecordMultiUserFields", t);
+        }
       }
       if (nameRecord != null) {
-         ClientSupportConfig.getLogger().log(Level.FINE, "VALUES MAP={0}",
+        ClientSupportConfig.getLogger().log(Level.FINE, "VALUES MAP={0}",
                 new Object[]{nameRecord.getValuesMap().toString()});
         return nameRecord.getValuesMap();
       }
@@ -149,8 +151,8 @@ public class NSFieldAccess {
   public static ValuesMap lookupFieldsLocalNoAuth(InternalRequestHeader header, String guid, List<String> fields,
           ColumnFieldType returnFormat, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
-	  return lookupFieldsLocalNoAuth(header, guid, fields, returnFormat, handler, GNSConfig.enableActiveCode);
-	  
+    return lookupFieldsLocalNoAuth(header, guid, fields, returnFormat, handler, GNSConfig.enableActiveCode);
+
   }
 
   /**
@@ -176,15 +178,15 @@ public class NSFieldAccess {
       // Grab the fields the user wanted
       NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(handler.getApp().getDB(), guid,
               returnFormat, fieldArray);
-      
+
       if (nameRecord != null) {
-    	  // active code handling
-    	  ValuesMap valuesMap = nameRecord.getValuesMap();
-    	  if (handleActiveCode) {
-    		  valuesMap = handler.getApp().getActiveCodeHandler().handleActiveCode(header, fields,
-    				  guid, valuesMap, handler.getApp());
-    	  }
-    	  return valuesMap;
+        // active code handling
+        ValuesMap valuesMap = nameRecord.getValuesMap();
+        if (handleActiveCode) {
+          valuesMap = handler.getApp().getActiveCodeHandler().handleActiveCode(header, fields,
+                  guid, valuesMap, handler.getApp());
+        }
+        return valuesMap;
       }
     } catch (RecordNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Record not found for name: {0}", guid);
@@ -195,7 +197,7 @@ public class NSFieldAccess {
     return null;
   }
 
-/**
+  /**
    * Looks up the value of an old-style list field in the guid on this NameServer.
    * Returns the value of a field in a GUID as a ResultValue or
    * an empty ResultValue if field cannot be found.
@@ -334,8 +336,10 @@ public class NSFieldAccess {
   private static ValuesMap handleActiveCode(InternalRequestHeader header, String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
-	  if(!GNSConfig.enableActiveCode) return originalValues;
-	  
+    if (!GNSConfig.enableActiveCode) {
+      return originalValues;
+    }
+
     ValuesMap newResult = originalValues;
     // Only do this for user fields.
     if (field == null || !InternalField.isInternalField(field)) {
@@ -348,13 +352,13 @@ public class NSFieldAccess {
       } catch (RecordNotFoundException e) {
         //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
       }
-      
-      	ValuesMap codeMap = null;
-		try {
-			codeMap = codeRecord.getValuesMap();
-		} catch (FieldNotFoundException e) {
-			// do nothing
-		}
+
+      ValuesMap codeMap = null;
+      try {
+        codeMap = codeRecord.getValuesMap();
+      } catch (FieldNotFoundException e) {
+        // do nothing
+      }
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
               && gnsApp.getActiveCodeHandler().hasCode(codeMap, ActiveCode.READ_ACTION)) {
         try {

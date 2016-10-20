@@ -26,8 +26,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Syste
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -66,11 +66,11 @@ public class GetParameter extends AbstractCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String parameterString = json.getString(FIELD);
       try {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString());
       } catch (Exception e) {
         System.out.println("Problem getting parameter: " + e);
       }
-    return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR, BAD_RESPONSE + " "
+    return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR, BAD_RESPONSE + " "
             + " Couldn't get parameter " + CommandType.GetParameter.toString() + " " + parameterString);
   }
 

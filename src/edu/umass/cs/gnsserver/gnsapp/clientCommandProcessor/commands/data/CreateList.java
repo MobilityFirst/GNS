@@ -35,7 +35,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ResultValue;
@@ -90,10 +90,10 @@ public class CreateList extends AbstractCommand {
     } else {
       timestamp = null;
     }
-    GNSResponseCode responseCode;
+    ResponseCode responseCode;
     if (!(responseCode = FieldAccess.create(header, guid, field, new ResultValue(value),
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {
       return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }

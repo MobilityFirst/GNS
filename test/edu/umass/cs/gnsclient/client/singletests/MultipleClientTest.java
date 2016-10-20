@@ -295,7 +295,7 @@ public class MultipleClientTest {
     }
     try {
       // remove default read acces for this test
-      getRandomClient().aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+      getRandomClient().aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
@@ -367,7 +367,7 @@ public class MultipleClientTest {
       }
       barneyEntry = getRandomClient().guidCreate(masterGuid, barneyName);
       // remove default read access for this test
-      getRandomClient().aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+      getRandomClient().aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
       getRandomClient().fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       getRandomClient().fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
@@ -430,7 +430,7 @@ public class MultipleClientTest {
       GuidEntry superuserEntry = getRandomClient().guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      getRandomClient().aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
+      getRandomClient().aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ENTIRE_RECORD, superuserEntry.getGuid());
 
       assertEquals("413-555-1234",
               getRandomClient().fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
@@ -732,7 +732,7 @@ public class MultipleClientTest {
     try {
       groupAccessUserEntry = getRandomClient().guidCreate(masterGuid, groupAccessUserName);
       // remove all fields read by all
-      getRandomClient().aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+      getRandomClient().aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
       return;
@@ -1016,7 +1016,7 @@ public class MultipleClientTest {
 
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
       // already did this above... doing it again gives us a paxos error
-      //getRandomClient().removeFromACL(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+      //getRandomClient().removeFromACL(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
       try {
         String result = getRandomClient().fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result

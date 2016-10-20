@@ -29,7 +29,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESS_DENIED;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
@@ -85,15 +85,15 @@ public class Admin extends AbstractCommand {
       //Compares the passkey directly against the list in the file specified by admin.auth.  We could instead use hashing here and store the hashes and salt in the file.
       if ("on".equals(passkey)) {
         module.setAdminMode(true);
-        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else if ("off".equals(passkey)) {
         module.setAdminMode(false);
-        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       }
-      return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
+      return new CommandResponse(ResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
               + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
     } catch (UnknownHostException e) {
-      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE
               + " " + UNSPECIFIED_ERROR + " Unable to determine host address");
     }
   }

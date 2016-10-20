@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
@@ -168,9 +168,9 @@ public class NSGroupAccess {
    * @param groupGuid
    * @param memberGuid
    * @param handler
-   * @return an {@link GNSResponseCode}
+   * @return an {@link ResponseCode}
    */
-  public static GNSResponseCode removeFromGroup(String groupGuid, String memberGuid,
+  public static ResponseCode removeFromGroup(String groupGuid, String memberGuid,
           ClientRequestHandlerInterface handler) {
     try {
       handler.getRemoteQuery().fieldRemove(groupGuid, GroupAccess.GROUP, memberGuid);
@@ -178,9 +178,9 @@ public class NSGroupAccess {
       // We'll worry about this when we get transactions working.
       handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, groupGuid);
       // FIXME: Don't ignore errors in above code.
-      return GNSResponseCode.NO_ERROR;
+      return ResponseCode.NO_ERROR;
     } catch (IOException | JSONException | ClientException e) {
-      return GNSResponseCode.UNSPECIFIED_ERROR;
+      return ResponseCode.UNSPECIFIED_ERROR;
     }
 
   }

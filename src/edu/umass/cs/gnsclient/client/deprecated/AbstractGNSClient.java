@@ -38,8 +38,8 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
@@ -155,7 +155,7 @@ public abstract class AbstractGNSClient {
 
     return result instanceof ResponsePacket ? ((ResponsePacket) result)
             : new ResponsePacket(result.getServiceName(), id,
-                    GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
+                    ResponseCode.ACTIVE_REPLICA_EXCEPTION,
                     ((ActiveReplicaError) result).getResponseMessage());
   }
 
@@ -170,7 +170,7 @@ public abstract class AbstractGNSClient {
             "{0} timed out after {1}ms on {2}: {3}",
             new Object[]{me, me.readTimeout, commandPacket.getRequestID() + "", commandPacket.getSummary()});
     /* FIXME: Remove use of string reponse codes */
-    return new ResponsePacket(commandPacket.getServiceName(), commandPacket.getRequestID(), GNSResponseCode.TIMEOUT,
+    return new ResponsePacket(commandPacket.getServiceName(), commandPacket.getRequestID(), ResponseCode.TIMEOUT,
             GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT + " for command " + commandPacket.getSummary());
   }
 

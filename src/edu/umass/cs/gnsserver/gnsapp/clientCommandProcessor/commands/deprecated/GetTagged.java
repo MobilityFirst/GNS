@@ -25,8 +25,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin;
 import java.security.InvalidKeyException;
@@ -74,7 +74,7 @@ public class GetTagged extends AbstractCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
-    return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(handler.getAdmintercessor().collectTaggedGuids(tagName, handler)).toString());
+    return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(handler.getAdmintercessor().collectTaggedGuids(tagName, handler)).toString());
   }
 
   

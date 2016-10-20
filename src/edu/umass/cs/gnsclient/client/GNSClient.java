@@ -34,7 +34,7 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
@@ -285,7 +285,7 @@ public class GNSClient {
     return response instanceof ResponsePacket ? (ResponsePacket) response
             : new ResponsePacket(response.getServiceName(),
                     ((ActiveReplicaError) response).getRequestID(),
-                    GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
+                    ResponseCode.ACTIVE_REPLICA_EXCEPTION,
                     ((ActiveReplicaError) response).getResponseMessage());
   }
 
@@ -351,7 +351,7 @@ public class GNSClient {
               + commandPacket.getSummary());
     }
     return retval[0] != null ? retval[0] : new ResponsePacket(commandPacket.getServiceName(),
-            commandPacket.getRequestID(), GNSResponseCode.TIMEOUT,
+            commandPacket.getRequestID(), ResponseCode.TIMEOUT,
             GNSCommandProtocol.BAD_RESPONSE + " "
             + GNSCommandProtocol.TIMEOUT + " for command "
             + commandPacket.getSummary());

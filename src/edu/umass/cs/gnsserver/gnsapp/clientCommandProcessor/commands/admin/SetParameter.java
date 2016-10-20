@@ -27,8 +27,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -69,10 +69,10 @@ public class SetParameter extends AbstractCommand {
     String value = json.getString(VALUE);
       try {
         SystemParameter.valueOf(parameterString.toUpperCase()).setFieldValue(value);
-        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } catch (Exception e) {
         System.out.println("Problem setting parameter: " + e);
-        return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR, BAD_RESPONSE + " "
+        return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR, BAD_RESPONSE + " "
                 + " Couldn't set parameter " + CommandType.SetParameter.toString() + " " + parameterString);
       }
   }

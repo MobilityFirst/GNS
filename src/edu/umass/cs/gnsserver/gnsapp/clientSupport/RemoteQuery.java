@@ -14,7 +14,7 @@ import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.ActiveReplicaException;
@@ -271,7 +271,7 @@ public class RemoteQuery extends ClientAsynchBase {
           monitor.wait(WAIT_TIMESTEP);
         }
         if (timeout != 0 && System.currentTimeMillis() - monitorStartTime >= timeout) {
-          ClientException e = new ClientException(GNSResponseCode.TIMEOUT,
+          ClientException e = new ClientException(ResponseCode.TIMEOUT,
                   this
                   + ": Timed out on reconfigurator response after waiting for "
                   + timeout + "ms for response packet for "
@@ -296,7 +296,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
-  private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, ClientException {
+  private ResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, ClientException {
     return sendReconRequest(request, RECON_TIMEOUT);
   }
 
@@ -309,7 +309,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
-  private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request, long timeout) throws IOException, ClientException {
+  private ResponseCode sendReconRequest(ClientReconfigurationPacket request, long timeout) throws IOException, ClientException {
     Object monitor = new Object();
     sendRequest(request, this.getReconfiguratoRequestCallback(monitor));
     ClientReconfigurationPacket response = waitForReconResponse(request, monitor, timeout);
@@ -318,11 +318,11 @@ public class RemoteQuery extends ClientAsynchBase {
       // arun: return duplicate error if name already exists
       return (response instanceof CreateServiceName
               && response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
-                      ? GNSResponseCode.DUPLICATE_ID_EXCEPTION
+                      ? ResponseCode.DUPLICATE_ID_EXCEPTION
                       : // else generic error
-                      GNSResponseCode.UNSPECIFIED_ERROR).setMessage(response.getResponseMessage());
+                      ResponseCode.UNSPECIFIED_ERROR).setMessage(response.getResponseMessage());
     } else {
-      return GNSResponseCode.NO_ERROR;
+      return ResponseCode.NO_ERROR;
     }
   }
 
@@ -334,14 +334,14 @@ public class RemoteQuery extends ClientAsynchBase {
    * @return a NSResponseCode
    * @throws ClientException
    */
-  public GNSResponseCode createRecord(String name, JSONObject value) throws ClientException {
+  public ResponseCode createRecord(String name, JSONObject value) throws ClientException {
     try {
       CreateServiceName packet = new CreateServiceName(name, value.toString());
       return sendReconRequest(packet);
     } catch (IOException e) {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
-      throw new ClientException(GNSResponseCode.UNSPECIFIED_ERROR, e.getMessage());
+      throw new ClientException(ResponseCode.UNSPECIFIED_ERROR, e.getMessage());
     }
   }
 
@@ -357,7 +357,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @param handler
    * @return a NSResponseCode
    */
-  public GNSResponseCode createRecordBatch(Set<String> names, Map<String, JSONObject> values,
+  public ResponseCode createRecordBatch(Set<String> names, Map<String, JSONObject> values,
           ClientRequestHandlerInterface handler) {
     try {
       CreateServiceName[] creates = makeBatchedCreateNameRequest(names, values, handler);
@@ -369,12 +369,12 @@ public class RemoteQuery extends ClientAsynchBase {
         long timeout = Math.max(RECON_TIMEOUT, (create.getNameStates().size() / REQUESTS_PER_SECOND) * 1000);
         sendReconRequest(create, timeout);
       }
-      return GNSResponseCode.NO_ERROR;
+      return ResponseCode.NO_ERROR;
     } catch (JSONException | IOException | ClientException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Problem creating {0} :{1}",
               new Object[]{names, e});
       // FIXME: return better error codes.
-      return GNSResponseCode.UNSPECIFIED_ERROR;
+      return ResponseCode.UNSPECIFIED_ERROR;
     }
   }
 
@@ -410,17 +410,17 @@ public class RemoteQuery extends ClientAsynchBase {
    * Deletes a record at the appropriate reconfigurators.
    *
    * @param name
-   * @return GNSResponseCode
+   * @return ResponseCode
    * @throws ClientException
    */
-  public GNSResponseCode deleteRecord(String name) throws ClientException {
+  public ResponseCode deleteRecord(String name) throws ClientException {
     try {
       DeleteServiceName packet = new DeleteServiceName(name);
       return sendReconRequest(packet);
     } catch (IOException e) {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
-      throw new ClientException(GNSResponseCode.UNSPECIFIED_ERROR, e.getMessage());
+      throw new ClientException(ResponseCode.UNSPECIFIED_ERROR, e.getMessage());
     }
   }
 
@@ -429,7 +429,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @return GNSResponse code
    * @throws ClientException
    */
-  public GNSResponseCode deleteRecordSuppressExceptions(String name)
+  public ResponseCode deleteRecordSuppressExceptions(String name)
           throws ClientException {
     try {
       DeleteServiceName packet = new DeleteServiceName(name);
@@ -437,7 +437,7 @@ public class RemoteQuery extends ClientAsynchBase {
     } catch (IOException e) {
       ClientSupportConfig.getLogger().log(Level.SEVERE,
               "Problem creating {0} :{1}", new Object[]{name, e});
-      return GNSResponseCode.UNSPECIFIED_ERROR.setMessage(e.getMessage());
+      return ResponseCode.UNSPECIFIED_ERROR.setMessage(e.getMessage());
     } catch (ClientException ce) {
       return ce.getCode().setMessage(ce.getMessage());
     }

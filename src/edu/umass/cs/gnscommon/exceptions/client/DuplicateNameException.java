@@ -15,7 +15,7 @@
  * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * This class defines a GnsDupplicateNameException
@@ -35,7 +35,7 @@ public class DuplicateNameException extends ClientException {
 	 * @param code
 	 * @param message
 	 */
-	public DuplicateNameException(GNSResponseCode code, String message) {
+	public DuplicateNameException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -43,6 +43,6 @@ public class DuplicateNameException extends ClientException {
 	 * @param message
 	 */
 	public DuplicateNameException(String message) {
-		super(GNSResponseCode.DUPLICATE_ID_EXCEPTION, message);
+		super(ResponseCode.DUPLICATE_ID_EXCEPTION, message);
 	}
 }

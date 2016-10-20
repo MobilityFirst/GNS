@@ -45,7 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
@@ -192,7 +192,7 @@ public class GNSHttpServer {
                     "Action: {0} Query:{1}", new Object[]{action, query});
             response = processQuery(host, action, query);
           } else {
-            response = new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE
+            response = new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE
                     + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + action + " " + query);
           }
           LOG.log(Level.FINER, "Response: " + response);
@@ -244,7 +244,7 @@ public class GNSHttpServer {
     } catch (IllegalArgumentException e) {
       LOG.log(Level.FINE, "lookupCommand failed for {0}", action);
     }
-    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED,
+    return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
             BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Sorry, don't understand " + action + QUERYPREFIX + queryString);
   }

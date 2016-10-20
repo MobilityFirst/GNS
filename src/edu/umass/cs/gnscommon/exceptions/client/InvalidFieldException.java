@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * This class defines a InvalidFieldException
@@ -35,7 +35,7 @@ public class InvalidFieldException extends ClientException
 	 * @param code
 	 * @param message
 	 */
-	public InvalidFieldException(GNSResponseCode code, String message) {
+	public InvalidFieldException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -43,7 +43,7 @@ public class InvalidFieldException extends ClientException
 	 * @param message
 	 */
 	public InvalidFieldException(String message) {
-		super(GNSResponseCode.DUPLICATE_FIELD_EXCEPTION, message);
+		super(ResponseCode.DUPLICATE_FIELD_EXCEPTION, message);
 	}
 
 }

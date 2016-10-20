@@ -33,7 +33,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCOUNT_GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACL_TYPE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.AC_ACTION;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.AC_CODE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.CODE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELDS;
@@ -96,6 +95,7 @@ import java.util.logging.Level;
 import org.json.JSONException;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_GUIDS;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
 
 /**
  * This class defines a client to communicate with a GNS instance over TCP. This
@@ -330,10 +330,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   public JSONObject read(String targetGuid, GuidEntry reader)
           throws Exception {
-    return new JSONObject(getResponse(
-            reader != null ? CommandType.ReadArray
+    return new JSONObject(getResponse(reader != null ? CommandType.ReadArray
                     : CommandType.ReadArrayUnsigned, reader, GUID,
-            targetGuid, FIELD, ALL_FIELDS, READER,
+            targetGuid, FIELD, ENTIRE_RECORD, READER,
             reader != null ? reader.getGuid() : null));
   }
 

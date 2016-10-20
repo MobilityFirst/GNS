@@ -96,7 +96,7 @@ public class ReadTest {
     }
     try {
       // remove default read acces for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);

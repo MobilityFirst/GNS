@@ -330,7 +330,7 @@ public class GNSCommandProtocol {
   /**
    * Used in commands to represent the use of all fields.
    */
-  public final static String ALL_FIELDS = "+ALL+";
+  public final static String ENTIRE_RECORD = "+ALL+";
   /**
    * Used in commands to represent the use of all guids.
    */

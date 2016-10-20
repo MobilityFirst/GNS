@@ -1,6 +1,6 @@
 package edu.umass.cs.gnscommon.exceptions;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * @author arun
@@ -8,7 +8,7 @@ import edu.umass.cs.gnscommon.GNSResponseCode;
  */
 public class GNSException extends Exception {
 
-  final GNSResponseCode code;
+  final ResponseCode code;
   /**
    *
    */
@@ -27,7 +27,7 @@ public class GNSException extends Exception {
    * @param GUID
    * @param message
    */
-  public GNSException(GNSResponseCode code, String message, String GUID) {
+  public GNSException(ResponseCode code, String message, String GUID) {
     super(message);
     this.code = code;
   }
@@ -36,7 +36,7 @@ public class GNSException extends Exception {
    * @param code
    * @param message
    */
-  public GNSException(GNSResponseCode code, String message) {
+  public GNSException(ResponseCode code, String message) {
     this(code, message, (String) null);
   }
 
@@ -72,7 +72,7 @@ public class GNSException extends Exception {
    * @param message
    * @param cause
    */
-  public GNSException(GNSResponseCode code, String message, Throwable cause) {
+  public GNSException(ResponseCode code, String message, Throwable cause) {
     super(message, cause);
     this.code = code;
   }
@@ -80,7 +80,7 @@ public class GNSException extends Exception {
   /**
    * @return Code
    */
-  public GNSResponseCode getCode() {
+  public ResponseCode getCode() {
     return this.code;
   }
 }

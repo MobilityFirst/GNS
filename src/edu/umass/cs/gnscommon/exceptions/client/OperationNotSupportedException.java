@@ -15,7 +15,7 @@
  * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * This class defines an OperationNotSupportedException.
@@ -31,7 +31,7 @@ public class OperationNotSupportedException extends ClientException {
 	 * @param code
 	 * @param message
 	 */
-	public OperationNotSupportedException(GNSResponseCode code, String message) {
+	public OperationNotSupportedException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -39,6 +39,6 @@ public class OperationNotSupportedException extends ClientException {
 	 * @param message
 	 */
 	public OperationNotSupportedException(String message) {
-		super(GNSResponseCode.OPERATION_NOT_SUPPORTED, message);
+		super(ResponseCode.OPERATION_NOT_SUPPORTED, message);
 	}
 }

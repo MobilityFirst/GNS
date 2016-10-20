@@ -216,7 +216,7 @@ public class GroupAndAclTest {
     try {
       groupAccessUserEntry = client.guidCreate(masterGuid, groupAccessUserName);
       // remove all fields read by all
-      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
     }

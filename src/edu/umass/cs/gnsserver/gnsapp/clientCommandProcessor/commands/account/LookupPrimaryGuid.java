@@ -28,8 +28,8 @@ import edu.umass.cs.gnscommon.CommandType;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -61,9 +61,9 @@ public class LookupPrimaryGuid extends AbstractCommand {
     String guid = json.getString(GUID);
     String result = AccountAccess.lookupPrimaryGuid(guid, handler, false);
     if (result != null) {
-      return new CommandResponse(GNSResponseCode.NO_ERROR, result);
+      return new CommandResponse(ResponseCode.NO_ERROR, result);
     } else {
-      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID);
     }
 
   }

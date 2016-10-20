@@ -35,8 +35,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFICATION_ERROR;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -81,13 +81,13 @@ public class RemoveAlias extends AbstractCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     if (AccountAccess.lookupGuidInfoAnywhere(guid, handler) == null) {
-      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(guid, handler);
     if (accountInfo == null) {
-      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     } else if (!accountInfo.isVerified()) {
-      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+      return new CommandResponse(ResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
     }
     return AccountAccess.removeAlias(accountInfo, name, guid, signature, message, timestamp, handler);
   }

@@ -90,6 +90,13 @@ public class GNSConfig {
      */
     IN_MEMORY_DB(false),
     /**
+     * If this is true it manes that the ENTIRE_RECORD ACL
+     * access overrides the single field ACLS. Put differently even if
+     * a single field ACL doesn't permit access for a guid if the 
+     * ENTIRE_RECORD ACL contains that guid then access is permitted.
+     */
+    REMOVE_GUIDS_FROM_ENTIRE_RECORD_ACL(true),
+    /**
      * If enabled, the GNS will cache and return the same value for reads.
      *
      * Code-breaking if enabled. Meant only for instrumentation.

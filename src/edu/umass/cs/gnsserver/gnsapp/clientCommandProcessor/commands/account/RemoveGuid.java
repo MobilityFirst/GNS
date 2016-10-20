@@ -37,7 +37,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
@@ -85,11 +85,11 @@ public class RemoveGuid extends AbstractCommand {
     GuidInfo accountGuidInfo = null;
     GuidInfo guidInfoToRemove;
     if ((guidInfoToRemove = AccountAccess.lookupGuidInfoAnywhere(guidToRemove, handler)) == null) {
-      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
     }
     if (accountGuid != null) {
       if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
-        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
+        return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
     }
     try {
@@ -99,15 +99,15 @@ public class RemoveGuid extends AbstractCommand {
         if (accountGuid != null) {
           accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(accountGuid, handler);
           if (accountInfo == null) {
-            return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
+            return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
           }
         }
         return AccountAccess.removeGuid(guidInfoToRemove, accountInfo, handler);
       } else {
-        return new CommandResponse(GNSResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 }

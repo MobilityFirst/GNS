@@ -35,7 +35,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
@@ -87,7 +87,7 @@ public class RegisterAccount extends AbstractCommand {
     // See RegisterAccountUnsigned
     if (signature != null && message != null) {
       if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
-        return new CommandResponse(GNSResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     }
     try {
@@ -97,14 +97,14 @@ public class RegisterAccount extends AbstractCommand {
               password, handler);
       if (result.getExceptionOrErrorCode().isOKResult()) {
         // Everything is hunkey dorey so return the new guid
-        return new CommandResponse(GNSResponseCode.NO_ERROR, guid);
+        return new CommandResponse(ResponseCode.NO_ERROR, guid);
       } else {
     	  assert(result.getExceptionOrErrorCode()!=null);
         // Otherwise return the error response.
         return result;
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

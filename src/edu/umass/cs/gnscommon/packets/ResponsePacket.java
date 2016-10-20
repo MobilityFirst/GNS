@@ -17,7 +17,7 @@ package edu.umass.cs.gnscommon.packets;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
@@ -65,7 +65,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
   /**
    * Indicates if the response is an error.
    */
-  private final GNSResponseCode errorCode;
+  private final ResponseCode errorCode;
 
   /**
    * Creates a CommandValueReturnPacket from a CommandResponse.
@@ -96,7 +96,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
    * @param returnValue
    */
   public ResponsePacket(String serviceName, long requestId,
-          GNSResponseCode code, String returnValue) {
+          ResponseCode code, String returnValue) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.clientRequestId = requestId;
     this.serviceName = serviceName;
@@ -118,9 +118,9 @@ public class ResponsePacket extends BasicPacketWithClientAddress
       this.returnValue = json.getString(RETVAL);
       this.serviceName = json.getString(NAME);
       if (json.has(ERRCODE)) {
-        this.errorCode = GNSResponseCode.getResponseCode(json.getInt(ERRCODE));
+        this.errorCode = ResponseCode.getResponseCode(json.getInt(ERRCODE));
       } else {
-        this.errorCode = GNSResponseCode.NO_ERROR;
+        this.errorCode = ResponseCode.NO_ERROR;
       }
       // probably not necessary as the old ios client never actually sends these 
       // but just to be thorough
@@ -140,11 +140,11 @@ public class ResponsePacket extends BasicPacketWithClientAddress
         throw new JSONException("Packet missing field " + RETVAL);
       }
       if (json.has(ERRCODE)) {
-        this.errorCode = GNSResponseCode.getResponseCode(json.getInt(ERRCODE));
+        this.errorCode = ResponseCode.getResponseCode(json.getInt(ERRCODE));
       } else if (json.has(OLD_COMMAND_RETURN_PACKET_ERRORCODE)) {
-        this.errorCode = GNSResponseCode.getResponseCode(json.getInt(OLD_COMMAND_RETURN_PACKET_ERRORCODE));
+        this.errorCode = ResponseCode.getResponseCode(json.getInt(OLD_COMMAND_RETURN_PACKET_ERRORCODE));
       } else {
-        this.errorCode = GNSResponseCode.NO_ERROR;
+        this.errorCode = ResponseCode.NO_ERROR;
       }
       // not sure what to do here; this is nothing in the old protocol for this from the ios client
       this.serviceName = json.optString(NAME, "unknown");
@@ -166,7 +166,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     this.clientRequestId = requestId;
     this.serviceName = serviceName;
     this.returnValue = responseValue;
-    this.errorCode = GNSResponseCode.getResponseCode(errorNumber);
+    this.errorCode = ResponseCode.getResponseCode(errorNumber);
   }
 
   /**
@@ -185,7 +185,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     if (errorCode != null) {
       json.put(ERRCODE, errorCode.getCodeValue());
     } else {
-      json.put(ERRCODE, GNSResponseCode.NO_ERROR.getCodeValue());
+      json.put(ERRCODE, ResponseCode.NO_ERROR.getCodeValue());
     }
     return json;
   }
@@ -201,7 +201,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
       // We need to include the following fields in our byte array:
       // private long clientRequestId; - 8 bytes
       // private long LNSRequestId; - 8 bytes
-      // private final GNSResponseCode errorCode; - Represented by an
+      // private final ResponseCode errorCode; - Represented by an
       // integer - 4 bytes
       // serviceName String's length - an int - 4 bytes
       // private final String serviceName; - variable length
@@ -309,7 +309,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
    *
    * @return the error code
    */
-  public GNSResponseCode getErrorCode() {
+  public ResponseCode getErrorCode() {
     return errorCode;
   }
 

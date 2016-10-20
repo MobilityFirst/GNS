@@ -19,10 +19,10 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
- * Encapsulates the response string and {@link GNSResponseCode} that we pass back to the client.
+ * Encapsulates the response string and {@link ResponseCode} that we pass back to the client.
  */
 public class CommandResponse {
 
@@ -33,7 +33,7 @@ public class CommandResponse {
   /**
    * Indicates if the response is an error. Can be null.
    */
-  private final GNSResponseCode errorCode;
+  private final ResponseCode errorCode;
 
   /**
    * Create a command response object from a return value with an error code.
@@ -44,7 +44,7 @@ public class CommandResponse {
    */
   // Full returnValue strings (second arg) are used by the HTTP server and
   // also retain backward compatibility with older clients.
-  public CommandResponse(GNSResponseCode errorCode, String returnValue) {
+  public CommandResponse(ResponseCode errorCode, String returnValue) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
   }
@@ -61,9 +61,9 @@ public class CommandResponse {
   /**
    * Gets the error code.
    *
-   * @return a {@link GNSResponseCode}
+   * @return a {@link ResponseCode}
    */
-  public GNSResponseCode getExceptionOrErrorCode() {
+  public ResponseCode getExceptionOrErrorCode() {
     return errorCode;
   }
 }

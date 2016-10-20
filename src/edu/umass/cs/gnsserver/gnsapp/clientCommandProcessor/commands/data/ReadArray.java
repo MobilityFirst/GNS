@@ -25,7 +25,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
@@ -44,6 +43,7 @@ import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
 
 /**
  * This is the main class for a whole set of commands that support reading of the old style data formatted as
@@ -94,12 +94,12 @@ public class ReadArray extends AbstractCommand {
 
     if (getCommandType().equals(CommandType.ReadArrayOne)
             || getCommandType().equals(CommandType.ReadArrayOneUnsigned)) {
-      if (ALL_FIELDS.equals(field)) {
+      if (ENTIRE_RECORD.equals(field)) {
         return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, timestamp, handler);
       } else {
         return FieldAccess.lookupOne(guid, field, reader, signature, message, timestamp, handler);
       }
-    } else if (ALL_FIELDS.equals(field)) {
+    } else if (ENTIRE_RECORD.equals(field)) {
       return FieldAccess.lookupMultipleValues(header, guid, reader, signature, message, timestamp, handler);
     } else {
       return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, timestamp, handler);

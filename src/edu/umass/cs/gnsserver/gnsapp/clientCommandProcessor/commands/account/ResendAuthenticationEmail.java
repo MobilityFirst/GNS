@@ -33,7 +33,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
@@ -81,19 +81,19 @@ public class ResendAuthenticationEmail extends AbstractCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
-      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     if (!NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-      return new CommandResponse(GNSResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
+      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
     }
     AccountInfo accountInfo;
     if ((accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
-      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     } else {
       try {
         return AccountAccess.resendAuthenticationEmail(accountInfo, guid, signature, message, handler);
       } catch (UnknownHostException e) {
-        return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR,
+        return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
                 BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
       }
     }

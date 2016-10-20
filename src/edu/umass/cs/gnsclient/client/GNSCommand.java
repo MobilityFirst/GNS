@@ -20,7 +20,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCOUNT_GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACL_TYPE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.AC_ACTION;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.AC_CODE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_GUIDS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.CODE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
@@ -76,6 +75,7 @@ import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
 
 /**
  * @author arun
@@ -287,8 +287,8 @@ public class GNSCommand extends CommandPacket {
   /**
    * Reads the entire record for {@code targetGUID}. {@code reader} is the
    * GUID issuing the query and must be present in the ACL for
-   * {@code targetGUID}{@code ALL_FIELDS} for the query to succeed. If
-   * {@code reader} is null, {@code targetGUID}{@code ALL_FIELDS} must be
+   * {@code targetGUID}{@code ENTIRE_RECORD} for the query to succeed. If
+   * {@code reader} is null, {@code targetGUID}{@code ENTIRE_RECORD} must be
    * globally readable.
    *
    * @param targetGUID
@@ -302,7 +302,7 @@ public class GNSCommand extends CommandPacket {
           GuidEntry querierGUID) throws ClientException {
     return getCommand(querierGUID != null ? CommandType.ReadArray
             : CommandType.ReadArrayUnsigned, querierGUID, GUID, targetGUID,
-            FIELD, ALL_FIELDS, READER,
+            FIELD, ENTIRE_RECORD, READER,
             querierGUID != null ? querierGUID.getGuid() : null);
   }
 

@@ -20,7 +20,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCom
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
@@ -204,21 +204,21 @@ public class CommandHandler {
         return commandHandler.execute(getInternalHeaderAfterEnforcingChecks(commandPacket,
                 handler), PacketUtils.getCommand(commandPacket), handler);
       } else {
-        return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " "
+        return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " "
                 + OPERATION_NOT_SUPPORTED + " - Don't understand "
                 + PacketUtils.getCommand(commandPacket));
       }
     } catch (JSONException e) {
       // e.printStackTrace();
-      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR,
+      return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
               BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
               + " while executing command.");
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
-      return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR,
+      return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
               BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
     } catch (InternalRequestException e) {
       return new CommandResponse(e.getCode(), BAD_RESPONSE + " "
-              + GNSResponseCode.INTERNAL_REQUEST_EXCEPTION + " " + e);
+              + ResponseCode.INTERNAL_REQUEST_EXCEPTION + " " + e);
     }
   }
 
@@ -237,7 +237,7 @@ public class CommandHandler {
      */
     if (header.getTTL() == 0) {
       throw new InternalRequestException(
-              GNSResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
+              ResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
     }
 
     /* Note: It is pointless to try to check whether a previous request in this
@@ -293,11 +293,11 @@ public class CommandHandler {
       return command.execute(json, handler);
     } catch (JSONException e) {
       // e.printStackTrace();
-      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR,
+      return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
               BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
               + " while executing command.");
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
-      return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR,
+      return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
               BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
     }
   }

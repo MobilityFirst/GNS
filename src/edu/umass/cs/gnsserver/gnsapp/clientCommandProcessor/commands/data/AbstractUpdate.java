@@ -32,7 +32,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
@@ -90,11 +90,11 @@ public abstract class AbstractUpdate extends AbstractCommand {
     Date timestamp = json.has(TIMESTAMP) ? 
             Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
 
-    GNSResponseCode responseCode;
+    ResponseCode responseCode;
     if (field == null) {
       responseCode = FieldAccess.updateUserJSON(header, guid, userJSON, writer, signature, message, timestamp, handler);
       if (!responseCode.isExceptionOrError()) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
@@ -108,7 +108,7 @@ public abstract class AbstractUpdate extends AbstractCommand {
               getUpdateOperation(),
               writer, signature, message, timestamp,
               handler)).isExceptionOrError()) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }

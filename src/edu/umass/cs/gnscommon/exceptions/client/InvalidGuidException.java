@@ -15,7 +15,7 @@
  * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 
 /**
  * This class defines a InvalidGuidException
@@ -30,7 +30,7 @@ public class InvalidGuidException extends ClientException {
 	 * @param code
 	 * @param message
 	 */
-	public InvalidGuidException(GNSResponseCode code, String message) {
+	public InvalidGuidException(ResponseCode code, String message) {
 		super(code, message);
 	}
 
@@ -38,6 +38,6 @@ public class InvalidGuidException extends ClientException {
 	 * @param message
 	 */
 	public InvalidGuidException(String message) {
-		super(GNSResponseCode.BAD_GUID_ERROR, message);
+		super(ResponseCode.BAD_GUID_ERROR, message);
 	}
 }

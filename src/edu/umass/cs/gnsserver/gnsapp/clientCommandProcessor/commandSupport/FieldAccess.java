@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -81,6 +81,7 @@ public class FieldAccess {
    * @param field
    * @return true if the field is specified using dot notation
    */
+  @Deprecated
   public static boolean isKeyDotNotation(String field) {
     return field.indexOf('.') != -1;
   }
@@ -91,8 +92,9 @@ public class FieldAccess {
    * @param field
    * @return true if the field doesn't use dot notation or is the all-fields indicator
    */
+  @Deprecated
   public static boolean isKeyAllFieldsOrTopLevel(String field) {
-    return GNSCommandProtocol.ALL_FIELDS.equals(field) || !isKeyDotNotation(field);
+    return GNSCommandProtocol.ENTIRE_RECORD.equals(field) || !isKeyDotNotation(field);
   }
 
   /* false means that even single field queries will return a JSONObject response
@@ -104,7 +106,6 @@ public class FieldAccess {
   /**
    *
    */
-
   protected static final boolean SINGLE_FIELD_VALUE_ONLY = false;//true;
 
   /**
@@ -126,7 +127,7 @@ public class FieldAccess {
   public static CommandResponse lookupSingleField(InternalRequestHeader header, String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
+    ResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
@@ -146,24 +147,24 @@ public class FieldAccess {
     	   to the client.
          */
         if (valuesMap.isNull(field)) {
-          return new CommandResponse(GNSResponseCode.FIELD_NOT_FOUND_EXCEPTION,
+          return new CommandResponse(ResponseCode.FIELD_NOT_FOUND_EXCEPTION,
                   GNSCommandProtocol.BAD_RESPONSE + " "
                   + GNSCommandProtocol.FIELD_NOT_FOUND + " ");
         } else {
           // arun: added support for SINGLE_FIELD_VALUE_ONLY flag
-          return new CommandResponse(GNSResponseCode.NO_ERROR,
+          return new CommandResponse(ResponseCode.NO_ERROR,
                   SINGLE_FIELD_VALUE_ONLY ? valuesMap.getString(field)
                           : valuesMap.toString());
         }
       } else {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_STRING);
+        return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_STRING);
       }
 
     } catch (FailedDBOperationException e) {
-      return new CommandResponse(GNSResponseCode.DATABASE_OPERATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+      return new CommandResponse(ResponseCode.DATABASE_OPERATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
               + " " + GNSCommandProtocol.DATABASE_OPERATION_ERROR + " " + e);
     } catch (JSONException e) {
-      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, GNSCommandProtocol.BAD_RESPONSE
+      return new CommandResponse(ResponseCode.JSON_PARSE_ERROR, GNSCommandProtocol.BAD_RESPONSE
               + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e);
     }
 
@@ -188,7 +189,7 @@ public class FieldAccess {
   public static CommandResponse lookupMultipleFields(InternalRequestHeader header, String guid, ArrayList<String> fields,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, null, fields,
+    ResponseCode errorCode = signatureAndACLCheckForRead(guid, null, fields,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
@@ -201,9 +202,9 @@ public class FieldAccess {
         // don't strip internal fields when doing a read for other servers
         valuesMap = valuesMap.removeInternalFields();
       }
-      return new CommandResponse(GNSResponseCode.NO_ERROR, valuesMap.toString()); // multiple field return
+      return new CommandResponse(ResponseCode.NO_ERROR, valuesMap.toString()); // multiple field return
     } catch (FailedDBOperationException e) {
-      return new CommandResponse(GNSResponseCode.DATABASE_OPERATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+      return new CommandResponse(ResponseCode.DATABASE_OPERATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
               + " " + GNSCommandProtocol.DATABASE_OPERATION_ERROR + " " + e);
     }
 
@@ -229,7 +230,7 @@ public class FieldAccess {
           String field, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
+    ResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
@@ -240,12 +241,12 @@ public class FieldAccess {
       try {
         resultString = new JSONObject().put(field, value).toString();
       } catch (JSONException e) {
-        return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, GNSCommandProtocol.BAD_RESPONSE + " " + GNSResponseCode.JSON_PARSE_ERROR);
+        return new CommandResponse(ResponseCode.JSON_PARSE_ERROR, GNSCommandProtocol.BAD_RESPONSE + " " + ResponseCode.JSON_PARSE_ERROR);
       }
     } else {
       resultString = new JSONObject().toString();
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, resultString);
+    return new CommandResponse(ResponseCode.NO_ERROR, resultString);
   }
 
   /**
@@ -265,27 +266,27 @@ public class FieldAccess {
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
-            GNSCommandProtocol.ALL_FIELDS, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
+            GNSCommandProtocol.ENTIRE_RECORD, null,
             reader, signature, message, timestamp,
             handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
-    GNSResponseCode responseCode;
+    ResponseCode responseCode;
     try {
-      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocally(header, guid, GNSCommandProtocol.ALL_FIELDS, handler.getApp());
+      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocally(header, guid, GNSCommandProtocol.ENTIRE_RECORD, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toString();
-        responseCode = GNSResponseCode.NO_ERROR;
+        responseCode = ResponseCode.NO_ERROR;
       } else {
         resultString = GNSCommandProtocol.BAD_RESPONSE;
-        responseCode = GNSResponseCode.BAD_GUID_ERROR;
+        responseCode = ResponseCode.BAD_GUID_ERROR;
       }
     } catch (FailedDBOperationException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE;
-      responseCode = GNSResponseCode.DATABASE_OPERATION_ERROR;
+      responseCode = ResponseCode.DATABASE_OPERATION_ERROR;
     }
     return new CommandResponse(responseCode, resultString);
   }
@@ -306,7 +307,7 @@ public class FieldAccess {
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
+    ResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
@@ -321,10 +322,10 @@ public class FieldAccess {
         resultString = (String) value.get(0);
       }
     } else {
-      return new CommandResponse(GNSResponseCode.FIELD_NOT_FOUND_ERROR,
+      return new CommandResponse(ResponseCode.FIELD_NOT_FOUND_ERROR,
               GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.FIELD_NOT_FOUND);
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, resultString);
+    return new CommandResponse(ResponseCode.NO_ERROR, resultString);
   }
 
   /**
@@ -342,30 +343,30 @@ public class FieldAccess {
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
-            GNSCommandProtocol.ALL_FIELDS, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
+            GNSCommandProtocol.ENTIRE_RECORD, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
-    GNSResponseCode responseCode;
+    ResponseCode responseCode;
     try {
       ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocally(null, guid,
-              GNSCommandProtocol.ALL_FIELDS, handler.getApp());
+              GNSCommandProtocol.ENTIRE_RECORD, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toJSONObjectFirstOnes().toString();
-        responseCode = GNSResponseCode.NO_ERROR;
+        responseCode = ResponseCode.NO_ERROR;
       } else {
         resultString = GNSCommandProtocol.BAD_RESPONSE;
-        responseCode = GNSResponseCode.BAD_GUID_ERROR;
+        responseCode = ResponseCode.BAD_GUID_ERROR;
       }
     } catch (FailedDBOperationException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE;
-      responseCode = GNSResponseCode.DATABASE_OPERATION_ERROR;
+      responseCode = ResponseCode.DATABASE_OPERATION_ERROR;
     } catch (JSONException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e.getMessage();
-      responseCode = GNSResponseCode.JSON_PARSE_ERROR;
+      responseCode = ResponseCode.JSON_PARSE_ERROR;
     }
     return new CommandResponse(responseCode, resultString);
   }
@@ -390,7 +391,7 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static GNSResponseCode update(InternalRequestHeader header, String guid, String key, String value, String oldValue,
+  public static ResponseCode update(InternalRequestHeader header, String guid, String key, String value, String oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message,
           Date timestamp,
@@ -423,7 +424,7 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static GNSResponseCode update(InternalRequestHeader header, String guid, String key,
+  public static ResponseCode update(InternalRequestHeader header, String guid, String key,
           ResultValue value, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message,
@@ -437,12 +438,12 @@ public class FieldAccess {
               value, oldValue, argument, null, handler.getApp(), false);
     } catch (JSONException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
-      return GNSResponseCode.JSON_PARSE_ERROR;
+      return ResponseCode.JSON_PARSE_ERROR;
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
             SignatureException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
-      return GNSResponseCode.UPDATE_ERROR;
+      return ResponseCode.UPDATE_ERROR;
     }
   }
 
@@ -462,7 +463,7 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  private static GNSResponseCode update(InternalRequestHeader header,
+  private static ResponseCode update(InternalRequestHeader header,
           String guid, JSONObject json, UpdateOperation operation,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
@@ -474,7 +475,7 @@ public class FieldAccess {
             SignatureException | JSONException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
-      return GNSResponseCode.UPDATE_ERROR;
+      return ResponseCode.UPDATE_ERROR;
     }
   }
 
@@ -494,7 +495,7 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static GNSResponseCode updateUserJSON(InternalRequestHeader header, String guid, JSONObject json,
+  public static ResponseCode updateUserJSON(InternalRequestHeader header, String guid, JSONObject json,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     return FieldAccess.update(header, guid, new ValuesMap(json),
@@ -518,9 +519,9 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param timestamp
    * @param handler
-   * @return a {@link GNSResponseCode}
+   * @return a {@link ResponseCode}
    */
-  public static GNSResponseCode create(InternalRequestHeader header, String guid, String key, ResultValue value,
+  public static ResponseCode create(InternalRequestHeader header, String guid, String key, ResultValue value,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     return update(header, guid, key, value, null, -1,
@@ -562,11 +563,11 @@ public class FieldAccess {
         result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
       }
       if (result != null) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -587,11 +588,11 @@ public class FieldAccess {
         result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
       }
       if (result != null) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
 
   }
 
@@ -614,11 +615,11 @@ public class FieldAccess {
         result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
       }
       if (result != null) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -638,11 +639,11 @@ public class FieldAccess {
         result = handler.getRemoteQuery().sendSelectQuery(query);
       }
       if (result != null) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -666,19 +667,19 @@ public class FieldAccess {
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
-        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, GNSCommandProtocol.BAD_RESPONSE
+        return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.BAD_GUID + " " + accountGuid);
       }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(accountGuid, handler);
       if (accountInfo == null) {
-        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, GNSCommandProtocol.BAD_RESPONSE
+        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + accountGuid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+        return new CommandResponse(ResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.VERIFICATION_ERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_SUBGUIDS)) {
-        return new CommandResponse(GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSCommandProtocol.BAD_RESPONSE
+        return new CommandResponse(ResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.TOO_MANY_GUIDS);
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
@@ -702,11 +703,11 @@ public class FieldAccess {
         result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
       }
       if (result != null) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -726,11 +727,11 @@ public class FieldAccess {
         result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
       }
       if (result != null) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
+        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
     }
-    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -743,14 +744,14 @@ public class FieldAccess {
    * @param message
    * @param timestamp
    * @param app
-   * @return the GNSResponseCode
+   * @return the ResponseCode
    */
-  public static GNSResponseCode signatureAndACLCheckForRead(String guid,
+  public static ResponseCode signatureAndACLCheckForRead(String guid,
           String field, List<String> fields,
           String reader, String signature, String message,
           Date timestamp,
           GNSApplicationInterface<String> app) {
-    GNSResponseCode errorCode = GNSResponseCode.NO_ERROR;
+    ResponseCode errorCode = ResponseCode.NO_ERROR;
     ClientSupportConfig.getLogger().log(Level.FINE,
             "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2} signature: {3}",
             new Object[]{guid, field, reader, signature});
@@ -767,11 +768,11 @@ public class FieldAccess {
       if (timestamp != null) {
         if (timestamp.before(DateUtils.addMinutes(new Date(),
                 -Config.getGlobalInt(GNSConfig.GNSC.STALE_COMMAND_INTERVAL_IN_MINUTES)))) {
-          errorCode = GNSResponseCode.STALE_COMMAND_VALUE;
+          errorCode = ResponseCode.STALE_COMMAND_VALUE;
         }
       }
     } catch (InvalidKeyException | InvalidKeySpecException | SignatureException | NoSuchAlgorithmException | FailedDBOperationException | UnsupportedEncodingException e) {
-      errorCode = GNSResponseCode.SIGNATURE_ERROR;
+      errorCode = ResponseCode.SIGNATURE_ERROR;
     }
     return errorCode;
   }

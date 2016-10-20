@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
@@ -71,7 +71,7 @@ public class NSUpdateSupport {
    * @throws RecordNotFoundException
    * @throws FieldNotFoundException
    */
-  public static GNSResponseCode executeUpdateLocal(InternalRequestHeader header, String guid, String field,
+  public static ResponseCode executeUpdateLocal(InternalRequestHeader header, String guid, String field,
           String writer, String signature, String message, Date timestamp,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
           ValuesMap userJSON, GNSApplicationInterface<String> app, boolean doNotReplyToClient)
@@ -81,29 +81,27 @@ public class NSUpdateSupport {
     ClientSupportConfig.getLogger().log(Level.FINE,
             "Processing local update {0} / {1} {2} {3}",
             new Object[]{guid, field, operation, updateValue});
-    GNSResponseCode errorCode = GNSResponseCode.NO_ERROR;
+    ResponseCode errorCode = ResponseCode.NO_ERROR;
     // writer will be the INTERNAL_OP_SECRET for super secret internal system accesses
     if (!Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET).equals(writer)) {
       if (field != null) {
-        errorCode = NSAuthentication.signatureAndACLCheck(guid,
-                field, null,
+        errorCode = NSAuthentication.signatureAndACLCheck(guid, field, null,
                 writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
       } else if (userJSON != null) {
-        errorCode = NSAuthentication.signatureAndACLCheck(guid,
-                null, userJSON.getKeys(),
+        errorCode = NSAuthentication.signatureAndACLCheck(guid, null, userJSON.getKeys(),
                 writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
       } else {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
-        return GNSResponseCode.ACCESS_ERROR;
+        return ResponseCode.ACCESS_ERROR;
       }
     } else {
     }
     // Check for stale commands.
     if (timestamp != null) {
-      if (timestamp.before(DateUtils.addMinutes(new Date(), 
+      if (timestamp.before(DateUtils.addMinutes(new Date(),
               -Config.getGlobalInt(GNSConfig.GNSC.STALE_COMMAND_INTERVAL_IN_MINUTES)))) {
-        errorCode = GNSResponseCode.STALE_COMMAND_VALUE;
+        errorCode = ResponseCode.STALE_COMMAND_VALUE;
       }
     }
     // return an error packet if one of the checks doesn't pass
@@ -115,20 +113,18 @@ public class NSUpdateSupport {
       NameRecord nameRecord = getNameRecord(guid, field, operation, app.getDB());
       updateNameRecord(header, nameRecord, guid, field, operation, updateValue, oldValue, argument, userJSON,
               app.getDB(), app.getActiveCodeHandler());
-      return GNSResponseCode.NO_ERROR;
+      return ResponseCode.NO_ERROR;
     } else // Handle special case of a create index
-    {
-      if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
+     if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "Creating index for {0} {1}", new Object[]{field, updateValue});
         app.getDB().createIndex(field, (String) updateValue.get(0));
 
-        return GNSResponseCode.NO_ERROR;
+        return ResponseCode.NO_ERROR;
       } else {
         ClientSupportConfig.getLogger().log(Level.SEVERE, "Invalid index value:{0}", updateValue);
-        return GNSResponseCode.UPDATE_ERROR;
+        return ResponseCode.UPDATE_ERROR;
       }
-    }
   }
 
   private static NameRecord getNameRecord(String guid, String field, UpdateOperation operation, BasicRecordMap db) throws RecordNotFoundException, FailedDBOperationException {
@@ -136,14 +132,12 @@ public class NSUpdateSupport {
       // some operations don't require a read first
       return new NameRecord(db, guid);
     } else //try {
-    {
-      if (field == null) {
+     if (field == null) {
         return NameRecord.getNameRecord(db, guid);
       } else {
         return NameRecord.getNameRecordMultiUserFields(db, guid,
                 ColumnFieldType.LIST_STRING, field);
       }
-    }
   }
 
   private static void updateNameRecord(InternalRequestHeader header, NameRecord nameRecord, String guid, String field,
