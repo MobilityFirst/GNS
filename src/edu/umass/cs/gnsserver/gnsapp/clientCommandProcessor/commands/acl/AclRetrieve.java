@@ -36,6 +36,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.json.JSONArray;
@@ -80,7 +81,7 @@ public class AclRetrieve extends AbstractCommand {
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
       return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE + " " + BAD_ACL_TYPE
-              + "Should be one of " + MetaDataTypeName.values().toString());
+              + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
     JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(access,
             guid, field, reader, signature, message, timestamp, handler)));

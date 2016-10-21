@@ -98,8 +98,9 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   private void init(String nodeID, int mongoPort) {
-	  if(Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB))
-		  return;
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB)) {
+      return;
+    }
     mongoCollectionSpecs = new MongoCollectionSpecs();
     mongoCollectionSpecs.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
     // add location as another index
@@ -110,7 +111,7 @@ public class MongoRecords implements NoSQLRecords {
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSCommandProtocol.LOCATION_FIELD_NAME_2D_SPHERE, "2dsphere"));
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSCommandProtocol.IPADDRESS_FIELD_NAME, 1));
-    
+
     boolean fatalException = false;
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
@@ -127,15 +128,15 @@ public class MongoRecords implements NoSQLRecords {
 
       initializeIndexes();
     } catch (UnknownHostException e) {
-    	fatalException = true;
+      fatalException = true;
       DatabaseConfig.getLogger().severe("Unable to open Mongo DB: " + e);
     } catch (com.mongodb.MongoServerSelectionException msse) {
-    	fatalException = true;
-        DatabaseConfig.getLogger().severe("Fatal exception while trying to initialize Mongo DB: " + msse);    	
-    } 
-    finally {
-    	if (fatalException)
-    		Util.suicide("Mongo DB initialization failed likely because a mongo DB server is not listening at the expected port; exiting.");
+      fatalException = true;
+      DatabaseConfig.getLogger().severe("Fatal exception while trying to initialize Mongo DB: " + msse);
+    } finally {
+      if (fatalException) {
+        Util.suicide("Mongo DB initialization failed likely because a mongo DB server is not listening at the expected port; exiting.");
+      }
     }
   }
 
@@ -203,9 +204,9 @@ public class MongoRecords implements NoSQLRecords {
         DBObject obj = cursor.next();
         // arun: optimized for the common case of Map
         @SuppressWarnings("unchecked")
-		JSONObject json = obj instanceof Map ? DiskMapRecords
-        		.recursiveCopyMap((Map<String, ?>) obj)
-        		: new JSONObject(obj.toString());
+        JSONObject json = obj instanceof Map ? DiskMapRecords
+                .recursiveCopyMap((Map<String, ?>) obj)
+                : new JSONObject(obj.toString());
         // instrumentation
         DelayProfiler.updateDelay("lookupEntireRecord", startTime);
         // older style
@@ -480,6 +481,7 @@ public class MongoRecords implements NoSQLRecords {
     }
     if (updates.keySet().size() > 0) {
       try {
+        DatabaseConfig.getLogger().fine("<============>unset" + updates.toString() + "<============>");
         collection.update(query, new BasicDBObject("$unset", updates));
       } catch (MongoException e) {
         throw new FailedDBOperationException(collectionName, updates.toString());
@@ -694,38 +696,40 @@ public class MongoRecords implements NoSQLRecords {
     System.exit(0);
   }
 
-	/**
-	 * @param nodeID
-	 */
-	public static void dropNodeDatabase(String nodeID) {
-		MongoClient mongoClient;
-		try {
-			mongoClient = new MongoClient("localhost");
-		} catch (UnknownHostException e) {
-			DatabaseConfig.getLogger().log(Level.SEVERE,
-					"Unable to open Mongo DB: {0}", e);
-			return;
-		}
-		String dbName = DBROOTNAME + sanitizeDBName(nodeID);
-		mongoClient.dropDatabase(dbName);
+  /**
+   * @param nodeID
+   */
+  public static void dropNodeDatabase(String nodeID) {
+    MongoClient mongoClient;
+    try {
+      mongoClient = new MongoClient("localhost");
+    } catch (UnknownHostException e) {
+      DatabaseConfig.getLogger().log(Level.SEVERE,
+              "Unable to open Mongo DB: {0}", e);
+      return;
+    }
+    String dbName = DBROOTNAME + sanitizeDBName(nodeID);
+    mongoClient.dropDatabase(dbName);
 
-		List<String> names = mongoClient.getDatabaseNames();
-	    for (String name : names) 
-	      if (name.startsWith(dbName)) 
-	    	  mongoClient.dropDatabase(name);
+    List<String> names = mongoClient.getDatabaseNames();
+    for (String name : names) {
+      if (name.startsWith(dbName)) {
+        mongoClient.dropDatabase(name);
+      }
+    }
 
-		System.out.println("Dropped DB " + dbName);
-	}
+    System.out.println("Dropped DB " + dbName);
+  }
 
-	private static final String sanitizeDBName(String nodeID) {
-		return nodeID.toString().replace('.', '_');
-	}
+  private static final String sanitizeDBName(String nodeID) {
+    return nodeID.toString().replace('.', '_');
+  }
 
   /**
    * A utility to drop all the databases.
    *
    */
-	@Deprecated
+  @Deprecated
   public static void dropAllDatabases() {
     MongoClient mongoClient;
     try {

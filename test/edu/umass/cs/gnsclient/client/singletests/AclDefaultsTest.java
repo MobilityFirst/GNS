@@ -24,18 +24,13 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 
-import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.json.JSONArray;
 
-import org.json.JSONObject;
 import static org.junit.Assert.*;
 
 import org.junit.FixMethodOrder;
@@ -53,9 +48,6 @@ public class AclDefaultsTest {
   private static final String PASSWORD = "password";
   private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
-  private static GuidEntry westyEntry;
-  private static GuidEntry samEntry;
-  private static GuidEntry barneyEntry;
 
   /**
    *
@@ -82,16 +74,67 @@ public class AclDefaultsTest {
       fail("Exception while creating guid: " + e);
     }
   }
+  
+  private static final String TEST_FIELD_NAME = "testField";
 
   /**
    *
    */
   @Test
-  public void test_200_ACLCheckForAllFields() {
+  public void test_110_ACLCreateField() {
+    try {
+      client.fieldCreateOneElementList(masterGuid.getGuid(), TEST_FIELD_NAME, "testValue", masterGuid);
+    } catch (Exception e) {
+      fail("Exception while creating fields in ACLCreateFields: " + e);
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test_120_CreateAcl() {
+    try {
+      client.aclCreateField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
+    } catch (Exception e) {
+      fail("Exception while creating guid: " + e);
+    }
+  }
+  
+  @Test
+  public void test_130_CheckAcl() {
+    try {
+      assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
+    } catch (Exception e) {
+      fail("Exception while creating guid: " + e);
+    }
+  }
+  
+  @Test
+  public void test_140_DeleteAcl() {
+    try {
+      client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
+    } catch (Exception e) {
+      fail("Exception while creating guid: " + e);
+    }
+  }
+  
+  @Test
+  public void test_150_CheckAcl() {
+    try {
+      assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
+    } catch (Exception e) {
+      fail("Exception while creating guid: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_190_ACLCheckForAllFields() {
     try {
       JSONArray expected = new JSONArray(Arrays.asList(GNSCommandProtocol.ALL_GUIDS));
       JSONAssert.assertEquals(expected,
-              client.aclGet(AclAccessType.READ_WHITELIST, masterGuid, 
+              client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
                       GNSCommandProtocol.ENTIRE_RECORD, masterGuid.getGuid()), true);
     } catch (Exception e) {
       fail("Exception while checking ALL_FIELDS in ACLCheckForAllFields: " + e);

@@ -48,6 +48,2061 @@ public enum CommandType {
 
   /**
    *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
+   *///
+  // Data Commands
+  //
+//
+  // Data Commands
+  //
+  /**
+   *
    */
   Append(110, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,
           CommandResultType.NULL, true, false,
@@ -60,7 +2115,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -75,7 +2129,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -88,7 +2141,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -104,7 +2156,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -117,7 +2168,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -132,7 +2182,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -147,7 +2196,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -161,7 +2209,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -174,7 +2221,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -186,7 +2232,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -201,7 +2246,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -213,7 +2257,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -226,7 +2269,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -239,7 +2281,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.WRITER}),
-
   /**
    *
    */
@@ -252,7 +2293,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -265,7 +2305,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -279,7 +2318,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -294,7 +2332,6 @@ public enum CommandType {
             GNSCommandProtocol.READER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -305,7 +2342,6 @@ public enum CommandType {
           + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD}),
-
   /**
    *
    */
@@ -319,7 +2355,6 @@ public enum CommandType {
             GNSCommandProtocol.READER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -330,7 +2365,6 @@ public enum CommandType {
           + "Fields can use dot notation to access subfields.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELDS}),
-
   /**
    *
    */
@@ -345,7 +2379,6 @@ public enum CommandType {
             GNSCommandProtocol.READER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -360,7 +2393,6 @@ public enum CommandType {
             GNSCommandProtocol.READER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -372,7 +2404,6 @@ public enum CommandType {
           + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD}),
-
   /**
    *
    */
@@ -383,7 +2414,6 @@ public enum CommandType {
           + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD}),
-
   /**
    *
    */
@@ -399,7 +2429,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -413,7 +2442,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -425,7 +2453,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -436,7 +2463,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -450,7 +2476,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -464,7 +2489,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -475,7 +2499,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -490,7 +2513,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -506,7 +2528,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -519,7 +2540,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -531,7 +2551,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -542,7 +2561,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -555,7 +2573,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -582,7 +2599,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -597,7 +2613,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -615,7 +2630,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -630,7 +2644,6 @@ public enum CommandType {
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE,
             GNSCommandProtocol.OLD_VALUE}),
-
   /**
    *
    */
@@ -643,7 +2656,6 @@ public enum CommandType {
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE,
             GNSCommandProtocol.OLD_VALUE}),
-
   /**
    *
    */
@@ -656,7 +2668,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -667,7 +2678,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.WRITER}),
-
   /**
    *
    */
@@ -682,7 +2692,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -708,7 +2717,6 @@ public enum CommandType {
           + "This command is a shorthand for a mongo find query.",
           new String[]{GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -721,7 +2729,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.FIELD,
             GNSCommandProtocol.NEAR,
             GNSCommandProtocol.MAX_DISTANCE}),
-
   /**
    *
    */
@@ -734,7 +2741,6 @@ public enum CommandType {
           + "This command is a shorthand for a mongo $within query.",
           new String[]{GNSCommandProtocol.FIELD,
             GNSCommandProtocol.WITHIN}),
-
   /**
    *
    */
@@ -757,7 +2763,6 @@ public enum CommandType {
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of JSON Objects.",
           new String[]{GNSCommandProtocol.GUID}),
-
   /**
    *
    */
@@ -768,7 +2773,6 @@ public enum CommandType {
           + "Values are returned as a JSON array of JSON Objects.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.QUERY}),
-
   /**
    *
    */
@@ -779,7 +2783,6 @@ public enum CommandType {
           + "Values are returned as a JSON array of JSON Objects.",
           new String[]{GNSCommandProtocol.QUERY,
             GNSCommandProtocol.GUID}),
-
   /**
    *
    */
@@ -792,7 +2795,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.QUERY,
             GNSCommandProtocol.INTERVAL}),
-
   /**
    *
    */
@@ -820,7 +2822,6 @@ public enum CommandType {
             GNSCommandProtocol.NAME,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -833,7 +2834,6 @@ public enum CommandType {
             GNSCommandProtocol.PUBLIC_KEY,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -846,7 +2846,6 @@ public enum CommandType {
             GNSCommandProtocol.PUBLIC_KEYS,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -860,7 +2859,6 @@ public enum CommandType {
             GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -874,7 +2872,6 @@ public enum CommandType {
             GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -883,7 +2880,6 @@ public enum CommandType {
           "Returns the account info associated with the given GUID. "
           + "Returns +BADGUID+ if the GUID has not been registered.",
           new String[]{GNSCommandProtocol.GUID}),
-
   /**
    *
    */
@@ -893,7 +2889,6 @@ public enum CommandType {
           + "Returns +BADGUID+ if the GUID has not been registered.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.GUIDCNT}),
-
   /**
    *
    */
@@ -902,7 +2897,6 @@ public enum CommandType {
           "Returns the guid associated with for the human readable name. "
           + "Returns +BADACCOUNT+ if the GUID has not been registered.",
           new String[]{GNSCommandProtocol.NAME}),
-
   /**
    *
    */
@@ -910,7 +2904,6 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns the account guid associated the guid. Returns +BADGUID+ if the GUID does not exist.",
           new String[]{GNSCommandProtocol.GUID}),
-
   /**
    *
    */
@@ -919,7 +2912,6 @@ public enum CommandType {
           "Returns human readable name and public key associated with the given GUID. "
           + "Returns +BADGUID+ if the GUID has not been registered.",
           new String[]{GNSCommandProtocol.GUID}),
-
   /**
    *
    */
@@ -932,7 +2924,6 @@ public enum CommandType {
             GNSCommandProtocol.PASSWORD,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -943,7 +2934,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.NAME,
             GNSCommandProtocol.PUBLIC_KEY,
             GNSCommandProtocol.PASSWORD}),
-
   /**
    *
    */
@@ -955,7 +2945,6 @@ public enum CommandType {
             GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
- 
   /**
    *
    */
@@ -967,7 +2956,6 @@ public enum CommandType {
             GNSCommandProtocol.NAME,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -980,7 +2968,6 @@ public enum CommandType {
             GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -990,7 +2977,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1001,7 +2987,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1009,7 +2994,6 @@ public enum CommandType {
           CommandResultType.NULL, false, false,
           "Removes the account GUID associated with the human readable name authorized by the account password.",
           new String[]{GNSCommandProtocol.NAME, GNSCommandProtocol.PASSWORD}),
-
   /**
    *
    */
@@ -1020,7 +3004,6 @@ public enum CommandType {
             GNSCommandProtocol.PASSWORD,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1029,7 +3012,6 @@ public enum CommandType {
           "Handles the completion of the verification process for a guid by supplying the correct code.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.CODE}),
-
   /**
    *
    */
@@ -1039,7 +3021,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1069,7 +3050,6 @@ public enum CommandType {
             GNSCommandProtocol.ACL_TYPE,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1085,7 +3065,6 @@ public enum CommandType {
             GNSCommandProtocol.ACL_TYPE,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1100,7 +3079,6 @@ public enum CommandType {
             GNSCommandProtocol.ACL_TYPE,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1114,7 +3092,6 @@ public enum CommandType {
             GNSCommandProtocol.ACL_TYPE,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1127,7 +3104,6 @@ public enum CommandType {
             GNSCommandProtocol.READER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1137,6 +3113,45 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.ACL_TYPE,
+            GNSCommandProtocol.SIGNATURE,
+            GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
+  /**
+   *
+   */
+  AclCreateField(516, CommandCategory.UPDATE, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclCreateField.class,
+          CommandResultType.NULL, true, false,
+          "Creates an empty ACL.",
+          new String[]{GNSCommandProtocol.GUID,
+            GNSCommandProtocol.FIELD,
+            GNSCommandProtocol.ACL_TYPE,
+            GNSCommandProtocol.WRITER,
+            GNSCommandProtocol.SIGNATURE,
+            GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
+  /**
+   *
+   */
+  AclDeleteField(517, CommandCategory.UPDATE, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclDeleteField.class,
+          CommandResultType.NULL, true, false,
+          "Deletes an ACL.",
+          new String[]{GNSCommandProtocol.GUID,
+            GNSCommandProtocol.FIELD,
+            GNSCommandProtocol.ACL_TYPE,
+            GNSCommandProtocol.WRITER,
+            GNSCommandProtocol.SIGNATURE,
+            GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
+  /**
+   *
+   */
+  AclFieldExists(518, CommandCategory.READ, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclFieldExists.class,
+          CommandResultType.BOOLEAN, true, false,
+          "Returns \"true\" if the ACL exists \"false\" otherwise.",
+          new String[]{GNSCommandProtocol.GUID,
+            GNSCommandProtocol.FIELD,
+            GNSCommandProtocol.ACL_TYPE,
+            GNSCommandProtocol.READER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
   //
@@ -1155,7 +3170,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1167,7 +3181,6 @@ public enum CommandType {
             GNSCommandProtocol.MEMBERS,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1180,7 +3193,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1191,7 +3203,6 @@ public enum CommandType {
             GNSCommandProtocol.MEMBER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1203,7 +3214,6 @@ public enum CommandType {
             GNSCommandProtocol.READER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1213,7 +3223,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1225,7 +3234,6 @@ public enum CommandType {
             GNSCommandProtocol.READER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1235,7 +3243,6 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1248,7 +3255,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1259,7 +3265,6 @@ public enum CommandType {
             GNSCommandProtocol.MEMBER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1272,7 +3277,6 @@ public enum CommandType {
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1283,7 +3287,6 @@ public enum CommandType {
             GNSCommandProtocol.MEMBERS,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1291,7 +3294,6 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns this help message.",
           new String[]{}),
-
   /**
    *
    */
@@ -1299,7 +3301,6 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands.",
           new String[]{"tcp"}),
-
   /**
    *
    */
@@ -1307,7 +3308,6 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands in wiki format.",
           new String[]{"tcpwiki"}),
-
   /**
    *
    */
@@ -1315,7 +3315,6 @@ public enum CommandType {
           CommandResultType.NULL, true, true,
           "Turns on admin mode.",
           new String[]{GNSCommandProtocol.PASSKEY}),
-
   /**
    *
    */
@@ -1323,7 +3322,6 @@ public enum CommandType {
           CommandResultType.STRING, true, true,
           "[ONLY IN ADMIN MODE] Returns the contents of the GNS.",
           new String[]{GNSCommandProtocol.PASSKEY}),
-
   /**
    *
    */
@@ -1334,7 +3332,6 @@ public enum CommandType {
           + "Values are always returned as a JSON list. "
           + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
           new String[]{GNSCommandProtocol.FIELD}),
-
   /**
    *
    */
@@ -1343,7 +3340,6 @@ public enum CommandType {
           "[ONLY IN ADMIN MODE] Changes a parameter value.",
           new String[]{GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE}),
-
   /**
    *
    */
@@ -1351,7 +3347,6 @@ public enum CommandType {
           CommandResultType.STRING, true, true,
           "[ONLY IN ADMIN MODE] Lists all parameter values.",
           new String[]{}),
-
   /**
    *
    */
@@ -1359,7 +3354,6 @@ public enum CommandType {
           CommandResultType.NULL, true, true,
           "[ONLY IN ADMIN MODE] Clears the local name server cache.",
           new String[]{}),
-
   /**
    *
    */
@@ -1367,7 +3361,6 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.",
           new String[]{}),
-
   /**
    *
    */
@@ -1375,7 +3368,6 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Checks connectivity.",
           new String[]{}),
-
   /**
    *
    */
@@ -1388,7 +3380,6 @@ public enum CommandType {
             GNSCommandProtocol.AC_CODE,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1400,7 +3391,6 @@ public enum CommandType {
             GNSCommandProtocol.AC_ACTION,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1412,7 +3402,6 @@ public enum CommandType {
             GNSCommandProtocol.AC_ACTION,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-
   /**
    *
    */
@@ -1464,32 +3453,26 @@ public enum CommandType {
      *
      */
     READ,
-
     /**
      *
      */
     UPDATE,
-
     /**
      *
      */
     CREATE_DELETE,
-
     /**
      *
      */
     SELECT,
-
     /**
      *
      */
     OTHER,
-
     /**
      *
      */
     SYSTEM_LOOKUP,
-
     /**
      *
      */
@@ -1607,7 +3590,6 @@ public enum CommandType {
   // add strictly local flag or remote flag
   // what are the set of commands that will be invoked by this command
   // AKA multi-transactional commands
-
   /**
    *
    * @return true if it's a read command
@@ -1664,10 +3646,10 @@ public enum CommandType {
   public static CommandType getCommandType(int number) {
     return map.get(number);
   }
-  
+
   /**
    * Returns the command that corresponds to the name ignoring case.
-   * 
+   *
    * @param name
    * @return the command
    */
@@ -1816,6 +3798,9 @@ public enum CommandType {
     AclRetrieveSelf.setChain(ReadUnsigned);
     AclRetrieve.setChain(ReadUnsigned);
     AclRemove.setChain(ReadUnsigned);
+    AclCreateField.setChain(ReadUnsigned);
+    AclDeleteField.setChain(ReadUnsigned);
+    AclFieldExists.setChain(ReadUnsigned);
     //
     AddMembersToGroup.setChain(AppendListUnsigned);
     AddMembersToGroupSelf.setChain(AppendListUnsigned);
@@ -1852,7 +3837,6 @@ public enum CommandType {
 //  public static Class<?>[] getCommandClassesArray() {
 //    return (Class<?>[]) Stream.of(values()).map(CommandType::getCommandClass).toArray();
 //  }
-
   /**
    *
    * @return the command classes

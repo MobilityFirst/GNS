@@ -28,25 +28,32 @@ public enum CommandResultType {
    * The methods {@link CommandPacket#getResultMap} or
    * {@link CommandPacket#getResultJSONObject} can be used if and only if
    * the result type is {@link #MAP};
-   */ MAP, /**
+   */
+  MAP, /**
    * The methods {@link CommandPacket#getResultList},
    * {@link CommandPacket#getResultJSONArray} can be used if and only if
    * the result type is {@link #LIST}
-   */ LIST, /**
+   */
+  LIST, /**
    * The method {@link CommandPacket#getResultBoolean} can be used if and
    * only if the result type is {@link #BOOLEAN}.
-   */ BOOLEAN, /**
+   */
+  BOOLEAN, /**
    * The method {@link CommandPacket#getResultLong} can be used if and
    * only if the result type is {@link #LONG}.
-   */ LONG, /**
+   */
+  LONG, /**
    * The method {@link CommandPacket#getResultInt} can be used if and only
    * if the result type is {@link #INTEGER}.
-   */ INTEGER, /**
+   */
+  INTEGER, /**
    * The method {@link CommandPacket#getResultDouble} can be used if and
    * only if the result type is {@link #DOUBLE}.
-   */ DOUBLE, /**
+   */
+  DOUBLE, /**
    * The result of executing this command is null or does not return a
    * result.
-   */ NULL
-  
+   */
+  NULL
+
 }

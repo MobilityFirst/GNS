@@ -132,7 +132,7 @@ public class NSGroupAccess {
    * @throws FailedDBOperationException
    */
   public static boolean isGroupGuid(String guid, BasicRecordMap database) throws FailedDBOperationException {
-    return !NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GroupAccess.GROUP, database).isEmpty();
+    return !NSFieldAccess.lookupListFieldLocallyNoAuthNoExceptions(guid, GroupAccess.GROUP, database).isEmpty();
   }
 
   /**

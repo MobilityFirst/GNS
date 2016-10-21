@@ -91,7 +91,7 @@ public class CreateList extends AbstractCommand {
       timestamp = null;
     }
     ResponseCode responseCode;
-    if (!(responseCode = FieldAccess.create(header, guid, field, new ResultValue(value),
+    if (!(responseCode = FieldAccess.createField(header, guid, field, new ResultValue(value),
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {

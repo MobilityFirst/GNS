@@ -59,6 +59,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WITHIN;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_GUIDS;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
 import org.json.JSONArray;
@@ -93,9 +95,6 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import org.json.JSONException;
-
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_GUIDS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
 
 /**
  * This class defines a client to communicate with a GNS instance over TCP. This
@@ -331,7 +330,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public JSONObject read(String targetGuid, GuidEntry reader)
           throws Exception {
     return new JSONObject(getResponse(reader != null ? CommandType.ReadArray
-                    : CommandType.ReadArrayUnsigned, reader, GUID,
+            : CommandType.ReadArrayUnsigned, reader, GUID,
             targetGuid, FIELD, ENTIRE_RECORD, READER,
             reader != null ? reader.getGuid() : null));
   }
@@ -1161,6 +1160,83 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
     return aclGet(accessType.name(), guid, field, accesserGuid);
   }
 
+  /**
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @param writerGuid
+   * @throws Exception
+   */
+  public void aclCreateField(AclAccessType accessType, GuidEntry guid, String field,
+          String writerGuid) throws Exception {
+    getResponse(CommandType.AclCreateField, guid, ACL_TYPE, accessType.name(), GUID,
+            guid.getGuid(), FIELD, field, WRITER, writerGuid);
+  }
+
+  /**
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @throws Exception
+   */
+  public void aclCreateField(AclAccessType accessType, GuidEntry guid, String field) throws Exception {
+    aclCreateField(accessType, guid, field, guid.getGuid());
+  }
+
+  /**
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @param writerGuid
+   * @throws Exception
+   */
+  public void aclDeleteField(AclAccessType accessType, GuidEntry guid, String field,
+          String writerGuid) throws Exception {
+    getResponse(CommandType.AclDeleteField, guid, ACL_TYPE, accessType.name(),
+            GUID, guid.getGuid(), FIELD, field, WRITER, writerGuid);
+  }
+
+  /**
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @throws Exception
+   */
+  public void aclDeleteField(AclAccessType accessType, GuidEntry guid, String field) throws Exception {
+    aclDeleteField(accessType, guid, field, guid.getGuid());
+  }
+
+  /**
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @param readerGuid
+   * @return
+   * @throws Exception
+   */
+  public boolean aclFieldExists(AclAccessType accessType, GuidEntry guid, String field,
+          String readerGuid) throws Exception {
+    return Boolean.valueOf(getResponse(CommandType.AclFieldExists, guid, ACL_TYPE, accessType.name(),
+            GUID, guid.getGuid(), FIELD, field, READER, readerGuid));
+  }
+
+  /**
+   * 
+   * @param accessType
+   * @param guid
+   * @param field
+   * @return
+   * @throws Exception 
+   */
+  public boolean aclFieldExists(AclAccessType accessType, GuidEntry guid, String field) throws Exception {
+    return aclFieldExists(accessType, guid, field, guid.getGuid());
+  }
+
   // ALIASES
   /**
    * Creates an alias entity name for the given guid. The alias can be used
@@ -1214,7 +1290,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param accountGuid
    * @param name
    * @param publicKey
-   * @return the guid  string
+   * @return the guid string
    * @throws Exception
    */
   private String guidCreateHelper(GuidEntry accountGuid, String name,

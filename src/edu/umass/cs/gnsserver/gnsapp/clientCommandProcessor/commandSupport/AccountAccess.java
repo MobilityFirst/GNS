@@ -128,7 +128,7 @@ public class AccountAccess {
 
   /**
    * Obtains the account info record for the given GUID if that GUID was used
-   * to create an account. Only looks on the local server.
+ to createField an account. Only looks on the local server.
    *
    * @param guid
    * @param handler
@@ -141,7 +141,7 @@ public class AccountAccess {
 
   /**
    * Obtains the account info record for the given GUID if that GUID was used
-   * to create an account. Will do a remote query if needed.
+ to createField an account. Will do a remote query if needed.
    *
    * @param guid
    * @param handler
@@ -154,7 +154,7 @@ public class AccountAccess {
 
   /**
    * Obtains the account info record for the given GUID if that GUID was used
-   * to create an account.
+ to createField an account.
    * <p>
    * GUID: "ACCOUNT_INFO" -- {account} for primary guid<br>
    * GUID: "GUID" -- GUID (primary) for secondary guid<br>
@@ -752,7 +752,7 @@ public class AccountAccess {
     try {
 
       ResponseCode returnCode;
-      // First try to create the HRN record to make sure this name isn't
+      // First try to createField the HRN record to make sure this name isn't
       // already registered
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
@@ -940,7 +940,7 @@ public class AccountAccess {
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
       ResponseCode code = handler.getRemoteQuery().createRecord(name, jsonHRN);
-      // Return the error if we could not create the HRN (alias) record.
+      // Return the error if we could not createField the HRN (alias) record.
       if (code.isExceptionOrError()) {
         return new CommandResponse(code, BAD_RESPONSE + " "
                 + code.getProtocolCode() + " " + name + "(" + guid
@@ -1072,9 +1072,9 @@ public class AccountAccess {
       DelayProfiler.updateDelay("addMultipleGuidsSetup", startTime);
       accountInfo.noteUpdate();
 
-      // first we create the HRN records as a batch
+      // first we createField the HRN records as a batch
       ResponseCode returnCode;
-      // First try to create the HRNS to insure that that name does not
+      // First try to createField the HRNS to insure that that name does not
       // already exist
       if (!(returnCode = handler.getRemoteQuery().createRecordBatch(
               new HashSet<>(names), hrnMap, handler))
@@ -1102,7 +1102,7 @@ public class AccountAccess {
   }
 
   /**
-   * Used by the batch test methods to create multiple guids. This creates
+   * Used by the batch test methods to createField multiple guids. This creates
    * bunch of randomly names guids.
    *
    * @param names
@@ -1124,7 +1124,7 @@ public class AccountAccess {
   }
 
   /**
-   * Used by the batch test methods to create multiple guids. This creates
+   * Used by the batch test methods to createField multiple guids. This creates
    * bunch of randomly names guids.
    *
    * @param accountInfo

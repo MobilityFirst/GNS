@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
+import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,6 +42,8 @@ import org.json.JSONObject;
  */
 public class DiskMapRecords implements NoSQLRecords {
 
+   private static final Logger LOGGER = Logger.getLogger(DiskMapRecords.class.getName());
+   
   private Map<String, DiskMapCollection> collections;
   private String mongoNodeID;
   private int mongoPort;
@@ -196,25 +199,25 @@ public class DiskMapRecords implements NoSQLRecords {
           throws RecordNotFoundException, FailedDBOperationException {
 
     JSONObject record = lookupEntireRecord(collection, name);
-//    DatabaseConfig.getLogger().log(Level.FINE, "Full record " + record.toString());
+//    LOGGER.log(Level.FINE, "Full record " + record.toString());
     HashMap<ColumnField, Object> hashMap = new HashMap<>();
     hashMap.put(nameField, name);
     if (valuesMapField != null && valuesMapKeys != null) {
       try {
         JSONObject readValuesMap = record.getJSONObject(valuesMapField.getName());
-//        DatabaseConfig.getLogger().log(Level.FINE, "Read valuesMap " + readValuesMap.toString());
+//        LOGGER.log(Level.FINE, "Read valuesMap " + readValuesMap.toString());
         ValuesMap valuesMapOut = new ValuesMap();
         for (int i = 0; i < valuesMapKeys.size(); i++) {
           String userKey = valuesMapKeys.get(i).getName();
           if (JSONDotNotation.containsFieldDotNotation(userKey, readValuesMap) == false) {
-//            DatabaseConfig.getLogger().fine("valuesMap doesn't contain " + userKey);
+//            LOGGER.fine("valuesMap doesn't contain " + userKey);
             continue;
           }
           try {
             switch (valuesMapKeys.get(i).type()) {
               case USER_JSON:
                 Object value = JSONDotNotation.getWithDotNotation(userKey, readValuesMap);
-                DatabaseConfig.getLogger().log(Level.FINE,
+                LOGGER.log(Level.FINE,
                         "Object is {0}", new Object[]{value.toString()});
                 valuesMapOut.put(userKey, value);
                 break;
@@ -225,18 +228,18 @@ public class DiskMapRecords implements NoSQLRecords {
                                         readValuesMap).toString())));
                 break;
               default:
-                DatabaseConfig.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "ERROR: Error: User keys field {0} is not a known type:{1}",
                         new Object[]{userKey, valuesMapKeys.get(i).type()});
                 break;
             }
           } catch (JSONException e) {
-            DatabaseConfig.getLogger().log(Level.SEVERE, "Error parsing json: {0}", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error parsing json: {0}", e.getMessage());
           }
         }
         hashMap.put(valuesMapField, valuesMapOut);
       } catch (JSONException e) {
-        DatabaseConfig.getLogger().log(Level.SEVERE, "Problem getting values map: {0}", e.getMessage());
+        LOGGER.log(Level.SEVERE, "Problem getting values map: {0}", e.getMessage());
       }
     }
     return hashMap;
@@ -249,13 +252,13 @@ public class DiskMapRecords implements NoSQLRecords {
 
   @Override
   public void removeEntireRecord(String collection, String name) throws FailedDBOperationException {
-    DatabaseConfig.getLogger().log(Level.FINE, "Remove: {0}", name);
+    LOGGER.log(Level.FINE, "Remove: {0}", name);
     getMap(collection).remove(name);
   }
 
   @Override
   public void updateEntireRecord(String collection, String name, ValuesMap valuesMap) throws FailedDBOperationException {
-    DatabaseConfig.getLogger().log(Level.FINE, "Update record {0}/{1}", new Object[]{name, valuesMap});
+    LOGGER.log(Level.FINE, "Update record {0}/{1}", new Object[]{name, valuesMap});
     JSONObject json = new JSONObject();
     try {
       json.put(NameRecord.NAME.getName(), name);
@@ -270,14 +273,14 @@ public class DiskMapRecords implements NoSQLRecords {
   public void updateIndividualFields(String collection, String name,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
-    DatabaseConfig.getLogger().log(Level.FINE, "Update fields {0}/{1}", new Object[]{name, valuesMapKeys});
+    LOGGER.log(Level.FINE, "Update fields {0}/{1}", new Object[]{name, valuesMapKeys});
     JSONObject record;
     try {
       record = lookupEntireRecord(collection, name);
     } catch (RecordNotFoundException e) {
       throw new FailedDBOperationException(collection, name, "Record not found.");
     }
-    DatabaseConfig.getLogger().log(Level.FINE, "Record before:{0}", record);
+    LOGGER.log(Level.FINE, "Record before:{0}", record);
     if (record == null) {
       throw new FailedDBOperationException(collection, name);
     }
@@ -296,16 +299,16 @@ public class DiskMapRecords implements NoSQLRecords {
               //json.put(fieldName, JSONParse(valuesMapValues.get(i)));
               break;
             default:
-              DatabaseConfig.getLogger().log(Level.WARNING,
+              LOGGER.log(Level.WARNING,
                       "Ignoring unknown format: {0}", valuesMapKeys.get(i).type());
               break;
           }
         }
-        DatabaseConfig.getLogger().log(Level.FINE, "Json after:{0}", json);
+        LOGGER.log(Level.FINE, "Json after:{0}", json);
         record.put(valuesMapField.getName(), json);
-        DatabaseConfig.getLogger().log(Level.FINE, "Record after:{0}", record);
+        LOGGER.log(Level.FINE, "Record after:{0}", record);
       } catch (JSONException e) {
-        DatabaseConfig.getLogger().log(Level.SEVERE,
+        LOGGER.log(Level.SEVERE,
                 "Problem updating json: {0}", e.getMessage());
       }
     }
@@ -330,22 +333,25 @@ public class DiskMapRecords implements NoSQLRecords {
       record = lookupEntireRecord(collection, name);
     } catch (RecordNotFoundException e) {
     }
-    DatabaseConfig.getLogger().log(Level.FINE, "Record before:{0}", record);
+    LOGGER.log(Level.FINE, "Record before:{0}", record);
     if (record == null) {
       throw new FailedDBOperationException(collection, name, "Record not found.");
     }
     if (mapField != null && mapKeys != null) {
       try {
         JSONObject json = record.getJSONObject(mapField.getName());
+        LOGGER.log(Level.FINE, "Json before:{0}", json);
         for (int i = 0; i < mapKeys.size(); i++) {
           String fieldName = mapKeys.get(i).getName();
-          json.remove(fieldName);
+          LOGGER.log(Level.FINE, "Removing: {0}", fieldName);
+          JSONDotNotation.removeWithDotNotation(fieldName, json);
+          //json.remove(fieldName);
         }
-        DatabaseConfig.getLogger().log(Level.FINE, "Json after:{0}", json);
+        LOGGER.log(Level.FINE, "Json after:{0}", json);
         record.put(mapField.getName(), json);
-        DatabaseConfig.getLogger().log(Level.FINE, "Record after:{0}", record);
+        LOGGER.log(Level.FINE, "Record after:{0}", record);
       } catch (JSONException e) {
-        DatabaseConfig.getLogger().log(Level.SEVERE,
+        LOGGER.log(Level.SEVERE,
                 "Problem updating json: {0}", e.getMessage());
       }
     }

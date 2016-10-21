@@ -207,11 +207,10 @@ public class NSFieldAccess {
    * @param database
    * @return ResultValue
    */
-  public static ResultValue lookupListFieldLocallyNoAuth(String guid, String field,
+  public static ResultValue lookupListFieldLocallyNoAuthNoExceptions(String guid, String field,
           BasicRecordMap database) {
     ResultValue result = null;
     try {
-      // arun: cleaned up logging
       NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
               ColumnFieldType.LIST_STRING, field);
       ClientSupportConfig.getLogger().log(Level.FINE,
@@ -238,6 +237,37 @@ public class NSFieldAccess {
       return new ResultValue();
     }
   }
+  
+  /**
+   * Looks up the value of an old-style list field in the guid on this NameServer.
+   * Returns the value of a field in a GUID as a ResultValue or
+   * an empty ResultValue if field cannot be found.
+   *
+   * @param guid
+   * @param field
+   * @param database
+   * @return ResultValue
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   */
+  public static ResultValue lookupListFieldLocallyNoAuth(String guid, String field,
+          BasicRecordMap database) 
+          throws FailedDBOperationException, FieldNotFoundException, RecordNotFoundException {
+    ResultValue result = null;
+      NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
+              ColumnFieldType.LIST_STRING, field);
+      ClientSupportConfig.getLogger().log(Level.FINE,
+              "LOOKUPFIELDONTHISSERVER: {0} : {1} -> {2}",
+              new Object[]{guid, field, nameRecord});
+      result = nameRecord.getUserKeyAsArray(field);
+  
+    if (result != null) {
+      return result;
+    } else {
+      return new ResultValue();
+    }
+  }
 
   /**
    * Looks up the first element of field in the guid on this NameServer as a String.
@@ -249,9 +279,9 @@ public class NSFieldAccess {
    * @return a string representing the first value in field
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static String lookupSingletonFieldOnThisServer(String guid, String field,
+  public static String lookupSingletonFieldLocal(String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
-    ResultValue guidResult = lookupListFieldLocallyNoAuth(guid, field, database);
+    ResultValue guidResult = lookupListFieldLocallyNoAuthNoExceptions(guid, field, database);
     if (guidResult != null && !guidResult.isEmpty()) {
       return (String) guidResult.get(0);
     } else {
@@ -274,7 +304,7 @@ public class NSFieldAccess {
    */
   public static ResultValue lookupListFieldAnywhere(String guid, String field,
           boolean allowRemoteQuery, ClientRequestHandlerInterface handler) throws FailedDBOperationException {
-    ResultValue result = lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
+    ResultValue result = lookupListFieldLocallyNoAuthNoExceptions(guid, field, handler.getApp().getDB());
     // if values wasn't found and the guid doesn't exist on this server 
     // and we're allowed then send a query to another server
     if (result.isEmpty() && !handler.getApp().getDB().containsName(guid) && allowRemoteQuery) {

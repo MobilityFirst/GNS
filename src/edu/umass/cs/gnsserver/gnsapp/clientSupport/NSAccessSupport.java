@@ -304,7 +304,7 @@ public class NSAccessSupport {
     try {
       // FIXME: Tidy this mess up.
       @SuppressWarnings("unchecked")
-      Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(accessType,
+      Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(accessType,
               guid, field, activeReplica.getDB());
       ClientSupportConfig.getLogger().log(Level.FINE, "{0} allowed users of {1} : {2}", new Object[]{guid, field, allowedusers});
       if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica)) {
@@ -368,9 +368,9 @@ public class NSAccessSupport {
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
-      return NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica.getDB()).contains(EVERYONE)
+      return NSFieldMetaData.lookupLocally(access, guid, field, activeReplica.getDB()).contains(EVERYONE)
               || 
-              NSFieldMetaData.lookupOnThisNameServer(access, guid, ENTIRE_RECORD, activeReplica.getDB()).contains(EVERYONE);
+              NSFieldMetaData.lookupLocally(access, guid, ENTIRE_RECORD, activeReplica.getDB()).contains(EVERYONE);
     } catch (FieldNotFoundException e) {
       // This is actually a normal result.. so no warning here.
       return false;
@@ -400,7 +400,7 @@ public class NSAccessSupport {
             new Object[]{field});
     try {
       //FIXME: Clean this mess up.
-      return (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access, guid, field, database);
+      return (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(access, guid, field, database);
     } catch (FieldNotFoundException e) {
       // do nothing
     } catch (RecordNotFoundException e) {

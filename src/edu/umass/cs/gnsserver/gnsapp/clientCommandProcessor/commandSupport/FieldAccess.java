@@ -186,7 +186,8 @@ public class FieldAccess {
    * @param handler
    * @return the value of a single field
    */
-  public static CommandResponse lookupMultipleFields(InternalRequestHeader header, String guid, ArrayList<String> fields,
+  public static CommandResponse lookupMultipleFields(InternalRequestHeader header, String guid, 
+          ArrayList<String> fields,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     ResponseCode errorCode = signatureAndACLCheckForRead(guid, null, fields,
@@ -236,7 +237,7 @@ public class FieldAccess {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
-    ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
+    ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuthNoExceptions(guid, field, handler.getApp().getDB());
     if (!value.isEmpty()) {
       try {
         resultString = new JSONObject().put(field, value).toString();
@@ -313,7 +314,7 @@ public class FieldAccess {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
-    ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
+    ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuthNoExceptions(guid, field, handler.getApp().getDB());
     if (!value.isEmpty()) {
       Object singleValue = value.get(0);
       if (singleValue instanceof Number) {
@@ -382,11 +383,11 @@ public class FieldAccess {
    * @param argument - for operations that require an index, -1 otherwise
    * @param operation - the update operation to perform... see <code>UpdateOperation</code>
    * @param writer - the guid performing the write operation, can be the same as the guid being written. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
+   * readable or writable fields or the secret for internal operations done without a signature.
    * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
+   * readable or writable fields or the secret for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
+   * readable or writable fields or the secret for internal operations done without a signature.
    * @param timestamp
    * @param handler
    * @return an NSResponseCode
@@ -509,10 +510,10 @@ public class FieldAccess {
    *
    * @param header
    * @param guid - the guid to update
-   * @param key - the field to create
+   * @param key - the field to createField
    * @param value - the initial value of the field
-   * @param writer - the guid performing the create operation, can be the same as the guid being written. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
+   * @param writer - the guid performing the createField operation, can be the same as the guid being written. Can be null for globally
+ readable or writable fields or the secret for internal operations done without a signature.
    * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
@@ -521,11 +522,36 @@ public class FieldAccess {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode create(InternalRequestHeader header, String guid, String key, ResultValue value,
+  public static ResponseCode createField(InternalRequestHeader header, String guid, String key, ResultValue value,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     return update(header, guid, key, value, null, -1,
             UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message,
+            timestamp, handler);
+  }
+  
+   /**
+   * Deletes the field from the guid.
+   *
+   * @param header
+   * @param guid - the guid to update
+   * @param key - the field to createField
+   * @param writer - the guid performing the delete operation, can be the same as the guid being written. 
+   * Can be null for globally readable or writable fields or the secret for internal operations done without a signature.
+   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
+   * readable or writable fields or for internal operations done without a signature.
+   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
+   * readable or writable fields or for internal operations done without a signature.
+   * @param timestamp
+   * @param handler
+   * @return a {@link ResponseCode}
+   */
+  public static ResponseCode deleteField(InternalRequestHeader header, String guid, String key,
+          String writer, String signature, String message,
+          Date timestamp, ClientRequestHandlerInterface handler) {
+    return update(header, guid, key, 
+            "", null, -1, // these are ignored anyway
+            UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, message,
             timestamp, handler);
   }
 
@@ -661,7 +687,7 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     //String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
-    // Check to see if the guid doesn't exists and if so create it...
+    // Check to see if the guid doesn't exists and if so createField it...
     if (AccountAccess.lookupGuidInfoAnywhere(guid, handler) == null) {
       // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.
       // FIXME: This should probably include authentication

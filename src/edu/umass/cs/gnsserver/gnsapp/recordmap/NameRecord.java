@@ -254,9 +254,11 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     // Handle special case for SINGLE_FIELD_REMOVE_FIELD operation
     // whose purpose is to remove the field with name = key from values map.
     if (operation.equals(UpdateOperation.SINGLE_FIELD_REMOVE_FIELD)) {
-
+      
       ArrayList<ColumnField> keys = new ArrayList<>();
       keys.add(new ColumnField(recordKey, ColumnFieldType.LIST_STRING));
+       GNSConfig.getLogger().log(Level.FINE,
+                    "<============>REMOVE {0} from {1}<============>", new Object[]{recordKey, getName()});
       recordMap.removeMapKeys(getName(), VALUES_MAP, keys);
       return true;
     }

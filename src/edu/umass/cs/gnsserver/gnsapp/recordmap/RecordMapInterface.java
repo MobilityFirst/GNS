@@ -131,7 +131,7 @@ public interface RecordMapInterface {
    * Remove keys from a field.
    *
    * @param name - the name of the record
-   * @param mapField - the system fields to updateEntireValuesMap
+   * @param mapField - the system fields to update
    * @param mapKeys - the keys to remove
    * @throws FailedDBOperationException
    */

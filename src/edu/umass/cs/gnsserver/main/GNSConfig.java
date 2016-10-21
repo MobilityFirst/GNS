@@ -65,20 +65,6 @@ public class GNSConfig {
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server.
      */
-    /**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
-     *//**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
-     */
-    /**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
-     */
     ENABLE_SECRET_KEY(true),
     /**
      * Uses DiskMapRecords if enabled.
@@ -95,7 +81,7 @@ public class GNSConfig {
      * a single field ACL doesn't permit access for a guid if the 
      * ENTIRE_RECORD ACL contains that guid then access is permitted.
      */
-    REMOVE_GUIDS_FROM_ENTIRE_RECORD_ACL(true),
+    NEW_ACL_EXISTS_MODEL(true),
     /**
      * If enabled, the GNS will cache and return the same value for reads.
      *

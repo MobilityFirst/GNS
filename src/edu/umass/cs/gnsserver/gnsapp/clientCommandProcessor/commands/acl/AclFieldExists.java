@@ -21,16 +21,15 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldMetaData;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSProtocol;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.security.InvalidKeyException;
@@ -41,6 +40,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,13 +48,13 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AclRemove extends AbstractCommand {
+public class AclFieldExists extends AbstractCommand {
 
   /**
    *
    * @param module
    */
-  public AclRemove(CommandModule module) {
+  public AclFieldExists(CommandModule module) {
     super(module);
   }
 
@@ -64,7 +64,7 @@ public class AclRemove extends AbstractCommand {
    */
   @Override
   public CommandType getCommandType() {
-    return CommandType.AclRemove;
+    return CommandType.AclFieldExists;
   }
 
   @Override
@@ -72,41 +72,24 @@ public class AclRemove extends AbstractCommand {
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
-    // The guid that is losing access to this field
-    String accesser = json.getString(ACCESSER);
-    // allows someone other than guid to change the acl, defaults to guid
-    String writer = json.optString(WRITER, guid);
     String accessType = json.getString(ACL_TYPE);
+    // allows someone other than guid to read acl, defaults to guid
+    String reader = json.optString(READER, guid);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    Date timestamp = json.has(TIMESTAMP)
+            ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE
-              + " " + BAD_ACL_TYPE + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
+      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE + " " + BAD_ACL_TYPE
+              + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
-    ResponseCode responseCode;
-    // We need the public key
-
-    String accessorPublicKey;
-    if (EVERYONE.equals(accesser)) {
-      accessorPublicKey = EVERYONE;
-    } else {
-      GuidInfo accessorGuidInfo;
-      if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accesser, handler)) == null) {
-        return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
-      } else {
-        accessorPublicKey = accessorGuidInfo.getPublicKey();
-      }
-    }
-    if (!(responseCode = FieldMetaData.removeValue(access,
-            guid, field, accessorPublicKey,
-            writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
-    } else {
-      return new CommandResponse(responseCode, responseCode.getProtocolCode());
-    }
+    return new CommandResponse(
+            ResponseCode.NO_ERROR,
+            Boolean.toString(
+                    FieldMetaData.fieldExists(access, guid, field, reader,
+                            signature, message, timestamp, handler)));
   }
 
-  
 }

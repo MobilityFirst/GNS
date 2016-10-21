@@ -41,7 +41,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSGroupAccess;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
