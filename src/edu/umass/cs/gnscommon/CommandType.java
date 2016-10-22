@@ -2736,9 +2736,9 @@ public enum CommandType {
           CommandResultType.LIST, false, false,
           "Returns the guids of all records that are within value which is a bounding box specified. "
           + "Key must be a GeoSpatial field. "
-          + "Bounding box is a nested JSONArray string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] "
+          + "Bounding box is a nested JSONArray string tuple of paired tuples: [[LONG_BOTTOM_LEFT, LAT_BOTTOM_LEFT],[LONG_UPPER_RIGHT, LAT_UPPER_RIGHT]] "
           + "Values are returned as a JSON array of guids. "
-          + "This command is a shorthand for a mongo $within query.",
+          + "This command is a shorthand for a mongo $geoWithin query.",
           new String[]{GNSCommandProtocol.FIELD,
             GNSCommandProtocol.WITHIN}),
   /**
