@@ -237,7 +237,7 @@ public class FieldAccess {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
-    ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuthNoExceptions(guid, field, handler.getApp().getDB());
+    ResultValue value = NSFieldAccess.lookupListFieldLocallySafe(guid, field, handler.getApp().getDB());
     if (!value.isEmpty()) {
       try {
         resultString = new JSONObject().put(field, value).toString();
@@ -314,7 +314,7 @@ public class FieldAccess {
       return new CommandResponse(errorCode, GNSCommandProtocol.BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
-    ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuthNoExceptions(guid, field, handler.getApp().getDB());
+    ResultValue value = NSFieldAccess.lookupListFieldLocallySafe(guid, field, handler.getApp().getDB());
     if (!value.isEmpty()) {
       Object singleValue = value.get(0);
       if (singleValue instanceof Number) {
@@ -438,12 +438,12 @@ public class FieldAccess {
               operation,
               value, oldValue, argument, null, handler.getApp(), false);
     } catch (JSONException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
+      GNSConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
       return ResponseCode.JSON_PARSE_ERROR;
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
             SignatureException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
+      GNSConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
       return ResponseCode.UPDATE_ERROR;
     }
   }
@@ -475,7 +475,7 @@ public class FieldAccess {
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
             SignatureException | JSONException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
+      GNSConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
       return ResponseCode.UPDATE_ERROR;
     }
   }
@@ -778,7 +778,7 @@ public class FieldAccess {
           Date timestamp,
           GNSApplicationInterface<String> app) {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
-    ClientSupportConfig.getLogger().log(Level.FINE,
+    GNSConfig.getLogger().log(Level.FINE,
             "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2} signature: {3}",
             new Object[]{guid, field, reader, signature});
     try {

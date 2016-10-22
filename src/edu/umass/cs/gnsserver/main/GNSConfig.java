@@ -76,12 +76,10 @@ public class GNSConfig {
      */
     IN_MEMORY_DB(false),
     /**
-     * If this is true it manes that the ENTIRE_RECORD ACL
-     * access overrides the single field ACLS. Put differently even if
-     * a single field ACL doesn't permit access for a guid if the 
-     * ENTIRE_RECORD ACL contains that guid then access is permitted.
+     * Under the old model empty ACLs did not prevent us from
+     * going further up the tree toward the root to check for access.
      */
-    NEW_ACL_EXISTS_MODEL(true),
+    USE_OLD_ACL_MODEL(true),
     /**
      * If enabled, the GNS will cache and return the same value for reads.
      *

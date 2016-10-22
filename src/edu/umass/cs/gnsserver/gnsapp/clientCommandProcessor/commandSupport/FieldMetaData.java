@@ -179,7 +179,7 @@ public class FieldMetaData {
     if (errorCode.isExceptionOrError()) {
       return new HashSet<>();
     }
-    ResultValue result = NSFieldAccess.lookupListFieldLocallyNoAuthNoExceptions(guid, field,
+    ResultValue result = NSFieldAccess.lookupListFieldLocallySafe(guid, field,
             handler.getApp().getDB());
     return new HashSet<>(result.toStringSet());
   }

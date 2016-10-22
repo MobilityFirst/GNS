@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,7 +61,7 @@ public class CommandModule {
    */
   public void addCommand(CommandType commandType, AbstractCommand command) {
     if (commandLookupTable.get(commandType) != null) {
-      ClientSupportConfig.getLogger().log(Level.SEVERE,
+      GNSConfig.getLogger().log(Level.SEVERE,
               "Duplicate command: {0}", commandType);
     }
     commandLookupTable.put(commandType, command);

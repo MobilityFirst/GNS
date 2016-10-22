@@ -182,7 +182,7 @@ public class GroupAccess {
     if (errorCode.isExceptionOrError()) {
       return new ResultValue();
     }
-    return NSFieldAccess.lookupListFieldLocallyNoAuthNoExceptions(guid, GROUP, handler.getApp().getDB());
+    return NSFieldAccess.lookupListFieldLocallySafe(guid, GROUP, handler.getApp().getDB());
   }
 
   /**
@@ -227,7 +227,7 @@ public class GroupAccess {
     if (errorCode.isExceptionOrError()) {
       return new ResultValue();
     }
-    return NSFieldAccess.lookupListFieldLocallyNoAuthNoExceptions(guid, GROUPS, handler.getApp().getDB());
+    return NSFieldAccess.lookupListFieldLocallySafe(guid, GROUPS, handler.getApp().getDB());
   }
 
   /**

@@ -290,14 +290,14 @@ public class NSAccessSupport {
   /**
    * Does the access check for the given access type on field for the guid and accessorGuid.
    * Field can be dotted and at any level.
-   * 
+   *
    * @param accessType
    * @param guid
    * @param field
    * @param accessorGuid
    * @param activeReplica
    * @return true if access is allowed
-   * @throws FailedDBOperationException 
+   * @throws FailedDBOperationException
    */
   private static boolean checkForAccess(MetaDataTypeName accessType, String guid, String field, String accessorGuid,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -330,7 +330,7 @@ public class NSAccessSupport {
    * Performs the ultimate check to see if guid is in the list of allowed users (which is a list of public keys).
    * Also handles the case where one of the groups that accessorguid is in is a member of allowed users.
    * Finally handles the case where the allowed users contains the EVERYONE symbol.
-   * 
+   *
    * @param accessorGuid - the guid that we are checking for access
    * @param allowedUsers - the list of publickeys that are in the acl
    * @param activeReplica
@@ -369,8 +369,7 @@ public class NSAccessSupport {
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
       return NSFieldMetaData.lookupLocally(access, guid, field, activeReplica.getDB()).contains(EVERYONE)
-              || 
-              NSFieldMetaData.lookupLocally(access, guid, ENTIRE_RECORD, activeReplica.getDB()).contains(EVERYONE);
+              || NSFieldMetaData.lookupLocally(access, guid, ENTIRE_RECORD, activeReplica.getDB()).contains(EVERYONE);
     } catch (FieldNotFoundException e) {
       // This is actually a normal result.. so no warning here.
       return false;
@@ -384,7 +383,8 @@ public class NSAccessSupport {
 
   /**
    * Looks up the public key for a guid using the acl of a field.
-   * Handles field that uses dot notation.
+   * Handles fields that uses dot notation. Recursively goes up the tree
+   * towards the root (ENTIRE_RECORD) node.
    *
    * @param access
    * @param guid
@@ -396,21 +396,25 @@ public class NSAccessSupport {
   @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
-    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}",
-            new Object[]{field});
+    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", new Object[]{field});
     try {
       //FIXME: Clean this mess up.
       return (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(access, guid, field, database);
-    } catch (FieldNotFoundException e) {
-      // do nothing
+
     } catch (RecordNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.WARNING, "User {0} access problem for {1}'s {2} field: {3}",
               new Object[]{guid, field, access.toString(), e});
       return new HashSet<>();
+    } catch (FieldNotFoundException e) {
+       ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
       return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
+      // One last check at the root (ENTIRE_RECORD) field.
+    } else if (!Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)
+            && !GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
+      return lookupPublicKeysFromAcl(access, guid, GNSCommandProtocol.ENTIRE_RECORD, database);
     } else {
       return new HashSet<>();
     }

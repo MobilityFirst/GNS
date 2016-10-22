@@ -1149,15 +1149,15 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param accessType
    * @param guid
    * @param field
-   * @param accesserGuid
+   * @param readerGuid
    * @return list of GUIDs for that ACL
    * @throws Exception
    * @throws ClientException
    * if the query is not accepted by the server.
    */
   public JSONArray aclGet(AclAccessType accessType, GuidEntry guid,
-          String field, String accesserGuid) throws Exception {
-    return aclGet(accessType.name(), guid, field, accesserGuid);
+          String field, String readerGuid) throws Exception {
+    return aclGet(accessType.name(), guid, field, readerGuid);
   }
 
   /**

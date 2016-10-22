@@ -94,6 +94,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
+import java.util.logging.Logger;
 
 /**
  * This class defines a basic asynchronous client to communicate with a GNS instance over TCP.
@@ -103,6 +105,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
 // FIXME: This might be redundant with the AsyncClient internal class used in GNSClient.
 public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
 
+  private static final Logger LOGGER = Logger.getLogger(ClientAsynchBase.class.getName());
   /**
    *
    */
@@ -151,9 +154,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
 
     // for MUTUAL_AUTH here instead (but it's no more secure)
     //	  super(addresses, SSL_MODES.MUTUAL_AUTH, 0);
-    ClientSupportConfig.getLogger().log(Level.INFO, "Reconfigurators {0}", addresses);
-    ClientSupportConfig.getLogger().log(Level.INFO, "Client port offset {0}", ReconfigurationConfig.getClientPortOffset());
-    ClientSupportConfig.getLogger().log(Level.INFO, "SSL Mode is {0}", ReconfigurationConfig.getClientSSLMode());
+    LOGGER.log(Level.INFO, "Reconfigurators {0}", addresses);
+    LOGGER.log(Level.INFO, "Client port offset {0}", ReconfigurationConfig.getClientPortOffset());
+    LOGGER.log(Level.INFO, "SSL Mode is {0}", ReconfigurationConfig.getClientSSLMode());
 
     keyPairHostIndex = addresses.iterator().next();
     this.enableJSONPackets();
@@ -174,7 +177,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     try {
       return getRequestFromJSON(new JSONObject(stringified));
     } catch (JSONException e) {
-      ClientSupportConfig.getLogger().log(Level.WARNING, "Problem handling JSON request: {0}", e);
+      LOGGER.log(Level.WARNING, "Problem handling JSON request: {0}", e);
     }
     return request;
   }
@@ -194,7 +197,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
         request = (Request) Packet.createInstance(json, unstringer);
       }
     } catch (JSONException e) {
-      ClientSupportConfig.getLogger().log(Level.WARNING, "Problem handling JSON request: {0}", e);
+      LOGGER.log(Level.WARNING, "Problem handling JSON request: {0}", e);
     }
     return request;
   }
@@ -221,7 +224,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     long id = generateNextRequestID();
     CommandPacket packet = CommandPacket.getJSONCommandType(command).isMutualAuth() ? 
     		new AdminCommandPacket(id, command) : new CommandPacket(id, command);
-    ClientSupportConfig.getLogger().log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
+    LOGGER.log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
     sendRequest(
             packet.setForceCoordinatedReads(true),
             (callback instanceof RequestCallbackWithRequest) ? ((RequestCallbackWithRequest) callback)
@@ -660,7 +663,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   public long sendSelectPacket(SelectRequestPacket<String> packet, RequestCallback callback) throws IOException {
     long id = generateNextRequestID();
     packet.setRequestId(id);
-    ClientSupportConfig.getLogger().log(Level.FINE, "{0} sending select packet {1}",
+    LOGGER.log(Level.FINE, "{0} sending select packet {1}",
             new Object[]{this, packet.getSummary()});
     sendRequest(packet, callback);
     return packet.getRequestID();
