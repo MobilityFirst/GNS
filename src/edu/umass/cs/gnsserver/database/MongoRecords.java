@@ -550,7 +550,7 @@ public class MongoRecords implements NoSQLRecords {
     BasicDBList box = parseJSONArrayLocationStringIntoDBList(value);
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject shapeClause = new BasicDBObject("$box", box);
-    BasicDBObject withinClause = new BasicDBObject("$within", shapeClause);
+    BasicDBObject withinClause = new BasicDBObject("$geoWithin", shapeClause);
     BasicDBObject query = new BasicDBObject(fieldName, withinClause);
     DBCursor cursor = null;
     try {
