@@ -521,9 +521,6 @@ public class AclDefaultsTest {
     }
   }
 
-  /**
-   *
-   */
   @Test
   public void test_149_ACLALLFields() {
     String superUserName = "superuser" + RandomString.randomString(6);
@@ -551,9 +548,6 @@ public class AclDefaultsTest {
     }
   }
 
-  /**
-   *
-   */
   @Test
   public void test_150_ACLCreateDeeperField() {
     try {
@@ -573,7 +567,7 @@ public class AclDefaultsTest {
   public void test_151_ACLAddDeeperFieldACL() {
     try {
       try {
-        // Create an empty ACL, efectively disabling access except by the guid itself.
+        // Create an empty ACL, effectively disabling access except by the guid itself.
         client.aclCreateField(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
       } catch (Exception e) {
         failWithStackTrace("Problem adding acl: " + e);
@@ -584,7 +578,7 @@ public class AclDefaultsTest {
       e.printStackTrace();
     }
   }
-  
+
   @Test
   public void test_152_ACLCheckDeeperFieldACLExists() {
     try {
@@ -599,12 +593,14 @@ public class AclDefaultsTest {
       e.printStackTrace();
     }
   }
-  
+
+  // This should pass even though the ACL for test.deeper.field is empty because you
+  // can always read your own fields.
   @Test
   public void test_153_ACLReadDeeperFieldSelf() {
     try {
       try {
-        assertEquals("fieldValue", client.fieldRead(westyEntry, "test.deeper.field"));
+        assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", westyEntry));
       } catch (Exception e) {
         failWithStackTrace("Problem adding read field: " + e);
         e.printStackTrace();
@@ -614,13 +610,14 @@ public class AclDefaultsTest {
       e.printStackTrace();
     }
   }
-  
+
+  // This should fail because the ACL for test.deeper.field is empty.
   @Test
   public void test_154_ACLReadDeeperFieldOtherFail() {
     try {
       try {
-         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
-         failWithStackTrace("This read should have failed.");
+        assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
+        failWithStackTrace("This read should have failed.");
       } catch (Exception e) {
       }
     } catch (Exception e) {
@@ -628,13 +625,14 @@ public class AclDefaultsTest {
       e.printStackTrace();
     }
   }
-  
+
+  // This should fail because the ACL for test.deeper.field is empty.
   @Test
   public void test_156_ACLReadShallowFieldOtherFail() {
     try {
       try {
-         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper", samEntry));
-         failWithStackTrace("This read should have failed.");
+        assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper", samEntry));
+        failWithStackTrace("This read should have failed.");
       } catch (Exception e) {
       }
     } catch (Exception e) {
@@ -646,19 +644,21 @@ public class AclDefaultsTest {
   @Test
   public void test_157_AddAllRecordACL() {
     try {
-       client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test", GNSCommandProtocol.ALL_GUIDS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test", GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
       e.printStackTrace();
     }
   }
-  
+
+  // This should still fail because the ACL for test.deeper.field is empty even though test 
+  // now has an ALL_GUIDS at the root (this is different than the old model).
   @Test
   public void test_158_ACLReadDeeperFieldOtherFail() {
     try {
       try {
-         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
-         failWithStackTrace("This read should have failed.");
+        assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
+        failWithStackTrace("This read should have failed.");
       } catch (Exception e) {
       }
     } catch (Exception e) {
