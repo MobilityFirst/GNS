@@ -25,6 +25,7 @@ import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.http.HttpClient;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -33,7 +34,6 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -68,6 +68,16 @@ public class GuidUtils {
   private static boolean guidExists(GNSClient client, GuidEntry guid) throws IOException {
     try {
       client.execute(GNSCommand.lookupGUID(guid.getGuid())).getResultJSONObject();
+    } catch (ClientException e) {
+      return false;
+    }
+    return true;
+  }
+
+  // Screaming for an interface...
+  private static boolean guidExists(HttpClient client, GuidEntry guid) throws IOException {
+    try {
+      client.lookupGuidRecord(guid.getGuid());
     } catch (ClientException e) {
       return false;
     }
@@ -277,6 +287,80 @@ public class GuidUtils {
     }
   }
 
+  /**
+   * @param client
+   * @param name
+   * @param password
+   * @return Refer {@link #lookupOrCreateAccountGuid(GNSClient, String, String, boolean)}.
+   * @throws Exception
+   */
+  public static GuidEntry lookupOrCreateAccountGuid(HttpClient client,
+          String name, String password) throws Exception {
+    return lookupOrCreateAccountGuid(client, name, password, false);
+  }
+
+  /**
+   * @param client
+   * @param name
+   * @param password
+   * @param verbose
+   * @return Created {@link GuidEntry} for {@code name}.
+   * @throws Exception
+   */
+  public static GuidEntry lookupOrCreateAccountGuid(HttpClient client, String name, String password,
+          boolean verbose) throws Exception {
+    GuidEntry guid = lookupGuidEntryFromDatabase(client, name);
+    // If we didn't find the guid or the entry in the database is obsolete we
+    // create a new guid.
+    if (guid == null || !guidExists(client, guid)) {
+      if (verbose) {
+        if (guid == null) {
+          System.out.println("  Creating a new account GUID for " + name);
+        } else {
+          System.out.println("  Old account GUID " + guid + " found locally is invalid, creating a new one.");
+        }
+      }
+      try {
+        guid = client.accountGuidCreate(name, password);
+      } catch (DuplicateNameException e) {
+        // ignore as it is most likely because of a seemingly failed creation operation that actually succeeded.
+        System.out.println("  Account GUID " + guid + " aready exists on the server; " + e.getMessage());
+      }
+      int attempts = 0;
+      // Since we're cheating here we're going to catch already verified errors which means
+      // someone on the server probably turned off verification for testing purposes
+      // but we'll rethrow everything else
+      while (true) {
+        try {
+          client.accountGuidVerify(guid, createVerificationCode(name));
+        } catch (ClientException e) {
+          // a bit of a hack here that depends on someone not changing
+          // that error message
+          if (!e.getMessage().contains(GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION)) {
+            if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
+              // do nothing
+            } else {
+              e.printStackTrace();
+              throw e;
+            }
+          } else {
+            System.out.println("  Caught and ignored \"Account already verified\" error for " + guid);
+            break;
+          }
+        }
+      }
+      if (verbose) {
+        System.out.println("  Created and verified account GUID " + guid);
+      }
+      return guid;
+    } else {
+      if (verbose) {
+        System.out.println("Found account guid for " + guid.getEntityName() + " (" + guid.getGuid() + ")");
+      }
+      return guid;
+    }
+  }
+
   private static String createVerificationCode(String name) {
     return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET),
             VERIFICATION_CODE_LENGTH));
@@ -345,6 +429,18 @@ public class GuidUtils {
    */
   public static GuidEntry lookupGuidEntryFromDatabase(String gnsInstance, String name) {
     return KeyPairUtils.getGuidEntry(gnsInstance, name);
+  }
+
+  /**
+   * Looks up the guid information associated with alias that is stored in the preferences.
+   *
+   * @param client
+   * @param name
+   * @return {@link GuidEntry} from local key database.
+   */
+  // Screaming for an interface
+  public static GuidEntry lookupGuidEntryFromDatabase(HttpClient client, String name) {
+    return GuidUtils.lookupGuidEntryFromDatabase(client.getGNSProvider(), name);
   }
 
   /**
