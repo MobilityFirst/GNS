@@ -454,6 +454,8 @@ public class AccountAccess {
           + "http://%3$s/"
           + Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH)
           + "/VerifyAccount?guid=%4$s&code=%5$s\n\n"
+          + "If you previously verified your email address please do so again.\n"
+          + "We apologize for the inconvenience. We needed to recreate your account information.\n\n"
           + "If you did not create this account you can just ignore this email and nothing bad will happen.\n\n"
           + "Thank you,\nThe CASA Team.";
   private static final String EMAIL_CLI_CONDITIONAL

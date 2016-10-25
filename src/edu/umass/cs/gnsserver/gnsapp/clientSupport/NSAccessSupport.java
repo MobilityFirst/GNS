@@ -106,7 +106,7 @@ public class NSAccessSupport {
       ClientSupportConfig.getLogger().log(Level.FINE, "&&&&Base 64 decoding is bogus!!!");
       return false;
     }
-    ClientSupportConfig.getLogger().log(Level.FINE,
+    ClientSupportConfig.getLogger().log(Level.FINER,
             "public_key:{0}, signature:{1}, message:{2}",
             new Object[]{Util.truncate(accessorPublicKey, 16, 16),
               Util.truncate(signature, 16, 16),
@@ -252,8 +252,8 @@ public class NSAccessSupport {
       return true; // accessor can see all fields
     } else {
       ClientSupportConfig.getLogger().log(Level.FINE,
-              "User {0} NOT allowed to access user {1}'s field {2}",
-              new Object[]{accessorGuid, guid, field});
+              // Message template wasn't working here... odd.
+              "User " + accessorGuid + " NOT allowed to access user " + guid + "'s field " + field);
       return false;
     }
   }
@@ -340,7 +340,6 @@ public class NSAccessSupport {
   private static boolean checkAllowedUsers(String accessorGuid,
           Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (SharedGuidUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
-      //if (allowedUsers.contains(accessorPublicKey)) {
       return true;
     } else if (allowedUsers.contains(EVERYONE)) {
       return true;
@@ -375,8 +374,8 @@ public class NSAccessSupport {
       return false;
     } catch (RecordNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.WARNING,
-              "User {0} access problem for {1}'s {2} field: {3}",
-              new Object[]{guid, field, access.toString(), e});
+              // Message template wasn't working here... odd.
+              "User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
       return false;
     }
   }
@@ -396,25 +395,51 @@ public class NSAccessSupport {
   @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
-    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", new Object[]{field});
+    if (!Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {
+      return oldLookupPublicKeysFromAcl(access, guid, field, database);
+    } else {
+      ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", new Object[]{field});
+      try {
+        return (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(access, guid, field, database);
+
+      } catch (RecordNotFoundException e) {
+        ClientSupportConfig.getLogger().log(Level.WARNING, "User {0} access problem for {1}'s {2} field: {3}",
+                new Object[]{guid, field, access.toString(), e});
+        return new HashSet<>();
+      } catch (FieldNotFoundException e) {
+        ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
+      }
+      // otherwise go up the hierarchy and check
+      if (field.contains(".")) {
+        return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
+        // One last check at the root (ENTIRE_RECORD) field.
+      } else if (!GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
+        return lookupPublicKeysFromAcl(access, guid, GNSCommandProtocol.ENTIRE_RECORD, database);
+      } else {
+        return new HashSet<>();
+      }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Set<String> oldLookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
+          BasicRecordMap database) throws FailedDBOperationException {
+    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}",
+            new Object[]{field});
     try {
       //FIXME: Clean this mess up.
       return (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(access, guid, field, database);
-
-    } catch (RecordNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.WARNING, "User {0} access problem for {1}'s {2} field: {3}",
-              new Object[]{guid, field, access.toString(), e});
-      return new HashSet<>();
     } catch (FieldNotFoundException e) {
-       ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
+      ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
+    } catch (RecordNotFoundException e) {
+      ClientSupportConfig.getLogger().log(Level.WARNING,
+              // The message template wasn't working here... odd.
+              "User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
+      return new HashSet<>();
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
       return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
-      // One last check at the root (ENTIRE_RECORD) field.
-    } else if (!Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)
-            && !GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
-      return lookupPublicKeysFromAcl(access, guid, GNSCommandProtocol.ENTIRE_RECORD, database);
     } else {
       return new HashSet<>();
     }

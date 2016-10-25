@@ -455,8 +455,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    */
   @Override
   public Request getRequest(String string) throws RequestParseException {
-    GNSConfig.getLogger().log(Level.FINE,
-            ">>>>>>>>>>>>>>> GET REQUEST: {0}", string);
+    GNSConfig.getLogger().log(Level.FINEST,">>>>>>>>>>>>>>> GET REQUEST: {0}", string);
     // Special case handling of NoopPacket packets
     if (Request.NO_OP.equals(string)) {
       throw new RuntimeException("Should never be here");//new NoopPacket();

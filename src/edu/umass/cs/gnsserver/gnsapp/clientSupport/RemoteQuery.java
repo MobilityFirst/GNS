@@ -45,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
+import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,6 +56,8 @@ import org.json.JSONObject;
  * @author westy
  */
 public class RemoteQuery extends ClientAsynchBase {
+  
+  private static final Logger LOGGER = Logger.getLogger(RemoteQuery.class.getName());
 
   // For synchronus replica messages
   private static final long REPLICA_READ_TIMEOUT = Config.getGlobalInt(GNSConfig.GNSC.REPLICA_READ_TIMEOUT);
@@ -76,7 +79,7 @@ public class RemoteQuery extends ClientAsynchBase {
     super();
     this.myID = myID;
     this.myAddr = isa;
-    ClientSupportConfig.getLogger().log(Level.INFO, "Starting RemoteQuery " + this
+    LOGGER.log(Level.INFO, "Starting RemoteQuery " + this
             + " READ_TIMEOUT = " + REPLICA_READ_TIMEOUT
             + " REPLICA_UPDATE_TIMEOUT = " + REPLICA_UPDATE_TIMEOUT
             + " RECON_TIMEOUT = " + RECON_TIMEOUT);
@@ -131,7 +134,7 @@ public class RemoteQuery extends ClientAsynchBase {
       } else if (response instanceof ClientRequest) {
         requestId = ((RequestIdentifier) response).getRequestID();
       } else {
-        ClientSupportConfig.getLogger().log(Level.SEVERE,
+        LOGGER.log(Level.SEVERE,
                 "Bad response type: {0}", response.getClass());
         return;
       }
@@ -217,7 +220,7 @@ public class RemoteQuery extends ClientAsynchBase {
         while (!replicaResultMap.containsKey(id) && (callback == null || callback.getResponse() == null)
                 && (timeout == 0 || System.currentTimeMillis()
                 - monitorStartTime < timeout)) {
-          ClientSupportConfig.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}ms",
+          LOGGER.log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}ms",
                   new Object[]{this, id, timeout});
           monitor.wait(WAIT_TIMESTEP);
         }
@@ -227,11 +230,11 @@ public class RemoteQuery extends ClientAsynchBase {
           ClientException e = new ClientException(
                   this + ": Timed out on active replica response after waiting for "
                   + timeout + "ms for response packet for response for " + (callback != null && callback.getRequest() != null ? callback.getRequest().getSummary() : id));
-          ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
+          LOGGER.log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;
         } else {
-          ClientSupportConfig.getLogger().log(Level.FINE,
+          LOGGER.log(Level.FINE,
                   "{0} successfully completed remote query {1}",
                   new Object[]{this, id});
         }
@@ -265,7 +268,7 @@ public class RemoteQuery extends ClientAsynchBase {
         long monitorStartTime = System.currentTimeMillis();
         while (!reconResultMap.containsKey(request.getServiceName())
                 && (timeout == 0 || System.currentTimeMillis() - monitorStartTime < timeout)) {
-          ClientSupportConfig.getLogger().log(Level.FINE,
+          LOGGER.log(Level.FINE,
                   "{0} waiting for next time step for request {1}",
                   new Object[]{this, request.getSummary()});
           monitor.wait(WAIT_TIMESTEP);
@@ -276,7 +279,7 @@ public class RemoteQuery extends ClientAsynchBase {
                   + ": Timed out on reconfigurator response after waiting for "
                   + timeout + "ms for response packet for "
                   + request.getSummary());
-          ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
+          LOGGER.log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;
         }
@@ -339,7 +342,7 @@ public class RemoteQuery extends ClientAsynchBase {
       CreateServiceName packet = new CreateServiceName(name, value.toString());
       return sendReconRequest(packet);
     } catch (IOException e) {
-      ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
+      LOGGER.log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
       throw new ClientException(ResponseCode.UNSPECIFIED_ERROR, e.getMessage());
     }
@@ -362,7 +365,7 @@ public class RemoteQuery extends ClientAsynchBase {
     try {
       CreateServiceName[] creates = makeBatchedCreateNameRequest(names, values, handler);
       for (CreateServiceName create : creates) {
-        ClientSupportConfig.getLogger().log(Level.FINE,
+        LOGGER.log(Level.FINE,
                 "{0} sending create for NAME = ",
                 new Object[]{this, create.getServiceName()});
         // Make a timeout that somewhat reflects the amount of work we're going to do.
@@ -371,7 +374,7 @@ public class RemoteQuery extends ClientAsynchBase {
       }
       return ResponseCode.NO_ERROR;
     } catch (JSONException | IOException | ClientException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE, "Problem creating {0} :{1}",
+      LOGGER.log(Level.FINE, "Problem creating {0} :{1}",
               new Object[]{names, e});
       // FIXME: return better error codes.
       return ResponseCode.UNSPECIFIED_ERROR;
@@ -418,7 +421,7 @@ public class RemoteQuery extends ClientAsynchBase {
       DeleteServiceName packet = new DeleteServiceName(name);
       return sendReconRequest(packet);
     } catch (IOException e) {
-      ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
+      LOGGER.log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
       throw new ClientException(ResponseCode.UNSPECIFIED_ERROR, e.getMessage());
     }
@@ -435,7 +438,7 @@ public class RemoteQuery extends ClientAsynchBase {
       DeleteServiceName packet = new DeleteServiceName(name);
       return sendReconRequest(packet);
     } catch (IOException e) {
-      ClientSupportConfig.getLogger().log(Level.SEVERE,
+      LOGGER.log(Level.SEVERE,
               "Problem creating {0} :{1}", new Object[]{name, e});
       return ResponseCode.UNSPECIFIED_ERROR.setMessage(e.getMessage());
     } catch (ClientException ce) {
@@ -479,7 +482,7 @@ public class RemoteQuery extends ClientAsynchBase {
       if (packet == null) {
         throw new ClientException("Packet not found in table " + requestId);
       } else {
-        ClientSupportConfig.getLogger().log(Level.FINE,
+        LOGGER.log(Level.FINE,
                 "{0} received {1}", new Object[]{this, packet.getSummary()});
         return CommandUtils.checkResponse(packet, ((CommandPacket) callback.getRequest())).getReturnValue();
       }
@@ -500,7 +503,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws ClientException
    */
   public String fieldRead(String guid, String field) throws IOException, JSONException, ClientException {
-    ClientSupportConfig.getLogger().log(Level.FINE,
+    LOGGER.log(Level.FINE,
             "{0} Field read of {1} : {2}",
             new Object[]{this, guid, Util.truncate(field, 16, 16)});
     Object monitor = new Object();
@@ -523,7 +526,7 @@ public class RemoteQuery extends ClientAsynchBase {
    */
   public String fieldReadArray(String guid, String field) throws IOException, JSONException, ClientException {
 
-    ClientSupportConfig.getLogger().log(Level.FINE,
+    LOGGER.log(Level.FINE,
             "{0} Field read array of {1} : {2}",
             new Object[]{this, guid, field});
     Object monitor = new Object();
@@ -546,7 +549,7 @@ public class RemoteQuery extends ClientAsynchBase {
   public String fieldUpdate(String guid, String field, Object value)
           throws IOException, JSONException, ClientException {
 
-    ClientSupportConfig.getLogger().log(Level.FINE,
+    LOGGER.log(Level.FINE,
             "{0} Field update {1} / {2} : {3}",
             new Object[]{this, guid, field, value});
     Object monitor = new Object();
@@ -570,7 +573,7 @@ public class RemoteQuery extends ClientAsynchBase {
   public String fieldReplaceOrCreateArray(String guid, String field, ResultValue value)
           throws IOException, JSONException, ClientException {
 
-    ClientSupportConfig.getLogger().log(Level.FINE,
+    LOGGER.log(Level.FINE,
             "{0} Field fieldReplaceOrCreateArray {1} / {2} : {3}",
             new Object[]{this, guid, field, value});
     Object monitor = new Object();
@@ -617,7 +620,7 @@ public class RemoteQuery extends ClientAsynchBase {
   public String fieldRemove(String guid, String field, Object value)
           throws IOException, JSONException, ClientException {
     assert value instanceof String || value instanceof Number;
-    ClientSupportConfig.getLogger().log(Level.FINE,
+    LOGGER.log(Level.FINE,
             "{0} Field remove {1} / {2} : {3}",
             new Object[]{this, guid, field, value});
     Object monitor = new Object();

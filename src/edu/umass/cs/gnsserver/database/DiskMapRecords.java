@@ -42,8 +42,8 @@ import org.json.JSONObject;
  */
 public class DiskMapRecords implements NoSQLRecords {
 
-   private static final Logger LOGGER = Logger.getLogger(DiskMapRecords.class.getName());
-   
+  private static final Logger LOGGER = Logger.getLogger(DiskMapRecords.class.getName());
+
   private Map<String, DiskMapCollection> collections;
   private String mongoNodeID;
   private int mongoPort;

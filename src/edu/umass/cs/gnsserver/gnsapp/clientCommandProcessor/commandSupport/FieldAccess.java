@@ -779,8 +779,8 @@ public class FieldAccess {
           GNSApplicationInterface<String> app) {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
     GNSConfig.getLogger().log(Level.FINE,
-            "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2} signature: {3}",
-            new Object[]{guid, field, reader, signature});
+            "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2}",
+            new Object[]{guid, field, reader});
     try {
       // if reader is the internal secret this means that this is an internal
       // request that doesn't need to be authenticated
