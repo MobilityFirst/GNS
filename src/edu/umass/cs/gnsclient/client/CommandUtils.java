@@ -125,7 +125,7 @@ public class CommandUtils {
    * @return Single value string if response is JSONObject with a single
    * key-value piar.
    */
-  protected static String specialCaseSingleField(String response) {
+  public static String specialCaseSingleField(String response) {
     if (JSONPacket.couldBeJSON(response) && response.startsWith("{")) {
       try {
         JSONObject json = new JSONObject(response);
