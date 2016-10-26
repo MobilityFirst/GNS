@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsclient.client.http;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
+import static edu.umass.cs.gnsclient.client.CommandUtils.commandResponseToJSONArray;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 
@@ -63,6 +64,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -81,6 +83,7 @@ import java.util.logging.Level;
  */
 public class HttpClient {
 
+  private static final java.util.logging.Logger LOGGER = GNSConfig.getLogger();
   /**
    * Check whether we are on an Android platform or not
    */
@@ -652,7 +655,7 @@ public class HttpClient {
    * @throws IOException
    * @throws ClientException
    */
-  public void fieldCreateArray(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
+  public void fieldCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.CreateList, writer, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(),
@@ -688,7 +691,7 @@ public class HttpClient {
    * @throws IOException
    * @throws ClientException
    */
-  public void fieldAppendOrCreateArray(String targetGuid, String field, JSONArray value, GuidEntry writer)
+  public void fieldAppendOrCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.AppendOrCreateList, writer, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
@@ -705,7 +708,7 @@ public class HttpClient {
    * @throws IOException
    * @throws ClientException
    */
-  public void fieldReplaceOrCreateArray(String targetGuid, String field, JSONArray value, GuidEntry writer)
+  public void fieldReplaceOrCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.ReplaceOrCreateList, writer, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
@@ -798,7 +801,7 @@ public class HttpClient {
               guid, GNSCommandProtocol.FIELD, field,
               GNSCommandProtocol.READER, reader.getGuid());
     }
-    return new JSONArray(response);
+    return commandResponseToJSONArray(field, response);
   }
 
   /**
@@ -1205,7 +1208,7 @@ public class HttpClient {
    */
   public void setLocation(double longitude, double latitude, GuidEntry guid) throws IOException, ClientException {
     JSONArray array = new JSONArray(Arrays.asList(longitude, latitude));
-    fieldReplaceOrCreateArray(guid.getGuid(), GNSCommandProtocol.LOCATION_FIELD_NAME, array, guid);
+    fieldReplaceOrCreateList(guid.getGuid(), GNSCommandProtocol.LOCATION_FIELD_NAME, array, guid);
   }
 
   /**
@@ -1382,9 +1385,9 @@ public class HttpClient {
    * @throws IOException
    * @throws ClientException
    */
-  public void fieldCreateSingleElementArray(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
+  public void fieldCreateSingleElementList(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           ClientException {
-    getResponse(CommandType.CreateList, writer, GNSCommandProtocol.GUID, targetGuid,
+    getResponse(CommandType.Create, writer, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value,
             GNSCommandProtocol.WRITER, writer.getGuid());
   }
@@ -1398,9 +1401,9 @@ public class HttpClient {
    * @throws IOException
    * @throws ClientException
    */
-  public void fieldCreateSingleElementArray(GuidEntry targetGuid, String field, String value) throws IOException,
+  public void fieldCreateSingleElementList(GuidEntry targetGuid, String field, String value) throws IOException,
           ClientException {
-    fieldCreateSingleElementArray(targetGuid.getGuid(), field, value, targetGuid);
+    HttpClient.this.fieldCreateSingleElementList(targetGuid.getGuid(), field, value, targetGuid);
   }
 
   /**
@@ -1483,7 +1486,7 @@ public class HttpClient {
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, String value, GuidEntry writer)
           throws IOException, ClientException {
-    getResponse(CommandType.AppendList, writer, GNSCommandProtocol.GUID, targetGuid,
+    getResponse(CommandType.Append, writer, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value,
             GNSCommandProtocol.WRITER, writer.getGuid());
   }
@@ -1501,7 +1504,8 @@ public class HttpClient {
   public void fieldReplaceFirstElement(String targetGuid, String field, String value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.ReplaceList, writer, GNSCommandProtocol.GUID, targetGuid,
-            GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value, GNSCommandProtocol.WRITER, writer.getGuid());
+            GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value,
+            GNSCommandProtocol.WRITER, writer.getGuid());
   }
 
   /**
@@ -1579,6 +1583,7 @@ public class HttpClient {
       command = createQuery(commandType, keysAndValues);
     }
     String response = sendGetCommand(command);
+    LOGGER.log(Level.INFO, "getResponse for " + commandType + " : " + response);
     return checkResponse(command, response);
   }
 

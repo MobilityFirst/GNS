@@ -52,7 +52,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
  *
  * @author westy
  */
-public class ReadArray extends AbstractCommand {
+  public class ReadArray extends AbstractCommand {
 
   /**
    *

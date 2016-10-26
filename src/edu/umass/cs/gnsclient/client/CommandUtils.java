@@ -58,6 +58,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -137,6 +138,22 @@ public class CommandUtils {
       }
     }
     return response;
+  }
+  
+  /**
+   * Conditionally converts a returned string to a JSON Array.
+   * 
+   * @param field
+   * @param response
+   * @return
+   * @throws JSONException 
+   */
+  public static JSONArray commandResponseToJSONArray(String field, String response) throws JSONException {
+    if (JSONPacket.couldBeJSONArray(response)) {
+      return new JSONArray(response);
+    } else {
+      return new JSONObject(response).getJSONArray(field);
+    }
   }
 
   /**

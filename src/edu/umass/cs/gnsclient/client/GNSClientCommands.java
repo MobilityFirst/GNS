@@ -95,6 +95,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import org.json.JSONException;
+import static edu.umass.cs.gnsclient.client.CommandUtils.commandResponseToJSONArray;
 
 /**
  * This class defines a client to communicate with a GNS instance over TCP. This
@@ -1226,12 +1227,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * 
+   *
    * @param accessType
    * @param guid
    * @param field
    * @return
-   * @throws Exception 
+   * @throws Exception
    */
   public boolean aclFieldExists(AclAccessType accessType, GuidEntry guid, String field) throws Exception {
     return aclFieldExists(accessType, guid, field, guid.getGuid());
@@ -1511,19 +1512,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   public JSONArray fieldReadArray(String guid, String field, GuidEntry reader)
           throws Exception {
-    return toJSONArray(field,
+    return commandResponseToJSONArray(field,
             (getResponse(reader != null ? CommandType.ReadArray
                     : CommandType.ReadArrayUnsigned, reader, GUID, guid, FIELD,
                     field, READER, reader != null ? reader.getGuid() : null)));
-  }
-
-  // arun: because we now return all fields as JSONObject
-  private JSONArray toJSONArray(String field, String response) throws JSONException {
-    if (JSONPacket.couldBeJSONArray(response)) {
-      return new JSONArray(response);
-    } else {
-      return new JSONObject(response).getJSONArray(field);
-    }
   }
 
   /**
@@ -1759,15 +1751,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   public void fieldCreateOneElementList(String targetGuid, String field,
           String value, GuidEntry writer) throws IOException, ClientException {
-    try {
-      getResponse(CommandType.Create, writer, GUID, targetGuid, FIELD,
-              field, VALUE, value, WRITER, writer.getGuid());
-    } catch (NullPointerException ne) { // why this atrocity?
-      GNSConfig.getLogger().severe("NPE in field create");
-      ne.printStackTrace();
-      // arun: why exit here???
-      System.exit(1);
-    }
+    getResponse(CommandType.Create, writer, GUID, targetGuid, FIELD,
+            field, VALUE, value, WRITER, writer.getGuid());
   }
 
   /**
