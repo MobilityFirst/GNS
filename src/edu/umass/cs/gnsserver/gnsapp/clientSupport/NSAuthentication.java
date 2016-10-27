@@ -125,7 +125,7 @@ public class NSAuthentication {
     // Not sure if this makes any difference, but essentially we're saying that
     // signature checks take precedence and if it fails we don't care about the ACL
     // failure.
-    
+
     // Now check signatures
     if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
       ClientSupportConfig.getLogger().log(Level.FINE,
@@ -139,8 +139,71 @@ public class NSAuthentication {
     // otherwise everything passed and we return a happy result
     return ResponseCode.NO_ERROR;
   }
-
+  
   private static AclCheckResult aclCheck(String targetGuid, String field,
+          String accessorGuid, MetaDataTypeName access,
+          GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+    if (!Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {
+      return oldAclCheck(targetGuid, field, accessorGuid, access, gnsApp);
+    } else {
+      return newAclCheck(targetGuid, field, accessorGuid, access, gnsApp);
+    }
+  }
+
+  private static AclCheckResult newAclCheck(String targetGuid, String field,
+          String accessorGuid, MetaDataTypeName access,
+          GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "@@@@@@@@@@@@@@@@ACL Check guid={0} key={1} accessor={2} access={3}",
+            new Object[]{targetGuid, field, accessorGuid, access});
+
+    // This method attempts to look up the public key as well as check for ACL access.
+    String publicKey;
+    if (accessorGuid.equals(targetGuid)) {
+      // This handles the base case where we're accessing our own guid. 
+      // Access to all of our fields is always allowed to our own guid so we just need to get
+      // the public key out of the guid - possibly from the cache.
+      publicKey = lookupPublicKeyFromGuidLocallyWithCacheing(targetGuid, gnsApp);
+      // Return an error immediately here because if we can't find the public key 
+      // the guid must not be local which is a problem.
+      if (publicKey == null) {
+        return new AclCheckResult("", false, ResponseCode.BAD_GUID_ERROR);
+      }
+    } else {
+      // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
+      // accesssed.
+      // field can be ENTIRE_RECORD here
+      publicKey = lookupPublicKeyInACL(targetGuid, field, accessorGuid, access, gnsApp);
+    }
+    // Handle the one final case: the accessorGuid is a member of a group guid and
+    // that group guid is in the ACL
+    if (publicKey == null) {
+      // First thing to do is to lookup the accessorGuid... possibly remotely.
+      GuidInfo accessorGuidInfo;
+      if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfoAnywhere(accessorGuid, gnsApp)) != null) {
+        ClientSupportConfig.getLogger().log(Level.FINE,
+                "================> Catchall lookup returned: {0}",
+                accessorGuidInfo);
+        // Check all the ACLs in the tree for this field to see if there is a group guid that
+        // in there somewhere that has accessorGuid as a member
+        Set<String> groups;
+        if (!(groups = NSGroupAccess.lookupGroups(accessorGuid, gnsApp.getRequestHandler())).isEmpty()) {
+          if (NSAccessSupport.hierarchicalAccessGroupCheck(access, targetGuid, field, groups, gnsApp)) {
+            publicKey = accessorGuidInfo.getPublicKey();
+          }
+        }
+      }
+    }
+    // If we found a public key then the ACL checks out
+    if (publicKey != null) {
+      return new AclCheckResult(publicKey, true, ResponseCode.NO_ERROR);
+    } else {
+      return new AclCheckResult("", false, ResponseCode.NO_ERROR);
+    }
+  }
+  
+  
+  private static AclCheckResult oldAclCheck(String targetGuid, String field,
           String accessorGuid, MetaDataTypeName access,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
     ClientSupportConfig.getLogger().log(Level.FINE,
@@ -232,7 +295,7 @@ public class NSAuthentication {
       // but is stored in the ENTIRE_RECORD (+ALL+) ACL
       publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ENTIRE_RECORD, gnsApp.getDB()));
       publicKey = SharedGuidUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
-      ClientSupportConfig.getLogger().log(Level.FINE, 
+      ClientSupportConfig.getLogger().log(Level.FINE,
               "================> {0} lookup with +ALL+ returned: {1} public keys={2}",
               new Object[]{access.toString(), publicKey, publicKeys});
     }
@@ -241,14 +304,14 @@ public class NSAuthentication {
     if (publicKey == null && publicKeys.contains(EVERYONE)) {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfoAnywhere(accessorGuid, gnsApp)) != null) {
-        ClientSupportConfig.getLogger().log(Level.FINE, 
+        ClientSupportConfig.getLogger().log(Level.FINE,
                 "================> {0} lookup for EVERYONE returned {1}",
                 new Object[]{access.toString(), accessorGuidInfo});
         publicKey = accessorGuidInfo.getPublicKey();
       }
     }
     if (publicKey == null) {
-      ClientSupportConfig.getLogger().log(Level.FINE, 
+      ClientSupportConfig.getLogger().log(Level.FINE,
               "================> Public key not found: accessor={0} guid={1} field={2} public keys={3}",
               new Object[]{accessorGuid, guid, field, publicKeys});
     }

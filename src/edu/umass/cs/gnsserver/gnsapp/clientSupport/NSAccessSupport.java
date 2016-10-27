@@ -225,6 +225,71 @@ public class NSAccessSupport {
   }
 
   /**
+   * Handles checking of fields with dot notation.
+   * Checks deepest field first then backs up.
+   *
+   * @param accessType
+   * @param guid
+   * @param activeReplica
+   * @param groups
+   * @param field
+   * @return true if the accessor has access
+   * @throws FailedDBOperationException
+   */
+  public static boolean hierarchicalAccessGroupCheck(MetaDataTypeName accessType, String guid,
+          String field, Set<String> groups,
+          GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", field);
+    try {
+      return checkForGroupAccess(accessType, guid, field, groups, activeReplica);
+    } catch (FieldNotFoundException e) {
+      ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
+    }
+    // otherwise go up the hierarchy and check
+    if (field.contains(".")) {
+      return hierarchicalAccessGroupCheck(accessType, guid, field.substring(0, field.lastIndexOf(".")),
+              groups, activeReplica);
+    } else if (!GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
+      return hierarchicalAccessGroupCheck(accessType, guid, GNSCommandProtocol.ENTIRE_RECORD, groups, activeReplica);
+    } else {
+      // check all the way up and there is no access
+      return false;
+    }
+  }
+
+  /**
+   * Check for one of the groups that accessorguid is in being a member of allowed users.
+   * Field can be dotted and at any level.
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @param accessorGuid
+   * @param activeReplica
+   * @return true if access is allowed
+   * @throws FailedDBOperationException
+   */
+  private static boolean checkForGroupAccess(MetaDataTypeName accessType,
+          String guid, String field, Set<String> groups,
+          GNSApplicationInterface<String> activeReplica)
+          throws FieldNotFoundException, FailedDBOperationException {
+    try {
+      // FIXME: Tidy this mess up.
+      @SuppressWarnings("unchecked")
+      Set<String> allowedUsers = (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(accessType,
+              guid, field, activeReplica.getDB());
+      ClientSupportConfig.getLogger().log(Level.FINE, "{0} allowed users of {1} : {2}",
+              new Object[]{guid, field, allowedUsers});
+      return !Sets.intersection(SharedGuidUtils.convertPublicKeysToGuids(allowedUsers), groups).isEmpty();
+    } catch (RecordNotFoundException e) {
+      ClientSupportConfig.getLogger().log(Level.WARNING,
+              "User {0} access problem for {2} field: {3}",
+              new Object[]{guid, field, e});
+      return false;
+    }
+  }
+
+  /**
    * Checks to see if the accessorGuid can access the field of the guid.
    * Access type is some combo of read, and write, and blacklist or whitelist.
    * Note: Blacklists are currently not supported.
@@ -239,6 +304,7 @@ public class NSAccessSupport {
    */
   // FIXME: This is only used for checking the case where an accessorGuid is in a group guid
   // that is in the acl. For this purpose it is overkill and should be fixed.
+  @Deprecated
   public static boolean verifyAccess(MetaDataTypeName accessType, String guid, String field,
           String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     ClientSupportConfig.getLogger().log(Level.FINE,
@@ -270,6 +336,7 @@ public class NSAccessSupport {
    * @return true if the accessor has access
    * @throws FailedDBOperationException
    */
+  @Deprecated
   private static boolean hierarchicalAccessCheck(MetaDataTypeName accessType, String guid,
           String field, String accessorGuid,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -299,6 +366,7 @@ public class NSAccessSupport {
    * @return true if access is allowed
    * @throws FailedDBOperationException
    */
+  @Deprecated
   private static boolean checkForAccess(MetaDataTypeName accessType, String guid, String field, String accessorGuid,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
@@ -337,6 +405,7 @@ public class NSAccessSupport {
    * @return true if the guid is in the allowed users
    * @throws FailedDBOperationException
    */
+  @Deprecated
   private static boolean checkAllowedUsers(String accessorGuid,
           Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (SharedGuidUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
@@ -398,26 +467,33 @@ public class NSAccessSupport {
     if (!Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {
       return oldLookupPublicKeysFromAcl(access, guid, field, database);
     } else {
-      ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", new Object[]{field});
-      try {
-        return (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(access, guid, field, database);
+      return newLookupPublicKeysFromAcl(access, guid, field, database);
+    }
+  }
 
-      } catch (RecordNotFoundException e) {
-        ClientSupportConfig.getLogger().log(Level.WARNING, "User {0} access problem for {1}'s {2} field: {3}",
-                new Object[]{guid, field, access.toString(), e});
-        return new HashSet<>();
-      } catch (FieldNotFoundException e) {
-        ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
-      }
-      // otherwise go up the hierarchy and check
-      if (field.contains(".")) {
-        return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
-        // One last check at the root (ENTIRE_RECORD) field.
-      } else if (!GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
-        return lookupPublicKeysFromAcl(access, guid, GNSCommandProtocol.ENTIRE_RECORD, database);
-      } else {
-        return new HashSet<>();
-      }
+  @SuppressWarnings("unchecked")
+  public static Set<String> newLookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
+          BasicRecordMap database) throws FailedDBOperationException {
+    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", new Object[]{field});
+    try {
+      // If the field is found this will return a list of the public keys in the ACL,
+      // empty or otherwise. If it is empty we will stop looking.
+      return (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(access, guid, field, database);
+    } catch (RecordNotFoundException e) {
+      ClientSupportConfig.getLogger().log(Level.WARNING, "User {0} access problem for {1}'s {2} field: {3}",
+              new Object[]{guid, field, access.toString(), e});
+      return new HashSet<>();
+    } catch (FieldNotFoundException e) {
+      ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
+    }
+    // otherwise go up the hierarchy and check
+    if (field.contains(".")) {
+      return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
+      // One last check at the root (ENTIRE_RECORD) field.
+    } else if (!GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
+      return lookupPublicKeysFromAcl(access, guid, GNSCommandProtocol.ENTIRE_RECORD, database);
+    } else {
+      return new HashSet<>();
     }
   }
 
