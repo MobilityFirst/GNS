@@ -79,7 +79,7 @@ public class GNSConfig {
      * Under the old model empty ACLs did not prevent us from
      * going further up the tree toward the root to check for access.
      */
-    USE_OLD_ACL_MODEL(true),
+    USE_OLD_ACL_MODEL(false),
     /**
      * If enabled, the GNS will cache and return the same value for reads.
      *

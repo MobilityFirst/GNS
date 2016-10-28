@@ -19,13 +19,14 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
+import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 
 import static org.junit.Assert.*;
@@ -143,10 +145,10 @@ public class GroupAndAclTest {
       expected = new HashSet<>(Arrays.asList(mygroupEntry.getGuid()));
       actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(westyEntry.getGuid(), westyEntry));
       assertEquals(expected, actual);
-      
+
       actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(samEntry.getGuid(), samEntry));
       assertEquals(expected, actual);
-      
+
       actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(guidToDeleteEntry.getGuid(), guidToDeleteEntry));
       assertEquals(expected, actual);
 
@@ -216,9 +218,18 @@ public class GroupAndAclTest {
     try {
       groupAccessUserEntry = client.guidCreate(masterGuid, groupAccessUserName);
       // remove all fields read by all
-      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, 
+              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
+    }
+
+    try {
+      // test of remove all fields read by all
+      JSONAssert.assertEquals(new JSONArray(Arrays.asList(masterGuid.getGuid())), client.aclGet(AclAccessType.READ_WHITELIST, groupAccessUserEntry,
+              GNSCommandProtocol.ENTIRE_RECORD, groupAccessUserEntry.getGuid()), JSONCompareMode.STRICT);
+    } catch (Exception e) {
+      fail("Exception test acl: " + e);
     }
 
     try {

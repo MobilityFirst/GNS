@@ -464,7 +464,7 @@ public class NSAccessSupport {
   @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
-    if (!Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {
       return oldLookupPublicKeysFromAcl(access, guid, field, database);
     } else {
       return newLookupPublicKeysFromAcl(access, guid, field, database);
@@ -488,15 +488,16 @@ public class NSAccessSupport {
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
-      return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
+      return newLookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
       // One last check at the root (ENTIRE_RECORD) field.
     } else if (!GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
-      return lookupPublicKeysFromAcl(access, guid, GNSCommandProtocol.ENTIRE_RECORD, database);
+      return newLookupPublicKeysFromAcl(access, guid, GNSCommandProtocol.ENTIRE_RECORD, database);
     } else {
       return new HashSet<>();
     }
   }
 
+  @Deprecated
   @SuppressWarnings("unchecked")
   public static Set<String> oldLookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
@@ -515,7 +516,7 @@ public class NSAccessSupport {
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
-      return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
+      return oldLookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
     } else {
       return new HashSet<>();
     }

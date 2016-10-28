@@ -143,7 +143,7 @@ public class NSAuthentication {
   private static AclCheckResult aclCheck(String targetGuid, String field,
           String accessorGuid, MetaDataTypeName access,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
-    if (!Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {
       return oldAclCheck(targetGuid, field, accessorGuid, access, gnsApp);
     } else {
       return newAclCheck(targetGuid, field, accessorGuid, access, gnsApp);
@@ -172,7 +172,7 @@ public class NSAuthentication {
     } else {
       // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
       // accesssed.
-      // field can be ENTIRE_RECORD here
+      // Note that field can be ENTIRE_RECORD here
       publicKey = lookupPublicKeyInACL(targetGuid, field, accessorGuid, access, gnsApp);
     }
     // Handle the one final case: the accessorGuid is a member of a group guid and
@@ -180,6 +180,7 @@ public class NSAuthentication {
     if (publicKey == null) {
       // First thing to do is to lookup the accessorGuid... possibly remotely.
       GuidInfo accessorGuidInfo;
+      //TODO: Add a cache here
       if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfoAnywhere(accessorGuid, gnsApp)) != null) {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "================> Catchall lookup returned: {0}",
@@ -202,7 +203,7 @@ public class NSAuthentication {
     }
   }
   
-  
+  @Deprecated
   private static AclCheckResult oldAclCheck(String targetGuid, String field,
           String accessorGuid, MetaDataTypeName access,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
@@ -234,8 +235,7 @@ public class NSAuthentication {
         // check is done because the public key of the accessorGuid is in the given acl of targetGuid.
         aclCheckPassed = true;
 
-        // FIXME: Implement something for group guid case for the new model
-      } else if (Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {
+      } else {
         // One final case we need to handle is when the the accessorGuid is actually in a group guid
         // and the group guid is in the acl in which case we need to explicitly lookup the 
         // publickey in possibly another server. 
