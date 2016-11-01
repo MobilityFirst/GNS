@@ -409,6 +409,30 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <!--<formatter type="brief" usefile="false"/> -->
     </junit>
   </target> 
+  <target name="connectTest" description="Performs a few tests after starting the server.  This is being used to find out what waitTillAllServersReady value is needed for Date to have a 99% success rate." 
+          depends="compile, compiletest">
+    <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
+    <property name="waitTillAllServersReady" value="5000"/>
+    <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
+      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerConnectTest"/>
+      <formatter type="plain" usefile="false"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-DstartServer=true"/>
+      <jvmarg value="-DinheritIO=true"/>
+      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
+      <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
+      <jvmarg value="-DwaitTillAllServersReady=${waitTillAllServersReady}"/>
+      <jvmarg value="-Dserver.command=bin/gpServer.sh"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+    </junit>
+  </target>
   <target name="test" description="Runs the default integration test against a 3 node server." 
           depends="compile, compiletest">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
