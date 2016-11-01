@@ -29,7 +29,9 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
+import static edu.umass.cs.gnsclient.client.GNSCommand.createGNSCommandFromJSONObject;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.QUERY_PROCESSING_ERROR;
@@ -59,6 +61,7 @@ import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.utils.Util;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
 import java.util.Date;
@@ -66,6 +69,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.time.DurationFormatUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -83,6 +87,8 @@ public class GNSHttpServer {
   private int port;
   // handles command processing
   private final CommandModule commandModule;
+  // newer handles command processing
+  private GNSClient client = null;
 
   /**
    *
@@ -90,8 +96,8 @@ public class GNSHttpServer {
   protected final ClientRequestHandlerInterface requestHandler;
   private final Date serverStartDate = new Date();
 
-  private final static Logger LOG = Logger.getLogger(GNSHttpServer.class.getName());
-  
+  private final static Logger LOGGER = Logger.getLogger(GNSHttpServer.class.getName());
+
   /**
    *
    * @param port
@@ -100,11 +106,17 @@ public class GNSHttpServer {
   public GNSHttpServer(int port, ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
+    try {
+      this.client = new GNSClient();
+    } catch (IOException e) {
+      LOGGER.log(Level.SEVERE, "Unable to start GNS client:" + e);
+    }
     runServer(port);
   }
 
   /**
    * Start the server.
+   *
    * @param startingPort
    */
   public final void runServer(int startingPort) {
@@ -118,7 +130,7 @@ public class GNSHttpServer {
       }
     } while (cnt++ < 100);
   }
-  
+
   /**
    * Stop everything.
    */
@@ -127,7 +139,7 @@ public class GNSHttpServer {
       httpServer.stop(0);
     }
   }
- 
+
   /**
    * Try to start the http server at the port.
    *
@@ -139,17 +151,17 @@ public class GNSHttpServer {
       InetSocketAddress addr = new InetSocketAddress(port);
       httpServer = HttpServer.create(addr, 0);
 
-      httpServer.createContext("/", new EchoHandler());
-      httpServer.createContext("/" + GNS_PATH, new DefaultHandler());
+      httpServer.createContext("/", new EchoHttpHandler());
+      httpServer.createContext("/" + GNS_PATH, new DefaultHttpHandler());
       httpServer.setExecutor(Executors.newCachedThreadPool());
       httpServer.start();
       // Need to do this for the places where we expose the insecure http service to the user
       requestHandler.setHttpServerPort(port);
-      LOG.log(Level.INFO,
+      LOGGER.log(Level.INFO,
               "HTTP server is listening on port {0}", port);
       return true;
     } catch (IOException e) {
-      LOG.log(Level.FINE,
+      LOGGER.log(Level.FINE,
               "HTTP server failed to start on port {0} due to {1}",
               new Object[]{port, e});
       return false;
@@ -159,7 +171,7 @@ public class GNSHttpServer {
   /**
    * The default handler.
    */
-  protected class DefaultHandler implements HttpHandler {
+  protected class DefaultHttpHandler implements HttpHandler {
 
     /**
      *
@@ -179,29 +191,28 @@ public class GNSHttpServer {
           OutputStream responseBody = exchange.getResponseBody();
 
           URI uri = exchange.getRequestURI();
-          LOG.log(Level.FINE,
+          LOGGER.log(Level.FINE,
                   "HTTP SERVER REQUEST FROM {0}: {1}", new Object[]{exchange.getRemoteAddress().getHostName(), uri.toString()});
           String path = uri.getPath();
           String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
 
-          String action = path.replaceFirst("/" + GNS_PATH + "/", "");
+          String commandName = path.replaceFirst("/" + GNS_PATH + "/", "");
 
           CommandResponse response;
-          if (!action.isEmpty()) {
-            LOG.log(Level.FINE,
-                    "Action: {0} Query:{1}", new Object[]{action, query});
-            response = processQuery(host, action, query);
+          if (!commandName.isEmpty()) {
+            LOGGER.log(Level.FINE, "Action: {0} Query:{1}", new Object[]{commandName, query});
+            response = processQuery(host, commandName, query);
           } else {
             response = new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE
-                    + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + action + " " + query);
+                    + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + commandName + " " + query);
           }
-          LOG.log(Level.FINER, "Response: " + response);
+          LOGGER.log(Level.FINER, "Response: " + response);
           // FIXME: This totally ignores the error code.
           responseBody.write(response.getReturnValue().getBytes());
           responseBody.close();
         }
       } catch (Exception e) {
-        LOG.log(Level.SEVERE, "Error: " + e);
+        LOGGER.log(Level.SEVERE, "Error: " + e);
         e.printStackTrace();
         try {
           String response = BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e;
@@ -215,15 +226,17 @@ public class GNSHttpServer {
     }
   }
 
+  // Should be true to make the new code work.
+  private static boolean enableMultiServerHTTP = false;
   /**
    * Process queries for the http service. Converts the URI of e the HTTP query into
    * the JSON Object format that is used by the CommandModeule class, then finds
    * executes the matching command.
    */
-  private CommandResponse processQuery(String host, String action, String queryString) {
+  private CommandResponse processQuery(String host, String commandName, String queryString) {
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
-    String fullString = action + QUERYPREFIX + queryString; // for signature check
+    String fullString = commandName + QUERYPREFIX + queryString; // for signature check
     Map<String, String> queryMap = Util.parseURIQueryString(queryString);
 
     if (queryMap.keySet().contains(SIGNATURE)) {
@@ -231,40 +244,92 @@ public class GNSHttpServer {
       String message = NSAccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
       queryMap.put(SIGNATUREFULLMESSAGE, message);
     }
-    JSONObject jsonFormattedCommand = new JSONObject(queryMap);
-
-    AbstractCommand command;
-    try {
-      // allows for "dump" as well as "Dump".
-      command = commandModule.lookupCommand(CommandType.getCommandForHttp(action));
-      if (command != null) {
-        return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler);
-      }
-      LOG.log(Level.FINE, "lookupCommand returned null for {0}", action);
-    } catch (IllegalArgumentException e) {
-      LOG.log(Level.FINE, "lookupCommand failed for {0}", action);
+    JSONObject jsonFormattedArguments = new JSONObject(queryMap);
+    // allows for "dump" as well as "Dump".
+    CommandType commandType = CommandType.getCommandForHttp(commandName);
+    if (commandType == null) {
+      return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
+              BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+              + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
     }
-    return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
-            BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-            + " Sorry, don't understand " + action + QUERYPREFIX + queryString);
+
+    // Hair below is to handle some commands locally (creates, delets, selects, admin)
+    // and the rest by invoking the GNS client and sending them out.
+    if (!enableMultiServerHTTP || client == null || commandType.isLocallyHandled()) {
+      AbstractCommand command;
+      try {
+        command = commandModule.lookupCommand(commandType);
+        if (command != null) {
+          return CommandHandler.executeCommand(command, jsonFormattedArguments, requestHandler);
+        }
+        LOGGER.log(Level.FINE, "lookupCommand returned null for {0}", commandName);
+      } catch (IllegalArgumentException e) {
+        LOGGER.log(Level.FINE, "lookupCommand failed for {0}", commandName);
+      }
+      return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
+              BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+              + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
+    } else {
+      // Send the command remotely using a client
+      try {
+        // Notice that we use the commandType.name() below because the commandName from the
+        // HTTP get might be an arbitrary case.
+        CommandPacket commandResponsePacket
+                = getResponseUsingGNSClient(client, commandType.name(), jsonFormattedArguments);
+
+        return new CommandResponse(ResponseCode.NO_ERROR,
+                // some crap here to make single field reads return just the value for backward compatibility 
+                specialCaseSingleFieldRead(commandResponsePacket.getResultString(),
+                        commandType, jsonFormattedArguments));
+      } catch (IOException | JSONException | ClientException e) {
+        return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " "
+                + GNSCommandProtocol.UNSPECIFIED_ERROR + " " + e.toString());
+//      } catch (ClientException e) {
+//        return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
+//                BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+//                + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
+      }
+    }
   }
 
-  private CommandPacket getResponseUsingGNSClient(GNSClient client,
-          JSONObject jsonFormattedCommand) throws ClientException, IOException {
-    CommandPacket commandPacket = client.execute(new CommandPacket(
-            (long) (Math.random() * Long.MAX_VALUE), jsonFormattedCommand));
+  //make single field reads return just the value for backward compatibility 
+  private static String specialCaseSingleFieldRead(String response, CommandType commandType,
+          JSONObject jsonFormattedArguments) {
+    try {
+      if (commandType.isRead() && jsonFormattedArguments.has(GNSCommandProtocol.FIELD)
+              && !jsonFormattedArguments.getString(GNSCommandProtocol.FIELD).equals(GNSCommandProtocol.ENTIRE_RECORD)
+              && JSONPacket.couldBeJSON(response) && response.startsWith("{")) {
+        String key = jsonFormattedArguments.getString(GNSCommandProtocol.FIELD);
+        JSONObject json = new JSONObject(response);
+        return json.getString(key);
+      }
+    } catch (JSONException e) {
+      LOGGER.log(Level.SEVERE, "Problem getting single key reponse for : " + e);
+      // just return the response if there is some issue
+    }
+    return response;
+  }
+
+  private CommandPacket getResponseUsingGNSClient(GNSClient client, String commandName,
+          JSONObject jsonFormattedArguments) throws ClientException, IOException, JSONException {
+    jsonFormattedArguments.put(GNSCommandProtocol.COMMANDNAME, commandName);
+    LOGGER.log(Level.FINE, "jsonFormattedCommand =" + jsonFormattedArguments.toString());
+    CommandPacket outgoingPacket = createGNSCommandFromJSONObject(jsonFormattedArguments);
+    LOGGER.log(Level.FINE, "outgoingPacket =" + outgoingPacket.toString());
+    CommandPacket returnPacket = client.execute(outgoingPacket);
+    LOGGER.log(Level.FINE, "returnPacket =" + returnPacket.toString());
     /**
      * Can also invoke getResponse(), getResponseString(), getResponseJSONObject()
      * etc. on {@link CommandPacket} as documented in {@link GNSCommand}.
      */
-    return commandPacket;
+    return returnPacket;
 
   }
 
   /**
    * Returns info about the server.
    */
-  protected class EchoHandler implements HttpHandler {
+  protected class EchoHttpHandler implements HttpHandler {
 
     /**
      *
@@ -298,7 +363,7 @@ public class GNSHttpServer {
         String reconAddresses = "Recon addresses: " + ReconfigurationConfig.getReconfiguratorAddresses().toString();
         String numberOfNameServers = "Server count: " + requestHandler.getGnsNodeConfig().getNumberOfNodes();
         String recordsClass = "Records Class: " + GNSConfig.GNSC.getNoSqlRecordsClass();
-        StringBuilder resultString = new StringBuilder();
+        //StringBuilder resultString = new StringBuilder();
         // Servers
 //        resultString.append("Servers:");
 //        for (String topLevelNode : requestHandler.getGnsNodeConfig().getNodeIDs()) {

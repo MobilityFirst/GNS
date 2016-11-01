@@ -1660,7 +1660,9 @@ public class HttpClient {
       // generate the signature from the unencoded query
       String signature = CommandUtils.signDigestOfMessage(privateKey, unencodedString.toString());
       // return the encoded query with the signature appended
-      return encodedString.toString() + KEYSEP + GNSCommandProtocol.SIGNATURE + VALSEP + signature;
+      return encodedString.toString() + KEYSEP + GNSCommandProtocol.SIGNATURE + VALSEP + signature 
+              + KEYSEP + "originalBase64" + VALSEP + Base64.encodeToString(unencodedString.toString().getBytes(), false)
+              ;
     } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
       throw new ClientException("Error encoding message", e);
     }

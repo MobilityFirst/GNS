@@ -50,6 +50,7 @@ import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
+import edu.umass.cs.reconfiguration.interfaces.ReconfiguratorRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
@@ -60,6 +61,7 @@ import edu.umass.cs.utils.Config;
  * Cleaner implementation of a GNS client using gigapaxos' async client.
  */
 public class GNSClient {
+
   /**
    * If no properties file can be found, this client will attempt to connect
    * to a local reconfigurator at the default port
@@ -70,7 +72,6 @@ public class GNSClient {
           GNSConfig.DEFAULT_RECONFIGURATOR_PORT);
 
   // ReconfigurableAppClientAsync instance, protected and nonfinal so BadClient in an admin test can override this.
-
   /**
    *
    */
@@ -280,24 +281,24 @@ public class GNSClient {
     return this.sendSync(packet, 0);
   }
 
-  private static final ResponsePacket defaultHandleResponse(
+  private static ResponsePacket defaultHandleResponse(
           Request response) {
     return response instanceof ResponsePacket ? (ResponsePacket) response
             : new ResponsePacket(response.getServiceName(),
                     ((ActiveReplicaError) response).getRequestID(),
                     ResponseCode.ACTIVE_REPLICA_EXCEPTION,
-                    ((ActiveReplicaError) response).getResponseMessage());
+                    ((ReconfiguratorRequest) response).getResponseMessage());
   }
 
-  private static final CommandPacket defaultHandleResponse(
+  private static CommandPacket defaultHandleResponse(
           CommandPacket commandPacket, Request response) {
     return PacketUtils.setResult(commandPacket, defaultHandleResponse(response));
   }
 
-  private static final CommandPacket defaultHandleAndCheckResponse(
+  private static CommandPacket defaultHandleAndCheckResponse(
           CommandPacket commandPacket, Request response)
           throws ClientException {
-    ResponsePacket cvrp = null;
+    ResponsePacket cvrp;
     PacketUtils.setResult(commandPacket, cvrp = defaultHandleResponse(response));
     CommandUtils.checkResponse(cvrp, commandPacket);
     return commandPacket;
@@ -460,7 +461,8 @@ public class GNSClient {
      * FIXME: This should return a separate packet type meant for
      * admin commands that is different from {@link Packet.PacketType#COMMAND}
      * and carries {@link CommandType} types corresponding to admin commands.
-     * @return 
+     *
+     * @return
      */
     @SuppressWarnings("javadoc")
     @Override

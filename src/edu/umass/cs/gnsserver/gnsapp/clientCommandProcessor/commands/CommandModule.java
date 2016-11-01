@@ -175,7 +175,7 @@ public class CommandModule {
    */
   public AbstractCommand lookupCommand(String commandName) {
     try {
-      return lookupCommand(CommandType.valueOf(commandName));
+      return CommandModule.this.lookupCommand(CommandType.valueOf(commandName));
     } catch (IllegalArgumentException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
               "Unable to parse command name {0}", commandName);
@@ -189,11 +189,11 @@ public class CommandModule {
    * @param json
    * @return the command or null if the command indicator is not valid
    */
-  public AbstractCommand lookupCommandHandler(JSONObject json) {
+  public AbstractCommand lookupCommand(JSONObject json) {
     AbstractCommand command = null;
     if (json.has(COMMAND_INT)) {
       try {
-        command = lookupCommand(CommandType.getCommandType(json.getInt(COMMAND_INT)));
+        command = CommandModule.this.lookupCommand(CommandType.getCommandType(json.getInt(COMMAND_INT)));
         // Some sanity checks
         String commandName = json.optString(COMMANDNAME, null);
         // Check to see if command name is the same
@@ -244,7 +244,7 @@ public class CommandModule {
               "Unable to find " + COMMANDNAME + " key in JSON command: {0} : {1}", new Object[]{json, e});
       return null;
     }
-    return lookupCommand(action);
+    return CommandModule.this.lookupCommand(action);
   }
 
   /**

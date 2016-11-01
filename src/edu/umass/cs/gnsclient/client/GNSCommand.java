@@ -109,6 +109,16 @@ public class GNSCommand extends CommandPacket {
     super(id, command);
   }
 
+  // Need this for the HTTP server. Since we can't make the methods above public.
+  /**
+   * Creates a GNS Command from a JSON Object.
+   * 
+   * @param command
+   * @return 
+   */
+  public static GNSCommand createGNSCommandFromJSONObject(JSONObject command) {
+    return new GNSCommand(command);
+  }
   /**
    * Constructs a command of type {@code type} issued by the {@code querier}
    * using the variable length array {@code keysAndValues}. If {@code querier}

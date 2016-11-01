@@ -33,7 +33,9 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
@@ -87,9 +89,13 @@ public abstract class AbstractUpdate extends AbstractCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    Date timestamp = json.has(TIMESTAMP) ? 
-            Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    Date timestamp = json.has(TIMESTAMP)
+            ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
 
+    if (json.has("originalBase64")) {
+      ClientCommandProcessorConfig.getLogger().warning("||||||||||||||||||||||||||| message:" + message
+              + " original" + new String(Base64.decode(json.getString("originalBase64"))));
+    }
     ResponseCode responseCode;
     if (field == null) {
       responseCode = FieldAccess.updateUserJSON(header, guid, userJSON, writer, signature, message, timestamp, handler);
@@ -98,8 +104,8 @@ public abstract class AbstractUpdate extends AbstractCommand {
       } else {
         return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
-    } else {
-      // single field update
+    } else // single field update
+    {
       if (!(responseCode = FieldAccess.update(header, guid, field,
               // special case for the ops which do not need a value
               value != null ? new ResultValue(Arrays.asList(value)) : new ResultValue(),

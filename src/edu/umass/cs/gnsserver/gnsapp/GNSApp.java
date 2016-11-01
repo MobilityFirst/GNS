@@ -298,7 +298,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
           }
           break;
         case COMMAND:
-          CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
+            CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
           break;
         case ADMIN_COMMAND:
           CommandHandler.handleCommandPacket((AdminCommandPacket) request, doNotReplyToClient, this);
