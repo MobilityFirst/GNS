@@ -15,6 +15,7 @@
  * Initial developer(s): Abhigyan Sharma, Westy */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
@@ -73,8 +74,7 @@ public class CommandHandler {
   public static void handleCommandPacket(CommandPacket packet,
           boolean doNotReplyToClient, GNSApp app) throws JSONException,
           UnknownHostException {
-    runCommand(
-            addMessageWithoutSignatureToCommand(packet),
+    runCommand(addMessageWithoutSignatureToCommand(packet),
             commandModule.lookupCommand(PacketUtils.getCommand(packet)),
             app.getRequestHandler(), doNotReplyToClient, app);
   }
@@ -160,29 +160,25 @@ public class CommandHandler {
         }
       }
     }
-    
+
   }
 
-  // This little dance is because we need to remove the signature to get the
-  // message that was signed
-  // alternatively we could have the client do it but that just means a longer
-  // message
-  // OR we could put the signature outside the command in the packet,
-  // but some packets don't need a signature
   private static CommandPacket addMessageWithoutSignatureToCommand(
           CommandPacket commandPacket) throws JSONException {
     JSONObject command = PacketUtils.getCommand(commandPacket);
-    if (!command.has(SIGNATURE)) {
-      return commandPacket;
-    }
-
-    String signature = command.getString(SIGNATURE);
-    command.remove(SIGNATURE);
-    String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
-    command.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
-            commandSansSignature);
+    CommandUtils.addMessageWithoutSignatureToJSON(command);
+//    if (!command.has(SIGNATURE)) {
+//      return commandPacket;
+//    }
+//
+//    String signature = command.getString(SIGNATURE);
+//    command.remove(SIGNATURE);
+//    String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
+//    command.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
+//            commandSansSignature);
     return commandPacket;
   }
+ 
 
   /**
    *

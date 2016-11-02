@@ -21,6 +21,8 @@ package edu.umass.cs.gnsclient.client.http;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.commandResponseToJSONArray;
+import static edu.umass.cs.gnsclient.client.CommandUtils.createCommandWithTimestampAndNonce;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 
@@ -64,10 +66,15 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /**
  * This class defines a HttpClient to communicate with a GNS instance
@@ -1633,11 +1640,13 @@ public class HttpClient {
    * @return the query string
    * @throws ClientException
    */
-  private String createAndSignQuery(CommandType commandType, GuidEntry guid, Object... keysAndValues) throws ClientException {
+  // This code is similar to what is in CommandUtils.createAndSignCommand
+  private String createAndSignQuery(CommandType commandType, GuidEntry guid, Object... keysAndValues)
+          throws ClientException {
     String key;
     String value;
     StringBuilder encodedString = new StringBuilder(commandType.name() + QUERYPREFIX);
-    StringBuilder unencodedString = new StringBuilder(commandType.name() + QUERYPREFIX);
+    //StringBuilder unencodedString = new StringBuilder(commandType.name() + QUERYPREFIX);
 
     try {
       // map over the leys and values to produce the query
@@ -1647,23 +1656,36 @@ public class HttpClient {
         encodedString.append(URIEncoderDecoder.quoteIllegal(key, ""))
                 .append(VALSEP).append(URIEncoderDecoder.quoteIllegal(value, ""))
                 .append(i + 2 < keysAndValues.length ? KEYSEP : "");
-        unencodedString.append(key)
-                .append(VALSEP)
-                .append(value)
-                .append(i + 2 < keysAndValues.length ? KEYSEP : "");
+//        unencodedString.append(key)
+//                .append(VALSEP)
+//                .append(value)
+//                .append(i + 2 < keysAndValues.length ? KEYSEP : "");
       }
+      
+      JSONObject jsonVersionOfCommand = createCommandWithTimestampAndNonce(commandType, keysAndValues);
+      String canonicalJSON = CanonicalJSON.getCanonicalForm(jsonVersionOfCommand);
 
       KeyPair keypair;
       keypair = new KeyPair(guid.getPublicKey(), guid.getPrivateKey());
 
       PrivateKey privateKey = keypair.getPrivate();
+      PublicKey publicKey = keypair.getPublic();
+      String signatureString;
+      if (!Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_SECRET_KEY)) {
+        signatureString = signDigestOfMessage(privateKey, canonicalJSON);
+      } else {
+        signatureString = signDigestOfMessage(privateKey, publicKey, canonicalJSON);
+      }
       // generate the signature from the unencoded query
-      String signature = CommandUtils.signDigestOfMessage(privateKey, unencodedString.toString());
+      //String signatureString = CommandUtils.signDigestOfMessage(privateKey, unencodedString.toString());
       // return the encoded query with the signature appended
-      return encodedString.toString() + KEYSEP + GNSCommandProtocol.SIGNATURE + VALSEP + signature 
-              + KEYSEP + "originalBase64" + VALSEP + Base64.encodeToString(unencodedString.toString().getBytes(), false)
+      return encodedString.toString() + KEYSEP + GNSCommandProtocol.SIGNATURE + VALSEP + signatureString 
+              //+ KEYSEP + "originalBase64" + VALSEP + Base64.encodeToString(unencodedString.toString().getBytes(), false)
+              + KEYSEP + "originalBase64" + VALSEP + Base64.encodeToString(canonicalJSON.getBytes(), false)
               ;
-    } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+    } catch (JSONException | UnsupportedEncodingException | NoSuchAlgorithmException 
+            | InvalidKeyException | SignatureException | IllegalBlockSizeException |
+            BadPaddingException | NoSuchPaddingException e) {
       throw new ClientException("Error encoding message", e);
     }
   }
