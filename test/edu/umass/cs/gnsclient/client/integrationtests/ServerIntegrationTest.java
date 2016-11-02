@@ -270,16 +270,25 @@ public class ServerIntegrationTest extends DefaultTest {
 
 	System.out.println("Waiting for servers to be ready...");
 	output = RunServer.command("cat " + gpConfFile + " | grep \"reconfigurator\\.\" | wc -l ", ".", false);
-	int numRC = Integer.parseInt(output.get(0));
+	String temp = output.get(0);
+	temp = temp.replaceAll("\\s","");
+	int numRC = Integer.parseInt(temp);
 	output = RunServer.command("cat " + gpConfFile + " | grep \"active\\.\" | wc -l ", ".", false);
-	int numAR = Integer.parseInt(output.get(0));
+	temp = output.get(0);
+	temp = temp.replaceAll("\\s","");
+	int numAR = Integer.parseInt(temp);
 	int numServers = numRC + numAR;
 	output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
-	int numServersUp = Integer.parseInt(output.get(0));
+	temp = output.get(0);
+	temp = temp.replaceAll("\\s","");
+	int numServersUp = Integer.parseInt(temp);
+	System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
 	while (numServersUp < numServers){
     		Thread.sleep(5000);
 		output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
-		numServersUp = Integer.parseInt(output.get(0));
+		temp = output.get(0);
+		temp = temp.replaceAll("\\s","");
+		numServersUp = Integer.parseInt(temp);
 		System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
 
 	}
