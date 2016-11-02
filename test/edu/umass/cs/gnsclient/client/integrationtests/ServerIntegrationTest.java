@@ -262,6 +262,28 @@ public class ServerIntegrationTest extends DefaultTest {
       }
     }
 
+	String gpConfFile = System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key);
+	String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
+
+	ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
+	String logFiles = output.get(0) + "*";
+
+	System.out.println("Waiting for servers to be ready...");
+	output = RunServer.command("cat " + gpConfFile + " | grep \"reconfigurator\\.\" | wc -l ", ".", false);
+	int numRC = Integer.parseInt(output.get(0));
+	output = RunServer.command("cat " + gpConfFile + " | grep \"active\\.\" | wc -l ", ".", false);
+	int numAR = Integer.parseInt(output.get(0));
+	int numServers = numRC + numAR;
+	output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+	int numServersUp = Integer.parseInt(output.get(0));
+	while (numServersUp < numServers){
+    		Thread.sleep(5000);
+		output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+		numServersUp = Integer.parseInt(output.get(0));
+		System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
+
+	}
+
     System.out.println("Starting client");
 
     client = new GNSClientCommands();
@@ -295,10 +317,6 @@ public class ServerIntegrationTest extends DefaultTest {
       failWithStackTrace("Failure setting up account guid; aborting all tests.");
     }
 
-    while (System.currentTimeMillis() - t < WAIT_TILL_ALL_SERVERS_READY) {
-      Thread.sleep(WAIT_TILL_ALL_SERVERS_READY
-              - (System.currentTimeMillis() - t));
-    }
   }
 
   /**
