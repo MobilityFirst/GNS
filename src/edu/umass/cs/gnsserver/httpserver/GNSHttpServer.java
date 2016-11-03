@@ -48,24 +48,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import edu.umass.cs.gnscommon.ResponseCode;
-import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
-import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
+import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
 import java.util.Date;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.time.DurationFormatUtils;
@@ -106,10 +105,12 @@ public class GNSHttpServer {
   public GNSHttpServer(int port, ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
-    try {
-      this.client = new GNSClient();
-    } catch (IOException e) {
-      LOGGER.log(Level.SEVERE, "Unable to start GNS client:" + e);
+    if (!Config.getGlobalBoolean(GNSC.DISABLE_MULTI_SERVER_HTTP)) {
+      try {
+        this.client = new GNSClient();
+      } catch (IOException e) {
+        LOGGER.log(Level.SEVERE, "Unable to start GNS client:" + e);
+      }
     }
     runServer(port);
   }
@@ -238,37 +239,28 @@ public class GNSHttpServer {
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
     try {
-      //String fullString = commandName + QUERYPREFIX + queryString; // for signature check
-      Map<String, String> queryMap = Util.parseURIQueryString(queryString);
-      JSONObject jsonFormattedArguments = new JSONObject(queryMap);
-      jsonFormattedArguments.put(GNSCommandProtocol.COMMANDNAME, commandName);
-      // allows for "dump" as well as "Dump"
-     
-      
-
-//      if (queryMap.keySet().contains(SIGNATURE)) {
-//        String signature = queryMap.get(SIGNATURE);
-//        String message = NSAccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
-//        queryMap.put(SIGNATUREFULLMESSAGE, message);
-//      }
-       CommandType commandType = CommandType.getCommandForHttp(commandName);
-      // Since we are case insenstive at the user side we need to stuff this in 
-      // again with the "correct" case for the actual execution.
-      jsonFormattedArguments.put(GNSCommandProtocol.COMMANDNAME, commandType.name());
+      JSONObject jsonCommand = Util.parseURIQueryStringIntoJSONObject(queryString);
+      // getCommandForHttp allows for "dump" as well as "Dump"
+      CommandType commandType = CommandType.getCommandForHttp(commandName);
       if (commandType == null) {
         return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
                 BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
                 + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
       }
-
+      // We need to stuff in the COMMAND_INT for the signature check and execution.
+      jsonCommand.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
+      // Possibly do some work on the signature for later use.
+      processSignature(jsonCommand);
       // Hair below is to handle some commands locally (creates, delets, selects, admin)
       // and the rest by invoking the GNS client and sending them out.
-      if (!enableMultiServerHTTP || client == null || commandType.isLocallyHandled()) {
+      // Client will be null if GNSC.DISABLE_MULTI_SERVER_HTTP (see above)
+      // is true (or there was a problem).
+      if (client == null || commandType.isLocallyHandled()) {
         AbstractCommand command;
         try {
           command = commandModule.lookupCommand(commandType);
           if (command != null) {
-            return CommandHandler.executeCommand(command, jsonFormattedArguments, requestHandler);
+            return CommandHandler.executeCommand(command, jsonCommand, requestHandler);
           }
           LOGGER.log(Level.FINE, "lookupCommand returned null for {0}", commandName);
         } catch (IllegalArgumentException e) {
@@ -281,12 +273,12 @@ public class GNSHttpServer {
         // Send the command remotely using a client
         try {
           CommandPacket commandResponsePacket
-                  = getResponseUsingGNSClient(client, jsonFormattedArguments);
+                  = getResponseUsingGNSClient(client, jsonCommand);
 
           return new CommandResponse(ResponseCode.NO_ERROR,
                   // some crap here to make single field reads return just the value for backward compatibility 
                   specialCaseSingleFieldRead(commandResponsePacket.getResultString(),
-                          commandType, jsonFormattedArguments));
+                          commandType, jsonCommand));
         } catch (IOException | ClientException e) {
           return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " "
                   + GNSCommandProtocol.UNSPECIFIED_ERROR + " " + e.toString());
@@ -300,6 +292,35 @@ public class GNSHttpServer {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " "
               + GNSCommandProtocol.UNSPECIFIED_ERROR + " " + e.toString());
     }
+  }
+
+  private static void processSignature(JSONObject jsonCommand) throws JSONException {
+    if (jsonCommand.has(GNSCommandProtocol.SIGNATURE)) {
+      // first the we do is decode the base64 signature. Non-http commands it's not encoded.
+      String signature = new String(Base64.decode(jsonCommand.getString(GNSCommandProtocol.SIGNATURE)));
+      // Pull it out of the command because we don't want to have it there when we check the message.
+      jsonCommand.remove(SIGNATURE);
+      // FIXME: Remove this debugging hack
+      String originalMessage = null;
+      if (jsonCommand.has("originalBase64")) {
+        originalMessage = new String(Base64.decode(jsonCommand.getString("originalBase64")));
+        jsonCommand.remove("originalBase64");
+      }
+      // Convert it to a conanical string (the message) that we can use later to check against the signature.
+      String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
+      if (originalMessage != null && !originalMessage.equals(commandSansSignature)) {
+        LOGGER.log(Level.SEVERE, "signature message mismatch! original: " + originalMessage
+                + " computed for signature: " + commandSansSignature);
+      }
+      jsonCommand.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
+              commandSansSignature);
+
+    }
+//      if (queryMap.keySet().contains(SIGNATURE)) {
+//        String signature = queryMap.get(SIGNATURE);
+//        String message = NSAccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
+//        queryMap.put(SIGNATUREFULLMESSAGE, message);
+//      }
   }
 
   //make single field reads return just the value for backward compatibility 

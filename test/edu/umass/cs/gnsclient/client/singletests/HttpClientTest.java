@@ -56,7 +56,7 @@ public class HttpClientTest {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
 
       } catch (Exception e) {
-        fail("Exception while creating master guid: " + e);
+        failWithStackTrace("Exception while creating master guid: " + e);
       }
     }
   }
@@ -69,7 +69,7 @@ public class HttpClientTest {
     try {
       assertEquals(masterGuid.getGuid(), client.lookupGuid(ACCOUNT_ALIAS));
     } catch (IOException | ClientException e) {
-      fail("Exception in LookupGuid: " + e);
+      failWithStackTrace("Exception in LookupGuid: " + e);
     }
   }
 

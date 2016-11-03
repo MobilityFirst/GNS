@@ -290,7 +290,6 @@ public class CommandUtils {
    * the command in the packet but some packets don't need a signature
    *
    * @param command
-   * @return
    * @throws JSONException
    */
   public static void addMessageWithoutSignatureToJSON(JSONObject command) throws JSONException {

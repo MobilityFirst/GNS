@@ -167,15 +167,6 @@ public class CommandHandler {
           CommandPacket commandPacket) throws JSONException {
     JSONObject command = PacketUtils.getCommand(commandPacket);
     CommandUtils.addMessageWithoutSignatureToJSON(command);
-//    if (!command.has(SIGNATURE)) {
-//      return commandPacket;
-//    }
-//
-//    String signature = command.getString(SIGNATURE);
-//    command.remove(SIGNATURE);
-//    String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
-//    command.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
-//            commandSansSignature);
     return commandPacket;
   }
  
