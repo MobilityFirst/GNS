@@ -1691,14 +1691,14 @@ public class HttpClient {
       PrivateKey privateKey = keypair.getPrivate();
       PublicKey publicKey = keypair.getPublic();
       String signatureString;
-      if (!Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_SECRET_KEY)) {
-        signatureString = signDigestOfMessage(privateKey, canonicalJSON);
-      } else {
+      if (Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_SECRET_KEY)) {
         signatureString = signDigestOfMessage(privateKey, publicKey, canonicalJSON);
+      } else {
+        signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       }
       // return the encoded query with the signature appended
       return encodedString.toString() + KEYSEP + GNSCommandProtocol.SIGNATURE 
-              + VALSEP + Base64.encodeToString(signatureString.getBytes(), false)
+              + VALSEP + signatureString // signatureString is already encoded as hex
               //+ KEYSEP + "originalBase64" + VALSEP + Base64.encodeToString(unencodedString.toString().getBytes(), false)
               // debugging hack so we can check on the otherside
               + KEYSEP + "originalBase64" + VALSEP + Base64.encodeToString(canonicalJSON.getBytes(), false)

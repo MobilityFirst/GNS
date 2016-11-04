@@ -202,7 +202,9 @@ public class NSAccessSupport {
 
     PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publickeyBytes));
 
-    byte[] sigBytes = signature.getBytes(GNSCommandProtocol.CHARSET);
+    // Client side now encodes this as a hex string
+    byte[] sigBytes = ByteUtils.hexStringToByteArray(signature);
+    //byte[] sigBytes = signature.getBytes(GNSCommandProtocol.CHARSET);
     byte[] bytes = message.getBytes(GNSCommandProtocol.CHARSET);
 
     ByteBuffer bbuf = ByteBuffer.wrap(sigBytes);

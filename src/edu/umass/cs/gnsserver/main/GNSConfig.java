@@ -63,7 +63,8 @@ public class GNSConfig {
     /**
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
+     * not support it at the server. Except that as of Fall 2016 
+     * the iOS client doesn't currently support this.
      */
     ENABLE_SECRET_KEY(true),
     /**
@@ -302,7 +303,7 @@ public class GNSConfig {
     /**
      * Temporary
      */
-    DISABLE_MULTI_SERVER_HTTP("true");
+    DISABLE_MULTI_SERVER_HTTP(true);
 
     final Object defaultValue;
 

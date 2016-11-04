@@ -73,34 +73,34 @@ public class SimpleHttpClientTest {
     }
   }
 
-//  private static GuidEntry httpOneEntry;
-//  private static GuidEntry httpTwoEntry;
-//
-//  /**
-//   *
-//   */
-//  @Test
-//  public void test_901_Http_CreateGuids() {
-//    try {
-//      httpOneEntry = client.guidCreate(masterGuid, "httpOneEntry" + RandomString.randomString(6));
-//      httpTwoEntry = client.guidCreate(masterGuid, "httpTwoEntry" + RandomString.randomString(6));
-//      System.out.println("Created: " + httpOneEntry);
-//      System.out.println("Created: " + httpTwoEntry);
-//    } catch (IOException | ClientException | NoSuchAlgorithmException e) {
-//      failWithStackTrace("Exception in Http_CreateFields: " + e);
-//    }
-//  }
-//  
-//   @Test
-//  public void test_902_Http_RemoveACL() {
-//    try {
-//      // remove default read acces for this test
-//      client.aclRemove(AclAccessType.READ_WHITELIST, httpOneEntry,
-//              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
-//    } catch (IOException | ClientException e) {
-//      failWithStackTrace("Exception in Http_RemoveACL: " + e);
-//    }
-//  }
+  private static GuidEntry httpOneEntry;
+  private static GuidEntry httpTwoEntry;
+
+  /**
+   *
+   */
+  @Test
+  public void test_901_Http_CreateGuids() {
+    try {
+      httpOneEntry = client.guidCreate(masterGuid, "httpOneEntry" + RandomString.randomString(6));
+      httpTwoEntry = client.guidCreate(masterGuid, "httpTwoEntry" + RandomString.randomString(6));
+      System.out.println("Created: " + httpOneEntry);
+      System.out.println("Created: " + httpTwoEntry);
+    } catch (IOException | ClientException | NoSuchAlgorithmException e) {
+      failWithStackTrace("Exception in Http_CreateFields: " + e);
+    }
+  }
+  
+   @Test
+  public void test_902_Http_RemoveACL() {
+    try {
+      // remove default read acces for this test
+      client.aclRemove(AclAccessType.READ_WHITELIST, httpOneEntry,
+              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+    } catch (IOException | ClientException e) {
+      failWithStackTrace("Exception in Http_RemoveACL: " + e);
+    }
+  }
 //
 //  @Test
 //  public void test_910_Http_UpdateFields() {

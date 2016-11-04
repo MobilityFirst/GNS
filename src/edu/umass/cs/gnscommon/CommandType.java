@@ -44,7 +44,7 @@ public enum CommandType {
    */
   Append(110, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,
           CommandResultType.NULL, true, false,
-          "Appends the value onto the key value pair for the given GUID. "
+          "Appends the value onto the field for the given GUID. "
           + "Treats the list as a set, removing duplicates. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
@@ -58,7 +58,7 @@ public enum CommandType {
    */
   AppendList(111, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendList.class,
           CommandResultType.NULL, true, false,
-          "Appends the value onto of this key value pair for the given GUID. "
+          "Appends the value onto of this field for the given GUID. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
@@ -72,7 +72,7 @@ public enum CommandType {
    */
   AppendListUnsigned(113, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Appends the value onto of this key value pair for the given GUID. "
+          "Appends the value onto of this field for the given GUID. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be world writeable as this command does not specify "
           + "the writer and is not signed.",
@@ -84,7 +84,7 @@ public enum CommandType {
    */
   AppendListWithDuplication(114, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplication.class,
           CommandResultType.NULL, true, false,
-          "Appends the values onto this key value pair for the given GUID. "
+          "Appends the values onto this field for the given GUID. "
           + "Treats the list as a list, allows dupicates. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be writeable by the WRITER guid.",
@@ -99,7 +99,7 @@ public enum CommandType {
    */
   AppendListWithDuplicationUnsigned(116, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Appends the values onto of this key value pair for the given GUID. "
+          "Appends the values onto of this field for the given GUID. "
           + "Treats the list as a list, allows dupicate. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
@@ -111,7 +111,7 @@ public enum CommandType {
    */
   AppendOrCreate(120, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreate.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID if it doesn't not exist "
+          "Adds a field to the GNS for the given guid if it doesn't not exist "
           + "otherwise append value onto existing value. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
@@ -125,7 +125,7 @@ public enum CommandType {
    */
   AppendOrCreateList(121, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateList.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID if it doesn not exist "
+          "Adds a field to the GNS for the given guid if it doesn not exist "
           + "otherwise appends values onto existing value. "
           + "Value is a list of items formated as a JSON list. Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
@@ -139,7 +139,7 @@ public enum CommandType {
    */
   AppendOrCreateListUnsigned(123, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID if it doesn not exist "
+          "Adds a field to the GNS for the given guid if it doesn not exist "
           + "otherwise appends values onto existing value. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be world writeable as this command does not specify the "
@@ -152,7 +152,7 @@ public enum CommandType {
    */
   AppendOrCreateUnsigned(125, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID if it doesn't not exist "
+          "Adds a field to the GNS for the given guid if it doesn't not exist "
           + "otherwise append value onto existing value. "
           + "Field must be world writeable as this command does not specify "
           + "the writer and is not signed.",
@@ -164,7 +164,7 @@ public enum CommandType {
    */
   AppendUnsigned(131, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Appends the value onto the key value pair for the given GUID. "
+          "Appends the value onto the field for the given GUID. "
           + "Treats the list as a set, removing duplicates."
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
@@ -175,7 +175,7 @@ public enum CommandType {
    */
   AppendWithDuplication(132, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplication.class,
           CommandResultType.NULL, true, false,
-          "Appends the values onto this key value pair for the given GUID. "
+          "Appends the values onto this field for the given GUID. "
           + "Treats the list as a list, allows dupicates. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
@@ -189,7 +189,7 @@ public enum CommandType {
    */
   AppendWithDuplicationUnsigned(134, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Appends the values onto this key value pair for the given GUID. "
+          "Appends the values onto this field for the given GUID. "
           + "Treats the list as a list, allows dupicates. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
@@ -200,7 +200,7 @@ public enum CommandType {
    */
   Clear(140, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Clear.class,
           CommandResultType.NULL, true, false,
-          "Clears the key value pair from the GNS for the given GUID. "
+          "Clears the field from the GNS for the given GUID. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -212,7 +212,7 @@ public enum CommandType {
    */
   ClearUnsigned(142, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Clears the key value pair from the GNS for the given guid after authenticating that "
+          "Clears the field from the GNS for the given guid after authenticating that "
           + "GUID making request has access authority. "
           + "Field must be world writeable as this command does not specify "
           + "the writer and is not signed.",
@@ -224,7 +224,7 @@ public enum CommandType {
    */
   Create(150, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Create.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID. Field must be writeable by the WRITER guid.",
+          "Adds a field to the GNS for the given GUID. Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.VALUE,
@@ -248,7 +248,7 @@ public enum CommandType {
    */
   CreateList(153, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateList.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID. Value is a list of items "
+          "Adds a field to the GNS for the given GUID. Value is a list of items "
           + "formated as a JSON list. Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -261,7 +261,7 @@ public enum CommandType {
    */
   Read(160, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Read.class,
           CommandResultType.MAP, true, false,
-          "Returns a key value pair from the GNS for the given guid after authenticating that "
+          "Returns the value for the key from the GNS for the given guid after authenticating that "
           + "READER making request has access authority. "
           + "Field can use dot notation to access subfields. "
           + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
@@ -275,7 +275,7 @@ public enum CommandType {
    */
   ReadUnsigned(162, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadUnsigned.class,
           CommandResultType.MAP, true, false,
-          "Returns one key value pair from the GNS. Does not require authentication but "
+          "Returns the value for the key from the GNS for the given guid. Does not require authentication but "
           + "field must be set to be readable by everyone. "
           + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSCommandProtocol.GUID,
@@ -285,7 +285,7 @@ public enum CommandType {
    */
   ReadMultiField(163, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiField.class,
           CommandResultType.MAP, true, false,
-          "Returns multiple key value pairs from the GNS for the given guid after "
+          "Returns multiple values for the keys from the GNS for the given guid after "
           + "authenticating that READER making request has access authority. "
           + "Fields can use dot notation to access subfields.",
           new String[]{GNSCommandProtocol.GUID,
@@ -298,7 +298,7 @@ public enum CommandType {
    */
   ReadMultiFieldUnsigned(164, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiFieldUnsigned.class,
           CommandResultType.MAP, true, false,
-          "Returns multiple key value pairs from the GNS for the given guid after "
+          "Returns multiple values for the keys from the GNS for the given guid after "
           + "authenticating that READER making request has access authority. "
           + "Fields can use dot notation to access subfields.",
           new String[]{GNSCommandProtocol.GUID,
@@ -308,7 +308,7 @@ public enum CommandType {
    */
   ReadArray(170, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArray.class,
           CommandResultType.LIST, true, false,
-          "Returns one key value pair from the GNS for the given guid after authenticating "
+          "Returns the value of the field as an array from the GNS for the given guid after authenticating "
           + "that READER making request has access authority. "
           + "Values are always returned as a JSON list. "
           + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
@@ -322,8 +322,8 @@ public enum CommandType {
    */
   ReadArrayOne(171, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOne.class,
           CommandResultType.STRING, true, false,
-          "Returns one key value pair from the GNS for the given guid after authenticating "
-          + "that the READER has access authority. Treats the value of key value pair "
+          "Returns the first value of the field as an array from the GNS for the given guid after authenticating "
+          + "that the READER has access authority. Treats the value of field "
           + "as a singleton item and returns that item. "
           + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSCommandProtocol.GUID,
@@ -336,9 +336,10 @@ public enum CommandType {
    */
   ReadArrayOneUnsigned(173, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneUnsigned.class,
           CommandResultType.STRING, true, false,
-          "Returns one key value pair from the GNS for the given guid. Does not require authentication"
+          "Returns the first value of the field as an array from the GNS for the given guid. "
+          + "Does not require authentication"
           + " but field must be set to be readable by everyone. "
-          + "Treats the value of key value pair as a singleton item and returns that item. "
+          + "Treats the value of field as a singleton item and returns that item. "
           + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD}),
@@ -347,7 +348,7 @@ public enum CommandType {
    */
   ReadArrayUnsigned(175, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayUnsigned.class,
           CommandResultType.LIST, true, false,
-          "Returns one key value pair from the GNS. Does not require authentication but "
+          "Returns the value of the field as an array from the GNS. Does not require authentication but "
           + "field must be set to be readable by everyone. Values are always returned as a JSON list. "
           + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSCommandProtocol.GUID,
@@ -357,7 +358,7 @@ public enum CommandType {
    */
   Remove(180, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Remove.class,
           CommandResultType.NULL, true, false,
-          "Returns one key value pair from the GNS for the given guid after authenticating that "
+          "Removes the value from the field for the given guid after authenticating that "
           + "WRITER making request has access authority. "
           + "Values are always returned as a JSON list. "
           + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
@@ -372,7 +373,7 @@ public enum CommandType {
    */
   RemoveList(181, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveList.class,
           CommandResultType.NULL, true, false,
-          "Removes all the values from the key value pair for the given GUID. "
+          "Removes all the values from the field for the given GUID. "
           + "Value is a list of items formated as a JSON list. Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -385,7 +386,7 @@ public enum CommandType {
    */
   RemoveListUnsigned(183, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Removes all the values from the key value pair for the given GUID. "
+          "Removes all the values from the field for the given GUID. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
@@ -396,7 +397,7 @@ public enum CommandType {
    */
   RemoveUnsigned(185, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Removes the value from the key value pair for the given GUID. "
+          "Removes the value from the field for the given GUID. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -406,7 +407,7 @@ public enum CommandType {
    */
   Replace(190, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Replace.class,
           CommandResultType.NULL, true, false,
-          "Replaces the current value key value pair from the GNS for the given guid. "
+          "Replaces the current value for the field from the GNS for the given guid with the given value. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -419,7 +420,7 @@ public enum CommandType {
    */
   ReplaceList(191, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceList.class,
           CommandResultType.NULL, true, false,
-          "Replaces the current value key value pair from the GNS for the given guid with the given values. "
+          "Replaces the current value for the field from the GNS for the given guid with the given values. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -432,7 +433,7 @@ public enum CommandType {
    */
   ReplaceListUnsigned(193, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Replaces the current value key value pair from the GNS for the given guid with the given values. "
+          "Replaces the current value value for the field from the GNS for the given guid with the given values. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -442,8 +443,8 @@ public enum CommandType {
    */
   ReplaceOrCreate(210, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreate.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID if it doesn not exist otherwise "
-          + "replaces the value of this key value pair for the given GUID. "
+          "Adds field with the value to the GNS for the given guid if it doesn not exist otherwise "
+          + "replaces the value of the field for the given GUID. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -456,8 +457,8 @@ public enum CommandType {
    */
   ReplaceOrCreateList(211, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateList.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID if it does not exist otherwise "
-          + "replaces the value of this key value pair for the given GUID with the value. "
+          "Adds a field with the value to the GNS for the given guid if it does not exist otherwise "
+          + "replaces the value of this field for the given guid with the value. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
@@ -471,8 +472,8 @@ public enum CommandType {
    */
   ReplaceOrCreateListUnsigned(213, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID if it does not exist otherwise "
-          + "replaces the value of this key value pair for the given GUID with the value. "
+          "Adds a field to the GNS for the given guid if it does not exist otherwise "
+          + "replaces the value of this field for the given guid with the value. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
@@ -483,8 +484,8 @@ public enum CommandType {
    */
   ReplaceOrCreateUnsigned(215, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Adds a key value pair to the GNS for the given GUID if it doesn not exist otherwise "
-          + "replaces the value of this key value pair for the given GUID. "
+          "Adds a field to the GNS for the given guid if it doesn not exist otherwise "
+          + "replaces the value of this field for the given GUID. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -494,7 +495,7 @@ public enum CommandType {
    */
   ReplaceUnsigned(217, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Replaces the current value key value pair from the GNS for the given guid. "
+          "Replaces the current value field from the GNS for the given guid. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -542,7 +543,7 @@ public enum CommandType {
    */
   Substitute(231, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Substitute.class,
           CommandResultType.NULL, true, false,
-          "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. "
+          "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -556,7 +557,7 @@ public enum CommandType {
    */
   SubstituteList(232, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteList.class,
           CommandResultType.NULL, true, false,
-          "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. "
+          "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be writeable by the WRITER guid. "
           + "If the new value and old values list are different sizes this does the obvious things and "
@@ -573,7 +574,7 @@ public enum CommandType {
    */
   SubstituteListUnsigned(234, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. "
+          "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
           + "Value is a list of items formated as a JSON list. "
           + "Field must be world writeable as this command does not specify the writer and is not signed. "
           + "If the new value and old values list are different sizes this does the obvious things and "
@@ -587,7 +588,7 @@ public enum CommandType {
    */
   SubstituteUnsigned(236, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. "
+          "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
           + "See below for more on the signature. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
@@ -599,7 +600,7 @@ public enum CommandType {
    */
   RemoveField(240, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveField.class,
           CommandResultType.NULL, true, false,
-          "Removes the key value pair from the GNS for the given guid after authenticating "
+          "Removes the field from the GNS for the given guid after authenticating "
           + "that WRITER making request has access authority.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -611,7 +612,7 @@ public enum CommandType {
    */
   RemoveFieldUnsigned(242, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldUnsigned.class,
           CommandResultType.NULL, true, false,
-          "Removes the key value pair from the GNS for the given guid. "
+          "Removes the field from the GNS for the given guid. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -621,7 +622,7 @@ public enum CommandType {
    */
   Set(250, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Set.class,
           CommandResultType.NULL, true, false,
-          "Replaces element N with newvalue in the key value pair for the given GUID. "
+          "Replaces element N with newvalue in the field for the given GUID. "
           + "Field must be writeable by the WRITER guid.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -755,7 +756,7 @@ public enum CommandType {
   AddAlias(410, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddAlias.class,
           CommandResultType.NULL, false, false,
           "Adds a additional human readble name to the account associated with the GUID. "
-          + "Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.",
+          + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.NAME,
             GNSCommandProtocol.SIGNATURE,
@@ -765,8 +766,8 @@ public enum CommandType {
    */
   AddGuid(411, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddGuid.class,
           CommandResultType.NULL, false, false,
-          "Adds a GUID to the account associated with the GUID. Must be signed by the guid. "
-          + "Returns +BADGUID+ if the GUID has not been registered.",
+          "Adds a guid to the account associated with the GUID. Must be signed by the guid. "
+          + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.NAME,
             GNSCommandProtocol.GUID,
             GNSCommandProtocol.PUBLIC_KEY,
@@ -816,15 +817,15 @@ public enum CommandType {
   LookupAccountRecord(420, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class,
           CommandResultType.MAP, true, false,
           "Returns the account info associated with the given GUID. "
-          + "Returns +BADGUID+ if the GUID has not been registered.",
+          + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.GUID}),
   /**
    *
    */
   LookupRandomGuids(421, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class,
           CommandResultType.LIST, true, false,
-          "Returns the account info associated with the given GUID. "
-          + "Returns +BADGUID+ if the GUID has not been registered.",
+          "Returns some number of random subguids from and account guid. Only for testing purposes. "
+          + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.GUIDCNT}),
   /**
@@ -832,15 +833,15 @@ public enum CommandType {
    */
   LookupGuid(422, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class,
           CommandResultType.STRING, true, false,
-          "Returns the guid associated with for the human readable name. "
-          + "Returns +BADACCOUNT+ if the GUID has not been registered.",
+          "Returns the guid associated with the name which is the human readable name (alias). "
+          + "Returns +BADACCOUNT+ if the name has not been registered.",
           new String[]{GNSCommandProtocol.NAME}),
   /**
    *
    */
   LookupPrimaryGuid(423, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class,
           CommandResultType.STRING, true, false,
-          "Returns the account guid associated the guid. Returns +BADGUID+ if the GUID does not exist.",
+          "Returns the account guid associated the guid. Returns +BADGUID+ if the guid does not exist.",
           new String[]{GNSCommandProtocol.GUID}),
   /**
    *
@@ -848,14 +849,14 @@ public enum CommandType {
   LookupGuidRecord(424, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class,
           CommandResultType.MAP, true, false,
           "Returns human readable name and public key associated with the given GUID. "
-          + "Returns +BADGUID+ if the GUID has not been registered.",
+          + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.GUID}),
   /**
    *
    */
   RegisterAccount(430, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount.class,
           CommandResultType.NULL, false, false,
-          "Creates an account GUID associated with the human readable name and the supplied public key. "
+          "Creates an account guid associated with the human readable name and the supplied public key. "
           + "Must be sign with the public key. Returns a guid.",
           new String[]{GNSCommandProtocol.NAME,
             GNSCommandProtocol.PUBLIC_KEY,
@@ -867,7 +868,7 @@ public enum CommandType {
    */
   RegisterAccountUnsigned(432, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountUnsigned.class,
           CommandResultType.NULL, false, false,
-          "Creates an account GUID associated with the human readable name and the supplied public key. "
+          "Creates an account guid associated with the human readable name and the supplied public key. "
           + "Must be sign dwith the public key. Returns a guid.",
           new String[]{GNSCommandProtocol.NAME,
             GNSCommandProtocol.PUBLIC_KEY,
@@ -877,7 +878,7 @@ public enum CommandType {
    */
   RemoveAccount(440, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccount.class,
           CommandResultType.NULL, false, false,
-          "Removes the account GUID associated with the human readable name. "
+          "Removes the account guid associated with the human readable name. "
           + "Must be signed by the guid.",
           new String[]{GNSCommandProtocol.NAME,
             GNSCommandProtocol.GUID,
@@ -889,7 +890,7 @@ public enum CommandType {
   RemoveAlias(441, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAlias.class,
           CommandResultType.NULL, false, false,
           "Removes the alias from the account associated with the GUID. "
-          + "Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.",
+          + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.NAME,
             GNSCommandProtocol.SIGNATURE,
@@ -899,9 +900,9 @@ public enum CommandType {
    */
   RemoveGuid(442, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuid.class,
           CommandResultType.NULL, false, false,
-          "Removes the GUID from the account associated with the ACCOUNT_GUID. "
+          "Removes the guid from the account associated with the ACCOUNT_GUID. "
           + "Must be signed by the account guid or the guid if account guid is not provided. "
-          + "Returns +BADGUID+ if the GUID has not been registered.",
+          + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.ACCOUNT_GUID,
             GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
@@ -911,7 +912,7 @@ public enum CommandType {
    */
   RemoveGuidNoAccount(443, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuidNoAccount.class,
           CommandResultType.NULL, false, false,
-          "Removes the GUID. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.",
+          "Removes the GUID. Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
@@ -921,7 +922,7 @@ public enum CommandType {
   RetrieveAliases(444, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases.class,
           CommandResultType.LIST, true, false,
           "Retrieves all aliases for the account associated with the GUID. "
-          + "Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.",
+          + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
@@ -930,14 +931,14 @@ public enum CommandType {
    */
   RemoveAccountWithPassword(445, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccountWithPassword.class,
           CommandResultType.NULL, false, false,
-          "Removes the account GUID associated with the human readable name authorized by the account password.",
+          "Removes the account guid associated with the human readable name authorized by the account password.",
           new String[]{GNSCommandProtocol.NAME, GNSCommandProtocol.PASSWORD}),
   /**
    *
    */
   SetPassword(450, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.SetPassword.class,
           CommandResultType.NULL, true, false,
-          "Sets the password. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.",
+          "Sets the password. Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.PASSWORD,
             GNSCommandProtocol.SIGNATURE,
@@ -955,7 +956,7 @@ public enum CommandType {
    */
   ResendAuthenticationEmail(452, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResendAuthenticationEmail.class,
           CommandResultType.NULL, true, false,
-          "Resends the verification code email to the user. Must be signed by the guid. Returns +BADGUID+ if the GUID has not been registered.",
+          "Resends the verification code email to the user. Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.SIGNATURE,
             GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
@@ -1266,8 +1267,8 @@ public enum CommandType {
   @Deprecated
   GetParameter(720, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
           CommandResultType.STRING, true, true,
-          "Returns one key value pair from the GNS for the given guid after authenticating "
-          + "that GUID making request has access authority. "
+          "Returns one field from the GNS for the given guid after authenticating "
+          + "that guid making request has access authority. "
           + "Values are always returned as a JSON list. "
           + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
           new String[]{GNSCommandProtocol.FIELD}),
@@ -1316,7 +1317,7 @@ public enum CommandType {
    */
   SetCode(810, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode.class,
           CommandResultType.NULL, true, false,
-          "Sets the given active code for the specified GUID and action, ensuring the writer has permission.",
+          "Sets the given active code for the specified guid and action, ensuring the writer has permission.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.AC_ACTION,
@@ -1328,7 +1329,7 @@ public enum CommandType {
    */
   ClearCode(811, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode.class,
           CommandResultType.NULL, true, false,
-          "Clears the active code for the specified GUID and action, ensuring the writer has permission.",
+          "Clears the active code for the specified guid and action, ensuring the writer has permission.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.WRITER,
             GNSCommandProtocol.AC_ACTION,
@@ -1420,7 +1421,7 @@ public enum CommandType {
      *
      */
     MUTUAL_AUTH,
-     /**
+    /**
      * Miscellaneous commands that can be handled by the local server.
      */
     LOCAL
@@ -1586,7 +1587,7 @@ public enum CommandType {
   }
 
   /**
-   * 
+   *
    * @return true if this is a command any replica can handle itself
    */
   public boolean isLocallyHandled() {

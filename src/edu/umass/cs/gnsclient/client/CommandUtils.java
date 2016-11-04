@@ -181,8 +181,11 @@ public class CommandUtils {
       signatureInstance.initSign(privateKey);
       signatureInstance.update(message.getBytes("UTF-8"));
       byte[] signedString = signatureInstance.sign();
+      // We encode this as a hex so we can send it with the html without
+      // encoding. Not really necessary for the socket based client.
       // FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
       // IOS CLIENT IS UPDATED AS WELL
+      // Also note that the secret based method doesn't do this - it just returns a string.
       String result = ByteUtils.toHex(signedString);
       // String result = Base64.encodeToString(signedString, false);
       return result;
@@ -252,14 +255,14 @@ public class CommandUtils {
     SecretKey secretKey = SessionKeys.getOrGenerateSecretKey(publicKey,
             privateKey);
     MessageDigest md = getMessageDigestInstance();
-    byte[] digest = null;
+    byte[] digest;
     byte[] body = message.getBytes(GNSCommandProtocol.CHARSET);
     synchronized (md) {
       digest = md.digest(body);
     }
     assert (digest != null);
     Cipher cipher = getCipherInstance();
-    byte[] signature = null;
+    byte[] signature;
     synchronized (cipher) {
       cipher.init(Cipher.ENCRYPT_MODE, secretKey);
       signature = cipher.doFinal(digest);
@@ -280,7 +283,15 @@ public class CommandUtils {
             // certificate
             .putShort((short) encodedSKCert.length).put(encodedSKCert);
 
-    return new String(combined, GNSCommandProtocol.CHARSET);
+    // JSON is pretty lenient but you're allowed to put any arbitrary string in
+    // JSON (in particular some control characters) 
+    // so we're going to convert this to a HEX string. Base64 might be 
+    // better, but the non-secret version uses hex so we'll do this for consistency.
+    // The non-secret version still uses hex because the iOS client hasn't been
+    // updated yet to use Bas64.
+    // This also means we don't have to further encode these for the HTTP client.
+    return ByteUtils.toHex(combined);
+    //return new String(combined, GNSCommandProtocol.CHARSET);
   }
 
   /**
@@ -514,10 +525,10 @@ public class CommandUtils {
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = null;
       long t = System.nanoTime();
-      if (!Config.getGlobalBoolean(GNSCC.ENABLE_SECRET_KEY)) {
-        signatureString = signDigestOfMessage(privateKey, canonicalJSON);
-      } else {
+      if (Config.getGlobalBoolean(GNSCC.ENABLE_SECRET_KEY)) {
         signatureString = signDigestOfMessage(privateKey, publicKey, canonicalJSON);
+      } else {
+        signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       }
       result.put(GNSCommandProtocol.SIGNATURE, signatureString);
       if (edu.umass.cs.utils.Util.oneIn(10)) {

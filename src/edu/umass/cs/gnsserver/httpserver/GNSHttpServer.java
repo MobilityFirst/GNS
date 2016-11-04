@@ -227,9 +227,6 @@ public class GNSHttpServer {
     }
   }
 
-  // Should be true to make the new code work.
-  private static boolean enableMultiServerHTTP = false;
-
   /**
    * Process queries for the http service. Converts the URI of e the HTTP query into
    * the JSON Object format that is used by the CommandModeule class, then finds
@@ -274,7 +271,6 @@ public class GNSHttpServer {
         try {
           CommandPacket commandResponsePacket
                   = getResponseUsingGNSClient(client, jsonCommand);
-
           return new CommandResponse(ResponseCode.NO_ERROR,
                   // some crap here to make single field reads return just the value for backward compatibility 
                   specialCaseSingleFieldRead(commandResponsePacket.getResultString(),
@@ -296,11 +292,11 @@ public class GNSHttpServer {
 
   private static void processSignature(JSONObject jsonCommand) throws JSONException {
     if (jsonCommand.has(GNSCommandProtocol.SIGNATURE)) {
-      // first the we do is decode the base64 signature. Non-http commands it's not encoded.
-      String signature = new String(Base64.decode(jsonCommand.getString(GNSCommandProtocol.SIGNATURE)));
+      // Squirrel away the signature. Note that it is encoded as a hex string.
+      String signature = jsonCommand.getString(GNSCommandProtocol.SIGNATURE);
       // Pull it out of the command because we don't want to have it there when we check the message.
       jsonCommand.remove(SIGNATURE);
-      // FIXME: Remove this debugging hack
+      // FIXME: Remove this debugging hack at some point
       String originalMessage = null;
       if (jsonCommand.has("originalBase64")) {
         originalMessage = new String(Base64.decode(jsonCommand.getString("originalBase64")));
@@ -308,19 +304,20 @@ public class GNSHttpServer {
       }
       // Convert it to a conanical string (the message) that we can use later to check against the signature.
       String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
-      if (originalMessage != null && !originalMessage.equals(commandSansSignature)) {
-        LOGGER.log(Level.SEVERE, "signature message mismatch! original: " + originalMessage
-                + " computed for signature: " + commandSansSignature);
+      if (originalMessage != null) {
+        if (!originalMessage.equals(commandSansSignature)) {
+          LOGGER.log(Level.SEVERE, "signature message mismatch! original: " + originalMessage
+                  + " computed for signature: " + commandSansSignature);
+        } else {
+           LOGGER.log(Level.FINE, "######## original: " + originalMessage);
+        }
       }
+      // Put the decoded signature back as well as the message that we're going to
+      // later compare the signature against.
       jsonCommand.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
               commandSansSignature);
 
     }
-//      if (queryMap.keySet().contains(SIGNATURE)) {
-//        String signature = queryMap.get(SIGNATURE);
-//        String message = NSAccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
-//        queryMap.put(SIGNATUREFULLMESSAGE, message);
-//      }
   }
 
   //make single field reads return just the value for backward compatibility 
