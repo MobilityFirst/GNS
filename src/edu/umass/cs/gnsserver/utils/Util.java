@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.utils;
 
+import edu.umass.cs.nio.JSONPacket;
 import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
 import java.util.Collections;
@@ -29,6 +30,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Various generic static utility methods.
@@ -127,6 +131,25 @@ public class Util {
       result.put(parser.getName(), parser.getValue());
     }
     return result;
+  }
+
+  public static JSONObject parseURIQueryStringIntoJSONObject(String query) throws JSONException {
+    JSONObject json = new JSONObject();
+    URLQueryStringParser parser = new URLQueryStringParser(query);
+    while (parser.next()) {
+      json.put(parser.getName(), JSONParseString(parser.getValue()));
+    }
+    return json;
+  }
+
+  private static Object JSONParseString(String string) throws JSONException {
+    if (JSONPacket.couldBeJSONObject(string)) {
+      return new JSONObject(string);
+    } else if (JSONPacket.couldBeJSONArray(string)) {
+      return new JSONArray(string);
+    } else {
+      return string;
+    }
   }
 
   /**

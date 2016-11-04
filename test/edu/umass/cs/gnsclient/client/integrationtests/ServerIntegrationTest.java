@@ -246,11 +246,16 @@ public class ServerIntegrationTest extends DefaultTest {
         options = SCRIPTS_OPTIONS;
       }
 
+	String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
+	ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
+	String logFiles = output.get(0) + "*";
+	RunServer.command("rm -f " + logFiles, ".", false);
+
       System.out.println(System
               .getProperty(DefaultProps.SERVER_COMMAND.key)
               + " "
               + options);
-      ArrayList<String> output = RunServer.command(
+      output = RunServer.command(
               System.getProperty(DefaultProps.SERVER_COMMAND.key) + " "
               + options, ".");
       if (output != null) {
@@ -261,6 +266,51 @@ public class ServerIntegrationTest extends DefaultTest {
         failWithStackTrace("Server command failure: ; aborting all tests.");
       }
     }
+
+	String gpConfFile = System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key);
+	String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
+
+	ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
+	String logFiles = output.get(0) + "*";
+
+	System.out.println("Waiting for servers to be ready...");
+	output = RunServer.command("cat " + gpConfFile + " | grep \"reconfigurator\\.\" | wc -l ", ".", false);
+	String temp = output.get(0);
+	temp = temp.replaceAll("\\s","");
+	int numRC = Integer.parseInt(temp);
+	output = RunServer.command("cat " + gpConfFile + " | grep \"active\\.\" | wc -l ", ".", false);
+	temp = output.get(0);
+	temp = temp.replaceAll("\\s","");
+	int numAR = Integer.parseInt(temp);
+	int numServers = numRC + numAR;
+
+
+	output = RunServer.command("ls " + logFiles + " 2> /dev/null | wc -l ", ".", false);
+	temp = output.get(0);
+	temp = temp.replaceAll("\\s","");
+	int numLogFiles = Integer.parseInt(temp);
+	while( numLogFiles == 0){
+		Thread.sleep(5000);
+		output = RunServer.command("ls " + logFiles + " 2> /dev/null | wc -l ", ".", false);
+		temp = output.get(0);
+		temp = temp.replaceAll("\\s","");
+		numLogFiles = Integer.parseInt(temp);
+	}
+
+	output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+	temp = output.get(0);
+	temp = temp.replaceAll("\\s","");
+	int numServersUp = Integer.parseInt(temp);
+	System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
+	while (numServersUp < numServers){
+    		Thread.sleep(5000);
+		output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+		temp = output.get(0);
+		temp = temp.replaceAll("\\s","");
+		numServersUp = Integer.parseInt(temp);
+		System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
+
+	}
 
     System.out.println("Starting client");
 
@@ -295,10 +345,6 @@ public class ServerIntegrationTest extends DefaultTest {
       failWithStackTrace("Failure setting up account guid; aborting all tests.");
     }
 
-    while (System.currentTimeMillis() - t < WAIT_TILL_ALL_SERVERS_READY) {
-      Thread.sleep(WAIT_TILL_ALL_SERVERS_READY
-              - (System.currentTimeMillis() - t));
-    }
   }
 
   /**

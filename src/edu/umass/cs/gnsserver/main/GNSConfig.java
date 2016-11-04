@@ -298,10 +298,11 @@ public class GNSConfig {
      * Ip address:port of one node of CNS.
      * If ENABLE_CNS is set to true then this option should definitely be set.
      */
-    CNS_NODE_ADDRESS("node");
-    //
-    // Active
-    //
+    CNS_NODE_ADDRESS("node"),
+    /**
+     * Temporary
+     */
+    DISABLE_MULTI_SERVER_HTTP("true");
 
     final Object defaultValue;
 

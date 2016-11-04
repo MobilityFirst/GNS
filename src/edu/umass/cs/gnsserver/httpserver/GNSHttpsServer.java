@@ -126,8 +126,8 @@ public class GNSHttpsServer extends GNSHttpServer {
         }
       });
 
-      httpsServer.createContext("/", new EchoHandler());
-      httpsServer.createContext("/" + GNS_PATH, new DefaultHandler());
+      httpsServer.createContext("/", new EchoHttpHandler());
+      httpsServer.createContext("/" + GNS_PATH, new DefaultHttpHandler());
       httpsServer.setExecutor(Executors.newCachedThreadPool());
       httpsServer.start();
       // Need to do this for the places where we expose the secure http service to the user

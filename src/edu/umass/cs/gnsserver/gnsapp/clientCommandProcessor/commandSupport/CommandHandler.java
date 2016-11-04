@@ -15,6 +15,7 @@
  * Initial developer(s): Abhigyan Sharma, Westy */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
@@ -73,17 +74,15 @@ public class CommandHandler {
   public static void handleCommandPacket(CommandPacket packet,
           boolean doNotReplyToClient, GNSApp app) throws JSONException,
           UnknownHostException {
-    runCommand(
-            addMessageWithoutSignatureToCommand(packet),
-            // CommandType.commandClass instance
-            commandModule.lookupCommandHandler(PacketUtils.getCommand(packet)),
+    runCommand(addMessageWithoutSignatureToCommand(packet),
+            commandModule.lookupCommand(PacketUtils.getCommand(packet)),
             app.getRequestHandler(), doNotReplyToClient, app);
   }
 
   private static final long LONG_DELAY_THRESHOLD = 1;
 
   private static void runCommand(CommandPacket commandPacket,
-          AbstractCommand commandHandler, ClientRequestHandlerInterface handler,
+          AbstractCommand command, ClientRequestHandlerInterface handler,
           boolean doNotReplyToClient, GNSApp app) {
     JSONObject jsonFormattedCommand = PacketUtils.getCommand(commandPacket);
     try {
@@ -91,17 +90,17 @@ public class CommandHandler {
       final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
       // Other than this line, one below and some catches all of this
       // method is instrumentation.
-      CommandResponse returnValue = executeCommand(commandHandler,
+      CommandResponse returnValue = executeCommand(command,
               commandPacket, handler);
 
-      assert (commandPacket.getRequestType() != null);
-      assert (commandPacket.getCommandType() != null);
-      assert (commandHandler != null);
+      assert (commandPacket.getRequestType() != null) : "request type is null";
+      assert (commandPacket.getCommandType() != null) : "command type is null";
+      assert (command != null) : "command is null";
       // instrumentation
       DelayProfiler.updateDelay("executeCommand", executeCommandStart);
       if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
         DelayProfiler.updateDelay(commandPacket.getRequestType() + "."
-                + commandHandler.getCommandType(),
+                + command.getCommandType(),
                 executeCommandStart);
       }
       if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
@@ -111,7 +110,7 @@ public class CommandHandler {
                         "{0} command {1} took {2}ms of execution delay (delay logging threshold={2}ms)",
                         new Object[]{
                           handler.getApp(),
-                          commandHandler.getSummary(),
+                          command.getSummary(),
                           (System.currentTimeMillis() - executeCommandStart),
                           LONG_DELAY_THRESHOLD});
       }
@@ -148,42 +147,29 @@ public class CommandHandler {
     if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_CNS)) {
       if (!doNotReplyToClient) {
 
-        if (commandHandler.getClass().getSuperclass() == AbstractUpdate.class) {
+        if (command.getClass().getSuperclass() == AbstractUpdate.class) {
           GNSConfig
                   .getLogger()
                   .log(Level.FINE,
                           "{0} sending trigger to context service for {1}:{2}",
-                          new Object[]{handler.getApp(), commandHandler,
+                          new Object[]{handler.getApp(), command,
                             jsonFormattedCommand});
 
           app.getContextServiceGNSClient().sendTiggerOnGnsCommand(
-                  jsonFormattedCommand, commandHandler, false);
+                  jsonFormattedCommand, command, false);
         }
       }
     }
-    
+
   }
 
-  // This little dance is because we need to remove the signature to get the
-  // message that was signed
-  // alternatively we could have the client do it but that just means a longer
-  // message
-  // OR we could put the signature outside the command in the packet,
-  // but some packets don't need a signature
   private static CommandPacket addMessageWithoutSignatureToCommand(
           CommandPacket commandPacket) throws JSONException {
     JSONObject command = PacketUtils.getCommand(commandPacket);
-    if (!command.has(SIGNATURE)) {
-      return commandPacket;
-    }
-
-    String signature = command.getString(SIGNATURE);
-    command.remove(SIGNATURE);
-    String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
-    command.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
-            commandSansSignature);
+    CommandUtils.addMessageWithoutSignatureToJSON(command);
     return commandPacket;
   }
+ 
 
   /**
    *

@@ -47,7 +47,6 @@ import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -58,7 +57,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import edu.umass.cs.utils.Config;
 
+import java.net.InetAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -87,34 +88,32 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   /**
    * The logger.
    */
-  public static final Logger LOG = Logger.getLogger(LocalNameServer.class.getName());
-
-  /**
-   * The default LNS port for incoming requests.
-   */
-  public final static int DEFAULT_LNS_TCP_PORT = GNSClientConfig.LNS_PORT;
+  public static final Logger LOGGER = Logger.getLogger(LocalNameServer.class.getName());
 
   private static final ConcurrentMap<Long, LNSRequestInfo> outstandingRequests
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
   private final Cache<String, CacheEntry> cache;
   private JSONMessenger<InetSocketAddress> messenger;
-  private JSONMessenger<InetSocketAddress> sslServer;
+  // FIXME: Eventually need separate servers for ssl and clear
+  //private JSONMessenger<InetSocketAddress> sslServer;
   private ProtocolExecutor<InetSocketAddress, ReconfigurationPacket.PacketType, String> protocolExecutor;
   private final LNSNodeConfig nodeConfig;
   private final LNSConsistentReconfigurableNodeConfig crNodeConfig;
   private final InetSocketAddress address;
   private final AbstractJSONPacketDemultiplexer demultiplexer;
 
+  //Fixme: Why is this here?
+  private static boolean usePublicIP = false;
+
   /**
    *
    * @throws IOException
    */
   public LocalNameServer() throws IOException {
-    this(new InetSocketAddress(usePublicIP ? NetworkUtils.getLocalHostLANAddress().getHostAddress()
-            : "127.0.0.1",
-            // Fixme: make this a gigpaxos config option
-            DEFAULT_LNS_TCP_PORT),
+    this(new InetSocketAddress(usePublicIP ? NetworkUtils.getLocalHostLANAddress()
+            : InetAddress.getLoopbackAddress(),
+            Config.getGlobalInt(GNSClientConfig.GNSCC.LOCAL_NAME_SERVER_PORT)),
             new LNSNodeConfig());
   }
 
@@ -126,13 +125,11 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    * @throws IOException
    */
   public LocalNameServer(InetSocketAddress originalNodeAddress, LNSNodeConfig nodeConfig) throws IOException {
-    SSLDataProcessingWorker.SSL_MODES sslMode;
-    InetSocketAddress convertedNodeAddress;
-    sslMode = ReconfigurationConfig.getClientSSLMode();
-    convertedNodeAddress = new InetSocketAddress(originalNodeAddress.getAddress(),
+    SSLDataProcessingWorker.SSL_MODES sslMode = ReconfigurationConfig.getClientSSLMode();
+    // Get out address by convert the address to the client facing address. 
+    this.address = new InetSocketAddress(originalNodeAddress.getAddress(),
             ReconfigurationConfig.getClientFacingSSLPort(originalNodeAddress.getPort()));
-    this.address = convertedNodeAddress;
-    LOG.log(Level.INFO, "LNS: SSL Mode is {0}; listening on {1}",
+    LOGGER.log(Level.INFO, "LNS: SSL Mode is {0}; listening on {1}",
             new Object[]{sslMode.name(), address});
 
     this.nodeConfig = nodeConfig;
@@ -142,8 +139,8 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
             ReconfigurationConfig.getReconfiguratorAddresses(),
             ReconfigurationConfig.getClientSSLMode(),
             ReconfigurationConfig.getClientPortSSLOffset()));
-    // eventually need separate servers for ssl and clear
-    LNSPacketDemultiplexer<String> sslDemultiplexer = new LNSPacketDemultiplexer<>(this, asyncClient);
+    // FIXME: Eventually need separate servers for ssl and clear
+    //LNSPacketDemultiplexer<String> sslDemultiplexer = new LNSPacketDemultiplexer<>(this, asyncClient);
 
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
     try {
@@ -152,11 +149,11 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
       messenger = new JSONMessenger<>(gnsNiot);
       this.protocolExecutor = new ProtocolExecutor<>(messenger);
     } catch (IOException e) {
-      LOG.log(Level.INFO, "Unabled to start LNS listener: " + e + "...ignoring.");
+      LOGGER.log(Level.INFO, "Unabled to start LNS listener: " + e + "...ignoring.");
       // Just ignore this error for now... probably means we're running on a single machine.
       return;
     }
-    LOG.log(Level.INFO, "Started LNS listener on {0}", address);
+    LOGGER.log(Level.INFO, "Started LNS listener on {0}", address);
   }
 
   /**
@@ -168,8 +165,6 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     demultiplexer.stop();
     protocolExecutor.stop();
   }
-
-  private static boolean usePublicIP = false;
 
   /* java -ea  -cp jars/GNS.jar \
 -DgigapaxosConfig=conf/gnsserver.1local.properties \
@@ -246,7 +241,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
    */
   @Override
   public void addRequestInfo(long id, LNSRequestInfo requestInfo, NIOHeader header) {
-    LOG.log(Level.INFO,
+    LOGGER.log(Level.INFO,
             "{0} inserting outgoing request {1}:{2} with header {3}",
             new Object[]{this, id + "", requestInfo, header});
     outstandingRequests.put(id, requestInfo);
@@ -266,7 +261,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
    */
   @Override
   public LNSRequestInfo removeRequestInfo(long id) {
-    LOG.log(Level.INFO, "{0} matching repsonse with id {1}",
+    LOGGER.log(Level.INFO, "{0} matching repsonse with id {1}",
             new Object[]{this, id + ""});
     return outstandingRequests.remove(id);
   }
@@ -283,7 +278,6 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
   }
 
   // marker for broken and/or hacky code
-
   /**
    *
    */
@@ -298,7 +292,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
   @Override
   public Set<InetSocketAddress> getReplicatedActives(String name) {
     // arun
-    LOG.log(Level.WARNING, LNS_BAD_HACKY + "name = {0}", name);
+    LOGGER.log(Level.WARNING, LNS_BAD_HACKY + "name = {0}", name);
     // FIXME: this needs work
     Set<InetSocketAddress> result = new HashSet<>();
     // FIXME: I don't think this returns the same set as the server uses so it's a good
@@ -333,7 +327,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
         json = new JSONObject(msg);
         Packet.PacketType type = Packet.getPacketType(json);
         if (type != null) {
-          LOG.log(Level.INFO,
+          LOGGER.log(Level.INFO,
                   "{0} retrieving packet from received json {1}",
                   new Object[]{this, json});
           if (clientPacketTypes.contains(Packet.getPacketType(json))) {
@@ -343,7 +337,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
           assert (response == null || response.getRequestType() == Packet.PacketType.COMMAND_RETURN_VALUE);
         }
       } catch (JSONException e) {
-        LOG.log(Level.WARNING,
+        LOGGER.log(Level.WARNING,
                 "Problem parsing packet from {0}: {1}", new Object[]{json, e});
       }
       return response;
@@ -393,7 +387,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
         serverAddress = serverId;
       }
     }
-    LOG.log(Level.FINE, "Closest server is {0}", serverAddress);
+    LOGGER.log(Level.FINE, "Closest server is {0}", serverAddress);
     return serverAddress;
   }
 
@@ -518,7 +512,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     packet.remove(MessageNIOTransport.SNDR_IP_FIELD);
     packet.remove(MessageNIOTransport.SNDR_PORT_FIELD);
     // Don't get a client facing port for these because they are returned as already translated.
-    LOG.log(Level.INFO, "Sending to {0}: {1}", new Object[]{replicaAddress, packet});
+    LOGGER.log(Level.INFO, "Sending to {0}: {1}", new Object[]{replicaAddress, packet});
     messenger.sendToAddress(replicaAddress, packet);
   }
 
@@ -541,11 +535,11 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     String serviceName = "fred";
     Set<InetSocketAddress> actives;
     if ((actives = getActivesIfValid(serviceName)) != null) {
-      LOG.severe("Cache should be empty!");
+      LOGGER.severe("Cache should be empty!");
     }
     updateCacheEntry(serviceName, new HashSet<>(Arrays.asList(new InetSocketAddress(35000))));
     if ((actives = getActivesIfValid(serviceName)) == null) {
-      LOG.severe("Cache should not be empty!");
+      LOGGER.severe("Cache should not be empty!");
     }
     StringBuilder cacheString = new StringBuilder();
     for (Entry<String, CacheEntry> entry : cache.asMap().entrySet()) {
@@ -554,7 +548,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
       cacheString.append(entry.getValue());
       cacheString.append("\n");
     }
-    LOG.log(Level.INFO, "Cache Test: \n{0}", cacheString.toString());
+    LOGGER.log(Level.INFO, "Cache Test: \n{0}", cacheString.toString());
   }
 
 }

@@ -34,6 +34,8 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
@@ -139,14 +141,14 @@ public class CommandUtils {
     }
     return response;
   }
-  
+
   /**
    * Conditionally converts a returned string to a JSON Array.
-   * 
+   *
    * @param field
    * @param response
    * @return
-   * @throws JSONException 
+   * @throws JSONException
    */
   public static JSONArray commandResponseToJSONArray(String field, String response) throws JSONException {
     if (JSONPacket.couldBeJSONArray(response)) {
@@ -241,7 +243,7 @@ public class CommandUtils {
    * @throws BadPaddingException
    * @throws NoSuchPaddingException
    */
-  private static String signDigestOfMessage(PrivateKey privateKey,
+  public static String signDigestOfMessage(PrivateKey privateKey,
           PublicKey publicKey, String message)
           throws NoSuchAlgorithmException, InvalidKeyException,
           SignatureException, UnsupportedEncodingException,
@@ -279,6 +281,25 @@ public class CommandUtils {
             .putShort((short) encodedSKCert.length).put(encodedSKCert);
 
     return new String(combined, GNSCommandProtocol.CHARSET);
+  }
+
+  /**
+   * This little dance is because we need to remove the signature to get the
+   * message that was signed. Alternatively we could have the client do it but
+   * that just means a longer message OR we could put the signature outside
+   * the command in the packet but some packets don't need a signature
+   *
+   * @param command
+   * @throws JSONException
+   */
+  public static void addMessageWithoutSignatureToJSON(JSONObject command) throws JSONException {
+    if (command.has(SIGNATURE)) {
+      String signature = command.getString(SIGNATURE);
+      command.remove(SIGNATURE);
+      String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
+      command.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
+              commandSansSignature);
+    }
   }
 
   /**
@@ -461,6 +482,23 @@ public class CommandUtils {
   }
 
   /**
+   *
+   * @param commandType
+   * @param keysAndValues
+   * @return
+   * @throws ClientException
+   * @throws JSONException
+   */
+  public static JSONObject createCommandWithTimestampAndNonce(CommandType commandType, Object... keysAndValues)
+          throws ClientException, JSONException {
+    JSONObject result = createCommand(commandType, keysAndValues);
+    result.put(GNSCommandProtocol.TIMESTAMP,
+            Format.formatDateISO8601UTC(new Date()));
+    result.put(GNSCommandProtocol.NONCE, getRandomRequestNonce());
+    return result;
+  }
+
+  /**
    * @param commandType
    * @param privateKey
    * @param publicKey
@@ -472,19 +510,14 @@ public class CommandUtils {
           PrivateKey privateKey, PublicKey publicKey, Object... keysAndValues)
           throws ClientException {
     try {
-      JSONObject result = createCommand(commandType, keysAndValues);
-      result.put(GNSCommandProtocol.TIMESTAMP,
-              Format.formatDateISO8601UTC(new Date()));
-      result.put(GNSCommandProtocol.NONCE, getRandomRequestNonce());
-
+      JSONObject result = createCommandWithTimestampAndNonce(commandType, keysAndValues);
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = null;
       long t = System.nanoTime();
       if (!Config.getGlobalBoolean(GNSCC.ENABLE_SECRET_KEY)) {
         signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       } else {
-        signatureString = signDigestOfMessage(privateKey, publicKey,
-                canonicalJSON);
+        signatureString = signDigestOfMessage(privateKey, publicKey, canonicalJSON);
       }
       result.put(GNSCommandProtocol.SIGNATURE, signatureString);
       if (edu.umass.cs.utils.Util.oneIn(10)) {

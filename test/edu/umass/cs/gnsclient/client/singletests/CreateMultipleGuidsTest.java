@@ -26,6 +26,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
+import edu.umass.cs.utils.Config;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -68,7 +69,8 @@ public class CreateMultipleGuidsTest {
         address = new InetSocketAddress(System.getProperty("host"),
                 Integer.parseInt(System.getProperty("port")));
       } else {
-        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
+        address = new InetSocketAddress("127.0.0.1", 
+                Config.getGlobalInt(GNSClientConfig.GNSCC.LOCAL_NAME_SERVER_PORT));
       }
        try {
         client = new GNSClientCommands();

@@ -32,6 +32,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 
+import edu.umass.cs.utils.Config;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -65,14 +66,19 @@ public class MultipleClientTest {
   /**
    * The address of the GNS server we will contact
    */
-  private static Set<InetSocketAddress> addresses = new HashSet<>(
+  private static final Set<InetSocketAddress> ADDRESSES = new HashSet<>(
           // kittens.name
-          Arrays.asList(new InetSocketAddress("23.21.160.80", GNSClientConfig.LNS_PORT),
-                  new InetSocketAddress("54.241.15.214", GNSClientConfig.LNS_PORT),
-                  new InetSocketAddress("50.112.98.151", GNSClientConfig.LNS_PORT),
-                  new InetSocketAddress("79.125.27.206", GNSClientConfig.LNS_PORT),
-                  new InetSocketAddress("54.232.178.43", GNSClientConfig.LNS_PORT)));
-  
+          Arrays.asList(new InetSocketAddress("23.21.160.80",
+                  Config.getGlobalInt(GNSClientConfig.GNSCC.LOCAL_NAME_SERVER_PORT)),
+                  new InetSocketAddress("54.241.15.214",
+                          Config.getGlobalInt(GNSClientConfig.GNSCC.LOCAL_NAME_SERVER_PORT)),
+                  new InetSocketAddress("50.112.98.151",
+                          Config.getGlobalInt(GNSClientConfig.GNSCC.LOCAL_NAME_SERVER_PORT)),
+                  new InetSocketAddress("79.125.27.206",
+                          Config.getGlobalInt(GNSClientConfig.GNSCC.LOCAL_NAME_SERVER_PORT)),
+                  new InetSocketAddress("54.232.178.43",
+                          Config.getGlobalInt(GNSClientConfig.GNSCC.LOCAL_NAME_SERVER_PORT))));
+
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
   private static GuidEntry westyEntry;
@@ -94,10 +100,10 @@ public class MultipleClientTest {
     if (clients == null) {
       clients = new ArrayList<>();
       try {
-      for (InetSocketAddress address : addresses) {
-        clients.add(new GNSClientCommands(null));
-        System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      }
+        for (InetSocketAddress address : ADDRESSES) {
+          clients.add(new GNSClientCommands(null));
+          System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
+        }
       } catch (IOException e) {
         fail("Unable to create clients: " + e);
       }
@@ -1329,7 +1335,6 @@ public class MultipleClientTest {
 //      fail("Exception executing selectLookupGroupQuery: " + e);
 //    }
 //  }
-
   /**
    *
    */

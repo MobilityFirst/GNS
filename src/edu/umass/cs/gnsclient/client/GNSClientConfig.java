@@ -12,7 +12,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * Initial developer(s): Westy, Emmanuel Cecchet */
+ * Initial developer(s): Westy */
+
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
@@ -33,19 +34,14 @@ import edu.umass.cs.utils.Config;
  */
 public class GNSClientConfig {
 
-  /**
-   * Default LNS port.
-   */
-  public static final int LNS_PORT = 24398;
-
-  private final static Logger LOG = Logger.getLogger(GNSClientConfig.class
+  private final static Logger LOGGER = Logger.getLogger(GNSClientConfig.class
           .getName());
 
   /**
    * @return Logger used by most of the client package.
    */
   public static final Logger getLogger() {
-    return LOG;
+    return LOGGER;
   }
 
   /**
@@ -86,8 +82,12 @@ public class GNSClientConfig {
      * Specifically, KeyPairUtils class uses JavaPreferences instead of DerbyDB.
      *
      */
-    USE_JAVA_PREFERENCE(false);
-
+    USE_JAVA_PREFERENCE(false),
+    /**
+     * The port used by the local name server.
+     */
+    LOCAL_NAME_SERVER_PORT(24398);
+    
     final Object defaultValue;
 
     GNSCC(Object defaultValue) {

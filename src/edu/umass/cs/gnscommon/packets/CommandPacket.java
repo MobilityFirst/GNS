@@ -173,9 +173,13 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   }
 
   /**
-   * Checks that the command type of the packet is not MUTUAL_AUTH as those should be an AdminCommandPacket instead.
-   * This being a separate method allows AdminCommandPacket to override it to change its validation while still reusing the constructor code here.
+   * Checks that the command type of the packet is not MUTUAL_AUTH 
+   * as those should be an AdminCommandPacket instead.
+   * This being a separate method allows AdminCommandPacket 
+   * to override it to change its validation while still reusing the constructor code here.
    */
+  // Note that this implementation of this method will do nothing in production code because
+  // assertions will be disabled.
   protected void validateCommandType() {
     assert (!this.getCommandType().isMutualAuth());
   }

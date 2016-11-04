@@ -97,7 +97,7 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
    *
    * @return the string
    */
-  public String toReasonableString() {
+  private String toReasonableString() {
     try {
       return this.toJSONObject().toReasonableString();
     } catch (JSONException e) {
