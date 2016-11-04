@@ -2848,7 +2848,7 @@ public class ServerIntegrationTest extends DefaultTest {
     String result = null;
     long oldTimeout = client.getReadTimeout();
     try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
+      client.setReadTimeout(20 * 1000); // 30 seconds
       result = client.guidBatchCreate(accountGuidForBatch, aliases);
       client.setReadTimeout(oldTimeout);
     } catch (Exception e) {
