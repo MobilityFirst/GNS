@@ -206,17 +206,26 @@ public class GNSConfig {
      * The amount of time an email verification code is valid.
      */
     EMAIL_VERIFICATION_TIMEOUT_IN_HOURS(24),
+
+    
     /**
+     * Arun: This option is unsafe.
+     * 
      * If enabled, email salt will be added to the EMAIL_VERIFICATION code.
      * This is needed so we can disable salting in the case where we're using email verification and
      * shared secret verification simultaneously.
-     */
     ENABLE_EMAIL_VERIFICATION_SALT(true),
+     */
+
     /**
+     * Arun: This option is unnecessary. 
+     * 
      * Disables the use of the local emailer when sending verification messages.
      * Needed for hosts where the emailer is badly configured and eats outgoing email.
-     */
     DONT_TRY_LOCAL_EMAIL(false),
+     */
+
+    
     /**
      * The name of the application that is used when sending a verification email.
      */

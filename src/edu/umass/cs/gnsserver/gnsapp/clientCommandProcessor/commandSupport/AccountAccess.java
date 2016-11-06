@@ -533,7 +533,9 @@ public class AccountAccess {
             .getInstance().hash(name + SECRET
                     // Add salt unless email verification is disabled or salt is disabled.
                     + (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
-                    && Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)
+                    && 
+                    true // must always add salt
+                    // Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)
                             ? new String(
                                     Util.getRandomAlphanumericBytes(128))
                             : "")),
