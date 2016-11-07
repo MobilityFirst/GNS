@@ -296,7 +296,7 @@ public class GNSHttpServer {
       String signature = jsonCommand.getString(GNSCommandProtocol.SIGNATURE);
       // Pull it out of the command because we don't want to have it there when we check the message.
       jsonCommand.remove(SIGNATURE);
-      // FIXME: Remove this debugging hack at some point
+      // FIXME: Remove this debugging aid at some point
       String originalMessage = null;
       if (jsonCommand.has("originalBase64")) {
         originalMessage = new String(Base64.decode(jsonCommand.getString("originalBase64")));
@@ -304,6 +304,7 @@ public class GNSHttpServer {
       }
       // Convert it to a conanical string (the message) that we can use later to check against the signature.
       String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
+      // FIXME: Remove this debugging aid at some point
       if (originalMessage != null) {
         if (!originalMessage.equals(commandSansSignature)) {
           LOGGER.log(Level.SEVERE, "signature message mismatch! original: " + originalMessage

@@ -283,12 +283,14 @@ public class CommandUtils {
             // certificate
             .putShort((short) encodedSKCert.length).put(encodedSKCert);
 
-    // JSON is pretty lenient but you're allowed to put any arbitrary string in
-    // JSON (in particular some control characters) 
-    // so we're going to convert this to a HEX string. Base64 might be 
+    // iOS client currently hex encodes the non-secret version of this 
+    // and we have now way of checking which client we are receiving from or whether 
+    // they have ENABLE_SECRET_KEY on or off so we're going to hex encode this here as well. 
+    // The cost is a longer signature. - Westy
+    // Base64 would be better 
     // better, but the non-secret version uses hex so we'll do this for consistency.
     // The non-secret version still uses hex because the iOS client hasn't been
-    // updated yet to use Bas64.
+    // updated yet to use Base64.
     // This also means we don't have to further encode these for the HTTP client.
     return ByteUtils.toHex(combined);
     //return new String(combined, GNSCommandProtocol.CHARSET);

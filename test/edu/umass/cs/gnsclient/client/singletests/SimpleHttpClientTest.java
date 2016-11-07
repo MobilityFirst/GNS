@@ -52,58 +52,62 @@ public class SimpleHttpClientTest {
   public SimpleHttpClientTest() {
     if (client == null) {
       client = new HttpClient("127.0.0.1", 8080);
-      try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
-
-      } catch (Exception e) {
-        failWithStackTrace("Exception while creating master guid: " + e);
-      }
     }
   }
 
-  /**
-   *
-   */
   @Test
-  public void test_900_Http_LookupGuid() {
+  public void test_900_Http_CreateAccountGuid() {
     try {
-      assertEquals(masterGuid.getGuid(), client.lookupGuid(ACCOUNT_ALIAS));
-    } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception in LookupGuid: " + e);
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+
+    } catch (Exception e) {
+      failWithStackTrace("Exception while creating master guid: " + e);
     }
   }
 
-  private static GuidEntry httpOneEntry;
-  private static GuidEntry httpTwoEntry;
-
-  /**
-   *
-   */
-  @Test
-  public void test_901_Http_CreateGuids() {
-    try {
-      httpOneEntry = client.guidCreate(masterGuid, "httpOneEntry" + RandomString.randomString(6));
-      httpTwoEntry = client.guidCreate(masterGuid, "httpTwoEntry" + RandomString.randomString(6));
-      System.out.println("Created: " + httpOneEntry);
-      System.out.println("Created: " + httpTwoEntry);
-    } catch (IOException | ClientException | NoSuchAlgorithmException e) {
-      failWithStackTrace("Exception in Http_CreateFields: " + e);
-    }
-  }
-  
-   @Test
-  public void test_902_Http_RemoveACL() {
-    try {
-      // remove default read acces for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, httpOneEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
-    } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception in Http_RemoveACL: " + e);
-    }
-  }
+//  /**
+//   *
+//   */
+//  @Test
+//  public void test_901_Http_LookupGuid() {
+//    try {
+//      assertEquals(masterGuid.getGuid(), client.lookupGuid(ACCOUNT_ALIAS));
+//    } catch (IOException | ClientException e) {
+//      failWithStackTrace("Exception in LookupGuid: " + e);
+//    }
+//  }
+//
+//  private static GuidEntry httpOneEntry;
+//  private static GuidEntry httpTwoEntry;
+//
+//  /**
+//   *
+//   */
+//  @Test
+//  public void test_902_Http_CreateGuids() {
+//    try {
+//      httpOneEntry = client.guidCreate(masterGuid, "httpOneEntry" + RandomString.randomString(6));
+//      httpTwoEntry = client.guidCreate(masterGuid, "httpTwoEntry" + RandomString.randomString(6));
+//      System.out.println("Created: " + httpOneEntry);
+//      System.out.println("Created: " + httpTwoEntry);
+//    } catch (IOException | ClientException | NoSuchAlgorithmException e) {
+//      failWithStackTrace("Exception in Http_CreateFields: " + e);
+//    }
+//  }
+//  
+//   @Test
+//  public void test_903_Http_RemoveACL() {
+//    try {
+//      // remove default read acces for this test
+//      client.aclRemove(AclAccessType.READ_WHITELIST, httpOneEntry,
+//              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+//    } catch (IOException | ClientException e) {
+//      failWithStackTrace("Exception in Http_RemoveACL: " + e);
+//    }
+//  }
 //
 //  @Test
-//  public void test_910_Http_UpdateFields() {
+//  public void test_904_Http_UpdateFields() {
 //    try {
 //      client.fieldUpdate(httpOneEntry.getGuid(), "environment", "work", httpOneEntry);
 //      client.fieldUpdate(httpOneEntry.getGuid(), "ssn", "000-00-0000", httpOneEntry);
@@ -113,7 +117,6 @@ public class SimpleHttpClientTest {
 //      failWithStackTrace("Exception in Http_UpdateFields: " + e);
 //    }
 //  }
-
   private static final void failWithStackTrace(String message, Exception... e) {
     if (e != null && e.length > 0) {
       e[0].printStackTrace();
