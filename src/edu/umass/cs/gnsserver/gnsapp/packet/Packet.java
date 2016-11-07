@@ -22,13 +22,13 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.CommandType;
-
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
@@ -425,7 +425,7 @@ public class Packet {
    */
   @SuppressWarnings("unchecked")
   public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json,
-          Object nameserverId, GNSConfig.PortType portType) throws IOException {
+          Object nameserverId, OldHackyConstants.PortType portType) throws IOException {
     int port = gnsNodeConfig.getPortForTopLevelNode(nameserverId, portType);
     if (port == -1) {
       GNSConfig.getLogger().log(Level.WARNING,
@@ -497,7 +497,7 @@ public class Packet {
   @SuppressWarnings("unchecked")
   public static void multicastTCP(GNSNodeConfig gnsNodeConfig,
           Set nameServerIds, JSONObject json, int numRetry,
-          GNSConfig.PortType portType, Set excludeNameServers) {
+          OldHackyConstants.PortType portType, Set excludeNameServers) {
     int tries;
     for (Object id : nameServerIds) {
       if (excludeNameServers != null && excludeNameServers.contains(id)) {

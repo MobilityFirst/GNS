@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
 
-import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
@@ -124,7 +124,7 @@ public class ListenerAdmin extends Thread implements Shutdownable {
             Set<String> serverIds = handler.getNodeConfig().getActiveReplicas();
             //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
-            Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, GNSConfig.PortType.NS_ADMIN_PORT, null);
+            Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, OldHackyConstants.PortType.NS_ADMIN_PORT, null);
             ClientCommandProcessorConfig.getLogger().log(Level.INFO, "ListenerAdmin: Multicast out to {0} hosts for {1} --> {2}", new Object[]{serverIds.size(), id, dumpRequestPacket.toString()});
           } else {
             // INCOMING - send it out to original requester
@@ -154,7 +154,7 @@ public class ListenerAdmin extends Thread implements Shutdownable {
               ClientCommandProcessorConfig.getLogger().log(Level.FINE, "LNSListenerAdmin ({0}" + ") " + ": Forwarding {1} request", new Object[]{handler.getNodeAddress(), incomingPacket.getOperation().toString()});
               Set<String> serverIds = handler.getNodeConfig().getActiveReplicas();
               //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
-              Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNSConfig.PortType.NS_ADMIN_PORT, null);
+              Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, OldHackyConstants.PortType.NS_ADMIN_PORT, null);
               // clear the cache
               //handler.invalidateCache();
               break;
@@ -170,7 +170,7 @@ public class ListenerAdmin extends Thread implements Shutdownable {
               serverIds = handler.getNodeConfig().getActiveReplicas();
               //serverIds = handler.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds,
-                      incomingJSON, 2, GNSConfig.PortType.NS_ADMIN_PORT, null);
+                      incomingJSON, 2, OldHackyConstants.PortType.NS_ADMIN_PORT, null);
               break;
             default:
               ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,

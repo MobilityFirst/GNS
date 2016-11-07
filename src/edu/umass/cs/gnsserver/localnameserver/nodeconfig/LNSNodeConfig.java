@@ -17,12 +17,14 @@
 package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.HostFileLoader;
 import edu.umass.cs.gnsserver.nodeconfig.HostSpec;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -35,8 +37,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 import java.util.logging.Level;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -97,7 +99,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
       addHostInfo(hostInfoMapping, address.toString(), address
               .getAddress().toString(), address.getAddress().toString(),
               address.getPort() > 0 ? address.getPort()
-                      : GNSConfig.DEFAULT_STARTING_PORT);
+                      : OldHackyConstants.DEFAULT_STARTING_PORT);
     }
     GNSConfig.getLogger().log(Level.INFO, "LNS mapping = {0}", this.hostInfoMapping);
     this.hostsFile = null;
@@ -142,7 +144,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
       result.add(new InetSocketAddress(hostInfo.getIpAddress(), hostInfo
               .getStartingPortNumber()
-              + GNSConfig.PortType.ACTIVE_REPLICA_PORT.getOffset()));
+              + OldHackyConstants.PortType.ACTIVE_REPLICA_PORT.getOffset()));
     }
     return result;
   }
@@ -158,7 +160,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
       result.add(new InetSocketAddress(hostInfo.getIpAddress(), hostInfo
               .getStartingPortNumber()
-              + GNSConfig.PortType.RECONFIGURATOR_PORT.getOffset()));
+              + OldHackyConstants.PortType.RECONFIGURATOR_PORT.getOffset()));
     }
     return result;
   }
@@ -320,7 +322,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
       addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(),
               spec.getExternalIP(),
               spec.getStartPort() != null ? spec.getStartPort()
-                      : GNSConfig.DEFAULT_STARTING_PORT);
+                      : OldHackyConstants.DEFAULT_STARTING_PORT);
     }
     // ok.. things are cool... actually update
     hostInfoMapping = newHostInfoMapping;
@@ -364,7 +366,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
             id,
             ipAddress,
             externalIP,
-            startingPort != null ? startingPort : GNSConfig.DEFAULT_STARTING_PORT,
+            startingPort != null ? startingPort : OldHackyConstants.DEFAULT_STARTING_PORT,
             0, 0, 0);
   }
 

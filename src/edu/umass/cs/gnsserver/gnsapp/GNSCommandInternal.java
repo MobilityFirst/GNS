@@ -56,8 +56,10 @@ public class GNSCommandInternal extends InternalCommandPacket {
     assert (type.isRead() || type.isUpdate());
     // only unsigned commands can be modified this way
     return command.put(type.isRead() ? GNSCommandProtocol.READER
-            : GNSCommandProtocol.WRITER, Config
-            .getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+            : GNSCommandProtocol.WRITER, 
+            //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSConfig.getInternalOpSecret()
+    		);
   }
 
   /**

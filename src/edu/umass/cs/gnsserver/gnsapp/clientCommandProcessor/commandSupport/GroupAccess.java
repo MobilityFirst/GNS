@@ -246,11 +246,15 @@ public class GroupAccess {
     try {
       // We're ignoring signatures and authentication
       for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, 
-              Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null,
+    		  GNSConfig.getInternalOpSecret(),
+    		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), 
+              null, null,
               null, handler, true).toStringSet()) {
         GNSConfig.getLogger().log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
         removeFromGroup(groupGuid, guid,  
-                Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null, 
+        		GNSConfig.getInternalOpSecret(),
+        		//Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), 
+                null, null, 
                 handler);
       }
     } catch (FailedDBOperationException e) {

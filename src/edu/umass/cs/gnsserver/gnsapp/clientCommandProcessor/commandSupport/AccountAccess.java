@@ -526,16 +526,15 @@ public class AccountAccess {
 
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
-  private static final String SECRET = Config.getGlobalString(GNSConfig.GNSC.VERIFICATION_SECRET);
+  private static final String SECRET = Config.getGlobalString(GNSConfig.GNSC.ACCOUNT_VERIFICATION_SECRET);
 
   private static String createVerificationCode(String name) {
     return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
             .getInstance().hash(name + SECRET
                     // Add salt unless email verification is disabled or salt is disabled.
                     + (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
-                    && 
-                    true // must always add salt
-                    // Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)
+                    		// must always add salt
+                    // && Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)
                             ? new String(
                                     Util.getRandomAlphanumericBytes(128))
                             : "")),
@@ -1507,7 +1506,9 @@ public class AccountAccess {
           AccountInfo accountInfo, ClientRequestHandlerInterface handler,
           boolean remoteUpdate) {
     return !updateAccountInfo(accountInfo.getGuid(), accountInfo,
-            Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null,
+            //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), 
+    		GNSConfig.getInternalOpSecret(),
+    		null, null,
             null, handler, remoteUpdate)
             .isExceptionOrError();
   }
@@ -1533,7 +1534,9 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
 
     return !updateGuidInfo(guidInfo,
-            Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null, null, handler)
+    		GNSConfig.getInternalOpSecret(),
+    		//Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET),
+            null, null, null, handler)
             .isExceptionOrError();
   }
 

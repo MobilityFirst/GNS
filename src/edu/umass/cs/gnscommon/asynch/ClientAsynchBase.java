@@ -502,7 +502,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
           throws IOException, JSONException, ClientException {
     return sendCommandAsynch(createCommand(CommandType.ReadUnsigned, 
             GUID, guid, FIELD, field,
-            READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
+            READER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSConfig.getInternalOpSecret()
+            ), callback);
   }
 
   /**
@@ -521,7 +523,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.ReadArrayUnsigned, 
             GUID, guid, FIELD, field,
-            READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
+            READER, 
+            //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSConfig.getInternalOpSecret()
+            ), callback);
   }
 
   /**
@@ -543,7 +548,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
             GUID, guid,
             USER_JSON, json.toString(),
-            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
+            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSConfig.getInternalOpSecret()
+    		), callback);
   }
 
   /**
@@ -564,7 +571,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
-            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
+            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSConfig.getInternalOpSecret()
+    		), callback);
   }
 
   /**
@@ -585,7 +594,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
-            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
+            WRITER, 
+            //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSConfig.getInternalOpSecret()
+            ), callback);
   }
 
   /**
@@ -607,7 +619,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     return sendCommandAsynch(createCommand(CommandType.RemoveUnsigned,
             GUID, guid,
             FIELD, field, VALUE, value.toString(),
-            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
+            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSConfig.getInternalOpSecret()
+    		), callback);
   }
 
   /**
@@ -629,7 +643,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     return sendCommandAsynch(createCommand(CommandType.RemoveListUnsigned,
             GUID, guid,
             FIELD, field, VALUE, value.toString(),
-            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
+            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSConfig.getInternalOpSecret()
+    		), callback);
   }
 
   /**
@@ -649,7 +665,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
             GUID, guid,
             USER_JSON, json.toString(),
-            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
+            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSConfig.getInternalOpSecret()
+    		), callback);
   }
 
   /**

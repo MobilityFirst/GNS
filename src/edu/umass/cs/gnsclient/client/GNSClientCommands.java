@@ -2190,7 +2190,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
           throws Exception {
     //Create the admin account if it doesn't already exist.
     try {
-      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+      accountGuidCreate("Admin", 
+    		  GNSConfig.getInternalOpSecret()
+    		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+    		  );
     } catch (DuplicateNameException dne) {
       //Do nothing if it already exists.
     }
@@ -2207,7 +2210,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public String parameterGet(String name) throws Exception {
     //Create the admin account if it doesn't already exist.
     try {
-      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+      accountGuidCreate("Admin", 
+    		  GNSConfig.getInternalOpSecret()
+    		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+    		  );
     } catch (DuplicateNameException dne) {
       //Do nothing if it already exists.
     }
@@ -2223,7 +2229,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public String parameterList() throws Exception {
     //Create the admin account if it doesn't already exist.
     try {
-      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+      accountGuidCreate("Admin", 
+    		  GNSConfig.getInternalOpSecret()
+    		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+    		  );
     } catch (DuplicateNameException dne) {
       //Do nothing if it already exists.
     }
@@ -2239,7 +2248,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public String dump() throws Exception {
     //Create the admin account if it doesn't already exist.
     try {
-      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+      accountGuidCreate("Admin", 
+    		  GNSConfig.getInternalOpSecret()
+    		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+    		  );
     } catch (DuplicateNameException dne) {
       //Do nothing if it already exists.
     }
@@ -2256,7 +2268,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public String clearCache() throws Exception {
     //Create the admin account if it doesn't already exist.
     try {
-      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+      accountGuidCreate("Admin", 
+    		  GNSConfig.getInternalOpSecret()
+    		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+    		  );
     } catch (DuplicateNameException dne) {
       //Do nothing if it already exists.
     }
@@ -2271,7 +2286,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public String dumpCache() throws Exception {
     //Create the admin account if it doesn't already exist.
     try {
-      accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+      accountGuidCreate("Admin", 
+    		  GNSConfig.getInternalOpSecret()
+    		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+    		  );
     } catch (DuplicateNameException dne) {
       //Do nothing if it already exists.
     }

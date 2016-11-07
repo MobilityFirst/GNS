@@ -30,7 +30,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
@@ -458,14 +458,14 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
     if (updateCount == 0) {
       // no updates, replicate everywhere.
-      return Math.min(actualReplicasCount, GNSConfig.maxReplica);
+      return Math.min(actualReplicasCount, OldHackyConstants.maxReplica);
     } else {
       // Can't be bigger than the number of actual replicas or the max configured amount
-      return Math.min(Math.min(actualReplicasCount, GNSConfig.maxReplica),
+      return Math.min(Math.min(actualReplicasCount, OldHackyConstants.maxReplica),
               // Or smaller than the min configured amount
-              Math.max(GNSConfig.minReplica,
+              Math.max(OldHackyConstants.minReplica,
                       (int) StrictMath.round((lookupCount
-                              / (updateCount * GNSConfig.normalizingConstant)))));
+                              / (updateCount * OldHackyConstants.normalizingConstant)))));
     }
   }
 
