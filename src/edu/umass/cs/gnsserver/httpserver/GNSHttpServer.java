@@ -253,6 +253,7 @@ public class GNSHttpServer {
       // Client will be null if GNSC.DISABLE_MULTI_SERVER_HTTP (see above)
       // is true (or there was a problem).
       if (client == null || commandType.isLocallyHandled()) {
+        // EXECUTE IT LOCALLY
         AbstractCommand command;
         try {
           command = commandModule.lookupCommand(commandType);
@@ -269,6 +270,7 @@ public class GNSHttpServer {
       } else {
         // Send the command remotely using a client
         try {
+          LOGGER.log(Level.FINE, "Sending command out to a remote server: " + jsonCommand);
           CommandPacket commandResponsePacket
                   = getResponseUsingGNSClient(client, jsonCommand);
           return new CommandResponse(ResponseCode.NO_ERROR,
