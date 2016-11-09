@@ -253,6 +253,7 @@ public class GNSHttpServer {
       // Client will be null if GNSC.DISABLE_MULTI_SERVER_HTTP (see above)
       // is true (or there was a problem).
       if (client == null || commandType.isLocallyHandled()) {
+        // EXECUTE IT LOCALLY
         AbstractCommand command;
         try {
           command = commandModule.lookupCommand(commandType);
@@ -269,6 +270,7 @@ public class GNSHttpServer {
       } else {
         // Send the command remotely using a client
         try {
+          LOGGER.log(Level.FINE, "Sending command out to a remote server: " + jsonCommand);
           CommandPacket commandResponsePacket
                   = getResponseUsingGNSClient(client, jsonCommand);
           return new CommandResponse(ResponseCode.NO_ERROR,
@@ -296,7 +298,7 @@ public class GNSHttpServer {
       String signature = jsonCommand.getString(GNSCommandProtocol.SIGNATURE);
       // Pull it out of the command because we don't want to have it there when we check the message.
       jsonCommand.remove(SIGNATURE);
-      // FIXME: Remove this debugging hack at some point
+      // FIXME: Remove this debugging aid at some point
       String originalMessage = null;
       if (jsonCommand.has("originalBase64")) {
         originalMessage = new String(Base64.decode(jsonCommand.getString("originalBase64")));
@@ -304,6 +306,7 @@ public class GNSHttpServer {
       }
       // Convert it to a conanical string (the message) that we can use later to check against the signature.
       String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
+      // FIXME: Remove this debugging aid at some point
       if (originalMessage != null) {
         if (!originalMessage.equals(commandSansSignature)) {
           LOGGER.log(Level.SEVERE, "signature message mismatch! original: " + originalMessage
