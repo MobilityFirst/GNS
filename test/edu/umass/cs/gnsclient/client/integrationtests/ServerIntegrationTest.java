@@ -449,12 +449,28 @@ public class ServerIntegrationTest extends DefaultTest {
       e.printStackTrace();
     }
   }
+  
+  
+  /* TODO:
+   * Brendan: I've begun checking tests to make sure that logically
+   * they should pass every time in a distributed setting.
+   * I will be marking the tests I've already checked with //CHECKED FOR VALIDITY
+   * in the first line of the test.
+   * 
+   * For now I'm assuming no loss (if tests are run locally hopefully this won't be a problem)
+   * and bounded delays (of less than the timeout).  I am also assuming the tests are executed
+   * in order as some do depend on the actions of previous tests.
+   * 
+   * TODO: Increase the timeout for these test commands so that they almost never fail due to timeout.
+   * 
+   */
 
   /**
    * Creates a guid.
    */
   @Test
   public void test_010_CreateEntity() {
+	//CHECKED FOR VALIDITY
     String alias = "testGUID" + RandomString.randomString(12);
     GuidEntry guidEntry = null;
     try {
@@ -471,6 +487,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_020_RemoveGuid() {
+	//CHECKED FOR VALIDITY
     String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
@@ -500,6 +517,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_030_RemoveGuidSansAccountInfo() {
+	//CHECKED FOR VALIDITY
     String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
@@ -533,6 +551,12 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_035_RemoveAccountWithPasswordCreateAccount() {
+	/* FIXME: I don't think GuidUtils.lookupOrCreateAccountGuid() is safe 
+	 * since the account verification step is of CommandType.OTHER
+	 * and the limited number of waiting steps for the verification could be reached
+	 * any time the server is slowed down by other processes.
+	 */
+	  
     try {
       accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD, true);
     } catch (Exception e) {
@@ -545,6 +569,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_036_RemoveAccountWithPasswordCheckAccount() {
+	//CHECKED FOR VALIDITY
     try {
       // this should be using the guid
       ThreadUtils.sleep(100);
@@ -561,6 +586,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_037_RemoveAccountWithPasswordRemoveAccount() {
+	//CHECKED FOR VALIDITY
     try {
       client.accountGuidRemoveWithPassword(ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD);
     } catch (Exception e) {
@@ -573,6 +599,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_038_RemoveAccountWithPasswordCheckAccountAfterRemove() {
+	//CHECKED FOR VALIDITY
     try {
       client.lookupGuid(ACCOUNT_TO_REMOVE_WITH_PASSWORD);
       fail("lookupGuid for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " should have throw an exception.");
@@ -588,6 +615,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_040_LookupPrimaryGuid() {
+	//CHECKED FOR VALIDITY
     String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
@@ -609,6 +637,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_050_CreateSubGuid() {
+	//CHECKED FOR VALIDITY
     try {
       subGuidEntry = client.guidCreate(masterGuid, "subGuid"
               + RandomString.randomString(12));
@@ -623,6 +652,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_060_FieldNotFoundException() {
+	//CHECKED FOR VALIDITY
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(),
               "environment", subGuidEntry);
@@ -639,6 +669,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_070_FieldExistsFalse() {
+	//CHECKED FOR VALIDITY
     try {
       assertFalse(client.fieldExists(subGuidEntry.getGuid(),
               "environment", subGuidEntry));
@@ -654,6 +685,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_080_CreateFieldForFieldExists() {
+	//CHECKED FOR VALIDITY
     try {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(),
               "environment", "work", subGuidEntry);
@@ -668,6 +700,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_090_FieldExistsTrue() {
+	//CHECKED FOR VALIDITY
     try {
       assertTrue(client.fieldExists(subGuidEntry.getGuid(),
               "environment", subGuidEntry));
@@ -685,6 +718,7 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   public void test_101_ACLCreateField() {
     try {
+    	//CHECKED FOR VALIDITY
       client.fieldCreateOneElementList(masterGuid.getGuid(), TEST_FIELD_NAME, "testValue", masterGuid);
     } catch (Exception e) {
       failWithStackTrace("Exception while creating fields in ACLCreateFields: " + e);
@@ -700,6 +734,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_110_ACLMaybeAddAllFields() {
+	//CHECKED FOR VALIDITY
     try {
       if (!JSONUtils.JSONArrayToArrayList(
               client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
@@ -720,6 +755,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_111_ACLCheckForAllFieldsPass() {
+	//CHECKED FOR VALIDITY
     try {
       ThreadUtils.sleep(100);
       JSONArray expected = new JSONArray(Arrays.asList(GNSCommandProtocol.ALL_GUIDS));
@@ -734,6 +770,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_112_ACLRemoveAllFields() {
+	//CHECKED FOR VALIDITY
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, masterGuid,
@@ -746,6 +783,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_113_ACLCheckForAllFieldsMissing() {
+	//CHECKED FOR VALIDITY
     try {
       JSONArray expected = new JSONArray();
       JSONAssert.assertEquals(expected,
@@ -759,6 +797,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_114_CheckAllFieldsAcl() {
+	//CHECKED FOR VALIDITY
     try {
       assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSCommandProtocol.ENTIRE_RECORD));
     } catch (Exception e) {
@@ -768,6 +807,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_115_DeleteAllFieldsAcl() {
+	//CHECKED FOR VALIDITY
     try {
       client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, GNSCommandProtocol.ENTIRE_RECORD);
     } catch (Exception e) {
