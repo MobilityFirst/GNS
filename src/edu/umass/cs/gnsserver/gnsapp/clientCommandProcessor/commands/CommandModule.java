@@ -69,7 +69,7 @@ public class CommandModule {
 
   // Used only for generating the description of all commands
   private TreeSet<AbstractCommand> commands;
-  private boolean adminMode = false;
+  //private boolean adminMode = false;
 
   /**
    * Creates a CommandModule.
@@ -311,14 +311,14 @@ public class CommandModule {
   }
 
 
-  /**
-   * Set admin mode.
-   *
-   * @param adminMode
-   */
-  public void setAdminMode(boolean adminMode) {
-    this.adminMode = adminMode;
-  }
+//  /**
+//   * Set admin mode.
+//   *
+//   * @param adminMode
+//   */
+//  public void setAdminMode(boolean adminMode) {
+//    this.adminMode = adminMode;
+//  }
 
   private static Comparator<AbstractCommand> CommandPackageComparator
           = new Comparator<AbstractCommand>() {

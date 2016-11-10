@@ -50,6 +50,7 @@ public class History extends ConsoleCommand
    * Override execute to not check for existing connectivity
    * @throws java.lang.Exception
    */
+  @Override
   public void execute(String commandText) throws Exception
   {
     parse(commandText);
@@ -59,9 +60,10 @@ public class History extends ConsoleCommand
    * @throws java.lang.Exception
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#parse(java.lang.String)
    */
+  @Override
   public void parse(String commandText) throws Exception
   {
-    List list = module.getHistory();
+    List<Object> list = module.getHistory();
     StringTokenizer st = new StringTokenizer(commandText);
     if (st.countTokens() == 0)
     {
@@ -83,6 +85,7 @@ public class History extends ConsoleCommand
    * @return 
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandName()
    */
+  @Override
   public String getCommandName()
   {
     return "history"; //$NON-NLS-1$
@@ -92,6 +95,7 @@ public class History extends ConsoleCommand
    * @return 
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandDescription()
    */
+  @Override
   public String getCommandDescription()
   {
     return "Display history of commands for the console.";
@@ -101,6 +105,7 @@ public class History extends ConsoleCommand
    * @return 
    * @see org.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandParameters()
    */
+  @Override
   public String getCommandParameters()
   {
     return "[<command index>]"; //$NON-NLS-1$

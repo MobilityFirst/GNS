@@ -1247,64 +1247,64 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands in wiki format.",
           new String[]{"tcpwiki"}),
-  /**
-   *
-   */
-  Admin(715, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class,
-          CommandResultType.NULL, true, true,
-          "Turns on admin mode.",
-          new String[]{GNSCommandProtocol.PASSKEY}),
+//  /**
+//   *
+//   */
+//  Admin(715, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class,
+//          CommandResultType.NULL, true, true,
+//          "Turns on admin mode.",
+//          new String[]{GNSCommandProtocol.PASSKEY}),
   /**
    *
    */
   Dump(716, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
           CommandResultType.STRING, true, true,
-          "[ONLY IN ADMIN MODE] Returns the contents of the GNS.",
+          "Returns the contents of the GNS.",
           new String[]{GNSCommandProtocol.PASSKEY}),
-  /**
-   *
-   */
-  @Deprecated
-  GetParameter(720, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
-          CommandResultType.STRING, true, true,
-          "Returns one field from the GNS for the given guid after authenticating "
-          + "that guid making request has access authority. "
-          + "Values are always returned as a JSON list. "
-          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
-          new String[]{GNSCommandProtocol.FIELD}),
-  /**
-   *
-   */
-  @Deprecated
-  SetParameter(721, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class,
-          CommandResultType.NULL, true, true,
-          "[ONLY IN ADMIN MODE] Changes a parameter value.",
-          new String[]{GNSCommandProtocol.FIELD,
-            GNSCommandProtocol.VALUE}),
-  /**
-   *
-   */
-  @Deprecated
-  ListParameters(722, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class,
-          CommandResultType.STRING, true, true,
-          "[ONLY IN ADMIN MODE] Lists all parameter values.",
-          new String[]{}),
-  /**
-   *
-   */
-  @Deprecated
-  ClearCache(725, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
-          CommandResultType.NULL, true, true,
-          "[ONLY IN ADMIN MODE] Clears the local name server cache.",
-          new String[]{}),
-  /**
-   *
-   */
-  @Deprecated
-  DumpCache(726, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
-          CommandResultType.STRING, true, false,
-          "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.",
-          new String[]{}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  GetParameter(720, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
+//          CommandResultType.STRING, true, true,
+//          "Returns one field from the GNS for the given guid after authenticating "
+//          + "that guid making request has access authority. "
+//          + "Values are always returned as a JSON list. "
+//          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
+//          new String[]{GNSCommandProtocol.FIELD}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  SetParameter(721, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class,
+//          CommandResultType.NULL, true, true,
+//          "[ONLY IN ADMIN MODE] Changes a parameter value.",
+//          new String[]{GNSCommandProtocol.FIELD,
+//            GNSCommandProtocol.VALUE}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  ListParameters(722, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class,
+//          CommandResultType.STRING, true, true,
+//          "[ONLY IN ADMIN MODE] Lists all parameter values.",
+//          new String[]{}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  ClearCache(725, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
+//          CommandResultType.NULL, true, true,
+//          "[ONLY IN ADMIN MODE] Clears the local name server cache.",
+//          new String[]{}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  DumpCache(726, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
+//          CommandResultType.STRING, true, false,
+//          "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.",
+//          new String[]{}),
   /**
    *
    */
@@ -1778,13 +1778,13 @@ public enum CommandType {
     Help.setChain();
     HelpTcp.setChain();
     HelpTcpWiki.setChain();
-    Admin.setChain();
+    //Admin.setChain();
     Dump.setChain();
-    GetParameter.setChain();
-    SetParameter.setChain();
-    ListParameters.setChain();
-    ClearCache.setChain();
-    DumpCache.setChain();
+//    GetParameter.setChain();
+//    SetParameter.setChain();
+//    ListParameters.setChain();
+//    ClearCache.setChain();
+//    DumpCache.setChain();
     ConnectionCheck.setChain();
     Unknown.setChain();
 

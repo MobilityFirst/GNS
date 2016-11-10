@@ -399,10 +399,10 @@ public class ServerIntegrationTest extends DefaultTest {
       client.close();
     }
     System.out.println("\nPrinting reverse-engineered return types:");
-    for (CommandType type : GNSClientCommands.reverseEngineer.keySet()) {
+    for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
       System.out.println(type + " returns "
-              + GNSClientCommands.reverseEngineer.get(type) + "; e.g., "
-              + Util.truncate(GNSClientCommands.returnValueExample.get(type), 64, 64));
+              + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
+              + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
     }
   }
 

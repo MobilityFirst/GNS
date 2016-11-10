@@ -28,7 +28,9 @@ import edu.umass.cs.gnsserver.database.ColumnField;
  * @author westy
  */
 public class FieldNotFoundException extends ServerException{
-  ColumnField missingField;
+
+  private static final long serialVersionUID = 1L;
+  private final ColumnField missingField;
 
   /**
    * Create a FieldNotFoundException instance.

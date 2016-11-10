@@ -28,6 +28,8 @@ import edu.umass.cs.gnscommon.exceptions.server.ServerException;
  */
 public class HostConfigParseException extends ServerException {
 
+  private static final long serialVersionUID = 1L;
+
   /**
    * Creates a new <code>HostConfigParseException</code> object
    */

@@ -99,10 +99,9 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    * @param records
    * @return a SelectResponsePacket
    */
-  @SuppressWarnings("unchecked")
-  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(long id, InetSocketAddress lnsAddress,
+  public static SelectResponsePacket<String> makeSuccessPacketForRecordsOnly(long id, InetSocketAddress lnsAddress,
           long lnsQueryId,
-          int nsQueryId, Object nameServerID, JSONArray records) {
+          int nsQueryId, String nameServerID, JSONArray records) {
     return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServerID, records, null,
             ResponseCode.NOERROR, null);
   }
@@ -117,10 +116,9 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    * @param guids
    * @return a SelectResponsePacket
    */
-  @SuppressWarnings("unchecked")
-  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(long id,
+  public static SelectResponsePacket<String> makeSuccessPacketForGuidsOnly(long id,
           InetSocketAddress lnsAddress,
-          int nsQueryId, Object nameServerID, JSONArray guids) {
+          int nsQueryId, String nameServerID, JSONArray guids) {
     return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServerID,
             null, guids, ResponseCode.NOERROR, null);
   }
@@ -135,9 +133,8 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    * @param errorMessage
    * @return a SelectResponsePacket
    */
-  @SuppressWarnings("unchecked")
-  public static SelectResponsePacket makeFailPacket(long id, InetSocketAddress lnsAddress,
-           int nsQueryId, Object nameServer, String errorMessage) {
+  public static SelectResponsePacket<String> makeFailPacket(long id, InetSocketAddress lnsAddress,
+           int nsQueryId, String nameServer, String errorMessage) {
     return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServer,
             null, null, ResponseCode.ERROR, errorMessage);
   }

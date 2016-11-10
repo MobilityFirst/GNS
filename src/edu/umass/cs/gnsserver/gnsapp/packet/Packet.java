@@ -424,8 +424,8 @@ public class Packet {
    * @throws java.io.IOException *
    */
   @SuppressWarnings("unchecked")
-  public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json,
-          Object nameserverId, OldHackyConstants.PortType portType) throws IOException {
+  public static Socket sendTCPPacket(GNSNodeConfig<String> gnsNodeConfig, JSONObject json,
+          String nameserverId, OldHackyConstants.PortType portType) throws IOException {
     int port = gnsNodeConfig.getPortForTopLevelNode(nameserverId, portType);
     if (port == -1) {
       GNSConfig.getLogger().log(Level.WARNING,
@@ -495,11 +495,11 @@ public class Packet {
    * @param excludeNameServers *
    */
   @SuppressWarnings("unchecked")
-  public static void multicastTCP(GNSNodeConfig gnsNodeConfig,
-          Set nameServerIds, JSONObject json, int numRetry,
-          OldHackyConstants.PortType portType, Set excludeNameServers) {
+  public static void multicastTCP(GNSNodeConfig<String> gnsNodeConfig,
+          Set<String> nameServerIds, JSONObject json, int numRetry,
+          OldHackyConstants.PortType portType, Set<Object> excludeNameServers) {
     int tries;
-    for (Object id : nameServerIds) {
+    for (String id : nameServerIds) {
       if (excludeNameServers != null && excludeNameServers.contains(id)) {
         continue;
       }

@@ -207,29 +207,29 @@ public class AdminBadAuthTest {
    * @throws Exception
    */
 
-  @Test(expected=ClientException.class)
-  public void test_01_ParameterGet() throws Exception {
-      String result = client.parameterGet("email_verification");
-  }
-
-  /**
-   *
-   * @throws Exception
-   */
-  @Test(expected=ClientException.class)
-  public void test_02_ParameterSet() throws Exception {
-      client.parameterSet("max_guids", 2000);
-      String result = client.parameterGet("max_guids");
-  }
-  
-  /**
-   *
-   * @throws Exception
-   */
-  @Test(expected=ClientException.class)
-  public void test_03_ParameterList() throws Exception {
-      String result = client.parameterList();
-  }
+//  @Test(expected=ClientException.class)
+//  public void test_01_ParameterGet() throws Exception {
+//      String result = client.parameterGet("email_verification");
+//  }
+//
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test(expected=ClientException.class)
+//  public void test_02_ParameterSet() throws Exception {
+//      client.parameterSet("max_guids", 2000);
+//      String result = client.parameterGet("max_guids");
+//  }
+//  
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test(expected=ClientException.class)
+//  public void test_03_ParameterList() throws Exception {
+//      String result = client.parameterList();
+//  }
   
   /**
    *
@@ -241,23 +241,23 @@ public class AdminBadAuthTest {
   }
   
   /**
-   *
-   * @throws Exception
-   */
-  @Test(expected=ClientException.class)
-  public void test_05_ClearCache() throws Exception {
-      String result = client.clearCache();
-  }
-  
-  /**
-   *
-   * @throws Exception
-   */
-  @Test(expected=ClientException.class)
-  public void test_06_DumpCache() throws Exception {
-      String result = client.dumpCache();
-  }
-  
+//   *
+//   * @throws Exception
+//   */
+//  @Test(expected=ClientException.class)
+//  public void test_05_ClearCache() throws Exception {
+//      String result = client.clearCache();
+//  }
+//  
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test(expected=ClientException.class)
+//  public void test_06_DumpCache() throws Exception {
+//      String result = client.dumpCache();
+//  }
+//  
   
   /*These tests check if sending an admin command on the client port
    * without mutual auth fails like it should. */
@@ -268,29 +268,29 @@ public class AdminBadAuthTest {
    */
 
   
-  @Test(expected=ClientException.class)
-  public void test_11_ParameterGet_ClientPort() throws Exception {
-      String result =  badClient.parameterGet("email_verification");
-  }
-
-  /**
-   *
-   * @throws Exception
-   */
-  @Test(expected=ClientException.class)
-  public void test_12_ParameterSet_ClientPort() throws Exception {
-      badClient.parameterSet("max_guids", 2000);
-      String result = badClient.parameterGet("max_guids");
-  }
-  
-  /**
-   *
-   * @throws Exception
-   */
-  @Test(expected=ClientException.class)
-  public void test_13_ParameterList_ClientPort() throws Exception {
-      String result =  badClient.parameterList();
-  }
+//  @Test(expected=ClientException.class)
+//  public void test_11_ParameterGet_ClientPort() throws Exception {
+//      String result =  badClient.parameterGet("email_verification");
+//  }
+//
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test(expected=ClientException.class)
+//  public void test_12_ParameterSet_ClientPort() throws Exception {
+//      badClient.parameterSet("max_guids", 2000);
+//      String result = badClient.parameterGet("max_guids");
+//  }
+//  
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test(expected=ClientException.class)
+//  public void test_13_ParameterList_ClientPort() throws Exception {
+//      String result =  badClient.parameterList();
+//  }
   
   /**
    *
@@ -301,22 +301,22 @@ public class AdminBadAuthTest {
       String result =  badClient.dump();
   }
   
-  /**
-   *
-   * @throws Exception
-   */
-  @Test(expected=ClientException.class)
-  public void test_15_ClearCache_ClientPort() throws Exception {
-      String result =  badClient.clearCache();
-  }
-  
-  /**
-   *
-   * @throws Exception
-   */
-  @Test(expected=ClientException.class)
-  public void test_16_DumpCache_ClientPort() throws Exception {
-      String result =  badClient.dumpCache();
-  }
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test(expected=ClientException.class)
+//  public void test_15_ClearCache_ClientPort() throws Exception {
+//      String result =  badClient.clearCache();
+//  }
+//  
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test(expected=ClientException.class)
+//  public void test_16_DumpCache_ClientPort() throws Exception {
+//      String result =  badClient.dumpCache();
+//  }
 
 }

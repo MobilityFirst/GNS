@@ -27,8 +27,9 @@ package edu.umass.cs.msocket.proxy.location;
  * represents the path a between two GlobalPositions for a specified reference
  * ellipsoid.
  */
-public class GeodeticMeasurement extends GeodeticCurve
-{
+public class GeodeticMeasurement extends GeodeticCurve {
+
+  private static final long serialVersionUID = 1L;
   /**
    * The elevation change, in meters, going from the starting to the ending
    * point.
@@ -64,7 +65,7 @@ public class GeodeticMeasurement extends GeodeticCurve
   public GeodeticMeasurement(GeodeticCurve averageCurve, double elevationChange)
   {
     this(averageCurve.getEllipsoidalDistance(), averageCurve.getAzimuth(), averageCurve.getReverseAzimuth(),
-        elevationChange);
+        elevationChange); 
   }
 
   /**

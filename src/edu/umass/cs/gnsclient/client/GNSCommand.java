@@ -1994,14 +1994,14 @@ public class GNSCommand extends CommandPacket {
     return fieldRemove(targetGUID.getGuid(), field, targetGUID);
   }
 
-  /**
-   * @return CommandPacket
-   * @throws ClientException
-   */
-  public static final CommandPacket adminEnable()
-          throws ClientException {
-    return getCommand(CommandType.Admin);
-  }
+//  /**
+//   * @return CommandPacket
+//   * @throws ClientException
+//   */
+//  public static final CommandPacket adminEnable()
+//          throws ClientException {
+//    return getCommand(CommandType.Admin);
+//  }
 
   /**
    * @return The {@link GNSCommand.ResultType} type of the result obtained by

@@ -8,6 +8,8 @@ import edu.umass.cs.gnscommon.ResponseCode;
  */
 public class RemoteQueryException extends ClientException {
 
+  private static final long serialVersionUID = 1L;
+
 	/**
 	 * @param code
 	 * @param message

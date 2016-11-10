@@ -29,8 +29,9 @@ import java.io.Serializable;
  * ellipsoidal distance between two GlobalCoordinates for a specified reference
  * ellipsoid.
  */
-public class GeodeticCurve implements Serializable
-{
+public class GeodeticCurve implements Serializable {
+
+  private static final long serialVersionUID = 1L;
   /** Ellipsoidal distance (in meters). */
   private final double mEllipsoidalDistance;
 

@@ -178,7 +178,7 @@ public class ContextWriterInternals
 			Iterator<Entry<String, ContextSocket>> entries = memberConnectionMap.entrySet().iterator();
 			while (entries.hasNext())
 			{
-			  Entry<String, ContextSocket> thisEntry = (Entry<String, ContextSocket>) entries.next();
+			  Entry<String, ContextSocket> thisEntry = entries.next();
 			  String key = thisEntry.getKey();
 			  // not contained in the current group members
 			  if( !jsonMap.containsKey(key) )
@@ -202,7 +202,7 @@ public class ContextWriterInternals
 		Iterator<Entry<String, Boolean>> entries = jsonMap.entrySet().iterator();
 		while (entries.hasNext())
 		{
-		  Entry<String, Boolean> thisEntry = (Entry<String, Boolean>) entries.next();
+		  Entry<String, Boolean> thisEntry = entries.next();
 		  String key = thisEntry.getKey();
 		  // not contained, add new group member
 		  if( !memberConnectionMap.containsKey(key) )

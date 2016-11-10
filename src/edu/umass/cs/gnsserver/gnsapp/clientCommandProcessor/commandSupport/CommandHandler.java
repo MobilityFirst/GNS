@@ -243,7 +243,7 @@ public class CommandHandler {
             && header
             .getOriginatingGUID()
             .equals(PacketUtils
-                    .getOriginatingGUID((CommandPacket) originRequest))) {
+                    .getOriginatingGUID(originRequest))) {
       GNSConfig
               .getLogger()
               .log(Level.INFO,

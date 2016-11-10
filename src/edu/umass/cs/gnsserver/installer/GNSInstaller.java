@@ -171,7 +171,7 @@ public class GNSInstaller {
 
     for (HostSpec spec : nsHosts) {
       String hostname = spec.getName();
-      String id = (String) spec.getId();
+      String id = spec.getId();
       hostTable.put(hostname, new HostInfo(hostname, id, false, null));
     }
 

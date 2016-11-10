@@ -823,7 +823,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                 Inet4Address.getByName("0.0.0.0"), 53, requestHandler);
         dnsTranslator.start();
       } else if (Config.getGlobalBoolean(GNSConfig.GNSC.DNS_ONLY)) {
-        if (Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP) == "none") {
+        if (Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP) == GNSConfig.NONE) {
           GNSConfig
                   .getLogger()
                   .severe("FAILED TO START DNS SERVER: GNS Server IP must be specified");

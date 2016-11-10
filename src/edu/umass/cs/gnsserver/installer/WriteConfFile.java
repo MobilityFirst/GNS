@@ -209,7 +209,7 @@ public class WriteConfFile {
    */
   @SuppressWarnings("unchecked")
   public static void main(String argv[]) {
-    ConcurrentHashMap<String, HostInfo> idTable = new ConcurrentHashMap();
+    ConcurrentHashMap<String, HostInfo> idTable = new ConcurrentHashMap<>();
     idTable.put("0", new HostInfo("0", "host1", null));
     idTable.put("1", new HostInfo("1", "host2", null));
     idTable.put("2", new HostInfo("2", "host3", null));

@@ -35,6 +35,8 @@ package edu.umass.cs.msocket.proxy.location;
 public class GlobalPosition extends GlobalCoordinate
 {
 
+  private static final long serialVersionUID = 1L;
+
   /** Elevation, in meters, above the surface of the ellipsoid. */
   private double mElevation;
 
