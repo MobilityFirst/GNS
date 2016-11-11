@@ -403,6 +403,7 @@ public class ServerIntegrationTest extends DefaultTest {
       System.out.println(type + " returns "
               + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
               + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
+
     }
   }
 
@@ -551,10 +552,10 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_035_RemoveAccountWithPasswordCreateAccount() {
-	/* FIXME: I don't think GuidUtils.lookupOrCreateAccountGuid() is safe 
-	 * since the account verification step is of CommandType.OTHER
-	 * and the limited number of waiting steps for the verification could be reached
-	 * any time the server is slowed down by other processes.
+	/* FIXED: GuidUtils.lookupOrCreateAccountGuid() is safe 
+	 * since the account verification step is coordinated later on in its chain.
+	 * TODO: Make sure that gigapaxos guaruntees UPDATE your CREATES for servers with 
+	 * greater than 3 replicas.
 	 */
 	  
     try {
@@ -817,6 +818,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_116_CheckAllFieldsAclGone() {
+	//CHECKED FOR VALIDITY
     try {
       assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSCommandProtocol.ENTIRE_RECORD));
     } catch (Exception e) {
@@ -826,6 +828,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_120_CreateAcl() {
+	//CHECKED FOR VALIDITY
     try {
       client.aclCreateField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
@@ -835,6 +838,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_121_CheckAcl() {
+	//CHECKED FOR VALIDITY
     try {
       assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
@@ -844,6 +848,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_122_DeleteAcl() {
+	//CHECKED FOR VALIDITY
     try {
       client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
@@ -853,6 +858,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_123_CheckAclGone() {
+	//CHECKED FOR VALIDITY
     try {
       assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
@@ -865,6 +871,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_130_ACLCreateGuids() {
+	//CHECKED FOR VALIDITY
     try {
       westyEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, "westy" + RandomString.randomString(6));
       samEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, "sam" + RandomString.randomString(6));
@@ -876,6 +883,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_131_ACLRemoveAllFields() {
+	//CHECKED FOR VALIDITY
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
@@ -893,6 +901,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_132_ACLCreateFields() {
+	//CHECKED FOR VALIDITY
     try {
       client.fieldUpdate(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldUpdate(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
@@ -906,6 +915,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_135_ACLMaybeAddAllFieldsForMaster() {
+	//CHECKED FOR VALIDITY
     try {
       if (!JSONUtils.JSONArrayToArrayList(
               client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
@@ -926,6 +936,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_136_ACLMasterReadAllFields() {
+	//CHECKED FOR VALIDITY
     try {
       JSONObject expected = new JSONObject();
       expected.put("environment", "work");
@@ -946,6 +957,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_137_ACLReadMyFields() {
+	//CHECKED FOR VALIDITY
     try {
       // read my own field
       assertEquals("work",
@@ -965,6 +977,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_138_ACLNotReadOtherGuidAllFieldsTest() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ENTIRE_RECORD, samEntry);
@@ -983,6 +996,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_139_ACLNotReadOtherGuidFieldTest() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         String result = client.fieldRead(westyEntry.getGuid(), "environment",
@@ -1002,6 +1016,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_140_AddACLTest() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
@@ -1017,6 +1032,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_141_CheckACLTest() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("work", client.fieldRead(westyEntry.getGuid(), "environment", samEntry));
@@ -1035,6 +1051,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_142_ACLCreateAnotherGuid() {
+	//CHECKED FOR VALIDITY
     try {
       String barneyName = "barney" + RandomString.randomString(6);
       try {
@@ -1054,6 +1071,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_143_ACLAdjustACL() {
+	//CHECKED FOR VALIDITY
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
@@ -1066,6 +1084,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_144_ACLCreateFields() {
+	//CHECKED FOR VALIDITY
     try {
       // remove default read access for this test
       client.fieldUpdate(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
@@ -1078,6 +1097,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_145_ACLUpdateACL() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         // let anybody read barney's cell field
@@ -1095,6 +1115,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_146_ACLTestReadsOne() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("413-555-1234",
@@ -1111,6 +1132,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_147_ACLTestReadsTwo() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("413-555-1234",
@@ -1127,6 +1149,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_148_ACLTestReadsThree() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         String result = client.fieldRead(barneyEntry.getGuid(), "address",
@@ -1153,6 +1176,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_149_ACLALLFields() {
+	//CHECKED FOR VALIDITY
     String superUserName = "superuser" + RandomString.randomString(6);
     try {
       try {
@@ -1180,6 +1204,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_150_ACLCreateDeeperField() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
@@ -1195,6 +1220,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_151_ACLAddDeeperFieldACL() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         // Create an empty ACL, effectively disabling access except by the guid itself.
@@ -1211,6 +1237,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_152_ACLCheckDeeperFieldACLExists() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
@@ -1228,6 +1255,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // can always read your own fields.
   @Test
   public void test_153_ACLReadDeeperFieldSelf() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", westyEntry));
@@ -1244,6 +1272,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // This should fail because the ACL for test.deeper.field is empty.
   @Test
   public void test_154_ACLReadDeeperFieldOtherFail() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
@@ -1259,6 +1288,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // This should fail because the ACL for test.deeper.field is empty.
   @Test
   public void test_156_ACLReadShallowFieldOtherFail() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper", samEntry));
@@ -1273,6 +1303,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_157_AddAllRecordACL() {
+	//CHECKED FOR VALIDITY
     try {
       client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test", GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
@@ -1285,6 +1316,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // now has an ALL_GUIDS at the root (this is different than the old model).
   @Test
   public void test_158_ACLReadDeeperFieldOtherFail() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
