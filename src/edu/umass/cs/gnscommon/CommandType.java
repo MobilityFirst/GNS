@@ -1034,7 +1034,7 @@ public enum CommandType {
   /**
    *
    */
-  AclRetrieve(514, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class,
+  AclRetrieve(514, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class,
           CommandResultType.LIST, true, false,
           "Returns the access control list for a guids's field.",
           new String[]{GNSCommandProtocol.GUID,
