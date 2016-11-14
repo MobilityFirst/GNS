@@ -1616,6 +1616,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_170_DB() {
+	//CHECKED FOR VALIDITY
     try {
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), "cats",
@@ -1677,6 +1678,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_180_DBUpserts() {
+	//CHECKED FOR VALIDITY
     HashSet<String> expected;
     HashSet<String> actual;
     try {
@@ -1744,6 +1746,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_190_Substitute() {
+	//CHECKED FOR VALIDITY
     String testSubstituteGuid = "testSubstituteGUID"
             + RandomString.randomString(12);
     String field = "people";
@@ -1800,6 +1803,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_200_SubstituteList() {
+	//CHECKED FOR VALIDITY
     String testSubstituteListGuid = "testSubstituteListGUID"
             + RandomString.randomString(12);
     String field = "people";
@@ -1858,6 +1862,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_210_GroupCreate() {
+	//CHECKED FOR VALIDITY
     String mygroupName = "mygroup" + RandomString.randomString(12);
     try {
       try {
@@ -1879,6 +1884,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_211_GroupAdd() {
+	//CHECKED FOR VALIDITY
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(),
               mygroupEntry);
@@ -1913,6 +1919,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_212_GroupRemoveGuid() {
+	//CHECKED FOR VALIDITY
     // now remove a guid and check for group updates
     try {
       client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
@@ -1936,6 +1943,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_220_GroupAndACLCreateGuids() {
+	//CHECKED FOR VALIDITY
     // testGroup();
     String groupAccessUserName = "groupAccessUser"
             + RandomString.randomString(12);
@@ -1994,6 +2002,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_221_GroupAndACLTestBadAccess() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         String result = client.fieldReadArrayFirstElement(
@@ -2014,6 +2023,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_222_GroupAndACLTestGoodAccess() {
+	//CHECKED FOR VALIDITY
     try {
       assertEquals("whoville", client.fieldReadArrayFirstElement(
               groupAccessUserEntry.getGuid(), "hometown", westyEntry));
@@ -2028,6 +2038,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_223_GroupAndACLTestRemoveGuid() {
+	//CHECKED FOR VALIDITY
     try {
       try {
         client.groupRemoveGuid(mygroupEntry.getGuid(),
@@ -2055,6 +2066,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_230_AliasAdd() {
+	//CHECKED FOR VALIDITY
     try {
       // KEEP IN MIND THAT CURRENTLY ONLY ACCOUNT GUIDS HAVE ALIASES
       // add an alias to the masterGuid
@@ -2071,6 +2083,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_231_AliasIsPresent() {
+	//CHECKED FOR VALIDITY
     try {
       // grab all the alias from the guid
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
@@ -2093,6 +2106,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_232_AliasCheckRemove() {
+	//CHECKED FOR VALIDITY
     try {
       // and make sure it is gone
       try {
@@ -2110,6 +2124,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_240_WriteAccess() {
+	//CHECKED FOR VALIDITY
     String fieldName = "whereAmI";
     try {
       try {
@@ -2174,6 +2189,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_250_UnsignedReadCreateGuids() {
+	//CHECKED FOR VALIDITY
     try {
       unsignedReadTestGuid = client.guidCreate(masterGuid, "unsignedReadTestGuid" + RandomString.randomString(6));
       System.out.println("Created: " + unsignedReadTestGuid);
@@ -2209,6 +2225,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_251_UnsignedRead() {
+	//CHECKED FOR VALIDITY
 
     // Insures that we can read a world readable field without a guid
     try {
@@ -2244,6 +2261,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_252_UnsignedReadOne() {
+	//CHECKED FOR VALIDITY
     try {
       // Insures that we can read a world readable field without a guid
       // Insure that we can't read non-world-readable field without a guid
@@ -2282,6 +2300,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_260_UnsignedWrite() {
+	//CHECKED FOR VALIDITY
     String unsignedWriteFieldName = "allwriteaccess";
     String standardWriteFieldName = "standardwriteaccess";
     try {
@@ -2314,6 +2333,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_270_RemoveField() {
+	//CHECKED FOR VALIDITY
     String fieldToDelete = "fieldToDelete";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(),
@@ -2352,6 +2372,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_280_ListOrderAndSetElement() {
+	//CHECKED FOR VALIDITY
     try {
       westyEntry = client.guidCreate(masterGuid,
               "westy" + RandomString.randomString(12));
