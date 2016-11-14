@@ -152,10 +152,9 @@ public class FieldMetaData {
   @Deprecated // because we're not sure who uses this
   public static void add(MetaDataTypeName type, String guid,
           String key, String value, Date timestamp, ClientRequestHandlerInterface handler) {
-    add(type, guid, key, value, 
-    		GNSConfig.getInternalOpSecret(),
-    		//Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), 
-    		null, null,
+    add(type, guid, key, value,
+            GNSConfig.getInternalOpSecret(),
+            null, null,
             timestamp, handler);
   }
 

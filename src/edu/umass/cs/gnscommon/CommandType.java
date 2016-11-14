@@ -814,7 +814,7 @@ public enum CommandType {
   /**
    *
    */
-  LookupAccountRecord(420, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class,
+  LookupAccountRecord(420, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class,
           CommandResultType.MAP, true, false,
           "Returns the account info associated with the given GUID. "
           + "Returns +BADGUID+ if the guid has not been registered.",
@@ -822,7 +822,7 @@ public enum CommandType {
   /**
    *
    */
-  LookupRandomGuids(421, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class,
+  LookupRandomGuids(421, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class,
           CommandResultType.LIST, true, false,
           "Returns some number of random subguids from and account guid. Only for testing purposes. "
           + "Returns +BADGUID+ if the guid has not been registered.",
@@ -831,7 +831,7 @@ public enum CommandType {
   /**
    *
    */
-  LookupGuid(422, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class,
+  LookupGuid(422, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class,
           CommandResultType.STRING, true, false,
           "Returns the guid associated with the name which is the human readable name (alias). "
           + "Returns +BADACCOUNT+ if the name has not been registered.",
@@ -839,14 +839,14 @@ public enum CommandType {
   /**
    *
    */
-  LookupPrimaryGuid(423, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class,
+  LookupPrimaryGuid(423, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class,
           CommandResultType.STRING, true, false,
           "Returns the account guid associated the guid. Returns +BADGUID+ if the guid does not exist.",
           new String[]{GNSCommandProtocol.GUID}),
   /**
    *
    */
-  LookupGuidRecord(424, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class,
+  LookupGuidRecord(424, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class,
           CommandResultType.MAP, true, false,
           "Returns human readable name and public key associated with the given GUID. "
           + "Returns +BADGUID+ if the guid has not been registered.",
@@ -919,7 +919,7 @@ public enum CommandType {
   /**
    *
    */
-  RetrieveAliases(444, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases.class,
+  RetrieveAliases(444, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases.class,
           CommandResultType.LIST, true, false,
           "Retrieves all aliases for the account associated with the GUID. "
           + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
@@ -1145,7 +1145,7 @@ public enum CommandType {
   /**
    *
    */
-  GetGroupMembers(614, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers.class,
+  GetGroupMembers(614, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers.class,
           CommandResultType.LIST, true, false,
           "Returns the members of the group formatted as a JSON Array. "
           + "Reader guid needs to have read access and sign the command.",
@@ -1156,7 +1156,7 @@ public enum CommandType {
   /**
    *
    */
-  GetGroupMembersSelf(615, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
+  GetGroupMembersSelf(615, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
           CommandResultType.LIST, true, false,
           "Returns the members of the group formatted as a JSON Array.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1165,7 +1165,7 @@ public enum CommandType {
   /**
    *
    */
-  GetGroups(616, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups.class,
+  GetGroups(616, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups.class,
           CommandResultType.LIST, true, false,
           "Returns the groups that a guid is a member of formatted as a JSON Array. "
           + "Reader guid needs to have read access and sign the command.",
@@ -1176,7 +1176,7 @@ public enum CommandType {
   /**
    *
    */
-  GetGroupsSelf(617, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
+  GetGroupsSelf(617, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
           CommandResultType.LIST, true, false,
           "Returns the groups that a guid is a member of formatted as a JSON Array.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1315,7 +1315,7 @@ public enum CommandType {
   /**
    *
    */
-  SetCode(810, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode.class,
+  SetCode(810, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode.class,
           CommandResultType.NULL, true, false,
           "Sets the given active code for the specified guid and action, ensuring the writer has permission.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1327,7 +1327,7 @@ public enum CommandType {
   /**
    *
    */
-  ClearCode(811, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode.class,
+  ClearCode(811, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode.class,
           CommandResultType.NULL, true, false,
           "Clears the active code for the specified guid and action, ensuring the writer has permission.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1338,7 +1338,7 @@ public enum CommandType {
   /**
    *
    */
-  GetCode(812, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class,
+  GetCode(812, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class,
           CommandResultType.STRING, true, false,
           "Returns the active code for the specified action, ensuring the reader has permission.",
           new String[]{GNSCommandProtocol.GUID,

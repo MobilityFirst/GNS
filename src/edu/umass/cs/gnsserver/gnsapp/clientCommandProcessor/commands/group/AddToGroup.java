@@ -29,6 +29,7 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -36,6 +37,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
+import java.text.ParseException;
+import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -64,7 +67,7 @@ public class AddToGroup extends AbstractCommand {
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String member = json.getString(MEMBER);
     // writer might be same as guid
@@ -72,9 +75,12 @@ public class AddToGroup extends AbstractCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    Date timestamp = json.has(TIMESTAMP)
+            ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     ResponseCode responseCode;
     try {
-      if (!(responseCode = GroupAccess.addToGroup(guid, member, writer, signature, message, handler)).isExceptionOrError()) {
+      if (!(responseCode = GroupAccess.addToGroup(guid, member, writer,
+              signature, message, timestamp, handler)).isExceptionOrError()) {
         return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
@@ -84,5 +90,4 @@ public class AddToGroup extends AbstractCommand {
     }
   }
 
-  
 }

@@ -246,10 +246,10 @@ public class ServerIntegrationTest extends DefaultTest {
         options = SCRIPTS_OPTIONS;
       }
 
-	String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
-	ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
-	String logFiles = output.get(0) + "*";
-	RunServer.command("rm -f " + logFiles, ".", false);
+      String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
+      ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
+      String logFiles = output.get(0) + "*";
+      RunServer.command("rm -f " + logFiles, ".", false);
 
       System.out.println(System
               .getProperty(DefaultProps.SERVER_COMMAND.key)
@@ -267,50 +267,49 @@ public class ServerIntegrationTest extends DefaultTest {
       }
     }
 
-	String gpConfFile = System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key);
-	String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
+    String gpConfFile = System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key);
+    String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
 
-	ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
-	String logFiles = output.get(0) + "*";
+    ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
+    String logFiles = output.get(0) + "*";
 
-	System.out.println("Waiting for servers to be ready...");
-	output = RunServer.command("cat " + gpConfFile + " | grep \"reconfigurator\\.\" | wc -l ", ".", false);
-	String temp = output.get(0);
-	temp = temp.replaceAll("\\s","");
-	int numRC = Integer.parseInt(temp);
-	output = RunServer.command("cat " + gpConfFile + " | grep \"active\\.\" | wc -l ", ".", false);
-	temp = output.get(0);
-	temp = temp.replaceAll("\\s","");
-	int numAR = Integer.parseInt(temp);
-	int numServers = numRC + numAR;
+    System.out.println("Waiting for servers to be ready...");
+    output = RunServer.command("cat " + gpConfFile + " | grep \"reconfigurator\\.\" | wc -l ", ".", false);
+    String temp = output.get(0);
+    temp = temp.replaceAll("\\s", "");
+    int numRC = Integer.parseInt(temp);
+    output = RunServer.command("cat " + gpConfFile + " | grep \"active\\.\" | wc -l ", ".", false);
+    temp = output.get(0);
+    temp = temp.replaceAll("\\s", "");
+    int numAR = Integer.parseInt(temp);
+    int numServers = numRC + numAR;
 
+    output = RunServer.command("ls " + logFiles + " 2> /dev/null | wc -l ", ".", false);
+    temp = output.get(0);
+    temp = temp.replaceAll("\\s", "");
+    int numLogFiles = Integer.parseInt(temp);
+    while (numLogFiles == 0) {
+      Thread.sleep(5000);
+      output = RunServer.command("ls " + logFiles + " 2> /dev/null | wc -l ", ".", false);
+      temp = output.get(0);
+      temp = temp.replaceAll("\\s", "");
+      numLogFiles = Integer.parseInt(temp);
+    }
 
-	output = RunServer.command("ls " + logFiles + " 2> /dev/null | wc -l ", ".", false);
-	temp = output.get(0);
-	temp = temp.replaceAll("\\s","");
-	int numLogFiles = Integer.parseInt(temp);
-	while( numLogFiles == 0){
-		Thread.sleep(5000);
-		output = RunServer.command("ls " + logFiles + " 2> /dev/null | wc -l ", ".", false);
-		temp = output.get(0);
-		temp = temp.replaceAll("\\s","");
-		numLogFiles = Integer.parseInt(temp);
-	}
+    output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+    temp = output.get(0);
+    temp = temp.replaceAll("\\s", "");
+    int numServersUp = Integer.parseInt(temp);
+    System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
+    while (numServersUp < numServers) {
+      Thread.sleep(5000);
+      output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+      temp = output.get(0);
+      temp = temp.replaceAll("\\s", "");
+      numServersUp = Integer.parseInt(temp);
+      System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
 
-	output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
-	temp = output.get(0);
-	temp = temp.replaceAll("\\s","");
-	int numServersUp = Integer.parseInt(temp);
-	System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
-	while (numServersUp < numServers){
-    		Thread.sleep(5000);
-		output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
-		temp = output.get(0);
-		temp = temp.replaceAll("\\s","");
-		numServersUp = Integer.parseInt(temp);
-		System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
-
-	}
+    }
 
     System.out.println("Starting client");
 
@@ -450,8 +449,7 @@ public class ServerIntegrationTest extends DefaultTest {
       e.printStackTrace();
     }
   }
-  
-  
+
   /* TODO:
    * Brendan: I've begun checking tests to make sure that logically
    * they should pass every time in a distributed setting.
@@ -465,13 +463,12 @@ public class ServerIntegrationTest extends DefaultTest {
    * TODO: Increase the timeout for these test commands so that they almost never fail due to timeout.
    * 
    */
-
   /**
    * Creates a guid.
    */
   @Test
   public void test_010_CreateEntity() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String alias = "testGUID" + RandomString.randomString(12);
     GuidEntry guidEntry = null;
     try {
@@ -488,7 +485,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_020_RemoveGuid() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
@@ -518,7 +515,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_030_RemoveGuidSansAccountInfo() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
@@ -552,12 +549,12 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_035_RemoveAccountWithPasswordCreateAccount() {
-	/* FIXED: GuidUtils.lookupOrCreateAccountGuid() is safe 
+    /* FIXED: GuidUtils.lookupOrCreateAccountGuid() is safe 
 	 * since the account verification step is coordinated later on in its chain.
 	 * TODO: Make sure that gigapaxos guaruntees UPDATE your CREATES for servers with 
 	 * greater than 3 replicas.
-	 */
-	  
+     */
+
     try {
       accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD, true);
     } catch (Exception e) {
@@ -570,7 +567,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_036_RemoveAccountWithPasswordCheckAccount() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // this should be using the guid
       ThreadUtils.sleep(100);
@@ -587,7 +584,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_037_RemoveAccountWithPasswordRemoveAccount() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.accountGuidRemoveWithPassword(ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD);
     } catch (Exception e) {
@@ -600,7 +597,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_038_RemoveAccountWithPasswordCheckAccountAfterRemove() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.lookupGuid(ACCOUNT_TO_REMOVE_WITH_PASSWORD);
       fail("lookupGuid for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " should have throw an exception.");
@@ -616,7 +613,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_040_LookupPrimaryGuid() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
@@ -638,7 +635,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_050_CreateSubGuid() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       subGuidEntry = client.guidCreate(masterGuid, "subGuid"
               + RandomString.randomString(12));
@@ -653,7 +650,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_060_FieldNotFoundException() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(),
               "environment", subGuidEntry);
@@ -670,7 +667,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_070_FieldExistsFalse() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       assertFalse(client.fieldExists(subGuidEntry.getGuid(),
               "environment", subGuidEntry));
@@ -686,7 +683,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_080_CreateFieldForFieldExists() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(),
               "environment", "work", subGuidEntry);
@@ -701,7 +698,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_090_FieldExistsTrue() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       assertTrue(client.fieldExists(subGuidEntry.getGuid(),
               "environment", subGuidEntry));
@@ -709,8 +706,7 @@ public class ServerIntegrationTest extends DefaultTest {
       System.out.println("Exception testing field exists true: " + e);
     }
   }
-  
-  
+
   private static final String TEST_FIELD_NAME = "testField";
 
   /**
@@ -719,7 +715,7 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   public void test_101_ACLCreateField() {
     try {
-    	//CHECKED FOR VALIDITY
+      //CHECKED FOR VALIDITY
       client.fieldCreateOneElementList(masterGuid.getGuid(), TEST_FIELD_NAME, "testValue", masterGuid);
     } catch (Exception e) {
       failWithStackTrace("Exception while creating fields in ACLCreateFields: " + e);
@@ -735,7 +731,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_110_ACLMaybeAddAllFields() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       if (!JSONUtils.JSONArrayToArrayList(
               client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
@@ -756,7 +752,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_111_ACLCheckForAllFieldsPass() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       ThreadUtils.sleep(100);
       JSONArray expected = new JSONArray(Arrays.asList(GNSCommandProtocol.ALL_GUIDS));
@@ -771,7 +767,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_112_ACLRemoveAllFields() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, masterGuid,
@@ -784,7 +780,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_113_ACLCheckForAllFieldsMissing() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       JSONArray expected = new JSONArray();
       JSONAssert.assertEquals(expected,
@@ -798,7 +794,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_114_CheckAllFieldsAcl() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSCommandProtocol.ENTIRE_RECORD));
     } catch (Exception e) {
@@ -808,7 +804,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_115_DeleteAllFieldsAcl() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, GNSCommandProtocol.ENTIRE_RECORD);
     } catch (Exception e) {
@@ -818,7 +814,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_116_CheckAllFieldsAclGone() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSCommandProtocol.ENTIRE_RECORD));
     } catch (Exception e) {
@@ -828,7 +824,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_120_CreateAcl() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.aclCreateField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
@@ -838,7 +834,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_121_CheckAcl() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
@@ -848,7 +844,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_122_DeleteAcl() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
@@ -858,20 +854,20 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_123_CheckAclGone() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAclGonewhile: " + e);
     }
   }
-  
+
   /**
    * Create guids for ACL tests.
    */
   @Test
   public void test_130_ACLCreateGuids() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       westyEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, "westy" + RandomString.randomString(6));
       samEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, "sam" + RandomString.randomString(6));
@@ -883,7 +879,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_131_ACLRemoveAllFields() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
@@ -901,7 +897,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_132_ACLCreateFields() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.fieldUpdate(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldUpdate(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
@@ -915,7 +911,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_135_ACLMaybeAddAllFieldsForMaster() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       if (!JSONUtils.JSONArrayToArrayList(
               client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
@@ -936,7 +932,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_136_ACLMasterReadAllFields() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       JSONObject expected = new JSONObject();
       expected.put("environment", "work");
@@ -957,7 +953,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_137_ACLReadMyFields() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // read my own field
       assertEquals("work",
@@ -977,7 +973,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_138_ACLNotReadOtherGuidAllFieldsTest() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ENTIRE_RECORD, samEntry);
@@ -996,7 +992,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_139_ACLNotReadOtherGuidFieldTest() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         String result = client.fieldRead(westyEntry.getGuid(), "environment",
@@ -1016,7 +1012,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_140_AddACLTest() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
@@ -1032,7 +1028,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_141_CheckACLTest() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("work", client.fieldRead(westyEntry.getGuid(), "environment", samEntry));
@@ -1045,13 +1041,13 @@ public class ServerIntegrationTest extends DefaultTest {
       e.printStackTrace();
     }
   }
-  
+
   /**
    *
    */
   @Test
   public void test_142_ACLCreateAnotherGuid() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       String barneyName = "barney" + RandomString.randomString(6);
       try {
@@ -1071,7 +1067,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_143_ACLAdjustACL() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
@@ -1084,7 +1080,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_144_ACLCreateFields() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // remove default read access for this test
       client.fieldUpdate(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
@@ -1097,7 +1093,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_145_ACLUpdateACL() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         // let anybody read barney's cell field
@@ -1115,7 +1111,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_146_ACLTestReadsOne() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("413-555-1234",
@@ -1132,7 +1128,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_147_ACLTestReadsTwo() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("413-555-1234",
@@ -1149,7 +1145,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_148_ACLTestReadsThree() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         String result = client.fieldRead(barneyEntry.getGuid(), "address",
@@ -1176,7 +1172,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_149_ACLALLFields() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String superUserName = "superuser" + RandomString.randomString(6);
     try {
       try {
@@ -1204,7 +1200,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_150_ACLCreateDeeperField() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
@@ -1220,7 +1216,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_151_ACLAddDeeperFieldACL() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         // Create an empty ACL, effectively disabling access except by the guid itself.
@@ -1237,7 +1233,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_152_ACLCheckDeeperFieldACLExists() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
@@ -1255,7 +1251,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // can always read your own fields.
   @Test
   public void test_153_ACLReadDeeperFieldSelf() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", westyEntry));
@@ -1272,7 +1268,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // This should fail because the ACL for test.deeper.field is empty.
   @Test
   public void test_154_ACLReadDeeperFieldOtherFail() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
@@ -1288,7 +1284,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // This should fail because the ACL for test.deeper.field is empty.
   @Test
   public void test_156_ACLReadShallowFieldOtherFail() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper", samEntry));
@@ -1303,7 +1299,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_157_AddAllRecordACL() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test", GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
@@ -1316,7 +1312,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // now has an ALL_GUIDS at the root (this is different than the old model).
   @Test
   public void test_158_ACLReadDeeperFieldOtherFail() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
@@ -1328,7 +1324,6 @@ public class ServerIntegrationTest extends DefaultTest {
       e.printStackTrace();
     }
   }
-
 
 //  /**
 //   * Create guids for ACL tests.
@@ -1610,13 +1605,12 @@ public class ServerIntegrationTest extends DefaultTest {
 //      e.printStackTrace();
 //    }
 //  }
-
   /**
    * Tests a bunch of different access methods.
    */
   @Test
   public void test_170_DB() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), "cats",
@@ -1678,7 +1672,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_180_DBUpserts() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     HashSet<String> expected;
     HashSet<String> actual;
     try {
@@ -1746,7 +1740,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_190_Substitute() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String testSubstituteGuid = "testSubstituteGUID"
             + RandomString.randomString(12);
     String field = "people";
@@ -1803,7 +1797,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_200_SubstituteList() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String testSubstituteListGuid = "testSubstituteListGUID"
             + RandomString.randomString(12);
     String field = "people";
@@ -1862,7 +1856,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_210_GroupCreate() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String mygroupName = "mygroup" + RandomString.randomString(12);
     try {
       try {
@@ -1884,7 +1878,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_211_GroupAdd() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(),
               mygroupEntry);
@@ -1919,7 +1913,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_212_GroupRemoveGuid() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     // now remove a guid and check for group updates
     try {
       client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
@@ -1943,7 +1937,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_220_GroupAndACLCreateGuids() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     // testGroup();
     String groupAccessUserName = "groupAccessUser"
             + RandomString.randomString(12);
@@ -2002,7 +1996,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_221_GroupAndACLTestBadAccess() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         String result = client.fieldReadArrayFirstElement(
@@ -2023,7 +2017,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_222_GroupAndACLTestGoodAccess() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       assertEquals("whoville", client.fieldReadArrayFirstElement(
               groupAccessUserEntry.getGuid(), "hometown", westyEntry));
@@ -2038,7 +2032,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_223_GroupAndACLTestRemoveGuid() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       try {
         client.groupRemoveGuid(mygroupEntry.getGuid(),
@@ -2046,16 +2040,31 @@ public class ServerIntegrationTest extends DefaultTest {
       } catch (Exception e) {
         failWithStackTrace("Exception removing westy from mygroup: ", e);
       }
-
-      HashSet<String> expected = new HashSet<String>(
-              Arrays.asList(samEntry.getGuid()));
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
-              .groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
-      assertEquals(expected, actual);
-
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it: ", e);
     }
+
+  }
+
+  @Test
+  public void test_224_GroupAndACLTestRemoveGuidCheck() {
+    HashSet<String> expected = new HashSet<String>(
+            Arrays.asList(samEntry.getGuid()));
+    HashSet<String> actual = null;
+    int count = 50; // try 10 times or so
+    do {
+      try {
+        if (count != 50) {
+        Thread.sleep(100);
+      }
+        actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
+      } catch (ClientException | IOException | JSONException | InterruptedException e) {
+      }
+    } while (count-- > 0 && (actual == null || !actual.equals(expected)));
+    if (count < 49) {
+      System.out.println("Waited " + (49 - count) + " times");
+    }
+    assertEquals(expected, actual);
   }
 
   private static String alias = "ALIAS-" + RandomString.randomString(4)
@@ -2066,7 +2075,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_230_AliasAdd() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // KEEP IN MIND THAT CURRENTLY ONLY ACCOUNT GUIDS HAVE ALIASES
       // add an alias to the masterGuid
@@ -2083,7 +2092,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_231_AliasIsPresent() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // grab all the alias from the guid
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
@@ -2106,7 +2115,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_232_AliasCheckRemove() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // and make sure it is gone
       try {
@@ -2124,7 +2133,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_240_WriteAccess() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String fieldName = "whereAmI";
     try {
       try {
@@ -2189,7 +2198,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_250_UnsignedReadCreateGuids() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       unsignedReadTestGuid = client.guidCreate(masterGuid, "unsignedReadTestGuid" + RandomString.randomString(6));
       System.out.println("Created: " + unsignedReadTestGuid);
@@ -2225,7 +2234,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_251_UnsignedRead() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
 
     // Insures that we can read a world readable field without a guid
     try {
@@ -2261,7 +2270,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_252_UnsignedReadOne() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       // Insures that we can read a world readable field without a guid
       // Insure that we can't read non-world-readable field without a guid
@@ -2300,7 +2309,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_260_UnsignedWrite() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String unsignedWriteFieldName = "allwriteaccess";
     String standardWriteFieldName = "standardwriteaccess";
     try {
@@ -2333,7 +2342,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_270_RemoveField() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     String fieldToDelete = "fieldToDelete";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(),
@@ -2372,7 +2381,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_280_ListOrderAndSetElement() {
-	//CHECKED FOR VALIDITY
+    //CHECKED FOR VALIDITY
     try {
       westyEntry = client.guidCreate(masterGuid,
               "westy" + RandomString.randomString(12));
@@ -3444,7 +3453,8 @@ public class ServerIntegrationTest extends DefaultTest {
    * @param args
    */
   public static void main(String[] args) {
-    Result result = JUnitCore.runClasses(ServerIntegrationTest.class);
+    Result result = JUnitCore.runClasses(ServerIntegrationTest.class
+    );
     System.out.println("\n\n-----------Completed all "
             + result.getRunCount()
             + " tests"

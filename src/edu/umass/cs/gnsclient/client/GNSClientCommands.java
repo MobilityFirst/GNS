@@ -168,7 +168,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
             commandType,
             CommandUtils.checkResponse(this
                     .getCommandValueReturnPacket(commandPacket = getCommand(commandType,
-                                    querier, keysAndValues), this.getReadTimeout()), commandPacket));
+                            querier, keysAndValues), this.getReadTimeout()), commandPacket));
   }
 
   private static final boolean RECORD_ENABLED = true;
@@ -604,8 +604,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public JSONObject lookupGuidRecord(String guid) throws IOException,
           ClientException {
     try {
-      return new JSONObject(getResponse(
-              CommandType.LookupGuidRecord, GUID, guid));
+      return new JSONObject(getResponse(CommandType.LookupGuidRecord, GUID, guid));
     } catch (JSONException e) {
       throw new ClientException(
               "Failed to parse LOOKUP_GUID_RECORD response", e);
@@ -952,14 +951,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws IOException
    * @throws InvalidGuidException
    * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
    */
   public void groupAddGuids(String groupGuid, JSONArray members,
-          GuidEntry writer) throws IOException, InvalidGuidException,
-          ClientException, InvalidKeyException, NoSuchAlgorithmException,
-          SignatureException {
+          GuidEntry writer) throws IOException, ClientException {
     getResponse(CommandType.AddMembersToGroup, writer, GUID, groupGuid,
             MEMBERS, members, WRITER, writer.getGuid());
   }
@@ -2236,7 +2230,6 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 //    return getResponse(CommandType.ListParameters, NAME,
 //            "Admin");
 //  }
-
   /**
    *
    * @return The contents of the GNS.
@@ -2245,10 +2238,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public String dump() throws Exception {
     //Create the admin account if it doesn't already exist.
     try {
-      accountGuidCreate("Admin", 
-    		  GNSConfig.getInternalOpSecret()
-    		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
-    		  );
+      accountGuidCreate("Admin",
+              GNSConfig.getInternalOpSecret()
+      //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+      );
     } catch (DuplicateNameException dne) {
       //Do nothing if it already exists.
     }
@@ -2274,7 +2267,6 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 //    }
 //    return getResponse(CommandType.ClearCache, NAME, "Admin");
 //  }
-
 //  /**
 //   *
 //   * @return Returns the contents of the local name server cache.
@@ -2293,7 +2285,6 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 //    return getResponse(CommandType.DumpCache, NAME,
 //            "Admin");
 //  }
-
   @Override
   public void close() {
     super.close();

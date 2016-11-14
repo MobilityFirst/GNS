@@ -128,7 +128,7 @@ public class AccountAccess {
 
   /**
    * Obtains the account info record for the given GUID if that GUID was used
- to createField an account. Only looks on the local server.
+   * to createField an account. Only looks on the local server.
    *
    * @param guid
    * @param handler
@@ -141,7 +141,7 @@ public class AccountAccess {
 
   /**
    * Obtains the account info record for the given GUID if that GUID was used
- to createField an account. Will do a remote query if needed.
+   * to createField an account. Will do a remote query if needed.
    *
    * @param guid
    * @param handler
@@ -154,7 +154,7 @@ public class AccountAccess {
 
   /**
    * Obtains the account info record for the given GUID if that GUID was used
- to createField an account.
+   * to createField an account.
    * <p>
    * GUID: "ACCOUNT_INFO" -- {account} for primary guid<br>
    * GUID: "GUID" -- GUID (primary) for secondary guid<br>
@@ -533,11 +533,11 @@ public class AccountAccess {
             .getInstance().hash(name + SECRET
                     // Add salt unless email verification is disabled or salt is disabled.
                     + (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
-                    		// must always add salt
+                    // must always add salt
                     // && Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)
-                            ? new String(
-                                    Util.getRandomAlphanumericBytes(128))
-                            : "")),
+                    ? new String(
+                            Util.getRandomAlphanumericBytes(128))
+                    : "")),
             VERIFICATION_CODE_LENGTH));
   }
 
@@ -1506,9 +1506,8 @@ public class AccountAccess {
           AccountInfo accountInfo, ClientRequestHandlerInterface handler,
           boolean remoteUpdate) {
     return !updateAccountInfo(accountInfo.getGuid(), accountInfo,
-            //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), 
-    		GNSConfig.getInternalOpSecret(),
-    		null, null,
+            GNSConfig.getInternalOpSecret(),
+            null, null,
             null, handler, remoteUpdate)
             .isExceptionOrError();
   }
@@ -1534,8 +1533,8 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
 
     return !updateGuidInfo(guidInfo,
-    		GNSConfig.getInternalOpSecret(),
-    		//Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET),
+            GNSConfig.getInternalOpSecret(),
+            //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET),
             null, null, null, handler)
             .isExceptionOrError();
   }
@@ -1580,7 +1579,6 @@ public class AccountAccess {
   }
 
   // test code
-
   /**
    *
    * @param args
