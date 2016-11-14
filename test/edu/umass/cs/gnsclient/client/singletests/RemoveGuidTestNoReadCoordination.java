@@ -65,7 +65,7 @@ public class RemoveGuidTestNoReadCoordination {
    *
    */
   @Test
-  public void test_01_testCreateAccountGuid() {
+  public void test_209_testCreateAccountGuid() {
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
@@ -82,7 +82,6 @@ public class RemoveGuidTestNoReadCoordination {
     try {
       try {
         client.execute(GNSCommand.lookupGUID(deleteName));
-        //client.lookupGuid(deleteName);
         fail(deleteName + " entity should not exist");
       } catch (ClientException e) {
       }
@@ -96,7 +95,6 @@ public class RemoveGuidTestNoReadCoordination {
   public void test_212_GuidCreateCheck() {
     try {
       client.execute(GNSCommand.lookupGUIDRecord(guidToDeleteEntry.getGuid()));
-      //client.lookupGuidRecord(guidToDeleteEntry.getGuid());
     } catch (ClientException | IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
     }
@@ -109,7 +107,6 @@ public class RemoveGuidTestNoReadCoordination {
   public void test_214_GroupRemoveGuid() {
     try {
       client.execute(GNSCommand.removeGUID(masterGuid, guidToDeleteEntry.getGuid()));
-      //client.guidRemove(masterGuid, );
     } catch (Exception e) {
       fail("Exception while removing testGuid: " + e);
     }
@@ -119,13 +116,11 @@ public class RemoveGuidTestNoReadCoordination {
   public void test_216_GroupRemoveGuidCheck() {
     try {
       client.execute(GNSCommand.lookupGUIDRecord(guidToDeleteEntry.getGuid()));
-      //client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
     } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
     }
-
   }
 }

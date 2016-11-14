@@ -589,7 +589,6 @@ public enum CommandType {
   SubstituteUnsigned(236, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned.class,
           CommandResultType.NULL, true, false,
           "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
-          + "See below for more on the signature. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -980,8 +979,7 @@ public enum CommandType {
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to include the accesser guid. Accessor guid can "
           + "be guid or group guid or +ALL+ which means anyone. "
-          + "Field can be also be +ALL+ which means all fields can be read by the accessor. "
-          + "See below for description of ACL type and signature.",
+          + "Field can be also be +ALL+ which means all fields can be read by the accessor. ",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.ACCESSER,
@@ -996,8 +994,7 @@ public enum CommandType {
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to include the accesser guid. "
           + "Accessor should a guid or group guid or +ALL+ which means anyone. "
-          + "Field can be also be +ALL+ which means all fields can be read by the accessor. "
-          + "See below for description of ACL type and signature.",
+          + "Field can be also be +ALL+ which means all fields can be read by the accessor. ",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.ACCESSER,
@@ -1416,6 +1413,8 @@ public enum CommandType {
     /**
      *
      */
+    // What is this used for?
+    @Deprecated
     SYSTEM_LOOKUP,
     /**
      *
@@ -1574,6 +1573,7 @@ public enum CommandType {
    *
    * @return true if it's a system lookup command
    */
+  @Deprecated
   public boolean isSystemLookup() {
     return category.equals(CommandCategory.SYSTEM_LOOKUP);
   }
@@ -1778,21 +1778,11 @@ public enum CommandType {
     Help.setChain();
     HelpTcp.setChain();
     HelpTcpWiki.setChain();
-    //Admin.setChain();
     Dump.setChain();
-//    GetParameter.setChain();
-//    SetParameter.setChain();
-//    ListParameters.setChain();
-//    ClearCache.setChain();
-//    DumpCache.setChain();
     ConnectionCheck.setChain();
     Unknown.setChain();
-
   }
 
-//  public static Class<?>[] getCommandClassesArray() {
-//    return (Class<?>[]) Stream.of(values()).map(CommandType::getCommandClass).toArray();
-//  }
   /**
    *
    * @return the command classes
