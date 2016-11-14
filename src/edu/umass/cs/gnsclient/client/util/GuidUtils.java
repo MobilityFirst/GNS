@@ -55,6 +55,10 @@ public class GuidUtils {
   private static final String SECRET
           = Config.getGlobalString(GNSClientConfig.GNSCC.VERIFICATION_SECRET);
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
+  
+  //
+  // The code in here is screaming for an interface.
+  //
 
   private static boolean guidExists(GNSClientCommands client, GuidEntry guid) throws IOException {
     try {
@@ -145,8 +149,7 @@ public class GuidUtils {
    */
   public static GuidEntry lookupOrCreateAccountGuid(GNSClient client,
           String name, String password, boolean verbose) throws Exception {
-    GuidEntry guid = lookupGuidEntryFromDatabase(client.getGNSProvider(),
-            name);
+    GuidEntry guid = lookupGuidEntryFromDatabase(client, name);
     if (guid == null || !guidExists(client, guid)) {
       if (verbose) {
         if (guid == null) {
@@ -380,7 +383,7 @@ public class GuidUtils {
   }
 
   /**
-   * Creates and verifies an account GUID.
+   * Creates and verifies a subguid (created under an accountGuid)
    *
    * @param client
    * @param accountGuid
@@ -410,6 +413,57 @@ public class GuidUtils {
       return guid;
     }
   }
+  
+  
+  /**
+   * Creates and verifies a subguid (created under an accountGuid).
+   *
+   * @param client
+   * @param accountGuid
+   * @param name
+   * @return Created {@link GuidEntry} for {@code name}.
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws java.io.IOException
+   */
+  public static GuidEntry lookupOrCreateGuid(GNSClient client, GuidEntry accountGuid, String name)
+          throws ClientException, IOException {
+    return lookupOrCreateGuid(client, accountGuid, name, false);
+  }
+  
+  /**
+   * Creates and verifies a subguid (created under an accountGuid).
+   *
+   * @param client
+   * @param accountGuid
+   * @param name
+   * @param verbose
+   * @return Created {@link GuidEntry} for {@code name}.
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws java.io.IOException
+   */
+  public static GuidEntry lookupOrCreateGuid(GNSClient client, GuidEntry accountGuid, String name, boolean verbose)
+          throws ClientException, IOException {
+    GuidEntry guid = lookupGuidEntryFromDatabase(client, name);
+    // If we didn't find the guid or the entry in the database is obsolete we
+    // create a new guid.
+    if (guid == null || !guidExists(client, guid)) {
+      if (verbose) {
+        if (guid == null) {
+          System.out.println("Creating a new guid for " + name);
+        } else {
+          System.out.println("Old guid for " + name + " is invalid. Creating a new one.");
+        }
+      }
+      client.execute(GNSCommand.createGUID(client.getGNSProvider(), accountGuid, name));
+      guid = lookupGuidEntryFromDatabase(client, name);
+      return guid;
+    } else {
+      if (verbose) {
+        System.out.println("Found guid for " + guid.getEntityName() + " (" + guid.getGuid() + ")");
+      }
+      return guid;
+    }
+  }
 
   /**
    * Looks up the guid information associated with alias that is stored in the preferences.
@@ -429,6 +483,15 @@ public class GuidUtils {
    */
   public static GuidEntry lookupGuidEntryFromDatabase(String gnsInstance, String name) {
     return KeyPairUtils.getGuidEntry(gnsInstance, name);
+  }
+  
+  /**
+   * @param client
+   * @param name
+   * @return {@link GuidEntry} from local key database.
+   */
+  public static GuidEntry lookupGuidEntryFromDatabase(GNSClient client, String name) {
+    return KeyPairUtils.getGuidEntry(client.getGNSProvider(), name);
   }
 
   /**
