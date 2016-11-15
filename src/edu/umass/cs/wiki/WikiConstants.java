@@ -1,5 +1,7 @@
 package edu.umass.cs.wiki;
 
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
 /**
  * @author arun
  *
@@ -15,7 +17,13 @@ public enum WikiConstants {
 	/**
 	 * Default properties file.
 	 */
-	DEFAULT_PROPERTIES_FILE(GNSSERVER_1LOCAL_PROPERTIES_FILE);
+	DEFAULT_PROPERTIES_FILE(GNSSERVER_1LOCAL_PROPERTIES_FILE),
+	
+	/**
+	 * Email verification option.
+	 */
+	EMAIL_VERIFICATION_OPTION(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
+	;
 	
 	final Object name;
 	
