@@ -95,6 +95,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
    *
    * @return argument parameters
    */
+  @Override
   public String[] getCommandParameters() {
     return getCommandType().getCommandParameters();
   }
@@ -104,6 +105,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
    *
    * @return <code>String</code> of the command description
    */
+  @Override
   public String getCommandDescription() {
     return getCommandType().getCommandDescription();
   }

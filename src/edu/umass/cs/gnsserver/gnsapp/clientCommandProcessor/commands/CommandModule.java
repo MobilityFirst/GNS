@@ -25,9 +25,8 @@ import org.json.JSONObject;
 import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.TreeSet;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -191,11 +190,12 @@ public class CommandModule {
    */
   public AbstractCommand lookupCommand(JSONObject json) {
     AbstractCommand command = null;
-    if (json.has(COMMAND_INT)) {
+    if (json.has(GNSCommandProtocol.COMMAND_INT)) {
       try {
-        command = CommandModule.this.lookupCommand(CommandType.getCommandType(json.getInt(COMMAND_INT)));
+        command = CommandModule.this.lookupCommand(
+                CommandType.getCommandType(json.getInt(GNSCommandProtocol.COMMAND_INT)));
         // Some sanity checks
-        String commandName = json.optString(COMMANDNAME, null);
+        String commandName = json.optString(GNSCommandProtocol.COMMANDNAME, null);
         // Check to see if command name is the same
         if (command != null && commandName != null
                 && !commandName.equals(command.getCommandType().toString())) {
@@ -215,7 +215,7 @@ public class CommandModule {
       }
     } else {
       ClientCommandProcessorConfig.getLogger().warning("No command int in command "
-              + json.optString(COMMANDNAME, "also missing command name!"));
+              + json.optString(GNSCommandProtocol.COMMANDNAME, "also missing command name!"));
     }
     if (command != null) {
       ClientCommandProcessorConfig.getLogger().log(Level.FINE,
@@ -238,10 +238,11 @@ public class CommandModule {
   public AbstractCommand lookupCommandFromCommandName(JSONObject json) {
     String action;
     try {
-      action = json.getString(COMMANDNAME);
+      action = json.getString(GNSCommandProtocol.COMMANDNAME);
     } catch (JSONException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
-              "Unable to find " + COMMANDNAME + " key in JSON command: {0} : {1}", new Object[]{json, e});
+              "Unable to find " + GNSCommandProtocol.COMMANDNAME
+              + " key in JSON command: {0} : {1}", new Object[]{json, e});
       return null;
     }
     return CommandModule.this.lookupCommand(action);
@@ -283,16 +284,16 @@ public class CommandModule {
           result.append("|}");
         }
         lastPackageName = packageName;
-        result.append(NEWLINE);
+        result.append(GNSCommandProtocol.NEWLINE);
         result.append(String.format(format.equals(CommandDescriptionFormat.TCP_Wiki)
                 ? WIKI_PREAMBLE : STANDARD_PREAMBLE, lastPackageName));
-        result.append(NEWLINE);
+        result.append(GNSCommandProtocol.NEWLINE);
       }
       //result.append(NEWLINE);
       //result.append(cnt++ + ": ");
       result.append(command.getUsage(format));
-      result.append(NEWLINE);
-      result.append(NEWLINE);
+      result.append(GNSCommandProtocol.NEWLINE);
+      result.append(GNSCommandProtocol.NEWLINE);
     }
     return result.toString();
   }
@@ -310,7 +311,6 @@ public class CommandModule {
     return JSONMissing(json, parameters) == null;
   }
 
-
 //  /**
 //   * Set admin mode.
 //   *
@@ -319,7 +319,6 @@ public class CommandModule {
 //  public void setAdminMode(boolean adminMode) {
 //    this.adminMode = adminMode;
 //  }
-
   private static Comparator<AbstractCommand> CommandPackageComparator
           = new Comparator<AbstractCommand>() {
 

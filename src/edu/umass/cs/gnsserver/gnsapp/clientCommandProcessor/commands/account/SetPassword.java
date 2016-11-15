@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
@@ -67,19 +67,22 @@ public class SetPassword extends AbstractCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GUID);
-    String password = json.getString(PASSWORD);
-    String signature = json.getString(SIGNATURE);
-    String message = json.getString(SIGNATUREFULLMESSAGE);
+    String guid = json.getString(GNSCommandProtocol.GUID);
+    String password = json.getString(GNSCommandProtocol.PASSWORD);
+    String signature = json.getString(GNSCommandProtocol.SIGNATURE);
+    String message = json.getString(GNSCommandProtocol.SIGNATUREFULLMESSAGE);
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler);
-    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    Date timestamp = json.has(GNSCommandProtocol.TIMESTAMP)
+            ? Format.parseDateISO8601UTC(json.getString(GNSCommandProtocol.TIMESTAMP)) : null; // can be null on older client
     if (accountInfo == null) {
-      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + guid);
     } else if (!accountInfo.isVerified()) {
-      return new CommandResponse(ResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+      return new CommandResponse(ResponseCode.VERIFICATION_ERROR,
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR
+              + " Account not verified");
     }
     return AccountAccess.setPassword(accountInfo, password, guid, signature, message, timestamp, handler);
   }
 
-  
 }

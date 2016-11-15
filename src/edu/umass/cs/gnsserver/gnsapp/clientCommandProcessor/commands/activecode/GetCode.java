@@ -23,18 +23,15 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.text.ParseException;
@@ -69,12 +66,13 @@ public class GetCode extends AbstractCommand {
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
-    String guid = json.getString(GUID);
-    String reader = json.getString(READER);
-    String action = json.getString(AC_ACTION);
-    String signature = json.getString(SIGNATURE);
-    String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    String guid = json.getString(GNSCommandProtocol.GUID);
+    String reader = json.getString(GNSCommandProtocol.READER);
+    String action = json.getString(GNSCommandProtocol.AC_ACTION);
+    String signature = json.getString(GNSCommandProtocol.SIGNATURE);
+    String message = json.getString(GNSCommandProtocol.SIGNATUREFULLMESSAGE);
+    Date timestamp = json.has(GNSCommandProtocol.TIMESTAMP) 
+            ? Format.parseDateISO8601UTC(json.getString(GNSCommandProtocol.TIMESTAMP)) : null; // can be null on older client
 
     return new CommandResponse(ResponseCode.NO_ERROR, ActiveCode.getCode(guid, action,
             reader, signature, message, timestamp, handler));
