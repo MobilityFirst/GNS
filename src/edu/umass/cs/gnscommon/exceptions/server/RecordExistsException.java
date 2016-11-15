@@ -26,8 +26,10 @@ package edu.umass.cs.gnscommon.exceptions.server;
  * @author westy
  */
 public class RecordExistsException extends ServerException {
-  String collection;
-  String guid;
+
+  private static final long serialVersionUID = 1L;
+  private final String collection;
+  private final String guid;
 
   /**
    * Create a RecordExistsException.

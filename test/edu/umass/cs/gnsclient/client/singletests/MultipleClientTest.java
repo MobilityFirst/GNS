@@ -1389,7 +1389,7 @@ public class MultipleClientTest {
       json.put("name", "frank");
       json.put("occupation", "busboy");
       json.put("location", "work");
-      json.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      json.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1404,7 +1404,7 @@ public class MultipleClientTest {
       expected.put("name", "frank");
       expected.put("occupation", "busboy");
       expected.put("location", "work");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1429,7 +1429,7 @@ public class MultipleClientTest {
       expected.put("name", "frank");
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1455,7 +1455,7 @@ public class MultipleClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1479,7 +1479,7 @@ public class MultipleClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject actual = getRandomClient().read(updateEntry);
       JSONAssert.assertEquals(expected, actual, true);
       //System.out.println(actual);
@@ -1514,7 +1514,7 @@ public class MultipleClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1568,7 +1568,7 @@ public class MultipleClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1583,7 +1583,7 @@ public class MultipleClientTest {
       fail("Exception while reading JSON: " + e);
     }
     try {
-      getRandomClient().fieldUpdate(updateEntry.getGuid(), "flapjack.sammy", new ArrayList(Arrays.asList("One", "Ready", "Frap")), updateEntry);
+      getRandomClient().fieldUpdate(updateEntry.getGuid(), "flapjack.sammy", new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")), updateEntry);
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack.sammy\": " + e);
     }
@@ -1593,9 +1593,9 @@ public class MultipleClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
-      subJson.put("sammy", new ArrayList(Arrays.asList("One", "Ready", "Frap")));
+      subJson.put("sammy", new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")));
       JSONObject subsubJson = new JSONObject();
       subsubJson.put("right", "crank");
       subsubJson.put("left", "eight");
@@ -1611,7 +1611,7 @@ public class MultipleClientTest {
       JSONObject moreJson = new JSONObject();
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
-      moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+      moreJson.put("crash", new ArrayList<String>(Arrays.asList("Tango", "Sierra", "Alpha")));
       getRandomClient().fieldUpdate(updateEntry.getGuid(), "flapjack", moreJson, updateEntry);
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack\": " + e);
@@ -1622,11 +1622,11 @@ public class MultipleClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject moreJson = new JSONObject();
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
-      moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+      moreJson.put("crash", new ArrayList<String>(Arrays.asList("Tango", "Sierra", "Alpha")));
       expected.put("flapjack", moreJson);
       JSONObject actual = getRandomClient().read(updateEntry);
       JSONAssert.assertEquals(expected, actual, true);
@@ -1642,7 +1642,7 @@ public class MultipleClientTest {
   @Test
   public void test_74_MultiFieldLookup() {
     try {
-      String actual = getRandomClient().fieldRead(updateEntry, new ArrayList(Arrays.asList("name", "occupation")));
+      String actual = getRandomClient().fieldRead(updateEntry, new ArrayList<String>(Arrays.asList("name", "occupation")));
       JSONAssert.assertEquals("{\"name\":\"frank\",\"occupation\":\"rocket scientist\"}", actual, true);
     } catch (Exception e) {
       fail("Exception while reading \"name\" and \"occupation\": " + e);

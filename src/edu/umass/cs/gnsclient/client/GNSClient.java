@@ -329,16 +329,6 @@ public class GNSClient {
         return commandPacket;
       }
     });
-
-// Lambdas were causing issues in Andriod - 9/16
-//    this.sendAsync(commandPacket, (response) -> {
-//      retval[0] = defaultHandleResponse(response);
-//      assert (retval[0].getErrorCode() != null);
-//      synchronized (monitor) {
-//        monitor.notify();
-//      }
-//      return commandPacket;
-//    });
     try {
       synchronized (monitor) {
         // wait for response until timeout

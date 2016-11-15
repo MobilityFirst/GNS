@@ -22,7 +22,6 @@ import javax.script.SimpleScriptContext;
 import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -79,8 +78,8 @@ public class ActiveRunner {
 	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl, long id) throws ScriptException, NoSuchMethodException {		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
-		if(querier != null) ((ActiveQuerier) querier).resetQuerier(guid, ttl, id);
-		ValuesMap valuesMap = null;
+		if(querier != null) querier.resetQuerier(guid, ttl, id);
+		ValuesMap valuesMap;
 		
 		valuesMap = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
 		

@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -182,8 +181,8 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
    */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
-          ProtocolEvent event,
-          ProtocolTask[] ptasks) {
+          ProtocolEvent<PacketType, String> event,
+          ProtocolTask<InetSocketAddress, PacketType, String>[] ptasks) {
     return null;
   }
 

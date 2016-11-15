@@ -146,8 +146,8 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
    */
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
-          ProtocolEvent event,
-          ProtocolTask[] ptasks) {
+          ProtocolEvent<PacketType, String> event,
+          ProtocolTask<InetSocketAddress, PacketType, String>[] ptasks) {
     return null;
   }
 

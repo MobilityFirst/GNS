@@ -17,32 +17,25 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group;
+package edu.umass.cs.gnsclient.client.singletests;
 
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnscommon.CommandType;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 /**
+ * Comprehensive functionality test for the GNS.
  *
- * @author westy
  */
-public class AddToGroupSelf extends AddToGroup {
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class RemoveGuidTestReadCoordination 
+        extends RemoveGuidTestNoReadCoordination {
 
   /**
-   *
-   * @param module
+   * Same as RemoveGuidTestWithoutReadCoordination with added ReadCoordination
    */
-  public AddToGroupSelf(CommandModule module) {
-    super(module);
+  public RemoveGuidTestReadCoordination() {
+    super();
+    client.setForceCoordinatedReads(true);
   }
-
-  /**
-   *
-   * @return the command type
-   */
-  @Override
-  public CommandType getCommandType() {
-    return CommandType.AddToGroupSelf;
-  }
- 
+  
 }

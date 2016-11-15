@@ -36,12 +36,6 @@ public class GNSCommandProtocol {
   //
   // Response codes
   //
-//	Moved to GNSProtocol:
-//  /**
-//   * Indicates that a command that does not return a value has completed successfully.
-//   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#NO_ERROR}.
-//   */
-//  public final static String x_OK_RESPONSE_x = "+OK+";
   /**
    * A prefix used in the command return value to indicate an anomolous condition.
    * Always accompanied by an additional string value which indicates the

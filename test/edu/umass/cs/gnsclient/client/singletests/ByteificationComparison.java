@@ -1,9 +1,6 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.RSA_ALGORITHM;
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
@@ -13,28 +10,18 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
-import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -43,9 +30,7 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
-import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-import edu.umass.cs.utils.SessionKeys;
 import edu.umass.cs.utils.Util;
 
 import org.junit.runners.MethodSorters;
@@ -79,7 +64,7 @@ public class ByteificationComparison {
 		Collection<String> collection1 = new ArrayList<String>();
 		Collection<String> collection2 = new ArrayList<String>();
 		Collection<String> collection3 = new ArrayList<String>();
-		Collection<Collection> recursiveCollection = new ArrayList<Collection>();
+		Collection<Collection<String>> recursiveCollection = new ArrayList<Collection<String>>();
 		
 		for (int i = 0; i < 5; i++){
 			collection1.add(new String(Util.getRandomAlphanumericBytes(64)));

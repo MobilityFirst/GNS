@@ -20,25 +20,11 @@ import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
-
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ALIAS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.DUPLICATE_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.DUPLICATE_NAME;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.EVERYONE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.JSON_PARSE_ERROR;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.UPDATE_ERROR;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFICATION_ERROR;
-import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.exceptions.server.ServerRuntimeException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
@@ -48,7 +34,6 @@ import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -128,7 +113,7 @@ public class AccountAccess {
 
   /**
    * Obtains the account info record for the given GUID if that GUID was used
- to createField an account. Only looks on the local server.
+   * to createField an account. Only looks on the local server.
    *
    * @param guid
    * @param handler
@@ -141,7 +126,7 @@ public class AccountAccess {
 
   /**
    * Obtains the account info record for the given GUID if that GUID was used
- to createField an account. Will do a remote query if needed.
+   * to createField an account. Will do a remote query if needed.
    *
    * @param guid
    * @param handler
@@ -154,7 +139,7 @@ public class AccountAccess {
 
   /**
    * Obtains the account info record for the given GUID if that GUID was used
- to createField an account.
+   * to createField an account.
    * <p>
    * GUID: "ACCOUNT_INFO" -- {account} for primary guid<br>
    * GUID: "GUID" -- GUID (primary) for secondary guid<br>
@@ -512,8 +497,8 @@ public class AccountAccess {
             removeAccount(accountInfo, handler);
           }
           return new CommandResponse(
-                  ResponseCode.VERIFICATION_ERROR, BAD_RESPONSE
-                  + " " + VERIFICATION_ERROR + " "
+                  ResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+                  + " " + GNSCommandProtocol.VERIFICATION_ERROR + " "
                   + "Unable to send verification email");
         }
       } else {
@@ -533,11 +518,11 @@ public class AccountAccess {
             .getInstance().hash(name + SECRET
                     // Add salt unless email verification is disabled or salt is disabled.
                     + (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
-                    		// must always add salt
+                    // must always add salt
                     // && Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)
-                            ? new String(
-                                    Util.getRandomAlphanumericBytes(128))
-                            : "")),
+                    ? new String(
+                            Util.getRandomAlphanumericBytes(128))
+                    : "")),
             VERIFICATION_CODE_LENGTH));
   }
 
@@ -605,12 +590,12 @@ public class AccountAccess {
                   + "Unable to update account info");
         }
       } else {
-        return new CommandResponse(ResponseCode.VERIFICATION_ERROR, BAD_RESPONSE
-                + " " + VERIFICATION_ERROR + " " + "Unable to send verification email");
+        return new CommandResponse(ResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+                + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to send verification email");
       }
     }
-    return new CommandResponse(ResponseCode.VERIFICATION_ERROR, BAD_RESPONSE
-            + " " + VERIFICATION_ERROR + " " + "Email verification is disabled.");
+    return new CommandResponse(ResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+            + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Email verification is disabled.");
   }
 
   /**
@@ -696,7 +681,7 @@ public class AccountAccess {
               + GNSCommandProtocol.BAD_ACCOUNT + " " + "Not an account guid");
     } else if (!accountInfo.isVerified()) {
       return new CommandResponse(ResponseCode.VERIFICATION_ERROR,
-              BAD_RESPONSE + " " + VERIFICATION_ERROR
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR
               + " Account not verified");
     }
     if (!password.equals(accountInfo.getPassword())) {
@@ -781,7 +766,7 @@ public class AccountAccess {
         // set up ACL to look like this
         // "_GNS_ACL": {
         // "READ_WHITELIST": {"+ALL+": {"MD": "+ALL+"]}}}
-        JSONObject acl = createACL(ENTIRE_RECORD, Arrays.asList(EVERYONE),
+        JSONObject acl = createACL(ENTIRE_RECORD, Arrays.asList(GNSCommandProtocol.EVERYONE),
                 null, null);
         // prefix is the same for all acls so just pick one to use here
         json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
@@ -805,7 +790,7 @@ public class AccountAccess {
                   .deleteRecordSuppressExceptions(name);
           return new CommandResponse(
                   returnCode,
-                  BAD_RESPONSE
+                  GNSCommandProtocol.BAD_RESPONSE
                   + " "
                   + returnCode.getProtocolCode()
                   + " "
@@ -824,16 +809,16 @@ public class AccountAccess {
                           + " creation"));
         }
       } else {
-        return new CommandResponse(returnCode, BAD_RESPONSE + " "
+        return new CommandResponse(returnCode, GNSCommandProtocol.BAD_RESPONSE + " "
                 + returnCode.getProtocolCode() + " " + name + "("
                 + guid + ") " + returnCode.getMessage());
       }
     } catch (JSONException e) {
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              BAD_RESPONSE + " " + JSON_PARSE_ERROR + " "
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " "
               + e.getMessage());
     } catch (ClientException ce) {
-      return new CommandResponse(ce.getCode(), BAD_RESPONSE + " "
+      return new CommandResponse(ce.getCode(), GNSCommandProtocol.BAD_RESPONSE + " "
               + ce.getCode() + " " + name + " " + ce.getMessage() + " ("
               + name + " may have gotten created despite this exception)");
 
@@ -884,10 +869,10 @@ public class AccountAccess {
                 GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
-                BAD_RESPONSE + " " + BAD_ACCOUNT);
+                GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_ACCOUNT);
       }
     } catch (ClientException ce) {
-      return new CommandResponse(ce.getCode(), BAD_RESPONSE
+      return new CommandResponse(ce.getCode(), GNSCommandProtocol.BAD_RESPONSE
               + " "
               + ce.getMessage()
               + (removedGroupLinks ? "; removed group links" : "")
@@ -930,13 +915,13 @@ public class AccountAccess {
           String publicKey, ClientRequestHandlerInterface handler) {
     if ((AccountAccess.lookupGuidAnywhere(name, handler)) != null) {
       return new CommandResponse(
-              ResponseCode.DUPLICATE_NAME_EXCEPTION, BAD_RESPONSE
-              + " " + DUPLICATE_NAME + " " + name);
+              ResponseCode.DUPLICATE_NAME_EXCEPTION, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.DUPLICATE_NAME + " " + name);
     }
     if ((AccountAccess.lookupGuidInfoAnywhere(guid, handler)) != null) {
       return new CommandResponse(
-              ResponseCode.DUPLICATE_GUID_EXCEPTION, BAD_RESPONSE
-              + " " + DUPLICATE_GUID + " " + name);
+              ResponseCode.DUPLICATE_GUID_EXCEPTION, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.DUPLICATE_GUID + " " + name);
     }
     boolean createdName = false, createdGUID = false;
     try {
@@ -945,7 +930,7 @@ public class AccountAccess {
       ResponseCode code = handler.getRemoteQuery().createRecord(name, jsonHRN);
       // Return the error if we could not createField the HRN (alias) record.
       if (code.isExceptionOrError()) {
-        return new CommandResponse(code, BAD_RESPONSE + " "
+        return new CommandResponse(code, GNSCommandProtocol.BAD_RESPONSE + " "
                 + code.getProtocolCode() + " " + name + "(" + guid
                 + ")" + " " + code.getMessage());
       }
@@ -960,7 +945,7 @@ public class AccountAccess {
       // "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
       // "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
       JSONObject acl = createACL(ENTIRE_RECORD,
-              Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
+              Arrays.asList(GNSCommandProtocol.EVERYONE, accountGuidInfo.getPublicKey()),
               ENTIRE_RECORD, Arrays.asList(accountGuidInfo.getPublicKey()));
       // prefix is the same for all acls so just pick one to use here
       jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
@@ -978,7 +963,7 @@ public class AccountAccess {
         ResponseCode rollbackCode = handler.getRemoteQuery().deleteRecordSuppressExceptions(name);
         return new CommandResponse(
                 guidCode,
-                BAD_RESPONSE
+                GNSCommandProtocol.BAD_RESPONSE
                 + " "
                 + guidCode.getProtocolCode()
                 + " "
@@ -1004,14 +989,14 @@ public class AccountAccess {
               + " and updated account info successfully]");
     } catch (JSONException e) {
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              BAD_RESPONSE + " " + JSON_PARSE_ERROR + " "
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " "
               + e.getMessage());
     } catch (ServerRuntimeException e) {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
-              BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " "
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UNSPECIFIED_ERROR + " "
               + e.getMessage());
     } catch (ClientException ce) {
-      return new CommandResponse(ce.getCode(), BAD_RESPONSE
+      return new CommandResponse(ce.getCode(), GNSCommandProtocol.BAD_RESPONSE
               + " "
               + ce.getCode()
               + " "
@@ -1065,7 +1050,7 @@ public class AccountAccess {
         // "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
         // "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
         JSONObject acl = createACL(ENTIRE_RECORD,
-                Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
+                Arrays.asList(GNSCommandProtocol.EVERYONE, accountGuidInfo.getPublicKey()),
                 ENTIRE_RECORD,
                 Arrays.asList(accountGuidInfo.getPublicKey()));
         // prefix is the same for all acls so just pick one to use here
@@ -1091,15 +1076,15 @@ public class AccountAccess {
                   GNSProtocol.OK_RESPONSE.toString());
         }
       }
-      return new CommandResponse(returnCode, BAD_RESPONSE + " "
+      return new CommandResponse(returnCode, GNSCommandProtocol.BAD_RESPONSE + " "
               + returnCode.getProtocolCode() + " " + names);
     } catch (JSONException e) {
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              BAD_RESPONSE + " " + JSON_PARSE_ERROR + " "
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " "
               + e.getMessage());
     } catch (ServerRuntimeException e) {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
-              BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " "
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UNSPECIFIED_ERROR + " "
               + e.getMessage());
     }
   }
@@ -1212,7 +1197,7 @@ public class AccountAccess {
     if (!ignoreAccountGuid) {
       if (lookupAccountInfoFromGuidAnywhere(guidInfo.getGuid(), handler) != null) {
         return new CommandResponse(ResponseCode.BAD_GUID_ERROR,
-                BAD_RESPONSE + " " + BAD_GUID + " "
+                GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_GUID + " "
                 + guidInfo.getGuid() + " is an account guid");
       }
     }
@@ -1223,13 +1208,13 @@ public class AccountAccess {
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
-                BAD_RESPONSE + " " + BAD_ACCOUNT + " "
+                GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_ACCOUNT + " "
                 + guidInfo.getGuid()
                 + " does not have a primary account guid");
       }
       if ((accountInfo = lookupAccountInfoFromGuidAnywhere(accountGuid, handler)) == null) {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
-                BAD_RESPONSE + " " + BAD_ACCOUNT + " "
+                GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_ACCOUNT + " "
                 + guidInfo.getGuid()
                 + " cannot find primary account guid for "
                 + accountGuid);
@@ -1262,18 +1247,18 @@ public class AccountAccess {
             return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
           } else {
             return new CommandResponse(
-                    ResponseCode.UPDATE_ERROR, BAD_RESPONSE + " " + UPDATE_ERROR);
+                    ResponseCode.UPDATE_ERROR, GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UPDATE_ERROR);
           }
         }
       } else {
         return new CommandResponse(ResponseCode.BAD_GUID_ERROR,
-                BAD_RESPONSE + " " + BAD_GUID);
+                GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_GUID);
       }
     } catch (ClientException ce) {
       /* arun: Unclear how to roll this back or complete the rest of this
 			 * operation. We need an idempotent version of this method that at
 			 * least completes the operation upon a retry. */
-      return new CommandResponse(ce.getCode(), BAD_RESPONSE + " "
+      return new CommandResponse(ce.getCode(), GNSCommandProtocol.BAD_RESPONSE + " "
               + ce.getMessage()
               + (removedGroupLinks ? "; removed group links" : "")
               + (deletedGUID ? "; deleted " + guidInfo.getGuid() : "")
@@ -1310,7 +1295,7 @@ public class AccountAccess {
               jsonHRN)).isExceptionOrError()) {
         // roll this back
         accountInfo.removeAlias(alias);
-        return new CommandResponse(returnCode, BAD_RESPONSE + " "
+        return new CommandResponse(returnCode, GNSCommandProtocol.BAD_RESPONSE + " "
                 + returnCode.getProtocolCode() + " " + alias + " "
                 + returnCode.getMessage());
       }
@@ -1322,17 +1307,17 @@ public class AccountAccess {
         // back out if we got an error
         handler.getRemoteQuery().deleteRecord(alias);
         return new CommandResponse(ResponseCode.UPDATE_ERROR,
-                BAD_RESPONSE + " " + UPDATE_ERROR);
+                GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UPDATE_ERROR);
       } else {
         return new CommandResponse(ResponseCode.NO_ERROR,
                 GNSProtocol.OK_RESPONSE.toString());
       }
     } catch (JSONException e) {
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              BAD_RESPONSE + " " + JSON_PARSE_ERROR + " "
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " "
               + e.getMessage());
     } catch (ClientException ce) {
-      return new CommandResponse(ce.getCode(), BAD_RESPONSE + " "
+      return new CommandResponse(ce.getCode(), GNSCommandProtocol.BAD_RESPONSE + " "
               + ce.getCode() + " " + alias + " " + ce.getMessage());
 
     }
@@ -1358,19 +1343,19 @@ public class AccountAccess {
             new Object[]{alias, accountInfo.getAliases()});
     if (!accountInfo.containsAlias(alias)) {
       return new CommandResponse(ResponseCode.BAD_ALIAS_EXCEPTION,
-              BAD_RESPONSE + " " + BAD_ALIAS);
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_ALIAS);
     }
     // remove the NAME -- GUID record
     ResponseCode responseCode;
     try {
       if ((responseCode = handler.getRemoteQuery().deleteRecord(alias))
               .isExceptionOrError()) {
-        return new CommandResponse(responseCode, BAD_RESPONSE + " "
+        return new CommandResponse(responseCode, GNSCommandProtocol.BAD_RESPONSE + " "
                 + responseCode.getProtocolCode() + " "
                 + responseCode.getMessage());
       }
     } catch (ClientException ce) {
-      return new CommandResponse(ce.getCode(), BAD_RESPONSE + " "
+      return new CommandResponse(ce.getCode(), GNSCommandProtocol.BAD_RESPONSE + " "
               + ce.getCode() + " " + ce.getMessage());
     }
     // Now updated the account record
@@ -1379,7 +1364,7 @@ public class AccountAccess {
     if ((responseCode = updateAccountInfo(accountInfo.getGuid(),
             accountInfo, writer, signature, message, timestamp, handler,
             true)).isExceptionOrError()) {
-      return new CommandResponse(responseCode, BAD_RESPONSE + " "
+      return new CommandResponse(responseCode, GNSCommandProtocol.BAD_RESPONSE + " "
               + responseCode.getProtocolCode());
     }
     return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
@@ -1406,7 +1391,7 @@ public class AccountAccess {
             writer, signature, message, timestamp, handler, false)
             .isExceptionOrError()) {
       return new CommandResponse(ResponseCode.UPDATE_ERROR,
-              BAD_RESPONSE + " " + UPDATE_ERROR);
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UPDATE_ERROR);
     }
     return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
   }
@@ -1431,7 +1416,7 @@ public class AccountAccess {
     if (updateGuidInfo(guidInfo, writer, signature, message, timestamp,
             handler).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.UPDATE_ERROR,
-              BAD_RESPONSE + " " + UPDATE_ERROR);
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UPDATE_ERROR);
     }
     return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
   }
@@ -1456,7 +1441,7 @@ public class AccountAccess {
     if (updateGuidInfo(guidInfo, writer, signature, message, timestamp,
             handler).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.UPDATE_ERROR,
-              BAD_RESPONSE + " " + UPDATE_ERROR);
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UPDATE_ERROR);
     }
     return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
   }
@@ -1506,9 +1491,8 @@ public class AccountAccess {
           AccountInfo accountInfo, ClientRequestHandlerInterface handler,
           boolean remoteUpdate) {
     return !updateAccountInfo(accountInfo.getGuid(), accountInfo,
-            //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), 
-    		GNSConfig.getInternalOpSecret(),
-    		null, null,
+            GNSConfig.getInternalOpSecret(),
+            null, null,
             null, handler, remoteUpdate)
             .isExceptionOrError();
   }
@@ -1534,8 +1518,8 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
 
     return !updateGuidInfo(guidInfo,
-    		GNSConfig.getInternalOpSecret(),
-    		//Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET),
+            GNSConfig.getInternalOpSecret(),
+            //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET),
             null, null, null, handler)
             .isExceptionOrError();
   }
@@ -1580,7 +1564,6 @@ public class AccountAccess {
   }
 
   // test code
-
   /**
    *
    * @param args

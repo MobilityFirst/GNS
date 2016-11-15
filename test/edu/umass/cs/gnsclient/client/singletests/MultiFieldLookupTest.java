@@ -88,7 +88,7 @@ public class MultiFieldLookupTest {
       json.put("name", "frank");
       json.put("occupation", "busboy");
       json.put("location", "work");
-      json.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      json.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -105,7 +105,7 @@ public class MultiFieldLookupTest {
   @Test
   public void test_02_MultiFieldLookup() {
     try {
-      String actual = client.fieldRead(westyEntry, new ArrayList(Arrays.asList("name", "occupation")));
+      String actual = client.fieldRead(westyEntry, new ArrayList<String>(Arrays.asList("name", "occupation")));
       JSONAssert.assertEquals("{\"name\":\"frank\",\"occupation\":\"busboy\"}", actual, true);
     } catch (Exception e) {
       fail("Exception while reading \"name\" and \"occupation\": " + e);

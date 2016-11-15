@@ -3188,7 +3188,7 @@ public class ConnectionInfo
       // check for the queue, if there are any channels to register
       while (inputQueueGetSize() != 0)
       {
-        SocketInfo regSocket = (SocketInfo) inputQueueGetSocketInfo();
+        SocketInfo regSocket = inputQueueGetSocketInfo();
         SelectionKey SelecKey;
         try
         {

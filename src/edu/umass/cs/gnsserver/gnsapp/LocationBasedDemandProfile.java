@@ -30,7 +30,6 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
@@ -56,11 +55,27 @@ import java.util.logging.Logger;
 public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   private static final Logger LOG = Logger.getLogger(LocationBasedDemandProfile.class.getName());
+  //FIXME: Do this have an equivalent in gigapaxos we can use.
+  /**
+   * The maximum number of replicas. Used by {@link LocationBasedDemandProfile}.
+   */
+  private static int maxReplica = 100;
+  //FIXME: Do this have an equivalent in gigapaxos we can use.
+  /**
+   * Determines the number of replicas based on ratio of lookups to writes.
+   * Used by {@link LocationBasedDemandProfile}.
+   */
+  private static double normalizingConstant = 0.5;
+  //FIXME: Do this have an equivalent in gigapaxos we can use.
+  /**
+   * The minimum number of replicas. Used by {@link LocationBasedDemandProfile}.
+   */
+  private static int minReplica = 3;
 
   /**
    * The keys for the demand profile packet.
    */
-  public enum Keys {
+  private enum Keys {
 
     /**
      * SERVICE_NAME
@@ -430,7 +445,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
       // allow multiple actives to reside on the same
       // host differentiated by ports this loop might get the same ip multiple times. Nothing bad will
       // happen because of the contains below, but still it's kind of dumb.
-      for (InetAddress ip : (ArrayList<InetAddress>) allActives) {
+      for (InetAddress ip : allActives) {
         if (newActives.size() >= numReplica) {
           break;
         }
@@ -458,14 +473,14 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
     if (updateCount == 0) {
       // no updates, replicate everywhere.
-      return Math.min(actualReplicasCount, OldHackyConstants.maxReplica);
+      return Math.min(actualReplicasCount, maxReplica);
     } else {
       // Can't be bigger than the number of actual replicas or the max configured amount
-      return Math.min(Math.min(actualReplicasCount, OldHackyConstants.maxReplica),
+      return Math.min(Math.min(actualReplicasCount, maxReplica),
               // Or smaller than the min configured amount
-              Math.max(OldHackyConstants.minReplica,
+              Math.max(minReplica,
                       (int) StrictMath.round((lookupCount
-                              / (updateCount * OldHackyConstants.normalizingConstant)))));
+                              / (updateCount * normalizingConstant)))));
     }
   }
 

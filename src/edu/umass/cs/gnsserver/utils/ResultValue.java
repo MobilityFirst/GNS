@@ -48,6 +48,8 @@ import org.json.JSONException;
  */
 public class ResultValue extends ArrayList<Object> {
 
+  private static final long serialVersionUID = 1L;
+
   /**
    * Create an empty ResultValue instance.
    */

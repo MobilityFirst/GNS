@@ -19,14 +19,13 @@ import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
-import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -169,7 +168,6 @@ public class CommandHandler {
     CommandUtils.addMessageWithoutSignatureToJSON(command);
     return commandPacket;
   }
- 
 
   /**
    *
@@ -190,20 +188,21 @@ public class CommandHandler {
         return commandHandler.execute(getInternalHeaderAfterEnforcingChecks(commandPacket,
                 handler), PacketUtils.getCommand(commandPacket), handler);
       } else {
-        return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " "
-                + OPERATION_NOT_SUPPORTED + " - Don't understand "
+        return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
+                GNSCommandProtocol.BAD_RESPONSE + " "
+                + GNSCommandProtocol.OPERATION_NOT_SUPPORTED + " - Don't understand "
                 + PacketUtils.getCommand(commandPacket));
       }
     } catch (JSONException e) {
       // e.printStackTrace();
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e
               + " while executing command.");
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
       return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
-              BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + e);
     } catch (InternalRequestException e) {
-      return new CommandResponse(e.getCode(), BAD_RESPONSE + " "
+      return new CommandResponse(e.getCode(), GNSCommandProtocol.BAD_RESPONSE + " "
               + ResponseCode.INTERNAL_REQUEST_EXCEPTION + " " + e);
     }
   }
@@ -243,7 +242,7 @@ public class CommandHandler {
             && header
             .getOriginatingGUID()
             .equals(PacketUtils
-                    .getOriginatingGUID((CommandPacket) originRequest))) {
+                    .getOriginatingGUID(originRequest))) {
       GNSConfig
               .getLogger()
               .log(Level.INFO,
@@ -280,11 +279,12 @@ public class CommandHandler {
     } catch (JSONException e) {
       // e.printStackTrace();
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
+              GNSCommandProtocol.BAD_RESPONSE + " "
+              + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e
               + " while executing command.");
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
       return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
-              BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + e);
     }
   }
 

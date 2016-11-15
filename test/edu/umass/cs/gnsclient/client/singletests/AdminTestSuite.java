@@ -115,34 +115,34 @@ public class AdminTestSuite extends DefaultTest{
 	}
 
   /**
-   *
-   * @throws Exception
-   */
-  @Test
-  public void test_01_ParameterGet() throws Exception {
-      String result = client.parameterGet("email_verification");
-      assertEquals("true", result);
-  }
-
-  /**
-   *
-   * @throws Exception
-   */
-  @Test
-  public void test_02_ParameterSet() throws Exception {
-      client.parameterSet("max_guids", 2000);
-      String result = client.parameterGet("max_guids");
-      assertEquals("2000", result);
-  }
+//   *
+//   * @throws Exception
+//   */
+//  @Test
+//  public void test_01_ParameterGet() throws Exception {
+//      String result = client.parameterGet("email_verification");
+//      assertEquals("true", result);
+//  }
+//
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test
+//  public void test_02_ParameterSet() throws Exception {
+//      client.parameterSet("max_guids", 2000);
+//      String result = client.parameterGet("max_guids");
+//      assertEquals("2000", result);
+//  }
   
-  /**
-   *
-   * @throws Exception
-   */
-  @Test
-  public void test_03_ParameterList() throws Exception {
-      String result = client.parameterList();
-  }
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test
+//  public void test_03_ParameterList() throws Exception {
+//      String result = client.parameterList();
+//  }
   
   /**
    *
@@ -153,23 +153,23 @@ public class AdminTestSuite extends DefaultTest{
       String result = client.dump();
   }
   
-  /**
-   *
-   * @throws Exception
-   */
-  @Test
-  public void test_05_DumpCache() throws Exception {
-      String result = client.dumpCache();
-  }
-  
-  /**
-   *
-   * @throws Exception
-   */
-  @Test
-  public void test_06_ClearCache() throws Exception {
-      String result = client.clearCache();
-  }
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test
+//  public void test_05_DumpCache() throws Exception {
+//      String result = client.dumpCache();
+//  }
+//  
+//  /**
+//   *
+//   * @throws Exception
+//   */
+//  @Test
+//  public void test_06_ClearCache() throws Exception {
+//      String result = client.clearCache();
+//  }
   
   
 

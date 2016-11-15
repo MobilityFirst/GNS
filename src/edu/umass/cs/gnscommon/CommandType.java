@@ -589,7 +589,6 @@ public enum CommandType {
   SubstituteUnsigned(236, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned.class,
           CommandResultType.NULL, true, false,
           "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
-          + "See below for more on the signature. "
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
@@ -814,7 +813,7 @@ public enum CommandType {
   /**
    *
    */
-  LookupAccountRecord(420, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class,
+  LookupAccountRecord(420, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class,
           CommandResultType.MAP, true, false,
           "Returns the account info associated with the given GUID. "
           + "Returns +BADGUID+ if the guid has not been registered.",
@@ -822,7 +821,7 @@ public enum CommandType {
   /**
    *
    */
-  LookupRandomGuids(421, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class,
+  LookupRandomGuids(421, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class,
           CommandResultType.LIST, true, false,
           "Returns some number of random subguids from and account guid. Only for testing purposes. "
           + "Returns +BADGUID+ if the guid has not been registered.",
@@ -831,7 +830,7 @@ public enum CommandType {
   /**
    *
    */
-  LookupGuid(422, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class,
+  LookupGuid(422, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class,
           CommandResultType.STRING, true, false,
           "Returns the guid associated with the name which is the human readable name (alias). "
           + "Returns +BADACCOUNT+ if the name has not been registered.",
@@ -839,14 +838,14 @@ public enum CommandType {
   /**
    *
    */
-  LookupPrimaryGuid(423, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class,
+  LookupPrimaryGuid(423, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class,
           CommandResultType.STRING, true, false,
           "Returns the account guid associated the guid. Returns +BADGUID+ if the guid does not exist.",
           new String[]{GNSCommandProtocol.GUID}),
   /**
    *
    */
-  LookupGuidRecord(424, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class,
+  LookupGuidRecord(424, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class,
           CommandResultType.MAP, true, false,
           "Returns human readable name and public key associated with the given GUID. "
           + "Returns +BADGUID+ if the guid has not been registered.",
@@ -919,7 +918,7 @@ public enum CommandType {
   /**
    *
    */
-  RetrieveAliases(444, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases.class,
+  RetrieveAliases(444, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases.class,
           CommandResultType.LIST, true, false,
           "Retrieves all aliases for the account associated with the GUID. "
           + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
@@ -980,8 +979,7 @@ public enum CommandType {
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to include the accesser guid. Accessor guid can "
           + "be guid or group guid or +ALL+ which means anyone. "
-          + "Field can be also be +ALL+ which means all fields can be read by the accessor. "
-          + "See below for description of ACL type and signature.",
+          + "Field can be also be +ALL+ which means all fields can be read by the accessor. ",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.ACCESSER,
@@ -996,8 +994,7 @@ public enum CommandType {
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to include the accesser guid. "
           + "Accessor should a guid or group guid or +ALL+ which means anyone. "
-          + "Field can be also be +ALL+ which means all fields can be read by the accessor. "
-          + "See below for description of ACL type and signature.",
+          + "Field can be also be +ALL+ which means all fields can be read by the accessor. ",
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.FIELD,
             GNSCommandProtocol.ACCESSER,
@@ -1034,7 +1031,7 @@ public enum CommandType {
   /**
    *
    */
-  AclRetrieve(514, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class,
+  AclRetrieve(514, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class,
           CommandResultType.LIST, true, false,
           "Returns the access control list for a guids's field.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1145,7 +1142,7 @@ public enum CommandType {
   /**
    *
    */
-  GetGroupMembers(614, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers.class,
+  GetGroupMembers(614, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers.class,
           CommandResultType.LIST, true, false,
           "Returns the members of the group formatted as a JSON Array. "
           + "Reader guid needs to have read access and sign the command.",
@@ -1156,7 +1153,7 @@ public enum CommandType {
   /**
    *
    */
-  GetGroupMembersSelf(615, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
+  GetGroupMembersSelf(615, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
           CommandResultType.LIST, true, false,
           "Returns the members of the group formatted as a JSON Array.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1165,7 +1162,7 @@ public enum CommandType {
   /**
    *
    */
-  GetGroups(616, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups.class,
+  GetGroups(616, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups.class,
           CommandResultType.LIST, true, false,
           "Returns the groups that a guid is a member of formatted as a JSON Array. "
           + "Reader guid needs to have read access and sign the command.",
@@ -1176,7 +1173,7 @@ public enum CommandType {
   /**
    *
    */
-  GetGroupsSelf(617, CommandCategory.SYSTEM_LOOKUP, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
+  GetGroupsSelf(617, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
           CommandResultType.LIST, true, false,
           "Returns the groups that a guid is a member of formatted as a JSON Array.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1247,64 +1244,64 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands in wiki format.",
           new String[]{"tcpwiki"}),
-  /**
-   *
-   */
-  Admin(715, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class,
-          CommandResultType.NULL, true, true,
-          "Turns on admin mode.",
-          new String[]{GNSCommandProtocol.PASSKEY}),
+//  /**
+//   *
+//   */
+//  Admin(715, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class,
+//          CommandResultType.NULL, true, true,
+//          "Turns on admin mode.",
+//          new String[]{GNSCommandProtocol.PASSKEY}),
   /**
    *
    */
   Dump(716, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
           CommandResultType.STRING, true, true,
-          "[ONLY IN ADMIN MODE] Returns the contents of the GNS.",
+          "Returns the contents of the GNS.",
           new String[]{GNSCommandProtocol.PASSKEY}),
-  /**
-   *
-   */
-  @Deprecated
-  GetParameter(720, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
-          CommandResultType.STRING, true, true,
-          "Returns one field from the GNS for the given guid after authenticating "
-          + "that guid making request has access authority. "
-          + "Values are always returned as a JSON list. "
-          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
-          new String[]{GNSCommandProtocol.FIELD}),
-  /**
-   *
-   */
-  @Deprecated
-  SetParameter(721, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class,
-          CommandResultType.NULL, true, true,
-          "[ONLY IN ADMIN MODE] Changes a parameter value.",
-          new String[]{GNSCommandProtocol.FIELD,
-            GNSCommandProtocol.VALUE}),
-  /**
-   *
-   */
-  @Deprecated
-  ListParameters(722, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class,
-          CommandResultType.STRING, true, true,
-          "[ONLY IN ADMIN MODE] Lists all parameter values.",
-          new String[]{}),
-  /**
-   *
-   */
-  @Deprecated
-  ClearCache(725, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
-          CommandResultType.NULL, true, true,
-          "[ONLY IN ADMIN MODE] Clears the local name server cache.",
-          new String[]{}),
-  /**
-   *
-   */
-  @Deprecated
-  DumpCache(726, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
-          CommandResultType.STRING, true, false,
-          "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.",
-          new String[]{}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  GetParameter(720, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
+//          CommandResultType.STRING, true, true,
+//          "Returns one field from the GNS for the given guid after authenticating "
+//          + "that guid making request has access authority. "
+//          + "Values are always returned as a JSON list. "
+//          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
+//          new String[]{GNSCommandProtocol.FIELD}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  SetParameter(721, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class,
+//          CommandResultType.NULL, true, true,
+//          "[ONLY IN ADMIN MODE] Changes a parameter value.",
+//          new String[]{GNSCommandProtocol.FIELD,
+//            GNSCommandProtocol.VALUE}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  ListParameters(722, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class,
+//          CommandResultType.STRING, true, true,
+//          "[ONLY IN ADMIN MODE] Lists all parameter values.",
+//          new String[]{}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  ClearCache(725, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
+//          CommandResultType.NULL, true, true,
+//          "[ONLY IN ADMIN MODE] Clears the local name server cache.",
+//          new String[]{}),
+//  /**
+//   *
+//   */
+//  @Deprecated
+//  DumpCache(726, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
+//          CommandResultType.STRING, true, false,
+//          "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.",
+//          new String[]{}),
   /**
    *
    */
@@ -1315,7 +1312,7 @@ public enum CommandType {
   /**
    *
    */
-  SetCode(810, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode.class,
+  SetCode(810, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode.class,
           CommandResultType.NULL, true, false,
           "Sets the given active code for the specified guid and action, ensuring the writer has permission.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1327,7 +1324,7 @@ public enum CommandType {
   /**
    *
    */
-  ClearCode(811, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode.class,
+  ClearCode(811, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode.class,
           CommandResultType.NULL, true, false,
           "Clears the active code for the specified guid and action, ensuring the writer has permission.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1338,7 +1335,7 @@ public enum CommandType {
   /**
    *
    */
-  GetCode(812, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class,
+  GetCode(812, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class,
           CommandResultType.STRING, true, false,
           "Returns the active code for the specified action, ensuring the reader has permission.",
           new String[]{GNSCommandProtocol.GUID,
@@ -1416,6 +1413,8 @@ public enum CommandType {
     /**
      *
      */
+    // What is this used for?
+    @Deprecated
     SYSTEM_LOOKUP,
     /**
      *
@@ -1574,6 +1573,7 @@ public enum CommandType {
    *
    * @return true if it's a system lookup command
    */
+  @Deprecated
   public boolean isSystemLookup() {
     return category.equals(CommandCategory.SYSTEM_LOOKUP);
   }
@@ -1778,21 +1778,11 @@ public enum CommandType {
     Help.setChain();
     HelpTcp.setChain();
     HelpTcpWiki.setChain();
-    Admin.setChain();
     Dump.setChain();
-    GetParameter.setChain();
-    SetParameter.setChain();
-    ListParameters.setChain();
-    ClearCache.setChain();
-    DumpCache.setChain();
     ConnectionCheck.setChain();
     Unknown.setChain();
-
   }
 
-//  public static Class<?>[] getCommandClassesArray() {
-//    return (Class<?>[]) Stream.of(values()).map(CommandType::getCommandClass).toArray();
-//  }
   /**
    *
    * @return the command classes

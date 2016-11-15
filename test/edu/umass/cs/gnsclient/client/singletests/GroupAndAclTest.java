@@ -129,12 +129,16 @@ public class GroupAndAclTest {
   @Test
   public void test_211_GroupAdd() {
     try {
-      client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
-      client.groupAddGuid(mygroupEntry.getGuid(), samEntry.getGuid(), mygroupEntry);
-      client.groupAddGuid(mygroupEntry.getGuid(), guidToDeleteEntry.getGuid(), mygroupEntry);
+      JSONArray guids = new JSONArray(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid(), guidToDeleteEntry.getGuid()));
+      client.groupAddGuids(mygroupEntry.getGuid(), guids, mygroupEntry);
     } catch (IOException | ClientException e) {
       fail("Exception while adding to groups: " + e);
     }
+    waitSettle();
+  }
+
+  @Test
+  public void test_212_GroupAddCheck() {
     try {
       // Make sure the group has all the right members
       HashSet<String> expected = new HashSet<>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid(), guidToDeleteEntry.getGuid()));
@@ -161,14 +165,18 @@ public class GroupAndAclTest {
    *
    */
   @Test
-  public void test_212_GroupRemoveGuid() {
-    waitSettle();
+  public void test_213_GroupRemoveGuid() {
     // now remove a guid and check for group updates
     try {
       client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
     } catch (Exception e) {
       fail("Exception while removing testGuid: " + e);
     }
+    waitSettle();
+  }
+
+  @Test
+  public void test_214_GroupRemoveGuidCheck() {
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
@@ -177,6 +185,7 @@ public class GroupAndAclTest {
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
     }
+
   }
 
   /**
@@ -184,7 +193,6 @@ public class GroupAndAclTest {
    */
   @Test
   public void test_213_GroupRemoveCheck() {
-    waitSettle();
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
@@ -203,7 +211,6 @@ public class GroupAndAclTest {
    */
   @Test
   public void test_220_GroupAndACLCreateGuids() {
-    //testGroup();
     String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
     try {
       try {
@@ -217,13 +224,26 @@ public class GroupAndAclTest {
 
     try {
       groupAccessUserEntry = client.guidCreate(masterGuid, groupAccessUserName);
+    } catch (Exception e) {
+      fail("Exception creating group user: " + e);
+    }
+    waitSettle();
+  }
+
+  @Test
+  public void test_221_GroupAndACLCreateGuidsRemoveAll() {
+    try {
       // remove all fields read by all
-      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, 
+      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry,
               GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
     }
+    waitSettle();
+  }
 
+  @Test
+  public void test_222_GroupAndACLCreateGuidsRemoveAllCheck() {
     try {
       // test of remove all fields read by all
       JSONAssert.assertEquals(new JSONArray(Arrays.asList(masterGuid.getGuid())), client.aclGet(AclAccessType.READ_WHITELIST, groupAccessUserEntry,
@@ -231,7 +251,10 @@ public class GroupAndAclTest {
     } catch (Exception e) {
       fail("Exception test acl: " + e);
     }
+  }
 
+  @Test
+  public void test_223_GroupAndACLCreateGuids() {
     try {
       client.fieldCreateOneElementList(groupAccessUserEntry.getGuid(), "address", "23 Jumper Road", groupAccessUserEntry);
       client.fieldCreateOneElementList(groupAccessUserEntry.getGuid(), "age", "43", groupAccessUserEntry);
@@ -244,13 +267,14 @@ public class GroupAndAclTest {
     } catch (Exception e) {
       fail("Exception adding mygroup to acl for group user hometown field: " + e);
     }
+    waitSettle();
   }
 
   /**
    *
    */
   @Test
-  public void test_221_GroupAndACLTestBadAccess() {
+  public void test_224_GroupAndACLTestBadAccess() {
     try {
       try {
         String result = client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
@@ -267,7 +291,7 @@ public class GroupAndAclTest {
    *
    */
   @Test
-  public void test_222_GroupAndACLTestGoodAccess() {
+  public void test_225_GroupAndACLTestGoodAccess() {
     try {
       assertEquals("whoville", client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "hometown", westyEntry));
     } catch (Exception e) {
@@ -279,16 +303,19 @@ public class GroupAndAclTest {
    *
    */
   @Test
-  public void test_223_GroupAndACLTestRemoveGuid() {
+  public void test_226_GroupAndACLTestRemoveGuid() {
 
     try {
-      try {
-        client.groupRemoveGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
-      } catch (Exception e) {
-        fail("Exception removing westy from mygroup: " + e);
-      }
+      client.groupRemoveGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
+    } catch (Exception e) {
+      fail("Exception removing westy from mygroup: " + e);
+    }
+    waitSettle();
+  }
 
-      waitSettle();
+  @Test
+  public void test_227_GroupAndACLTestRemoveGuidCheck() {
+    try {
 
       HashSet<String> expected = new HashSet<String>(Arrays.asList(samEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));

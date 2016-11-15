@@ -493,7 +493,7 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * Looks up metadata for {@code targetGUID}. The result type of the
+   * Looks up guid metadata for {@code targetGUID}. The result type of the
    * execution result of this query is {@link GNSCommand.ResultType#MAP}.
    *
    * @param targetGUID
@@ -507,7 +507,7 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * Looks up the the metadata for {@code accountGUID}.
+   * Looks up the the account metadata for {@code accountGUID}.
    *
    * @param accountGUID
    * The account GUID being queried.
@@ -543,6 +543,7 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket publicKeyLookupFromGUID(String targetGUID)
           throws ClientException {
+    // FIXME: This is not correctly implemented
     return lookupGUIDRecord(targetGUID);
   }
 
@@ -1994,14 +1995,14 @@ public class GNSCommand extends CommandPacket {
     return fieldRemove(targetGUID.getGuid(), field, targetGUID);
   }
 
-  /**
-   * @return CommandPacket
-   * @throws ClientException
-   */
-  public static final CommandPacket adminEnable()
-          throws ClientException {
-    return getCommand(CommandType.Admin);
-  }
+//  /**
+//   * @return CommandPacket
+//   * @throws ClientException
+//   */
+//  public static final CommandPacket adminEnable()
+//          throws ClientException {
+//    return getCommand(CommandType.Admin);
+//  }
 
   /**
    * @return The {@link GNSCommand.ResultType} type of the result obtained by

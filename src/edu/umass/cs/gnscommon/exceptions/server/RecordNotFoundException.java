@@ -31,7 +31,9 @@ package edu.umass.cs.gnscommon.exceptions.server;
  */
 
 public class RecordNotFoundException extends ServerException{
-  String name;
+
+  private static final long serialVersionUID = 1L;
+  private final String name;
 
   /**
    * Create a RecordNotFoundException instance.

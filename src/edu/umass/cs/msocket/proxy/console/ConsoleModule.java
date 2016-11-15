@@ -59,6 +59,8 @@ import edu.umass.cs.msocket.proxy.console.commands.Help;
 import edu.umass.cs.msocket.proxy.console.commands.Quit;
 import edu.umass.cs.msocket.proxy.location.LocationService;
 import edu.umass.cs.msocket.proxy.watchdog.Watchdog;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map.Entry;
 
 /**
  * This class defines a ConsoleModule
@@ -68,9 +70,9 @@ import edu.umass.cs.msocket.proxy.watchdog.Watchdog;
  */
 public class ConsoleModule {
 
-  ConsoleReader console;
-  TreeSet<ConsoleCommand> commands;
-  boolean quit = false;
+  private ConsoleReader console;
+  private TreeSet<ConsoleCommand> commands;
+  private boolean quit = false;
 
   /**
    *
@@ -105,7 +107,7 @@ public class ConsoleModule {
    */
   public ConsoleModule(ConsoleReader console) {
     this.console = console;
-    this.commands = new TreeSet<ConsoleCommand>();
+    this.commands = new TreeSet<>();
     commands.add(new Help(this));
     commands.add(new edu.umass.cs.msocket.proxy.console.commands.History(this));
     commands.add(new Quit(this));
@@ -115,6 +117,7 @@ public class ConsoleModule {
     console.setHistory(loadHistory());
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
       public void run() {
         storeHistory();
       }
@@ -143,7 +146,8 @@ public class ConsoleModule {
    *
    * @return a List including the command history
    */
-  public List getHistory() {
+  @SuppressWarnings("unchecked")
+  public List<Object> getHistory() {
     return console.getHistory().getHistoryList();
   }
 
@@ -151,7 +155,8 @@ public class ConsoleModule {
    * Store the current command history
    */
   public void storeHistory() {
-    List history = console.getHistory().getHistoryList();
+    @SuppressWarnings("unchecked")
+    List<Object> history = console.getHistory().getHistoryList();
     try {
       Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
       prefs.clear();
@@ -209,15 +214,17 @@ public class ConsoleModule {
       Class<?> clazz;
       try {
         clazz = Class.forName(commandClass);
-        Constructor constructor;
+        Constructor<?> constructor;
         try {
-          constructor = clazz.getConstructor(new Class[]{this.getClass()});
+          constructor = clazz.getConstructor(new Class<?>[]{this.getClass()});
         } catch (NoSuchMethodException e) {
-          constructor = clazz.getConstructor(new Class[]{ConsoleModule.class});
+          constructor = clazz.getConstructor(new Class<?>[]{ConsoleModule.class});
         }
         ConsoleCommand command = (ConsoleCommand) constructor.newInstance(new Object[]{this});
         commands.add(command);
-      } catch (Exception e) {
+      } catch (ClassNotFoundException | SecurityException 
+              | NoSuchMethodException | InstantiationException | IllegalAccessException 
+              | IllegalArgumentException | InvocationTargetException e) {
         // fail silently: the command won't be added to the commands list
       }
     }
@@ -251,15 +258,15 @@ public class ConsoleModule {
     int size = commands.size();
     if (size > 0) {
       TreeSet<String> set = new TreeSet<>();
-      Iterator it = commands.iterator();
+      Iterator<ConsoleCommand> it = commands.iterator();
       while (it.hasNext()) {
-        set.add(((ConsoleCommand) it.next()).getCommandName());
+        set.add(it.next().getCommandName());
       }
-      completors.add(new SimpleCompletor((String[]) set.toArray(new String[size])));
+      completors.add(new SimpleCompletor(set.toArray(new String[size])));
     }
     completors.add(new FileNameCompletor());
 
-    Completor[] completorsArray = (Completor[]) completors.toArray(new Completor[completors.size()]);
+    Completor[] completorsArray = completors.toArray(new Completor[completors.size()]);
     consoleCompletor = new ArgumentCompletor(completorsArray, new CommandDelimiter());
   }
 
@@ -505,11 +512,11 @@ public class ConsoleModule {
    */
   public ConsoleCommand findConsoleCommand(String commandLine, Hashtable<String, ConsoleCommand> hashCommands) {
     ConsoleCommand foundCommand = null;
-    for (Iterator iter = hashCommands.entrySet().iterator(); iter.hasNext();) {
-      Map.Entry commandEntry = (Map.Entry) iter.next();
-      String commandName = (String) commandEntry.getKey();
+    for (Iterator<Entry<String,ConsoleCommand>> iter = hashCommands.entrySet().iterator(); iter.hasNext();) {
+      Map.Entry<String,ConsoleCommand> commandEntry = iter.next();
+      String commandName = commandEntry.getKey();
       if (commandLine.startsWith(commandName)) {
-        ConsoleCommand command = (ConsoleCommand) commandEntry.getValue();
+        ConsoleCommand command = commandEntry.getValue();
         if (foundCommand == null) {
           foundCommand = command;
         }
@@ -728,6 +735,7 @@ public class ConsoleModule {
      * @see jline.ArgumentCompletor.AbstractArgumentDelimiter#isDelimiterChar(java.lang.String,
      * int)
      */
+    @Override
     public boolean isDelimiterChar(String buffer, int pos) {
       String tentativeCmd = buffer.substring(0, pos);
       return isACompleteCommand(tentativeCmd);
@@ -743,8 +751,8 @@ public class ConsoleModule {
      */
     private boolean isACompleteCommand(String input) {
       boolean foundCompleteCommand = false;
-      for (Iterator iter = commands.iterator(); iter.hasNext();) {
-        ConsoleCommand command = (ConsoleCommand) iter.next();
+      for (Iterator<ConsoleCommand> iter = commands.iterator(); iter.hasNext();) {
+        ConsoleCommand command = iter.next();
         if (input.equals(command.getCommandName())) {
           foundCompleteCommand = !otherCommandsStartWith(command.getCommandName());
         }
@@ -753,8 +761,8 @@ public class ConsoleModule {
     }
 
     private boolean otherCommandsStartWith(String commandName) {
-      for (Iterator iter = commands.iterator(); iter.hasNext();) {
-        ConsoleCommand command = (ConsoleCommand) iter.next();
+      for (Iterator<ConsoleCommand> iter = commands.iterator(); iter.hasNext();) {
+        ConsoleCommand command = iter.next();
         if (command.getCommandName().startsWith(commandName) && !command.getCommandName().equals(commandName)) {
           return true;
         }

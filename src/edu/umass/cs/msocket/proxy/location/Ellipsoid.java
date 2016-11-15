@@ -28,8 +28,9 @@ import java.io.Serializable;
  * Encapsulation of an ellipsoid, and declaration of common reference
  * ellipsoids.
  */
-public class Ellipsoid implements Serializable
-{
+public class Ellipsoid implements Serializable {
+
+  private static final long serialVersionUID = 1L;
   /** Semi major axis (meters). */
   private final double mSemiMajorAxis;
 

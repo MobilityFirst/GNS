@@ -32,6 +32,8 @@ import java.util.Collection;
  */
 public class ResultValueString extends ArrayList<String> {
 
+  private static final long serialVersionUID = 1L;
+
   /**
    * Create an empty ResultValueString instance.
    */

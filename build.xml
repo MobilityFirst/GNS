@@ -49,10 +49,17 @@
     <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source"
            includeantruntime="false">
       <compilerarg value="-Xlint:unchecked"/>
+      <compilerarg value="-Xlint:rawtypes"/>
+      <compilerarg value="-Xlint:cast"/>
+      <compilerarg value="-Xlint:serial"/>
       <classpath refid="classpath.base"/>
     </javac>
     <javac srcdir="${test.dir}" destdir="${build.test.classes.dir}" debug="true" debuglevel="lines,vars,source"
            includeantruntime="false">
+      <compilerarg value="-Xlint:unchecked"/>
+      <compilerarg value="-Xlint:rawtypes"/>
+      <compilerarg value="-Xlint:cast"/>
+      <compilerarg value="-Xlint:serial"/>
       <classpath refid="classpath.base"/>
     </javac>
     <!-- fetch gigapaxos scripts -->
@@ -184,11 +191,11 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
 
   <target name="jar" depends="server_jarbuild, client_jarbuild, client_console_jarbuild, msocket-jar, msocket-proxy-console-jar">
     <symlink link="${build.jar.dir}/GNS.jar" overwrite="yes"
-                 resource="gnsserver-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
+             resource="gnsserver-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
     <symlink link="${build.jar.dir}/GNSClient.jar" overwrite="yes"
-                 resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
+             resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
     <symlink link="${build.jar.dir}/GNS-CLI.jar" overwrite="yes"
-                 resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
+             resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
   </target>
 
 
@@ -214,11 +221,11 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <fileset dir="conf"/>
     </copy>
     <symlink link="${dist.dir}/jars/GNSClient.jar" overwrite="yes"
-                 resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
+             resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
     <symlink link="${dist.dir}/jars/GNSClient.jar" overwrite="yes"
-                 resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
+             resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
     <symlink link="${dist.dir}/jars/GNS-CLI.jar" overwrite="yes"
-                 resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
+             resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
   </target>
   
   <path id="classpath.test">
@@ -247,19 +254,19 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
   </target>
 
   <target name="startServer" depends="compile" description="Forceclears and (re)starts a server for testing purposes.">
-	<property name="gigapaxosConfig" value="conf/gnsserver.3local.properties"/>
-      <property name="javax.net.ssl.trustStorePassword" value="qwerty"/>
-      <property name="javax.net.ssl.trustStore" value="conf/trustStore/node100.jks"/>
-      <property name="javax.net.ssl.keyStorePassword" value="qwerty"/>
-      <property name="javax.net.ssl.keyStore" value="conf/keyStore/node100.jks"/>
-	<property name="java.util.logging.config.file" value="conf/logging.gns.startServer.properties"/>
-	<exec executable="/bin/bash">
-		<arg line="bin/gpServer.sh  -DgigapaxosConfig=${gigapaxosConfig} forceclear all"/>
-	</exec>
-	<exec executable="/bin/bash">
-		<arg line="bin/gpServer.sh -Djavax.net.ssl.trustStorePassword=${javax.net.ssl.trustStorePassword} -Djavax.net.ssl.trustStore=${javax.net.ssl.trustStore} -Djavax.net.ssl.keyStorePassword=${javax.net.ssl.keyStorePassword} -Djavax.net.ssl.keyStore=${javax.net.ssl.keyStore} -Djava.util.logging.config.file=${java.util.logging.config.file} -DgigapaxosConfig=${gigapaxosConfig} restart all"/>
-	</exec>
-	<sleep seconds="10"/>
+    <property name="gigapaxosConfig" value="conf/gnsserver.3local.properties"/>
+    <property name="javax.net.ssl.trustStorePassword" value="qwerty"/>
+    <property name="javax.net.ssl.trustStore" value="conf/trustStore/node100.jks"/>
+    <property name="javax.net.ssl.keyStorePassword" value="qwerty"/>
+    <property name="javax.net.ssl.keyStore" value="conf/keyStore/node100.jks"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.startServer.properties"/>
+    <exec executable="/bin/bash">
+      <arg line="bin/gpServer.sh  -DgigapaxosConfig=${gigapaxosConfig} forceclear all"/>
+    </exec>
+    <exec executable="/bin/bash">
+      <arg line="bin/gpServer.sh -Djavax.net.ssl.trustStorePassword=${javax.net.ssl.trustStorePassword} -Djavax.net.ssl.trustStore=${javax.net.ssl.trustStore} -Djavax.net.ssl.keyStorePassword=${javax.net.ssl.keyStorePassword} -Djavax.net.ssl.keyStore=${javax.net.ssl.keyStore} -Djava.util.logging.config.file=${java.util.logging.config.file} -DgigapaxosConfig=${gigapaxosConfig} restart all"/>
+    </exec>
+    <sleep seconds="10"/>
   </target>
 
   <target name="endServer" depends="compile" description="Ends the servers used for testing purposes.">
@@ -271,6 +278,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} foreclear all"/>
     </exec>
   </target>
+  
   <target name="compiletest" depends="compile" description="Compile all the test files">
     <mkdir dir="${build.test.dir}" />
     <mkdir dir="${build.test.classes.dir}" />
@@ -487,7 +495,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
           depends="compile, compiletest">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.properties"/>
-	<property name="waitTillAllServersReady" value="5000"/>
+    <property name="waitTillAllServersReady" value="5000"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.singletests.LNSProxyTest"/>
       <formatter type="plain" usefile="false"/>
@@ -560,7 +568,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
   </target>
 
   <target name="bugSequential" description="Runs the test that is intended to reveal a timeout bug in the ServerIntegrationTest suite." 
-           depends="jar, compiletest">
+          depends="jar, compiletest">
     <property name="integrationTestRuns" value="500"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.bugreports.SequentialCreateFieldTimeout"/>
@@ -627,7 +635,7 @@ integration tests sequentially"
   </target>
 
   <target name="testThreaded" description="Runs the default integration tests in parallel" 
-             depends="compile, compiletest">
+          depends="compile, compiletest">
     <property name="integrationTest.startServer" value="true"/>
     <property name="integrationTestRuns" value="5"/>
     <property name="integrationTestThreads" value="3"/>
@@ -715,8 +723,8 @@ integration tests sequentially"
 
       <fileset dir="${conf.dir}">
         <include name="gnsclient.msocket.properties" />
-	<include name="trustStore.jks" />
-	<include name="keyStore.jks" />
+        <include name="trustStore.jks" />
+        <include name="keyStore.jks" />
       </fileset>
 
 	  
@@ -751,8 +759,8 @@ integration tests sequentially"
 
       <fileset dir="${conf.dir}">
         <include name="gnsclient.msocket.properties" />
-	<include name="trustStore.jks" />
-	<include name="keyStore.jks" />
+        <include name="trustStore.jks" />
+        <include name="keyStore.jks" />
       </fileset>
 			
       <fileset dir="${src.dir}">
@@ -786,27 +794,27 @@ integration tests sequentially"
   <target name="revision">
     <propertyfile  file="build.properties">
       <entry key="build.revision.number" type="int"
-                   operation="+" value="1" pattern="00"/>
+             operation="+" value="1" pattern="00"/>
     </propertyfile>
   </target>
 
   <target name="minor">
     <propertyfile  file="build.properties">
       <entry key="build.minor.number" type="int" operation="+"
-                   value="1" pattern="00"/>
+             value="1" pattern="00"/>
       <entry key="build.revision.number" type="int" value="0"
-                   pattern="00"/>
+             pattern="00"/>
     </propertyfile>
   </target>
 
   <target name="major">
     <propertyfile  file="build.properties">
       <entry key="build.major.number" type="int" operation="+"
-                   value="1" pattern="00"/>
+             value="1" pattern="00"/>
       <entry key="build.minor.number" type="int" value="0"
-                   pattern="00"/>
+             pattern="00"/>
       <entry key="build.revision.number" type="int" value="0"
-                   pattern="00"/>
+             pattern="00"/>
     </propertyfile>
   </target>
 

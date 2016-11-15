@@ -17,16 +17,25 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnscommon.exceptions.server;
+package edu.umass.cs.gnsclient.client.singletests;
+
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 /**
- * This exception is thrown to terminate a task that is scheduled for repeat execution via an ExecutorService.
+ * Comprehensive functionality test for the GNS.
  *
- * // todo complete this documentation
- *
- * Created by abhigyan on 2/24/14.
  */
-public class CancelExecutorTaskException extends ServerException{
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class RemoveGuidTestWithReadCoordinationGnsClientCommands 
+        extends RemoveGuidTestWithoutReadCoordinationGnsClientCommands {
 
+  /**
+   * Same as RemoveGuidTestWithoutReadCoordinationGnsClientCommands with added ReadCoordination
+   */
+  public RemoveGuidTestWithReadCoordinationGnsClientCommands() {
+    super();
+    client.setForceCoordinatedReads(true);
+  }
+  
 }
-

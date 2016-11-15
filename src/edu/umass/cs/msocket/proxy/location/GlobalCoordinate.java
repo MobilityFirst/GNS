@@ -43,6 +43,8 @@ import java.io.Serializable;
 public class GlobalCoordinate implements Comparable<GlobalCoordinate>, Serializable
 {
 
+  private static final long serialVersionUID = 1L;
+
   /** Latitude in degrees. Negative latitude is southern hemisphere. */
   private double mLatitude;
   /** Longitude in degrees. Negative longitude is western hemisphere. */

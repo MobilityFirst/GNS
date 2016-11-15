@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
@@ -57,8 +57,8 @@ public class SelectWithin extends AbstractCommand {
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    String field = json.getString(FIELD);
-    String within = json.getString(WITHIN);
+    String field = json.getString(GNSCommandProtocol.FIELD);
+    String within = json.getString(GNSCommandProtocol.WITHIN);
     return FieldAccess.selectWithin(field, within, handler);
   }
 

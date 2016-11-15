@@ -27,7 +27,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
-import edu.umass.cs.utils.Config;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -47,6 +46,12 @@ import org.json.JSONException;
  */
 public class GroupAccess {
 
+  // DONT FORGET TO CHECK THE CommandCategorys of the group commands
+  // before you enable the new update methods.
+  private static final boolean USE_OLD_UPDATE = true;
+  
+  
+
   /**
    * Hidden field that stores group members
    */
@@ -58,10 +63,10 @@ public class GroupAccess {
 
   /**
    * Sends a request to the NS to add a single GUID to a group.
-   * Updates the GROUP field in a group GUID adding the member to it and 
-   * also updates the reverse field (GROUPS) in the member to indicate 
-   * their membership in the group. The writer can be any GUID but that 
-   * GUID must sign the request and also have ACL access to the GROUP 
+   * Updates the GROUP field in a group GUID adding the member to it and
+   * also updates the reverse field (GROUPS) in the member to indicate
+   * their membership in the group. The writer can be any GUID but that
+   * GUID must sign the request and also have ACL access to the GROUP
    * field in the group GUID.
    *
    * @param guid
@@ -69,26 +74,37 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a response code
    * @throws java.io.IOException
    * @throws org.json.JSONException
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    */
-  public static ResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message,
+  public static ResponseCode addToGroup(String guid, String memberGuid, String writer,
+          String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) throws IOException, JSONException, ClientException {
-    // Fixme: This isn't doing any kind of signature or acl check!
-    handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, new ResultValue(Arrays.asList(memberGuid)));
-    handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
-    return ResponseCode.NO_ERROR;
+    ResponseCode code;
+    if (USE_OLD_UPDATE) {
+      handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, new ResultValue(Arrays.asList(memberGuid)));
+      code = ResponseCode.NO_ERROR;
+    } else {
+      code = FieldAccess.update(null, guid, GROUP, new ResultValue(Arrays.asList(memberGuid)), null, -1,
+              UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message,
+              timestamp, handler);
+    }
+    if (code.isOKResult()) {
+      handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
+    }
+    return code;
   }
 
   /**
    * Sends a request to the NS to add a list of GUIDs to a group.
-   * Updates the GROUP field in a group GUID adding the group members to it and 
-   * also updates the reverse field (GROUPS) in all the members to indicate 
-   * their membership in the group. The writer can be any GUID but that 
-   * GUID must sign the request and also have ACL access to the GROUP 
+   * Updates the GROUP field in a group GUID adding the group members to it and
+   * also updates the reverse field (GROUPS) in all the members to indicate
+   * their membership in the group. The writer can be any GUID but that
+   * GUID must sign the request and also have ACL access to the GROUP
    * field in the group GUID.
    *
    * @param guid
@@ -96,21 +112,32 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a response code
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static ResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message,
+  public static ResponseCode addToGroup(String guid, ResultValue members, String writer,
+          String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
-    // Fixme: This isn't doing any kind of signature or acl check!
-    // The remote querys don't authenticate.
-    handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, members);
-    for (String memberGuid : members.toStringSet()) {
-      handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
+
+    ResponseCode code;
+    if (USE_OLD_UPDATE) {
+      handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, members);
+      code = ResponseCode.NO_ERROR;
+    } else {
+      code = FieldAccess.update(null, guid, GROUP, members, null, -1,
+              UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message,
+              timestamp, handler);
     }
-    return ResponseCode.NO_ERROR;
+    if (code.isOKResult()) {
+      for (String memberGuid : members.toStringSet()) {
+        handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
+      }
+    }
+    return code;
   }
 
   /**
@@ -121,19 +148,29 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a response code
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static ResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message,
+  public static ResponseCode removeFromGroup(String guid, String memberGuid, String writer,
+          String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
-    // Fixme: This isn't doing any kind of signature or acl check!
-    // The remote querys don't authenticate.
-    handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
-    handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
-    return ResponseCode.NO_ERROR;
+    ResponseCode code;
+    if (USE_OLD_UPDATE) {
+      handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
+      code = ResponseCode.NO_ERROR;
+    } else {
+      code = FieldAccess.update(null, guid, GROUP, memberGuid, null, -1,
+              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message,
+              timestamp, handler);
+    }
+    if (code.isOKResult()) {
+      handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
+    }
+    return code;
   }
 
   /**
@@ -150,15 +187,24 @@ public class GroupAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static ResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message,
+  public static ResponseCode removeFromGroup(String guid, ResultValue members, String writer,
+          String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
-    // Fixme: This isn't doing any kind of signature or acl check!
-    // The remote querys don't authenticate.
-    handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
-    for (String memberGuid : members.toStringSet()) {
-      handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
+    ResponseCode code;
+    if (USE_OLD_UPDATE) {
+      handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
+      code = ResponseCode.NO_ERROR;
+    } else {
+      code = FieldAccess.update(null, guid, GROUP, members, null, -1,
+              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message,
+              timestamp, handler);
     }
-    return ResponseCode.NO_ERROR;
+    if (code.isOKResult()) {
+      for (String memberGuid : members.toStringSet()) {
+        handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
+      }
+    }
+    return code;
   }
 
   /**
@@ -245,16 +291,14 @@ public class GroupAccess {
     GNSConfig.getLogger().log(Level.FINE, "DELETE CLEANUP: {0}", guid);
     try {
       // We're ignoring signatures and authentication
-      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, 
-    		  GNSConfig.getInternalOpSecret(),
-    		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), 
+      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid,
+              GNSConfig.getInternalOpSecret(),
               null, null,
               null, handler, true).toStringSet()) {
         GNSConfig.getLogger().log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
-        removeFromGroup(groupGuid, guid,  
-        		GNSConfig.getInternalOpSecret(),
-        		//Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), 
-                null, null, 
+        removeFromGroup(groupGuid, guid,
+                GNSConfig.getInternalOpSecret(),
+                null, null, null,
                 handler);
       }
     } catch (FailedDBOperationException e) {
