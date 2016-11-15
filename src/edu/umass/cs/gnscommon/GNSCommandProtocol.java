@@ -20,6 +20,7 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
+import java.lang.reflect.Field;
 
 /**
  * This class defines a GNSCommandProtocol. Which is to say that
@@ -472,34 +473,19 @@ public class GNSCommandProtocol {
    */
   public final static String AC_CODE = "acCode";
   //
-  /**
-   * The prefix used to hide GNS internal fields.
-   */
-  public static final String INTERNAL_PREFIX = "_GNS_";
-
-  /**
-   * Creates a GNS field that is hidden from the user.
-   *
-   * @param string
-   * @return Hidden field
-   */
-  public static String makeInternalField(String string) {
-    return INTERNAL_PREFIX + string;
-  }
-
-  /**
-   * Returns true if field is a GNS field that is hidden from the user.
-   *
-   * @param key
-   * @return True if hidden field
-   */
-  public static boolean isInternalField(String key) {
-    return key.startsWith(INTERNAL_PREFIX);
-  }
 
   /**
    * The newline character in a string.
    */
   public final static String NEWLINE = System.getProperty("line.separator");
 
+  public static void main(String[] args) {
+    Field[] fields = GNSCommandProtocol.class.getDeclaredFields();
+    for (Field f : fields) {
+      String name = f.getName();
+      if (name.startsWith("XX_")) {
+        System.out.println("./scripts/replace_type_GNSProtocol " + name + " " + name.substring(3) + ";");
+      }
+    }
+  }
 }

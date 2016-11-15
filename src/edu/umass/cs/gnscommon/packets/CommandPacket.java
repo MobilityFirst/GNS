@@ -60,7 +60,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
         ClientRequest, ReplicableRequest, Byteable {
 
   private final static String QID = GNSProtocol.REQUEST_ID.toString();
-  private final static String COMMAND = GNSProtocol.QUERY.toString();
+  private final static String COMMAND = GNSProtocol.COMMAND_QUERY.toString();
   // paper over arbitrary string changes in the protocol
   private final static boolean SUPPORT_OLD_PROTOCOL = true;
   private final static String OLD_COMMAND_PACKET_REQUESTID = "clientreqID";

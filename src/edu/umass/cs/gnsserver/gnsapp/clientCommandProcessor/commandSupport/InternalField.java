@@ -19,13 +19,14 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
+
 /**
  * Support for fields that can't be accessed by the client.
  * 
  * @author westy
  */
 public class InternalField {
-  private static final String INTERNAL_PREFIX = "_GNS_";
 
   /**
    * Creates a GNS field that is hidden from the user.
@@ -34,7 +35,7 @@ public class InternalField {
    * @return a string
    */
   public static String makeInternalFieldString(String string) {
-    return INTERNAL_PREFIX + string;
+    return GNSProtocol.INTERNAL_PREFIX.toString() + string;
   }
 
   /**
@@ -44,7 +45,7 @@ public class InternalField {
    * @return true if field is a GNS field that is hidden from the user
    */
   public static boolean isInternalField(String key) {
-    return key.startsWith(INTERNAL_PREFIX);
+    return key.startsWith(GNSProtocol.INTERNAL_PREFIX.toString());
   }
 
   /**
@@ -53,6 +54,6 @@ public class InternalField {
    * @return an int
    */
   public static int getPrefixLength() {
-    return INTERNAL_PREFIX.length();
+    return GNSProtocol.INTERNAL_PREFIX.toString().length();
   }
 }

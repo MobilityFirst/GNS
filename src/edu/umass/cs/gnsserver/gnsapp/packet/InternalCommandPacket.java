@@ -130,9 +130,9 @@ public class InternalCommandPacket extends CommandPacket implements
 		return STORE_INSIDE && decrementTTL
 				&&
 				// decrement TTL, rest is all set
-				json.getJSONObject(GNSProtocol.QUERY.toString())
+				json.getJSONObject(GNSProtocol.COMMAND_QUERY.toString())
 						.put(GNSProtocol.REQUEST_TTL.toString(),
-								json.getJSONObject(GNSProtocol.QUERY.toString())
+								json.getJSONObject(GNSProtocol.COMMAND_QUERY.toString())
 										.getInt(GNSProtocol.REQUEST_TTL
 												.toString()) - 1) != null ? json
 
@@ -172,7 +172,7 @@ public class InternalCommandPacket extends CommandPacket implements
 	private static final Object getInOrOutside(String key, JSONObject outerJSON)
 			throws JSONException {
 		return STORE_INSIDE ? outerJSON.getJSONObject(
-				GNSProtocol.QUERY.toString()).get(key) : outerJSON.get(key);
+				GNSProtocol.COMMAND_QUERY.toString()).get(key) : outerJSON.get(key);
 	}
 
 	@Override
