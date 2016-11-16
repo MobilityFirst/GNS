@@ -19,16 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ARGUMENT;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
@@ -76,17 +66,17 @@ public abstract class AbstractUpdateList extends AbstractCommand {
   @Override
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GUID);
-    String field = json.getString(FIELD);
-    String value = json.getString(VALUE);
-    String oldValue = json.optString(OLD_VALUE, null);
-    int argument = json.optInt(ARGUMENT, -1);
-    String writer = json.optString(WRITER, guid);
-    String signature = json.optString(SIGNATURE, null);
-    String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String field = json.getString(GNSProtocol.FIELD.toString());
+    String value = json.getString(GNSProtocol.VALUE.toString());
+    String oldValue = json.optString(GNSProtocol.OLD_VALUE.toString(), null);
+    int argument = json.optInt(GNSProtocol.ARGUMENT.toString(), -1);
+    String writer = json.optString(GNSProtocol.WRITER.toString(), guid);
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
     Date timestamp;
-    if (json.has(TIMESTAMP)) {
-      timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    if (json.has(GNSProtocol.TIMESTAMP.toString())) {
+      timestamp = json.has(GNSProtocol.TIMESTAMP.toString()) ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
     } else {
       timestamp = null;
     }
@@ -99,7 +89,7 @@ public abstract class AbstractUpdateList extends AbstractCommand {
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {
-      return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());
     }
 
   }

@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
@@ -67,26 +66,26 @@ public class RemoveMembersFromGroup extends AbstractCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GNSCommandProtocol.GUID);
-    String members = json.getString(GNSCommandProtocol.MEMBERS);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String members = json.getString(GNSProtocol.MEMBERS.toString());
     // writer might be same as guid
-    String writer = json.optString(GNSCommandProtocol.WRITER, guid);
+    String writer = json.optString(GNSProtocol.WRITER.toString(), guid);
     // signature and message can be empty for unsigned cases
-    String signature = json.optString(GNSCommandProtocol.SIGNATURE, null);
-    String message = json.optString(GNSCommandProtocol.SIGNATUREFULLMESSAGE, null);
-    Date timestamp = json.has(GNSCommandProtocol.TIMESTAMP)
-            ? Format.parseDateISO8601UTC(json.getString(GNSCommandProtocol.TIMESTAMP)) : null; // can be null on older client
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
+    Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString())
+            ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
     ResponseCode responseCode;
     try {
       if (!(responseCode = GroupAccess.removeFromGroup(guid, new ResultValue(members), writer, signature,
               message, timestamp, handler)).isExceptionOrError()) {
         return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
-        return new CommandResponse(responseCode, GNSCommandProtocol.BAD_RESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSCommandProtocol.BAD_RESPONSE 
-              + " " + GNSCommandProtocol.UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() 
+              + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
     }
   }
 

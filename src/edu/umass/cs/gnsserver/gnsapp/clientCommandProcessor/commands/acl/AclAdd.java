@@ -28,18 +28,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESSER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACL_TYPE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACL_TYPE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.EVERYONE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
@@ -80,30 +68,30 @@ public class AclAdd extends AbstractCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GUID);
-    String field = json.getString(FIELD);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String field = json.getString(GNSProtocol.FIELD.toString());
     // The guid that wants to access this field
-    String accesser = json.getString(ACCESSER);
+    String accesser = json.getString(GNSProtocol.ACCESSER.toString());
     // allows someone other than guid to change the acl, defaults to guid
-    String writer = json.optString(WRITER, guid);
-    String accessType = json.getString(ACL_TYPE);
-    String signature = json.getString(SIGNATURE);
-    String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    String writer = json.optString(GNSProtocol.WRITER.toString(), guid);
+    String accessType = json.getString(GNSProtocol.ACL_TYPE.toString());
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
+    Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString()) ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
 
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE
-              + " " + BAD_ACL_TYPE + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
+      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, GNSProtocol.BAD_RESPONSE.toString()
+              + " " + GNSProtocol.BAD_ACL_TYPE.toString() + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
     // Lookup the public key of the guid that we're giving access to the field.
     String accessorPublicKey;
-    if (EVERYONE.equals(accesser)) {
-      accessorPublicKey = EVERYONE;
+    if (GNSProtocol.EVERYONE.toString().equals(accesser)) {
+      accessorPublicKey = GNSProtocol.EVERYONE.toString();
     } else {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accesser, handler)) == null) {
-        return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
+        return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + accesser);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }

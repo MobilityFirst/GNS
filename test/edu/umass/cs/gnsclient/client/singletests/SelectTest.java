@@ -21,10 +21,10 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
 import java.awt.geom.Point2D;
@@ -183,7 +183,7 @@ public class SelectTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = client.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -201,7 +201,7 @@ public class SelectTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -248,7 +248,7 @@ public class SelectTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {

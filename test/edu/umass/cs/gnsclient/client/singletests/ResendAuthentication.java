@@ -20,10 +20,10 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import java.io.IOException;
 
 import org.json.JSONObject;
@@ -93,7 +93,7 @@ public class ResendAuthentication {
     }
     if (json == null) {
       try {
-        assertFalse(json.getBoolean(GNSCommandProtocol.ACCOUNT_RECORD_VERIFIED));
+        assertFalse(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
       } catch (Exception e) {
         fail("Exception while getting field from account record: " + e);
       }

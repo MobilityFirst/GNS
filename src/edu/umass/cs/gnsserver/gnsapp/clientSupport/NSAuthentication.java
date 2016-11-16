@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.EVERYONE;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
@@ -36,9 +35,9 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  *
@@ -97,7 +96,7 @@ public class NSAuthentication {
     // side effect which we need for the signing check below.
     AclCheckResult aclResult = null;
     if (field != null) {
-      // Remember that field can also be ENTIRE_RECORD
+      // Remember that field can also be GNSProtocol.ENTIRE_RECORD.toString()
       aclResult = aclCheck(guid, field, accessorGuid, access, gnsApp);
       if (aclResult.getResponseCode().isExceptionOrError()) {
         return aclResult.getResponseCode();
@@ -172,7 +171,7 @@ public class NSAuthentication {
     } else {
       // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
       // accesssed.
-      // Note that field can be ENTIRE_RECORD here
+      // Note that field can be GNSProtocol.ENTIRE_RECORD.toString() here
       publicKey = lookupPublicKeyInACL(targetGuid, field, accessorGuid, access, gnsApp);
     }
     // Handle the one final case: the accessorGuid is a member of a group guid and
@@ -228,7 +227,7 @@ public class NSAuthentication {
     } else {
       // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
       // accesssed.
-      // field can be ENTIRE_RECORD here
+      // field can be GNSProtocol.ENTIRE_RECORD.toString() here
       publicKey = lookupPublicKeyInACL(targetGuid, field, accessorGuid, access, gnsApp);
       if (publicKey != null) {
         // If we found the public key in the lookupPublicKey call then our access control list
@@ -265,7 +264,7 @@ public class NSAuthentication {
    * Attempts to look up the public key for a accessorGuid using the
    * ACL of the guid for the given field.
    * Will resort to a lookup on another server in certain circumstances.
-   * Like when an ACL uses the EVERYONE flag.
+ Like when an ACL uses the GNSProtocol.EVERYONE.toString() flag.
    *
    * @param guid
    * @param field
@@ -280,7 +279,7 @@ public class NSAuthentication {
           MetaDataTypeName access, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     String publicKey;
-    // Field could also be ENTIRE_RECORD here 
+    // Field could also be GNSProtocol.ENTIRE_RECORD.toString() here 
     Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, gnsApp.getDB());
     publicKey = SharedGuidUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
     ClientSupportConfig.getLogger().log(Level.FINE,
@@ -292,16 +291,16 @@ public class NSAuthentication {
       // NOT DONE IN THE NEW ACL MODEL.
       // Also catch all the keys that are stored in the +ALL+ record.
       // This handles the case where the guid attempting access isn't stored in a single field ACL
-      // but is stored in the ENTIRE_RECORD (+ALL+) ACL
-      publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ENTIRE_RECORD, gnsApp.getDB()));
+      // but is stored in the GNSProtocol.ENTIRE_RECORD.toString() (+ALL+) ACL
+      publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, GNSProtocol.ENTIRE_RECORD.toString(), gnsApp.getDB()));
       publicKey = SharedGuidUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
       ClientSupportConfig.getLogger().log(Level.FINE,
               "================> {0} lookup with +ALL+ returned: {1} public keys={2}",
               new Object[]{access.toString(), publicKey, publicKeys});
     }
-    // See if public keys contains EVERYONE which means we need to go old school and lookup the guid 
+    // See if public keys contains GNSProtocol.EVERYONE.toString() which means we need to go old school and lookup the guid 
     // explicitly because it's not going to have an entry in the ACL
-    if (publicKey == null && publicKeys.contains(EVERYONE)) {
+    if (publicKey == null && publicKeys.contains(GNSProtocol.EVERYONE.toString())) {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfoAnywhere(accessorGuid, gnsApp)) != null) {
         ClientSupportConfig.getLogger().log(Level.FINE,

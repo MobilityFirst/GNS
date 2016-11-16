@@ -21,10 +21,10 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
@@ -90,10 +90,10 @@ public class UnsignedWriteTest {
     String standardReadFieldName = "standardreadaccess";
     try {
       // remove default access
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedReadFieldName, "funkadelicread", westyEntry);
-      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSCommandProtocol.ALL_GUIDS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSProtocol.ALL_GUIDS.toString());
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedReadFieldName, null));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
@@ -119,7 +119,7 @@ public class UnsignedWriteTest {
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
-      client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSCommandProtocol.ALL_GUIDS);
+      client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSProtocol.ALL_GUIDS.toString());
       client.fieldReplaceFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, "funkadelicwrite", westyEntry);
       assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, westyEntry));
 

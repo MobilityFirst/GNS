@@ -23,15 +23,12 @@ import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
-import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.interfaces.Byteable;
@@ -78,8 +75,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   private final long clientRequestId;
 
   /**
-   * The JSON form of the command. Always includes a COMMANDNAME field. Almost
-   * always has a GUID field or NAME (for HRN records) field. Serialized.
+   * The JSON form of the command. Always includes a GNSProtocol.COMMANDNAME.toString() field. Almost
+ always has a GNSProtocol.GUID.toString() field or GNSProtocol.NAME.toString() (for HRN records) field. Serialized.
    */
   private final JSONObject command;
 
@@ -98,7 +95,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    * @param command
    */
   public CommandPacket(long requestId, JSONObject command) {
-    this.setType(PacketType.COMMAND);
+    this.setType(Packet.PacketType.COMMAND);
     this.clientRequestId = requestId;
     this.command = command;
     validateCommandType();
@@ -134,8 +131,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
       }
     }
 
-    this.forceCoordination = json.has(GNSCommandProtocol.FORCE_COORDINATE_READS)
-            ? json.getBoolean(GNSCommandProtocol.FORCE_COORDINATE_READS) : false;
+    this.forceCoordination = json.has(GNSProtocol.FORCE_COORDINATE_READS.toString())
+            ? json.getBoolean(GNSProtocol.FORCE_COORDINATE_READS.toString()) : false;
 
     validateCommandType();
   }
@@ -188,7 +185,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
           throws UnsupportedEncodingException, JSONException {
     JSONObject json = new JSONObject();
     // query type
-    json.put(GNSCommandProtocol.COMMAND_INT, buf.getInt());
+    json.put(GNSProtocol.COMMAND_INT.toString(), buf.getInt());
 
     // Put in the variable length fields.
     while (buf.hasRemaining()) {
@@ -253,7 +250,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
   /**
    * Converts the CommandPacket to bytes. Assumes that all fields other than
-   * GNSCommandProtocol.COMMAND_INT have strings for values.
+ GNSProtocol.COMMAND_INT.toString() have strings for values.
    *
    * @return Refer {@link Byteable#toBytes()}
    */
@@ -321,7 +318,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   private byte[] toBytesWingItAsString(ByteBuffer buf, JSONObject json) {
     // can we still get integer-less packets from iOS devices?
     Integer commandType = (Integer) command
-            .remove(GNSCommandProtocol.COMMAND_INT);
+            .remove(GNSProtocol.COMMAND_INT.toString());
     assert (commandType != null);
 
     // query type
@@ -381,7 +378,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
   private void putBackRemoved(Integer commandType) throws JSONException {
     if (commandType != null) {
-      this.command.put(GNSCommandProtocol.COMMAND_INT, commandType);
+      this.command.put(GNSProtocol.COMMAND_INT.toString(), commandType);
     }
     ;
   }
@@ -394,7 +391,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
     // production => try slow path
     try {
-      this.command.put(GNSCommandProtocol.COMMAND_INT, commandType);
+      this.command.put(GNSProtocol.COMMAND_INT.toString(), commandType);
     } catch (JSONException e1) {
       throw new RuntimeException(e1);
 
@@ -420,11 +417,11 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
-    putPacketType(json, getType());
+    Packet.putPacketType(json, getType());
     json.put(QID, this.clientRequestId);
     json.put(COMMAND, this.command);
     if (this.forceCoordination) {
-      json.put(GNSCommandProtocol.FORCE_COORDINATE_READS, this.forceCoordination);
+      json.put(GNSProtocol.FORCE_COORDINATE_READS.toString(), this.forceCoordination);
     }
     return json;
   }
@@ -459,8 +456,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   }
 
   /**
-   * The service name is the name of the GUID/HRN that is being written to or
-   * read.
+   * The service name is the name of the GNSProtocol.GUID.toString()/HRN that is being written to or
+ read.
    *
    * @return the service name
    */
@@ -468,11 +465,11 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public String getServiceName() {
     try {
       if (command != null) {
-        if (command.has(GNSCommandProtocol.GUID)) {
-          return command.getString(GNSCommandProtocol.GUID);
+        if (command.has(GNSProtocol.GUID.toString())) {
+          return command.getString(GNSProtocol.GUID.toString());
         }
-        if (command.has(GNSCommandProtocol.NAME)) {
-          return command.getString(GNSCommandProtocol.NAME);
+        if (command.has(GNSProtocol.NAME.toString())) {
+          return command.getString(GNSProtocol.NAME.toString());
         }
       }
     } catch (JSONException e) {
@@ -487,8 +484,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public int getCommandInteger() {
     try {
       if (command != null) {
-        if (command.has(GNSCommandProtocol.COMMAND_INT)) {
-          return command.getInt(GNSCommandProtocol.COMMAND_INT);
+        if (command.has(GNSProtocol.COMMAND_INT.toString())) {
+          return command.getInt(GNSProtocol.COMMAND_INT.toString());
         }
       }
     } catch (JSONException e) {
@@ -521,13 +518,13 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public static CommandType getJSONCommandType(JSONObject command) {
     try {
       if (command != null) {
-        if (command.has(GNSCommandProtocol.COMMAND_INT)) {
+        if (command.has(GNSProtocol.COMMAND_INT.toString())) {
           return CommandType.getCommandType(command
-                  .getInt(GNSCommandProtocol.COMMAND_INT));
+                  .getInt(GNSProtocol.COMMAND_INT.toString()));
         }
-        if (command.has(GNSCommandProtocol.COMMANDNAME)) {
+        if (command.has(GNSProtocol.COMMANDNAME.toString())) {
           return CommandType.valueOf(command
-                  .getString(GNSCommandProtocol.COMMANDNAME));
+                  .getString(GNSProtocol.COMMANDNAME.toString()));
         }
       }
     } catch (IllegalArgumentException | JSONException e) {

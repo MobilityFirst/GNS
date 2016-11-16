@@ -35,13 +35,12 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.AclAccessType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
 /**
- * Command that creates the proxy group GUID
+ * Command that creates the proxy group GNSProtocol.GUID.toString()
  * 
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
  * @version 1.0
@@ -116,10 +115,10 @@ public class ProxyGroupCreate extends ConsoleCommand
         myGuid = gnsClient.guidCreate(module.getAccountGuid(), proxyGroupName);
         // Allow anyone to access the group membership that contains verified
         // proxies
-        gnsClient.groupAddMembershipReadPermission(myGuid, GNSCommandProtocol.ALL_GUIDS);
+        gnsClient.groupAddMembershipReadPermission(myGuid, GNSProtocol.ALL_GUIDS.toString());
       }
 
-      // Create the fields containing the GUID lists
+      // Create the fields containing the GNSProtocol.GUID.toString() lists
       createField(gnsClient, myGuid, Constants.ACTIVE_PROXY_FIELD, false);
       createField(gnsClient, myGuid, Constants.SUSPICIOUS_PROXY_FIELD, false);
       createField(gnsClient, myGuid, Constants.INACTIVE_PROXY_FIELD, false);
@@ -158,8 +157,8 @@ public class ProxyGroupCreate extends ConsoleCommand
     {
       gnsClient.fieldCreateList(myGuid.getGuid(), field, new JSONArray(), myGuid);
     }
-    gnsClient.aclAdd(AclAccessType.READ_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_GUIDS);
+    gnsClient.aclAdd(AclAccessType.READ_WHITELIST, myGuid, field, GNSProtocol.ALL_GUIDS.toString());
     if (writeAll)
-      gnsClient.aclAdd(AclAccessType.WRITE_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_GUIDS);
+      gnsClient.aclAdd(AclAccessType.WRITE_WHITELIST, myGuid, field, GNSProtocol.ALL_GUIDS.toString());
   }
 }

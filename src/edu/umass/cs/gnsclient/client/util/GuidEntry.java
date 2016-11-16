@@ -20,8 +20,8 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -132,7 +132,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
   }
 
   /**
-   * Write this GUID entry to an output stream
+   * Write this GNSProtocol.GUID.toString() entry to an output stream
    *
    * @param s the stream to write to
    * @throws IOException if an error occurs
@@ -163,7 +163,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     byte[] encodedPrivateKey = Base64.decode(encodedPrivate);
 
     try {
-      return KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM).generatePrivate(new PKCS8EncodedKeySpec(
+      return KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString()).generatePrivate(new PKCS8EncodedKeySpec(
               encodedPrivateKey));
     } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new EncryptionException("Failed to generate keypair", e);
@@ -177,7 +177,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     byte[] encodedPrivateKey = Base64.decode(encodedPrivate);
 
     try {
-      KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
+      KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
       X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
               encodedPublicKey);
       PublicKey thePublicKey = keyFactory.generatePublic(publicKeySpec);

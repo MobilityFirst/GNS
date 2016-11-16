@@ -20,13 +20,13 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
@@ -235,7 +235,7 @@ public class GroupAndAclTest {
     try {
       // remove all fields read by all
       client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
     }
@@ -247,7 +247,7 @@ public class GroupAndAclTest {
     try {
       // test of remove all fields read by all
       JSONAssert.assertEquals(new JSONArray(Arrays.asList(masterGuid.getGuid())), client.aclGet(AclAccessType.READ_WHITELIST, groupAccessUserEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, groupAccessUserEntry.getGuid()), JSONCompareMode.STRICT);
+              GNSProtocol.ENTIRE_RECORD.toString(), groupAccessUserEntry.getGuid()), JSONCompareMode.STRICT);
     } catch (Exception e) {
       fail("Exception test acl: " + e);
     }

@@ -21,10 +21,10 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
@@ -96,7 +96,7 @@ public class ReadTest {
     }
     try {
       // remove default read acces for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
       client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);

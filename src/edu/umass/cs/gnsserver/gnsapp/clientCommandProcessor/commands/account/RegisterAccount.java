@@ -27,16 +27,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSWORD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEY;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
 import java.io.IOException;
@@ -48,6 +39,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  *
@@ -76,18 +68,18 @@ public class RegisterAccount extends AbstractCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-    String name = json.getString(NAME);
-    String publicKey = json.getString(PUBLIC_KEY);
-    String password = json.getString(PASSWORD);
-    String signature = json.optString(SIGNATURE, null);
-    String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    String name = json.getString(GNSProtocol.NAME.toString());
+    String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
+    String password = json.getString(GNSProtocol.PASSWORD.toString());
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
     
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     // FIXME: this lacking signature check is for temporary backward compatability... remove it.
     // See RegisterAccountUnsigned
     if (signature != null && message != null) {
       if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
-        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
       }
     }
     try {
@@ -104,7 +96,7 @@ public class RegisterAccount extends AbstractCommand {
         return result;
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
     }
   }
 

@@ -26,11 +26,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUIDCNT;
 
 import edu.umass.cs.gnscommon.ResponseCode;
 import java.util.ArrayList;
@@ -40,6 +35,7 @@ import java.util.Random;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  *
@@ -67,11 +63,11 @@ public class LookupRandomGuids extends AbstractCommand {
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    String guid = json.getString(GUID);
-    int count = json.getInt(GUIDCNT);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    int count = json.getInt(GNSProtocol.GUIDCNT.toString());
     AccountInfo acccountInfo;
     if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
-      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
     }
     if (acccountInfo != null) {
       List<String> guids = acccountInfo.getGuids();
@@ -86,7 +82,7 @@ public class LookupRandomGuids extends AbstractCommand {
         return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(result).toString());
       }
     } else {
-      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     // }
   }

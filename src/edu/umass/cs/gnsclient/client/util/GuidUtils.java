@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.RSA_ALGORITHM;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -27,7 +26,6 @@ import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.http.HttpClient;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -40,6 +38,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.logging.Level;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  *
@@ -89,7 +88,7 @@ public class GuidUtils {
   }
 
   /**
-   * Creates and verifies an account GUID. Yes it cheats on verification.
+   * Creates and verifies an account GNSProtocol.GUID.toString(). Yes it cheats on verification.
    *
    * @param client
    * @param name
@@ -117,7 +116,7 @@ public class GuidUtils {
    */
   private static GuidEntry generateAndSaveKeyPairForGuidAlias(String gnsInstance,
           String alias) throws NoSuchAlgorithmException, EncryptionException {
-    KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
+    KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
             .generateKeyPair();
     String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
             .getPublic().getEncoded());
@@ -188,7 +187,7 @@ public class GuidUtils {
         }
       }
       int attempts = 0;
-      // rethrow all but ALREADY_VERIFIED_EXCEPTION
+      // rethrow all but GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString()
       do {
         try {
           client.execute(
@@ -265,7 +264,7 @@ public class GuidUtils {
         } catch (ClientException e) {
           // a bit of a hack here that depends on someone not changing
           // that error message
-          if (!e.getMessage().contains(GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION)) {
+          if (!e.getMessage().contains(GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString())) {
             if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
               // do nothing
             } else {
@@ -339,7 +338,7 @@ public class GuidUtils {
         } catch (ClientException e) {
           // a bit of a hack here that depends on someone not changing
           // that error message
-          if (!e.getMessage().contains(GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION)) {
+          if (!e.getMessage().contains(GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString())) {
             if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
               // do nothing
             } else {
@@ -370,7 +369,7 @@ public class GuidUtils {
   }
 
   /**
-   * Creates and verifies an account GUID.
+   * Creates and verifies an account GNSProtocol.GUID.toString().
    *
    * @param client
    * @param accountGuid

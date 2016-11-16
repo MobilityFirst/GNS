@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import java.security.KeyFactory;
@@ -91,9 +91,9 @@ public class BasicGuidEntry {
    * @throws edu.umass.cs.gnscommon.exceptions.client.EncryptionException 
    */
   public BasicGuidEntry (JSONObject json) throws JSONException, EncryptionException {
-    this.entityName = json.getString(GNSCommandProtocol.GUID_RECORD_NAME);
-    this.guid = json.getString(GNSCommandProtocol.GUID_RECORD_GUID);
-    this.publicKey = generatePublicKey(json.getString(GNSCommandProtocol.GUID_RECORD_PUBLICKEY));
+    this.entityName = json.getString(GNSProtocol.GUID_RECORD_NAME.toString());
+    this.guid = json.getString(GNSProtocol.GUID_RECORD_GUID.toString());
+    this.publicKey = generatePublicKey(json.getString(GNSProtocol.GUID_RECORD_PUBLICKEY.toString()));
   } 
 
   /**
@@ -168,7 +168,7 @@ public class BasicGuidEntry {
     byte[] encodedPublicKey = Base64.decode(encodedPublic);
 
     try {
-      KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
+      KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
       X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
               encodedPublicKey);
       return keyFactory.generatePublic(publicKeySpec);

@@ -44,7 +44,7 @@ import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.util.keystorage.AbstractKeyStorage;
 import edu.umass.cs.gnsclient.client.util.keystorage.JavaPreferencesKeyStore;
 import edu.umass.cs.gnsclient.client.util.keystorage.SimpleKeyStore;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.utils.Config;
 
 /**
@@ -75,7 +75,7 @@ public class KeyPairUtils {
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
    * @param username the user name
-   * @return the GUID entry if found, null otherwise
+   * @return the GNSProtocol.GUID.toString() entry if found, null otherwise
    */
   public static GuidEntry getGuidEntry(String gnsName, String username) {
     if (username == null) {
@@ -95,7 +95,7 @@ public class KeyPairUtils {
       try {
         byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
         byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
-        KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
+        KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
         PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
@@ -134,8 +134,8 @@ public class KeyPairUtils {
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
    * @param username the user name or human readable name
-   * @param guid the GUID value
-   * @param keyPair public and private keys for that GUID
+   * @param guid the GNSProtocol.GUID.toString() value
+   * @param keyPair public and private keys for that GNSProtocol.GUID.toString()
    */
   public static void saveKeyPair(String gnsName, String username, String guid, KeyPair keyPair) {
     if (IS_ANDROID) {
@@ -166,11 +166,11 @@ public class KeyPairUtils {
   }
 
   /**
-   * Set the default GUID to use in the user preferences (usually the account
-   * GUID)
+   * Set the default GNSProtocol.GUID.toString() to use in the user preferences (usually the account
+ GNSProtocol.GUID.toString())
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   * @param username the alias of the default GUID to use
+   * @param username the alias of the default GNSProtocol.GUID.toString() to use
    */
   public static void setDefaultGuidEntry(String gnsName, String username) {
     if (IS_ANDROID) {
@@ -183,8 +183,8 @@ public class KeyPairUtils {
   }
 
   /**
-   * Set the default GUID to use in the user preferences (usually the account
-   * GUID)
+   * Set the default GNSProtocol.GUID.toString() to use in the user preferences (usually the account
+ GNSProtocol.GUID.toString())
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
    */
@@ -199,11 +199,11 @@ public class KeyPairUtils {
   }
 
   /**
-   * Return the GUID entry for the default GUID set in the user preferences (if
-   * any)
+   * Return the GNSProtocol.GUID.toString() entry for the default GNSProtocol.GUID.toString() set in the user preferences (if
+ any)
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   * @return the default GUID entry or null if not set or invalid
+   * @return the default GNSProtocol.GUID.toString() entry or null if not set or invalid
    */
   public static GuidEntry getDefaultGuidEntry(String gnsName) {
     if (IS_ANDROID) {
@@ -279,7 +279,7 @@ public class KeyPairUtils {
     }
 
     PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-    KeyFactory kf = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
+    KeyFactory kf = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
     return kf.generatePrivate(spec);
   }
 

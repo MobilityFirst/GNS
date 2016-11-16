@@ -28,15 +28,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
@@ -49,6 +40,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  *
@@ -78,15 +70,15 @@ public class RemoveAccount extends AbstractCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
     // The name of the account we are removing.
-    String name = json.getString(NAME);
+    String name = json.getString(GNSProtocol.NAME.toString());
     // The guid of that wants to remove this account.
-    String guid = json.getString(GUID);
-    String signature = json.getString(SIGNATURE);
-    String message = json.getString(SIGNATUREFULLMESSAGE);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     GuidInfo guidInfo;
     // Fixme: verify that we might need to look remotely for this.
     if ((guidInfo = AccountAccess.lookupGuidInfoAnywhere(guid, handler)) == null) {
-      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     try {
       if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
@@ -95,13 +87,13 @@ public class RemoveAccount extends AbstractCommand {
         if (accountInfo != null) {
           return AccountAccess.removeAccount(accountInfo, handler);
         } else {
-          return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
+          return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
         }
       } else {
-        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
     }
   }
 

@@ -20,18 +20,12 @@
 package edu.umass.cs.gnsclient.client.testing;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUIDCNT;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.utils.DelayProfiler;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
@@ -60,6 +54,7 @@ import org.apache.commons.cli.ParseException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * Client side read throughput test using asynchronous send.
@@ -71,46 +66,46 @@ import org.json.JSONObject;
  * It is run on the command line like this:
  *
  * <code>./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.ThroughputAsynchMultiClientTest</code>
- *
- * Using the above incantation with an argument of -help will show the help text listing all the arguments.
- *
- * Some important ones are with example arguments are:
- *
- * -alias fred@cs.umass.edu - specifies the account alias (your email) used to created your GNS account guid
- *
- * -host pear.cs.umass.edu - the host where the GNS(LNS) server is running
- *
- * -port 24403 - the port that the server is listening on (24403 is AR, 24398 is LNS)
- *
- * -rate - the number of how many client requests per second to generate
- *
- * -inc - specifies the N increase for rate every 5 seconds (if not given rate is uniform)
- *
- * -clients - specifies the number of clients to use
- *
- * -requests - specifies the number of requests to send per batch sent by each client
- *
- * Here's a full example command:
- *
- * ./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.ThroughputAsynchMultiClientTest -host 10.0.1.50 -port 24403 -rate 1000 -inc 500 -clients 10 -requests 20
- *
- * This means to start at 1000 requests per second and increment the rate by 500 every 5 seconds
- * You can also specific a fixed rate using just the -rate option
- *
- * Output looks like this:
- * {pre}
- * 21:40:50 EDT Attempted rate/s 1000.....
- * 21:40:55 EDT Actual rate/s: 977.8994719342851 Average latency: 13.09 Outstanding packets: 0 Errors: 0
- * 21:40:55 EDT Attempted rate/s 1500........
- * 21:41:00 EDT Actual rate/s: 1459.5660749506903 Average latency: 12.54 Outstanding packets: 1 Errors: 0
- * 21:41:00 EDT Attempted rate/s 2000..........
- * 21:41:05 EDT Actual rate/s: 1914.257228315055 Average latency: 12.4 Outstanding packets: 1 Errors: 0
- * 21:41:05 EDT Attempted rate/s 2500............
- * 21:41:10 EDT Actual rate/s: 2382.370458606313 Average latency: 12.74 Outstanding packets: 1 Errors: 0
- * 21:41:10 EDT Attempted rate/s 3000...............
- * 21:41:15 EDT Actual rate/s: 2853.745541022592 Average latency: 13.31 Outstanding packets: 1 Errors: 0
- * {\pre}
- * Outstanding packets should be close to zero if the server is keeping up.
+
+ Using the above incantation with an argument of -help will show the help text listing all the arguments.
+
+ Some important ones are with example arguments are:
+
+ -alias fred@cs.umass.edu - specifies the account alias (your email) used to created your GNS account guid
+
+ -host pear.cs.umass.edu - the host where the GNS(LNS) server is running
+
+ -port 24403 - the port that the server is listening on (24403 is AR, 24398 is LNS)
+
+ -rate - the number of how many client requests per second to generate
+
+ -inc - specifies the GNSProtocol.N.toString() increase for rate every 5 seconds (if not given rate is uniform)
+
+ -clients - specifies the number of clients to use
+
+ -requests - specifies the number of requests to send per batch sent by each client
+
+ Here's a full example command:
+
+ ./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.ThroughputAsynchMultiClientTest -host 10.0.1.50 -port 24403 -rate 1000 -inc 500 -clients 10 -requests 20
+
+ This means to start at 1000 requests per second and increment the rate by 500 every 5 seconds
+ You can also specific a fixed rate using just the -rate option
+
+ Output looks like this:
+ {pre}
+ 21:40:50 EDT Attempted rate/s 1000.....
+ 21:40:55 EDT Actual rate/s: 977.8994719342851 Average latency: 13.09 Outstanding packets: 0 Errors: 0
+ 21:40:55 EDT Attempted rate/s 1500........
+ 21:41:00 EDT Actual rate/s: 1459.5660749506903 Average latency: 12.54 Outstanding packets: 1 Errors: 0
+ 21:41:00 EDT Attempted rate/s 2000..........
+ 21:41:05 EDT Actual rate/s: 1914.257228315055 Average latency: 12.4 Outstanding packets: 1 Errors: 0
+ 21:41:05 EDT Attempted rate/s 2500............
+ 21:41:10 EDT Actual rate/s: 2382.370458606313 Average latency: 12.74 Outstanding packets: 1 Errors: 0
+ 21:41:10 EDT Attempted rate/s 3000...............
+ 21:41:15 EDT Actual rate/s: 2853.745541022592 Average latency: 13.31 Outstanding packets: 1 Errors: 0
+ {\pre}
+ Outstanding packets should be close to zero if the server is keeping up.
  */
 public class ThroughputAsynchMultiClientTest {
 
@@ -329,12 +324,12 @@ public class ThroughputAsynchMultiClientTest {
         }
         try {
           JSONObject command = createCommand(CommandType.LookupRandomGuids,
-                  GUID, masterGuid.getGuid(), GUIDCNT, numberOfGuids);
+                  GNSProtocol.GUID.toString(), masterGuid.getGuid(), GNSProtocol.GUIDCNT.toString(), numberOfGuids);
 					String result = clients[0].execute(
 							new CommandPacket(
 									(long) (Math.random() * Long.MAX_VALUE),
 									command)).getResultString();// checkResponse(clients[0].sendCommandAndWait(command));
-          if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
+          if (!result.startsWith(GNSProtocol.BAD_RESPONSE.toString())) {
             existingGuids = new JSONArray(result);
           } else {
             System.out.println("Problem reading random guids " + result);
@@ -495,14 +490,14 @@ public class ThroughputAsynchMultiClientTest {
     JSONObject command;
     if (reader == null) {
       command = createCommand(CommandType.ReadUnsigned, 
-              GUID, targetGuid, FIELD, field,
-              READER, null);
+              GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
+              GNSProtocol.READER.toString(), null);
     } else {
       command = createAndSignCommand(CommandType.Read,
               reader.getPrivateKey(),
               reader.getPublicKey(),
-              GUID, targetGuid, FIELD, field,
-              READER, reader.getGuid());
+              GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
+              GNSProtocol.READER.toString(), reader.getGuid());
     }
     // arun: can not reset requestID
     return new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command);
@@ -513,8 +508,8 @@ public class ThroughputAsynchMultiClientTest {
     command = createAndSignCommand(CommandType.ReplaceUserJSON,
             writer.getPrivateKey(),
             writer.getPublicKey(),
-            GUID, targetGuid, json.toString(),
-            WRITER, writer.getGuid());
+            GNSProtocol.GUID.toString(), targetGuid, json.toString(),
+            GNSProtocol.WRITER.toString(), writer.getGuid());
     return new CommandPacket(-1, command);
   }
 

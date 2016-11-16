@@ -20,16 +20,10 @@
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
-import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
@@ -49,6 +43,7 @@ import edu.umass.cs.gnscommon.CommandType;
 
 import edu.umass.cs.gnscommon.ResponseCode;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * In this example we demonstrate the asynchronous client.
@@ -108,14 +103,14 @@ public class ClientAsynchExample {
       command = createAndSignCommand(CommandType.ReplaceUserJSON,
               accountGuidEntry.getPrivateKey(),
               accountGuidEntry.getPublicKey(),
-              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(),
-              WRITER, accountGuidEntry.getGuid());
+              GNSProtocol.GUID.toString(), accountGuidEntry.getGuid(), GNSProtocol.USER_JSON.toString(), json.toString(),
+              GNSProtocol.WRITER.toString(), accountGuidEntry.getGuid());
     } else {
       command = createAndSignCommand(CommandType.Read,
               accountGuidEntry.getPrivateKey(),
               accountGuidEntry.getPublicKey(),
-              GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
-              READER, accountGuidEntry.getGuid());
+              GNSProtocol.GUID.toString(), accountGuidEntry.getGuid(), GNSProtocol.FIELD.toString(), "occupation",
+              GNSProtocol.READER.toString(), accountGuidEntry.getGuid());
     }
     // Create the command packet with a bogus id
     // arun: can not change request ID

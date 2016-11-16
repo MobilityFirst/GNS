@@ -35,10 +35,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.EVERYONE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.RSA_ALGORITHM;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE_ALGORITHM;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
@@ -60,7 +56,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * Provides signing and ACL checks for commands.
@@ -75,9 +71,9 @@ public class NSAccessSupport {
 
   static {
     try {
-      keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
+      keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
       for (int i = 0; i < signatureInstances.length; i++) {
-        signatureInstances[i] = Signature.getInstance(SIGNATURE_ALGORITHM);
+        signatureInstances[i] = Signature.getInstance(GNSProtocol.SIGNATURE_ALGORITHM.toString());
       }
     } catch (NoSuchAlgorithmException e) {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Unable to initialize for authentication:{0}", e);
@@ -166,7 +162,7 @@ public class NSAccessSupport {
   static {
     for (int i = 0; i < mds.length; i++) {
       try {
-        mds[i] = MessageDigest.getInstance(GNSCommandProtocol.DIGEST_ALGORITHM);
+        mds[i] = MessageDigest.getInstance(GNSProtocol.DIGEST_ALGORITHM.toString());
       } catch (NoSuchAlgorithmException e) {
         e.printStackTrace();
         System.exit(1);
@@ -184,7 +180,7 @@ public class NSAccessSupport {
   static {
     for (int i = 0; i < ciphers.length; i++) {
       try {
-        ciphers[i] = Cipher.getInstance(GNSCommandProtocol.SECRET_KEY_ALGORITHM);
+        ciphers[i] = Cipher.getInstance(GNSProtocol.SECRET_KEY_ALGORITHM.toString());
       } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
         e.printStackTrace();
         System.exit(1);
@@ -205,8 +201,8 @@ public class NSAccessSupport {
 
     // Client side now encodes this as a hex string
     byte[] sigBytes = ByteUtils.hexStringToByteArray(signature);
-    //byte[] sigBytes = signature.getBytes(GNSCommandProtocol.CHARSET);
-    byte[] bytes = message.getBytes(GNSCommandProtocol.CHARSET);
+    //byte[] sigBytes = signature.getBytes(GNSProtocol.CHARSET.toString());
+    byte[] bytes = message.getBytes(GNSProtocol.CHARSET.toString());
 
     ByteBuffer bbuf = ByteBuffer.wrap(sigBytes);
     byte[] sign = new byte[bbuf.getShort()];
@@ -252,8 +248,8 @@ public class NSAccessSupport {
     if (field.contains(".")) {
       return hierarchicalAccessGroupCheck(accessType, guid, field.substring(0, field.lastIndexOf(".")),
               groups, activeReplica);
-    } else if (!GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
-      return hierarchicalAccessGroupCheck(accessType, guid, GNSCommandProtocol.ENTIRE_RECORD, groups, activeReplica);
+    } else if (!GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
+      return hierarchicalAccessGroupCheck(accessType, guid, GNSProtocol.ENTIRE_RECORD.toString(), groups, activeReplica);
     } else {
       // check all the way up and there is no access
       return false;
@@ -317,7 +313,7 @@ public class NSAccessSupport {
       return true; // can always read your own stuff
     } else if (hierarchicalAccessCheck(accessType, guid, field, accessorGuid, activeReplica)) {
       return true; // accessor can see this field
-    } else if (checkForAccess(accessType, guid, ENTIRE_RECORD, accessorGuid, activeReplica)) {
+    } else if (checkForAccess(accessType, guid, GNSProtocol.ENTIRE_RECORD.toString(), accessorGuid, activeReplica)) {
       return true; // accessor can see all fields
     } else {
       ClientSupportConfig.getLogger().log(Level.FINE,
@@ -381,7 +377,7 @@ public class NSAccessSupport {
       if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica)) {
         ClientSupportConfig.getLogger().log(Level.FINE, "User {0} allowed to access {1}",
                 new Object[]{accessorGuid,
-                  field != ENTIRE_RECORD ? ("user " + guid + "'s " + field + " field")
+                  field != GNSProtocol.ENTIRE_RECORD.toString() ? ("user " + guid + "'s " + field + " field")
                           : ("all of user " + guid + "'s fields")});
         return true;
       }
@@ -400,7 +396,7 @@ public class NSAccessSupport {
   /**
    * Performs the ultimate check to see if guid is in the list of allowed users (which is a list of public keys).
    * Also handles the case where one of the groups that accessorguid is in is a member of allowed users.
-   * Finally handles the case where the allowed users contains the EVERYONE symbol.
+ Finally handles the case where the allowed users contains the GNSProtocol.EVERYONE.toString() symbol.
    *
    * @param accessorGuid - the guid that we are checking for access
    * @param allowedUsers - the list of publickeys that are in the acl
@@ -413,7 +409,7 @@ public class NSAccessSupport {
           Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (SharedGuidUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
       return true;
-    } else if (allowedUsers.contains(EVERYONE)) {
+    } else if (allowedUsers.contains(GNSProtocol.EVERYONE.toString())) {
       return true;
     } else {
       // see if allowed users (the public keys for the guids and group guids that is in the ACL) 
@@ -439,8 +435,8 @@ public class NSAccessSupport {
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
-      return NSFieldMetaData.lookupLocally(access, guid, field, activeReplica.getDB()).contains(EVERYONE)
-              || NSFieldMetaData.lookupLocally(access, guid, ENTIRE_RECORD, activeReplica.getDB()).contains(EVERYONE);
+      return NSFieldMetaData.lookupLocally(access, guid, field, activeReplica.getDB()).contains(GNSProtocol.EVERYONE.toString())
+              || NSFieldMetaData.lookupLocally(access, guid, GNSProtocol.ENTIRE_RECORD.toString(), activeReplica.getDB()).contains(GNSProtocol.EVERYONE.toString());
     } catch (FieldNotFoundException e) {
       // This is actually a normal result.. so no warning here.
       return false;
@@ -455,7 +451,7 @@ public class NSAccessSupport {
   /**
    * Looks up the public key for a guid using the acl of a field.
    * Handles fields that uses dot notation. Recursively goes up the tree
-   * towards the root (ENTIRE_RECORD) node.
+ towards the root (GNSProtocol.ENTIRE_RECORD.toString()) node.
    *
    * @param access
    * @param guid
@@ -492,9 +488,9 @@ public class NSAccessSupport {
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
       return newLookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
-      // One last check at the root (ENTIRE_RECORD) field.
-    } else if (!GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
-      return newLookupPublicKeysFromAcl(access, guid, GNSCommandProtocol.ENTIRE_RECORD, database);
+      // One last check at the root (GNSProtocol.ENTIRE_RECORD.toString()) field.
+    } else if (!GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
+      return newLookupPublicKeysFromAcl(access, guid, GNSProtocol.ENTIRE_RECORD.toString(), database);
     } else {
       return new HashSet<>();
     }

@@ -19,11 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gigapaxos.interfaces.Summarizable;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.NEWLINE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
@@ -39,6 +36,7 @@ import java.text.ParseException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * This class helps to implement a unified set of client support commands that translate
@@ -157,10 +155,10 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   public String getUsage(CommandDescriptionFormat format) {
     switch (format) {
       case HTML:
-        return "HTML Form: " + getHTMLForm() + NEWLINE
+        return "HTML Form: " + getHTMLForm() + GNSProtocol.NEWLINE.toString()
                 + getCommandDescription();
       case TCP:
-        return getTCPForm() + NEWLINE + getCommandDescription();
+        return getTCPForm() + GNSProtocol.NEWLINE.toString() + getCommandDescription();
       case TCP_Wiki:
         return getTCPWikiForm() + "||" + getCommandDescription();
       default:
@@ -180,8 +178,8 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
     String[] parameters = getCommandParameters();
     String prefix = QUERYPREFIX;
     for (int i = 0; i < parameters.length; i++) {
-      // special case to remove SIGNATUREFULLMESSAGE which isn't for HTML form
-      if (!SIGNATUREFULLMESSAGE.equals(parameters[i])) {
+      // special case to remove GNSProtocol.SIGNATUREFULLMESSAGE.toString() which isn't for HTML form
+      if (!GNSProtocol.SIGNATUREFULLMESSAGE.toString().equals(parameters[i])) {
         result.append(prefix);
         result.append(parameters[i]);
         result.append(VALSEP);
@@ -205,7 +203,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
     result.append(" Parameters: ");
     String prefix = "";
     for (int i = 0; i < parameters.length; i++) {
-      if (!SIGNATUREFULLMESSAGE.equals(parameters[i])) {
+      if (!GNSProtocol.SIGNATUREFULLMESSAGE.toString().equals(parameters[i])) {
         result.append(prefix);
         result.append(parameters[i]);
         prefix = ", ";
@@ -222,14 +220,14 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   private String getTCPWikiForm() {
     StringBuilder result = new StringBuilder();
     result.append("|- "); // start row
-    result.append(NEWLINE);
+    result.append(GNSProtocol.NEWLINE.toString());
     result.append("|");
     result.append(getCommandType().toString());
     String[] parameters = getCommandParameters();
     result.append(" || ");
     String prefix = "";
     for (int i = 0; i < parameters.length; i++) {
-      if (!SIGNATUREFULLMESSAGE.equals(parameters[i])) {
+      if (!GNSProtocol.SIGNATUREFULLMESSAGE.toString().equals(parameters[i])) {
         result.append(prefix);
         result.append(parameters[i]);
         prefix = ", ";

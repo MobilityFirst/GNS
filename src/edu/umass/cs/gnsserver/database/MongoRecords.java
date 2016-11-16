@@ -33,7 +33,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.util.JSON;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
@@ -51,7 +51,6 @@ import org.json.JSONObject;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,12 +104,12 @@ public class MongoRecords implements NoSQLRecords {
     mongoCollectionSpecs.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
     // add location as another index
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSCommandProtocol.LOCATION_FIELD_NAME, "2d"));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSProtocol.LOCATION_FIELD_NAME.toString(), "2d"));
     // The good thing is that indexes are not required for 2dsphere fields, but they will make things faster
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSCommandProtocol.LOCATION_FIELD_NAME_2D_SPHERE, "2dsphere"));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSProtocol.LOCATION_FIELD_NAME_2D_SPHERE.toString(), "2dsphere"));
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSCommandProtocol.IPADDRESS_FIELD_NAME, 1));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSProtocol.IPADDRESS_FIELD_NAME.toString(), 1));
 
     boolean fatalException = false;
     try {
@@ -523,7 +522,7 @@ public class MongoRecords implements NoSQLRecords {
 
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject query = new BasicDBObject(fieldName, value);
-    //System.out.println("***QUERY***: " + query.toString());
+    //System.out.println("***GNSProtocol.QUERY.toString()***: " + query.toString());
     DBCursor cursor = null;
     try {
       cursor = collection.find(query);
@@ -678,7 +677,7 @@ public class MongoRecords implements NoSQLRecords {
     mongoClient.close();
   }
 
-  //THIS ISN'T JUST TEST CODE - DO NOT REMOVE
+  //THIS ISN'T JUST TEST GNSProtocol.CODE.toString() - DO NOT REMOVE
   // the -clear option is currently used by the all the starup scripts so keep it working
   /**
    * Does a few things.

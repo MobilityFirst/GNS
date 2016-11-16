@@ -10,30 +10,17 @@ package edu.umass.cs.gnsclient.client.singletests;
 import edu.umass.cs.gnsclient.client.http.HttpClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.JSONUtils;
-import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
-import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import org.junit.Assert;
 
 /**
  *
@@ -71,7 +58,7 @@ public class SimpleHttpClientTest {
     @Test
     public void test_901_Http_LookupGuid() {
       try {
-        assertEquals(masterGuid.getGuid(), client.lookupGuid(ACCOUNT_ALIAS));
+        Assert.assertEquals(masterGuid.getGuid(), client.lookupGuid(ACCOUNT_ALIAS));
       } catch (IOException | ClientException e) {
         failWithStackTrace("Exception in LookupGuid: " + e);
       }
@@ -100,7 +87,7 @@ public class SimpleHttpClientTest {
       try {
         // remove default read acces for this test
         client.aclRemove(AclAccessType.READ_WHITELIST, httpOneEntry,
-                GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+                GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
       } catch (IOException | ClientException e) {
         failWithStackTrace("Exception in Http_RemoveACL: " + e);
       }

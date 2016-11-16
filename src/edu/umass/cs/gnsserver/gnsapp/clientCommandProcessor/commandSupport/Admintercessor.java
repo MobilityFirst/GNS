@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -51,38 +51,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -249,7 +218,7 @@ public class Admintercessor {
    */
   public void handleIncomingAdminResponsePackets(JSONObject json) {
     try {
-      switch (getPacketType(json)) {
+      switch (Packet.getPacketType(json)) {
         case ADMIN_RESPONSE:
           // put the records in dumpResult and let the folks waiting know they are ready
           try {
@@ -283,8 +252,8 @@ public class Admintercessor {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
       return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
-              GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " "
+              GNSProtocol.BAD_RESPONSE.toString()
+              + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString() + " "
               + "Error sending dump command to replica");
     }
     waitForDumpResponse(id);
@@ -294,8 +263,8 @@ public class Admintercessor {
       return new CommandResponse(ResponseCode.NO_ERROR, formatDumpRecords(result, handler));
     } else {
       return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
-              GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR
+              GNSProtocol.BAD_RESPONSE.toString()
+              + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString()
               + " " + "No response to dump command!");
     }
   }
@@ -381,7 +350,7 @@ public class Admintercessor {
    */
   public void handleIncomingDumpResponsePackets(JSONObject json, ClientRequestHandlerInterface handler) {
     try {
-      switch (getPacketType(json)) {
+      switch (Packet.getPacketType(json)) {
         case DUMP_REQUEST:
           try {
             DumpRequestPacket<String> dumpResponse = new DumpRequestPacket<>(json, handler.getGnsNodeConfig());

@@ -23,11 +23,11 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
@@ -69,28 +69,28 @@ public class RetrieveAliases extends AbstractCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-    String guid = json.getString(GNSCommandProtocol.GUID);
-    String signature = json.getString(GNSCommandProtocol.SIGNATURE);
-    String message = json.getString(GNSCommandProtocol.SIGNATUREFULLMESSAGE);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
-      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSCommandProtocol.BAD_RESPONSE 
-              + " " + GNSCommandProtocol.BAD_GUID + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() 
+              + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler);
       if (accountInfo == null) {
-        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSCommandProtocol.BAD_RESPONSE 
-                + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + guid);
+        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() 
+                + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
       } else if (!accountInfo.isVerified()) {
-        return new CommandResponse(ResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
-                + " " + GNSCommandProtocol.VERIFICATION_ERROR + " Account not verified");
+        return new CommandResponse(ResponseCode.VERIFICATION_ERROR, GNSProtocol.BAD_RESPONSE.toString()
+                + " " + GNSProtocol.VERIFICATION_ERROR.toString() + " Account not verified");
       }
       ArrayList<String> aliases = accountInfo.getAliases();
       return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(aliases).toString());
     } else {
-      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.BAD_SIGNATURE);
+      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString()
+              + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
   }
 

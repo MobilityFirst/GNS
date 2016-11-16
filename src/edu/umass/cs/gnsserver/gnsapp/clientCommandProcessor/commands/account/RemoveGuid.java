@@ -28,15 +28,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCOUNT_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
@@ -50,6 +41,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  *
@@ -78,18 +70,18 @@ public class RemoveGuid extends AbstractCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-    String guidToRemove = json.getString(GUID);
-    String accountGuid = json.optString(ACCOUNT_GUID, null);
-    String signature = json.getString(SIGNATURE);
-    String message = json.getString(SIGNATUREFULLMESSAGE);
+    String guidToRemove = json.getString(GNSProtocol.GUID.toString());
+    String accountGuid = json.optString(GNSProtocol.ACCOUNT_GUID.toString(), null);
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     GuidInfo accountGuidInfo = null;
     GuidInfo guidInfoToRemove;
     if ((guidInfoToRemove = AccountAccess.lookupGuidInfoAnywhere(guidToRemove, handler)) == null) {
-      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guidToRemove);
     }
     if (accountGuid != null) {
       if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
-        return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
+        return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + accountGuid);
       }
     }
     try {
@@ -99,15 +91,15 @@ public class RemoveGuid extends AbstractCommand {
         if (accountGuid != null) {
           accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(accountGuid, handler);
           if (accountInfo == null) {
-            return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
+            return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + accountGuid);
           }
         }
         return AccountAccess.removeGuid(guidInfoToRemove, accountInfo, handler);
       } else {
-        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
     }
   }
 }

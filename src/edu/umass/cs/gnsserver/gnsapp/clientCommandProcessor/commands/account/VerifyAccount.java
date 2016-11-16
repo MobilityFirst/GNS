@@ -22,11 +22,11 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -62,8 +62,8 @@ public class VerifyAccount extends AbstractCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String guid = json.getString(GNSCommandProtocol.GUID);
-    String code = json.getString(GNSCommandProtocol.CODE);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String code = json.getString(GNSProtocol.CODE.toString());
     return AccountAccess.verifyAccount(guid, code, handler);
   }
 

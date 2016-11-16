@@ -23,12 +23,12 @@ import java.util.StringTokenizer;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
- * Lookup a GUID corresponding to an alias in the GNS
+ * Lookup a GNSProtocol.GUID.toString() corresponding to an alias in the GNS
  * 
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
  * @version 1.0
@@ -79,7 +79,7 @@ public class AliasLookup extends ConsoleCommand
 
       GNSClientCommands gnsClient = module.getGnsClient();
       JSONObject entityInfo = gnsClient.lookupGuidRecord(guid);
-      String alias = entityInfo.getString(GNSCommandProtocol.GUID_RECORD_NAME);
+      String alias = entityInfo.getString(GNSProtocol.GUID_RECORD_NAME.toString());
       console.printString(guid + " has alias " + alias);
       console.printNewline();
     }

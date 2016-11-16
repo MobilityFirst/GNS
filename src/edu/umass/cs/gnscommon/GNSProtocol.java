@@ -328,6 +328,7 @@ public enum GNSProtocol {
   //
   // Command packet fields
   //
+  TIMESTAMP("timestamp"),
   /**
    * The sequence number field in a command packet.
    */
@@ -449,6 +450,10 @@ public enum GNSProtocol {
    * The prefix used to hide GNS internal fields.
    */
   INTERNAL_PREFIX("_GNS_"),
+  /**
+   * The newline character in a string.
+   */
+  NEWLINE(System.getProperty("line.separator")),
   //
   // Misc
   //

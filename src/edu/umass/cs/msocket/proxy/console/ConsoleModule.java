@@ -51,7 +51,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.msocket.proxy.ProxyPublisher;
 import edu.umass.cs.msocket.proxy.console.commands.ConsoleCommand;
 import edu.umass.cs.msocket.proxy.console.commands.Connect;
@@ -370,8 +370,8 @@ public class ConsoleModule {
   }
 
   /**
-   * Try to find the default GNS and default GUID and connect if these are
-   * defined.
+   * Try to find the default GNS and default GNSProtocol.GUID.toString() and connect if these are
+ defined.
    */
   public void useGnsDefaults() {
     String gns = KeyPairUtils.getDefaultGns();
@@ -708,7 +708,7 @@ public class ConsoleModule {
   }
 
   /**
-   * Returns the verified status of the current GUID.
+   * Returns the verified status of the current GNSProtocol.GUID.toString().
    *
    * @return
    */
@@ -772,7 +772,7 @@ public class ConsoleModule {
   }
 
   /**
-   * Returns true if the current GUID is set and the account has been verified
+   * Returns true if the current GNSProtocol.GUID.toString() is set and the account has been verified
    *
    * @return
    */
@@ -788,10 +788,10 @@ public class ConsoleModule {
   }
 
   /**
-   * Sets the current GUID with the provided GUID and checks if the account is
-   * verified.
+   * Sets the current GNSProtocol.GUID.toString() with the provided GNSProtocol.GUID.toString() and checks if the account is
+ verified.
    *
-   * @param guid the GUID to use as current GUID
+   * @param guid the GNSProtocol.GUID.toString() to use as current GNSProtocol.GUID.toString()
    */
   public void setCurrentGuidAndCheckForVerified(GuidEntry guid) {
     this.currentGuid = guid;
@@ -804,10 +804,10 @@ public class ConsoleModule {
   }
 
   /**
-   * Sets the guid as default GUID in user preferences and checks if the account
-   * is verified.
+   * Sets the guid as default GNSProtocol.GUID.toString() in user preferences and checks if the account
+ is verified.
    *
-   * @param guid the GUID to set as default GUID
+   * @param guid the GNSProtocol.GUID.toString() to set as default GNSProtocol.GUID.toString()
    */
   public void setDefaultGuidAndCheckForVerified(GuidEntry guid) {
     KeyPairUtils.setDefaultGuidEntry(gnsClient.getGNSProvider(), guid.getEntityName());
@@ -833,21 +833,21 @@ public class ConsoleModule {
   }
 
   /**
-   * Check if the given GUID is verified in the GNS.
+   * Check if the given GNSProtocol.GUID.toString() is verified in the GNS.
    *
-   * @param guid the GUID to lookup
+   * @param guid the GNSProtocol.GUID.toString() to lookup
    * @return true if the account is verified
    */
   public boolean isAccountVerified(GuidEntry guid) {
     try {
       JSONObject json = gnsClient.lookupAccountRecord(guid.getGuid());
       if (json != null) {
-        return json.getBoolean(GNSCommandProtocol.ACCOUNT_RECORD_VERIFIED);
-      } else { // This is not an account GUID but make sure the GUID is valid
+        return json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString());
+      } else { // This is not an account GNSProtocol.GUID.toString() but make sure the GNSProtocol.GUID.toString() is valid
         return gnsClient.publicKeyLookupFromGuid(guid.getGuid()) != null;
       }
     } catch (Exception e) {
-      // This might not be an account GUID let's check if the GUID is valid
+      // This might not be an account GNSProtocol.GUID.toString() let's check if the GNSProtocol.GUID.toString() is valid
       try {
         return gnsClient.publicKeyLookupFromGuid(guid.getGuid()) != null;
       } catch (Exception e1) {

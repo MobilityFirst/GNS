@@ -20,13 +20,13 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
@@ -93,7 +93,7 @@ public class AclTest {
     }
     try {
       // remove default read access for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       fail("Exception while removing ACL in ACLCreateGuids: " + e);
       e.printStackTrace();
@@ -101,7 +101,7 @@ public class AclTest {
     try {
       JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(masterGuid.getGuid())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, westyEntry.getGuid());
+              GNSProtocol.ENTIRE_RECORD.toString(), westyEntry.getGuid());
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       fail("Exception while retrieving ACL in ACLCreateGuids: " + e);
@@ -136,7 +136,7 @@ public class AclTest {
       expected.put("password", new JSONArray(new ArrayList<String>(Arrays.asList("666flapJack"))));
       expected.put("ssn", new JSONArray(new ArrayList<String>(Arrays.asList("000-00-0000"))));
       expected.put("address", new JSONArray(new ArrayList<String>(Arrays.asList("100 Hinkledinkle Drive"))));
-      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ENTIRE_RECORD, masterGuid));
+      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), masterGuid));
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       fail("Exception while reading all fields in ACLReadAllFields: " + e);
@@ -170,7 +170,7 @@ public class AclTest {
   public void test_105_ACLNotReadOtherGuidAllFieldsTest() {
     try {
       try {
-        String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ENTIRE_RECORD, samEntry);
+        String result = client.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), samEntry);
         fail("Result of read of all of westy's fields by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
@@ -243,14 +243,14 @@ public class AclTest {
       barneyEntry = client.guidCreate(masterGuid, barneyName);
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
       try {
         // let anybody read barney's cell field
         client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
-                GNSCommandProtocol.ALL_GUIDS);
+                GNSProtocol.ALL_GUIDS.toString());
       } catch (Exception e) {
         fail("Exception creating ALLUSERS access for Barney's cell: " + e);
         e.printStackTrace();
@@ -313,7 +313,7 @@ public class AclTest {
       GuidEntry superuserEntry = client.guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ENTIRE_RECORD, superuserEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
 
       assertEquals("413-555-1234",
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
@@ -339,7 +339,7 @@ public class AclTest {
         e.printStackTrace();
       }
       try {
-        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSCommandProtocol.ENTIRE_RECORD);
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSProtocol.ENTIRE_RECORD.toString());
       } catch (Exception e) {
         fail("Problem adding acl: " + e);
         e.printStackTrace();
@@ -347,7 +347,7 @@ public class AclTest {
       try {
         JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSCommandProtocol.ENTIRE_RECORD)));
+        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSProtocol.ENTIRE_RECORD.toString())));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         fail("Problem reading acl: " + e);

@@ -1,6 +1,5 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.RSA_ALGORITHM;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
@@ -22,6 +21,7 @@ import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -525,7 +525,7 @@ public class ByteificationComparison {
   @Test
 	public void test_18_CommandPacket_128B() throws UnsupportedEncodingException, JSONException, ClientException, RequestParseException{
 		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)), null);
-		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(64)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(64))));
+		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSProtocol.GUID.toString(), new String(Util.getRandomAlphanumericBytes(64)), GNSProtocol.FIELD.toString(),new String(Util.getRandomAlphanumericBytes(64))));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
@@ -552,7 +552,7 @@ public class ByteificationComparison {
   @Test
 	public void test_19_CommandPacket_1024B() throws UnsupportedEncodingException, JSONException, ClientException, RequestParseException{
 		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)), null);
-		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
+		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSProtocol.GUID.toString(), new String(Util.getRandomAlphanumericBytes(512)), GNSProtocol.FIELD.toString(),new String(Util.getRandomAlphanumericBytes(512))));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
@@ -579,7 +579,7 @@ public class ByteificationComparison {
 	public void test_20_FromCommandPacket_128B() throws UnsupportedEncodingException, JSONException, ClientException, NoSuchAlgorithmException, RequestParseException{
 	      GuidEntry querier = null;
 		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)), querier);
-		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
+		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSProtocol.GUID.toString(), new String(Util.getRandomAlphanumericBytes(512)), GNSProtocol.FIELD.toString(),new String(Util.getRandomAlphanumericBytes(512))));
 		String jsonBefore = packet.toJSONObject().toString();
 		byte[] bytes = packet.toBytes();
 		//System.out.println(jsonBefore + "\n\n" + packet.toJSONObject().toString());
@@ -616,7 +616,7 @@ public class ByteificationComparison {
   @Test
 	public void test_201_FromCommandPacket_128B_Signed() throws UnsupportedEncodingException, JSONException, ClientException, NoSuchAlgorithmException, RequestParseException{
 		//GuidEntry querier = KeyPairUtils.getGuidEntry("testName", "testUser");
-		KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
+		KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
 	              .generateKeyPair();
 	      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
 	              .getPublic().getEncoded());
@@ -627,7 +627,7 @@ public class ByteificationComparison {
 		CommandPacket packet = 
 				GNSCommand.fieldUpdate(querier, new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
 //				GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)), querier);
-		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
+		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSProtocol.GUID.toString(), new String(Util.getRandomAlphanumericBytes(512)), GNSProtocol.FIELD.toString(),new String(Util.getRandomAlphanumericBytes(512))));
 		String jsonBefore = packet.toJSONObject().toString();
 		byte[] bytes = packet.toBytes();
 		assert(jsonBefore.equals(packet.toJSONObject().toString()));
@@ -663,7 +663,7 @@ public class ByteificationComparison {
   @Test
 	public void test_21_FromCommandPacket_1024B() throws UnsupportedEncodingException, JSONException, ClientException, NoSuchAlgorithmException, RequestParseException{
 		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)), null);
-		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
+		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSProtocol.GUID.toString(), new String(Util.getRandomAlphanumericBytes(512)), GNSProtocol.FIELD.toString(),new String(Util.getRandomAlphanumericBytes(512))));
 		byte[] bytes = packet.toBytes();
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){

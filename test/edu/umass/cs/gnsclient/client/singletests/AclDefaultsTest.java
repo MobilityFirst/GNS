@@ -20,19 +20,18 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.json.JSONArray;
@@ -101,18 +100,17 @@ public class AclDefaultsTest {
   // Start with some simple tests to insure that basic ACL mechanics work
   //
   /**
-   * Add the ALL_GUID to ENTIRE_RECORD if it's not there already.
+   * Add the ALL_GUID to GNSProtocol.ENTIRE_RECORD.toString() if it's not there already.
    */
   @Test
   public void test_110_ACLMaybeAddAllFields() {
     try {
-      if (!JSONUtils.JSONArrayToArrayList(
-              client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
-                      GNSCommandProtocol.ENTIRE_RECORD, masterGuid.getGuid()))
-              .contains(GNSCommandProtocol.ALL_GUIDS)) {
+      if (!JSONUtils.JSONArrayToArrayList(client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
+                      GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()))
+              .contains(GNSProtocol.ALL_GUIDS.toString())) {
         client.aclAdd(AclAccessType.READ_WHITELIST, masterGuid,
-                GNSCommandProtocol.ENTIRE_RECORD,
-                GNSCommandProtocol.ALL_GUIDS);
+                GNSProtocol.ENTIRE_RECORD.toString(),
+                GNSProtocol.ALL_GUIDS.toString());
       }
     } catch (Exception e) {
       failWithStackTrace("Exception while checking for ALL_FIELDS in ACLMaybeAddAllFields: " + e);
@@ -127,10 +125,10 @@ public class AclDefaultsTest {
   public void test_111_ACLCheckForAllFieldsPass() {
     try {
       ThreadUtils.sleep(100);
-      JSONArray expected = new JSONArray(Arrays.asList(GNSCommandProtocol.ALL_GUIDS));
+      JSONArray expected = new JSONArray(Arrays.asList(GNSProtocol.ALL_GUIDS.toString()));
       JSONAssert.assertEquals(expected,
               client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
-                      GNSCommandProtocol.ENTIRE_RECORD, masterGuid.getGuid()), true);
+                      GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()), true);
     } catch (Exception e) {
       failWithStackTrace("Exception while checking ALL_FIELDS in ACLCheckForAllFieldsPass: " + e);
       e.printStackTrace();
@@ -142,7 +140,7 @@ public class AclDefaultsTest {
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, masterGuid,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception while removing ACL in ACLRemoveAllFields: " + e);
       e.printStackTrace();
@@ -155,7 +153,7 @@ public class AclDefaultsTest {
       JSONArray expected = new JSONArray();
       JSONAssert.assertEquals(expected,
               client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
-                      GNSCommandProtocol.ENTIRE_RECORD, masterGuid.getGuid()), true);
+                      GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()), true);
     } catch (Exception e) {
       failWithStackTrace("Exception while checking ALL_FIELDS in ACLCheckForAllFieldsMissing: " + e);
       e.printStackTrace();
@@ -165,7 +163,7 @@ public class AclDefaultsTest {
   @Test
   public void test_114_CheckAllFieldsAcl() {
     try {
-      assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSCommandProtocol.ENTIRE_RECORD));
+      assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAllFieldsAcl: " + e);
     }
@@ -174,7 +172,7 @@ public class AclDefaultsTest {
   @Test
   public void test_115_DeleteAllFieldsAcl() {
     try {
-      client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, GNSCommandProtocol.ENTIRE_RECORD);
+      client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception in DeleteAllFieldsAcl: " + e);
     }
@@ -183,7 +181,7 @@ public class AclDefaultsTest {
   @Test
   public void test_116_CheckAllFieldsAclGone() {
     try {
-      assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSCommandProtocol.ENTIRE_RECORD));
+      assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAllFieldsAclGone: " + e);
     }
@@ -247,9 +245,9 @@ public class AclDefaultsTest {
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
       client.aclRemove(AclAccessType.READ_WHITELIST, samEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception while removing ACL in ACLRemoveAllFields: " + e);
       e.printStackTrace();
@@ -275,12 +273,11 @@ public class AclDefaultsTest {
   @Test
   public void test_135_ACLMaybeAddAllFieldsForMaster() {
     try {
-      if (!JSONUtils.JSONArrayToArrayList(
-              client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
-                      GNSCommandProtocol.ENTIRE_RECORD, westyEntry.getGuid()))
+      if (!JSONUtils.JSONArrayToArrayList(client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+                      GNSProtocol.ENTIRE_RECORD.toString(), westyEntry.getGuid()))
               .contains(masterGuid.getGuid())) {
         client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
-                GNSCommandProtocol.ENTIRE_RECORD,
+                GNSProtocol.ENTIRE_RECORD.toString(),
                 masterGuid.getGuid());
       }
     } catch (Exception e) {
@@ -301,7 +298,7 @@ public class AclDefaultsTest {
       expected.put("ssn", "000-00-0000");
       expected.put("address", "100 Hinkledinkle Drive");
       JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(),
-              GNSCommandProtocol.ENTIRE_RECORD, masterGuid));
+              GNSProtocol.ENTIRE_RECORD.toString(), masterGuid));
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading all fields in ACLReadAllFields: " + e);
@@ -335,7 +332,7 @@ public class AclDefaultsTest {
   public void test_138_ACLNotReadOtherGuidAllFieldsTest() {
     try {
       try {
-        String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ENTIRE_RECORD, samEntry);
+        String result = client.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), samEntry);
         failWithStackTrace("Result of read of all of westy's fields by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
@@ -427,7 +424,7 @@ public class AclDefaultsTest {
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
       e.printStackTrace();
@@ -452,7 +449,7 @@ public class AclDefaultsTest {
       try {
         // let anybody read barney's cell field
         client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
-                GNSCommandProtocol.ALL_GUIDS);
+                GNSProtocol.ALL_GUIDS.toString());
       } catch (Exception e) {
         failWithStackTrace("Exception creating ALL_GUIDS access for Barney's cell: " + e);
         e.printStackTrace();
@@ -535,7 +532,7 @@ public class AclDefaultsTest {
 
       // let superuser read any of barney's fields
       client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, superuserEntry.getGuid());
+              GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
 
       assertEquals("413-555-1234",
               client.fieldRead(barneyEntry.getGuid(), "cell", superuserEntry));
@@ -644,7 +641,7 @@ public class AclDefaultsTest {
   @Test
   public void test_157_AddAllRecordACL() {
     try {
-      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test", GNSCommandProtocol.ALL_GUIDS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test", GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
       e.printStackTrace();
@@ -652,7 +649,7 @@ public class AclDefaultsTest {
   }
 
   // This should still fail because the ACL for test.deeper.field is empty even though test 
-  // now has an ALL_GUIDS at the root (this is different than the old model).
+  // now has an GNSProtocol.ALL_GUIDS.toString() at the root (this is different than the old model).
   @Test
   public void test_158_ACLReadDeeperFieldOtherFail() {
     try {

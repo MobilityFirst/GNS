@@ -19,7 +19,7 @@ import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
@@ -189,20 +189,20 @@ public class CommandHandler {
                 handler), PacketUtils.getCommand(commandPacket), handler);
       } else {
         return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
-                GNSCommandProtocol.BAD_RESPONSE + " "
-                + GNSCommandProtocol.OPERATION_NOT_SUPPORTED + " - Don't understand "
+                GNSProtocol.BAD_RESPONSE.toString() + " "
+                + GNSProtocol.OPERATION_NOT_SUPPORTED.toString() + " - Don't understand "
                 + PacketUtils.getCommand(commandPacket));
       }
     } catch (JSONException e) {
       // e.printStackTrace();
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e
+              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.JSON_PARSE_ERROR.toString() + " " + e
               + " while executing command.");
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
       return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
-              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + e);
+              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString() + " " + e);
     } catch (InternalRequestException e) {
-      return new CommandResponse(e.getCode(), GNSCommandProtocol.BAD_RESPONSE + " "
+      return new CommandResponse(e.getCode(), GNSProtocol.BAD_RESPONSE.toString() + " "
               + ResponseCode.INTERNAL_REQUEST_EXCEPTION + " " + e);
     }
   }
@@ -237,7 +237,7 @@ public class CommandHandler {
 		 * entire chain information, which seems like too much work given that
 		 * we already have TTLs to limit cycles. */
     CommandPacket originRequest = handler.getOriginRequest(header);
-    // same origin GUID and origin request ID => node cycle
+    // same origin GNSProtocol.GUID.toString() and origin request ID => node cycle
     if (originRequest != commandPacket
             && header
             .getOriginatingGUID()
@@ -279,12 +279,12 @@ public class CommandHandler {
     } catch (JSONException e) {
       // e.printStackTrace();
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              GNSCommandProtocol.BAD_RESPONSE + " "
-              + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e
+              GNSProtocol.BAD_RESPONSE.toString() + " "
+              + GNSProtocol.JSON_PARSE_ERROR.toString() + " " + e
               + " while executing command.");
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
       return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
-              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + e);
+              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString() + " " + e);
     }
   }
 

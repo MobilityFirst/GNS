@@ -25,14 +25,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
@@ -76,18 +68,18 @@ public class Create extends AbstractCommand {
   @Override
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GUID);
-    String field = json.getString(FIELD);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String field = json.getString(GNSProtocol.FIELD.toString());
     // the opt hair below is for the subclasses... cute, huh?
     // value might be null
-    String value = json.optString(VALUE, null);
+    String value = json.optString(GNSProtocol.VALUE.toString(), null);
     // writer might be same as guid
-    String writer = json.optString(WRITER, guid);
-    String signature = json.getString(SIGNATURE);
-    String message = json.getString(SIGNATUREFULLMESSAGE);
+    String writer = json.optString(GNSProtocol.WRITER.toString(), guid);
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     Date timestamp;
-    if (json.has(TIMESTAMP)) {
-      timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    if (json.has(GNSProtocol.TIMESTAMP.toString())) {
+      timestamp = json.has(GNSProtocol.TIMESTAMP.toString()) ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
     } else {
       timestamp = null;
     }
@@ -97,7 +89,7 @@ public class Create extends AbstractCommand {
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {
-      return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());
     }
   }
 

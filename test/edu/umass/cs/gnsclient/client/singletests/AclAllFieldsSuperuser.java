@@ -20,10 +20,10 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
@@ -134,7 +134,7 @@ public class AclAllFieldsSuperuser {
     try {
       // let superuser read any of barney's fields
       client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, superuserEntry.getGuid());
+              GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLALLFields: " + e);
     }

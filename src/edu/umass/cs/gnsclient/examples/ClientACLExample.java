@@ -21,7 +21,7 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.AclException;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -34,14 +34,14 @@ import java.security.spec.InvalidKeySpecException;
 import org.json.JSONObject;
 
 /**
- * This example creates an account GUID record and an additional GUID to 
- * demonstrate ACL commands in the GNS.
+ * This example creates an account GNSProtocol.GUID.toString() record and an additional GNSProtocol.GUID.toString() to 
+ demonstrate ACL commands in the GNS.
  * 
  * <p>
- * Note: This example assumes that the verification step (e.g., via email) to
- * verify an account GUID's human-readable name has been disabled on the server
- * using the ENABLE_EMAIL_VERIFICATION=false option. This option is set in the
- * default gigapaxos.properties file.
+ Note: This example assumes that the verification step (e.g., via email) to
+ verify an account GNSProtocol.GUID.toString()'s human-readable name has been disabled on the server
+ using the ENABLE_EMAIL_VERIFICATION=false option. This option is set in the
+ default gigapaxos.properties file.
  * 
  * @author arun, westy, mdews
  */
@@ -93,7 +93,7 @@ public class ClientACLExample {
     
     // Remove default read access from guid
     client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, guid, 
-        GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS));
+        GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString()));
     System.out.println("\n// Remove default read access from guid\n"
         + "client.aclRemove(READ_WHITELIST, guid, ALL_FIELDS, ALL_GUIDS)");
     
@@ -110,7 +110,7 @@ public class ClientACLExample {
     
     // Give phoneGuid read access to fields in guid
     // If we had not removed the default read access from guid this step would be unnecessary
-    client.execute(GNSCommand.aclAdd(AclAccessType.READ_WHITELIST, guid, GNSCommandProtocol.ENTIRE_RECORD, phoneGuid.getGuid()));
+    client.execute(GNSCommand.aclAdd(AclAccessType.READ_WHITELIST, guid, GNSProtocol.ENTIRE_RECORD.toString(), phoneGuid.getGuid()));
     JSONObject result = client.execute(GNSCommand.read(guid.getGuid(), phoneGuid)).getResultJSONObject();
     System.out.println("\n// Give phoneGuid read access to fields in guid and read guid entry as phoneGuid\n"
         + "client.aclAdd(READ_WHITELIST, guid, ALL_FIELDS, phoneGuid)\n"
@@ -129,7 +129,7 @@ public class ClientACLExample {
         + "client.fieldRead(guid.getGuid(), \"location\", phoneGuid) -> " + field_result);
 
     // Remove phoneGuid from ACL
-    client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, guid, GNSCommandProtocol.ENTIRE_RECORD, phoneGuid.getGuid()));
+    client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, guid, GNSProtocol.ENTIRE_RECORD.toString(), phoneGuid.getGuid()));
     client.execute(GNSCommand.aclRemove(AclAccessType.WRITE_WHITELIST, guid, "location", phoneGuid.getGuid()));
     System.out.println("\n// Remove phoneGuid from guid's read and write whitelists \n"
         + "client.aclRemove(READ_WHITELIST, guid, ALL_FIELDS, phoneGuid))\n"

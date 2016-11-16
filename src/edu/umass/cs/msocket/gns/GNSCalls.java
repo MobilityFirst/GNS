@@ -14,7 +14,7 @@ import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.logger.MSocketLogger;
 
@@ -149,7 +149,7 @@ public class GNSCalls
 			        		DefaultGNSClient.getMyGuidEntry(), localName));
 			        
 			        myGuid = (GuidEntry) commandRes.getResult();
-			        // storing alias in gns record, need it to find it when we have GUID
+			        // storing alias in gns record, need it to find it when we have GNSProtocol.GUID.toString()
 			        // from group members
 			        DefaultGNSClient.getGnsClient().execute(
 			        	GNSCommand.fieldCreateList(myGuid.getGuid(), 
@@ -221,7 +221,7 @@ public class GNSCalls
 			      if (myGuid == null)
 			      {
 			        MSocketLogger.getLogger().fine("No keys found for service " + localName + ". Generating new GUID and keys");
-			        // Create a new GUID
+			        // Create a new GNSProtocol.GUID.toString()
 			        
 			        GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute(GNSCommand.createGUID
 			        		(DefaultGNSClient.getGnsClient().getGNSProvider(), 
@@ -404,7 +404,7 @@ public class GNSCalls
 	  public static JSONArray selectNear(JSONArray coordJson, double radius) throws Exception
 	  {
 		  GNSCommand commandRes = DefaultGNSClient.getGnsClient().execute
-		  	(GNSCommand.selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, coordJson, radius));
+		  	(GNSCommand.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), coordJson, radius));
 		  
 		  
 		  JSONArray queryResult = commandRes.getResultJSONArray();
@@ -434,7 +434,7 @@ public class GNSCalls
 //							//
 //					        //    //}
 //					        //}
-//					        String guidString = record.getString("GUID");
+//					        String guidString = record.getString("GNSProtocol.GUID.toString()");
 //					        String attrGNSValue = record.getString(field);
 //					        String compvalue = "[\""+ value+"\"]";
 //					        System.out.println("guidString "+guidString+" attrGNSValue "+attrGNSValue);

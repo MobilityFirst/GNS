@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
@@ -28,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.security.InvalidKeyException;
@@ -67,19 +67,19 @@ public class SetPassword extends AbstractCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GNSCommandProtocol.GUID);
-    String password = json.getString(GNSCommandProtocol.PASSWORD);
-    String signature = json.getString(GNSCommandProtocol.SIGNATURE);
-    String message = json.getString(GNSCommandProtocol.SIGNATUREFULLMESSAGE);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String password = json.getString(GNSProtocol.PASSWORD.toString());
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler);
-    Date timestamp = json.has(GNSCommandProtocol.TIMESTAMP)
-            ? Format.parseDateISO8601UTC(json.getString(GNSCommandProtocol.TIMESTAMP)) : null; // can be null on older client
+    Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString())
+            ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
     if (accountInfo == null) {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
-              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + guid);
+              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
     } else if (!accountInfo.isVerified()) {
       return new CommandResponse(ResponseCode.VERIFICATION_ERROR,
-              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR
+              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.VERIFICATION_ERROR.toString()
               + " Account not verified");
     }
     return AccountAccess.setPassword(accountInfo, password, guid, signature, message, timestamp, handler);

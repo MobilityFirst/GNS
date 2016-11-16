@@ -18,7 +18,6 @@ package edu.umass.cs.gnsclient.client;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.AclException;
@@ -33,9 +32,6 @@ import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
@@ -63,6 +59,7 @@ import javax.crypto.SecretKey;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  *
@@ -79,7 +76,7 @@ public class CommandUtils {
     try {
       for (int i = 0; i < signatureInstances.length; i++) {
         signatureInstances[i] = Signature
-                .getInstance(GNSCommandProtocol.SIGNATURE_ALGORITHM);
+                .getInstance(GNSProtocol.SIGNATURE_ALGORITHM.toString());
       }
       random = new Random();
     } catch (NoSuchAlgorithmException e) {
@@ -110,7 +107,7 @@ public class CommandUtils {
     JSONObject result = new JSONObject();
     String key;
     Object value;
-    result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
+    result.put(GNSProtocol.COMMAND_INT.toString(), commandType.getInt());
     for (int i = 0; i < keysAndValues.length; i = i + 2) {
       key = (String) keysAndValues[i];
       value = keysAndValues[i + 1];
@@ -199,7 +196,7 @@ public class CommandUtils {
     for (int i = 0; i < mds.length; i++) {
       try {
         mds[i] = MessageDigest
-                .getInstance(GNSCommandProtocol.DIGEST_ALGORITHM);
+                .getInstance(GNSProtocol.DIGEST_ALGORITHM.toString());
       } catch (NoSuchAlgorithmException e) {
         e.printStackTrace();
         System.exit(1);
@@ -219,7 +216,7 @@ public class CommandUtils {
     for (int i = 0; i < ciphers.length; i++) {
       try {
         ciphers[i] = Cipher
-                .getInstance(GNSCommandProtocol.SECRET_KEY_ALGORITHM);
+                .getInstance(GNSProtocol.SECRET_KEY_ALGORITHM.toString());
       } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
         e.printStackTrace();
         System.exit(1);
@@ -256,7 +253,7 @@ public class CommandUtils {
             privateKey);
     MessageDigest md = getMessageDigestInstance();
     byte[] digest;
-    byte[] body = message.getBytes(GNSCommandProtocol.CHARSET);
+    byte[] body = message.getBytes(GNSProtocol.CHARSET.toString());
     synchronized (md) {
       digest = md.digest(body);
     }
@@ -293,7 +290,7 @@ public class CommandUtils {
     // updated yet to use Base64.
     // This also means we don't have to further encode these for the HTTP client.
     return ByteUtils.toHex(combined);
-    //return new String(combined, GNSCommandProtocol.CHARSET);
+    //return new String(combined, GNSProtocol.CHARSET.toString());
   }
 
   /**
@@ -306,11 +303,11 @@ public class CommandUtils {
    * @throws JSONException
    */
   public static void addMessageWithoutSignatureToJSON(JSONObject command) throws JSONException {
-    if (command.has(SIGNATURE)) {
-      String signature = command.getString(SIGNATURE);
-      command.remove(SIGNATURE);
+    if (command.has(GNSProtocol.SIGNATURE.toString())) {
+      String signature = command.getString(GNSProtocol.SIGNATURE.toString());
+      command.remove(GNSProtocol.SIGNATURE.toString());
       String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
-      command.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
+      command.put(GNSProtocol.SIGNATURE.toString(), signature).put(GNSProtocol.SIGNATUREFULLMESSAGE.toString(),
               commandSansSignature);
     }
   }
@@ -339,7 +336,7 @@ public class CommandUtils {
    * 2) "+NULL+" - another nominal which meant we should return null as the
    * value<br>
    * 3) "+NO+"{space}{error code string}{{space}{additional info string}}+<br>
-   * Later a special case 4 was added for ACTIVE_REPLICA_EXCEPTION.<br>
+ Later a special case 4 was added for GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString().<br>
    *
    * For case 3 the additional info strings (could be any number) were
    * interpreted by the error handlers and generally used to help provide
@@ -347,8 +344,8 @@ public class CommandUtils {
    *
    * Also note that:<br>
    * GNSCommandProtocol.OK_RESPONSE = "+OK+"<br>
-   * GNSCommandProtocol.BAD_RESPONSE = "+NO+"<br>
-   * GNSCommandProtocol.NULL_RESPONSE = "+NULL+"<br>
+ GNSProtocol.BAD_RESPONSE.toString() = "+NO+"<br>
+ GNSProtocol.NULL_RESPONSE.toString() = "+NULL+"<br>
    *
    * @param response
    * @return Response as string.
@@ -356,7 +353,7 @@ public class CommandUtils {
    */
   public static String checkResponseOldSchool(String response) throws ClientException {
     // System.out.println("response:" + response);
-    if (response.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
+    if (response.startsWith(GNSProtocol.BAD_RESPONSE.toString())) {
       String[] results = response.split(" ");
       // System.out.println("results length:" + results.length);
       if (results.length < 2) {
@@ -373,46 +370,46 @@ public class CommandUtils {
           parts.append(results[i]);
         }
         String rest = parts.toString();
-        if (error.startsWith(GNSCommandProtocol.BAD_SIGNATURE)) {
+        if (error.startsWith(GNSProtocol.BAD_SIGNATURE.toString())) {
           throw new EncryptionException(error);
         }
-        if (error.startsWith(GNSCommandProtocol.BAD_GUID)
-                || error.startsWith(GNSCommandProtocol.BAD_ACCESSOR_GUID)
-                // why not with DUPLICATE_NAME?
-                || error.startsWith(GNSCommandProtocol.DUPLICATE_GUID)
-                || error.startsWith(GNSCommandProtocol.BAD_ACCOUNT)) {
+        if (error.startsWith(GNSProtocol.BAD_GUID.toString())
+                || error.startsWith(GNSProtocol.BAD_ACCESSOR_GUID.toString())
+                // why not with GNSProtocol.DUPLICATE_NAME.toString()?
+                || error.startsWith(GNSProtocol.DUPLICATE_GUID.toString())
+                || error.startsWith(GNSProtocol.BAD_ACCOUNT.toString())) {
           throw new InvalidGuidException(error + rest);
         }
-        if (error.startsWith(GNSCommandProtocol.DUPLICATE_FIELD)) {
+        if (error.startsWith(GNSProtocol.DUPLICATE_FIELD.toString())) {
           throw new InvalidFieldException(error + rest);
         }
-        if (error.startsWith(GNSCommandProtocol.FIELD_NOT_FOUND)) {
+        if (error.startsWith(GNSProtocol.FIELD_NOT_FOUND.toString())) {
           throw new FieldNotFoundException(error + rest);
         }
-        if (error.startsWith(GNSCommandProtocol.ACCESS_DENIED)) {
+        if (error.startsWith(GNSProtocol.ACCESS_DENIED.toString())) {
           throw new AclException(error + rest);
         }
-        if (error.startsWith(GNSCommandProtocol.DUPLICATE_NAME)) {
+        if (error.startsWith(GNSProtocol.DUPLICATE_NAME.toString())) {
           throw new DuplicateNameException(error + rest);
         }
-        if (error.startsWith(GNSCommandProtocol.VERIFICATION_ERROR)) {
+        if (error.startsWith(GNSProtocol.VERIFICATION_ERROR.toString())) {
           throw new VerificationException(error + rest);
         }
         if (error
-                .startsWith(GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION)) {
+                .startsWith(GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString())) {
           throw new VerificationException(error + rest);
         }
-        if (error.startsWith(OPERATION_NOT_SUPPORTED)) {
+        if (error.startsWith(GNSProtocol.OPERATION_NOT_SUPPORTED.toString())) {
           throw new OperationNotSupportedException(error + rest);
         }
         throw new ClientException("General command failure: " + error
                 + rest);
       }
     }
-    if (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) {
+    if (response.startsWith(GNSProtocol.NULL_RESPONSE.toString())) {
       return null;
     } else if (response
-            .startsWith(GNSCommandProtocol.ACTIVE_REPLICA_EXCEPTION
+            .startsWith(GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString()
                     .toString())) {
       throw new InvalidGuidException(response);
     } else {
@@ -439,7 +436,7 @@ public class CommandUtils {
     // return value. Also handle the special case where the command
     // wants to return a null value.
     if (code.isOKResult()) {
-      return (returnValue.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
+      return (returnValue.startsWith(GNSProtocol.NULL_RESPONSE.toString())) ? null
               : responsePacket;//returnValue;
     }
     // else error
@@ -505,9 +502,9 @@ public class CommandUtils {
   public static JSONObject createCommandWithTimestampAndNonce(CommandType commandType, Object... keysAndValues)
           throws ClientException, JSONException {
     JSONObject result = createCommand(commandType, keysAndValues);
-    result.put(GNSCommandProtocol.TIMESTAMP,
+    result.put(GNSProtocol.TIMESTAMP.toString(),
             Format.formatDateISO8601UTC(new Date()));
-    result.put(GNSCommandProtocol.NONCE, getRandomRequestNonce());
+    result.put(GNSProtocol.NONCE.toString(), getRandomRequestNonce());
     return result;
   }
 
@@ -532,7 +529,7 @@ public class CommandUtils {
       } else {
         signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       }
-      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
+      result.put(GNSProtocol.SIGNATURE.toString(), signatureString);
       if (edu.umass.cs.utils.Util.oneIn(10)) {
         DelayProfiler.updateDelayNano("signature", t);
       }

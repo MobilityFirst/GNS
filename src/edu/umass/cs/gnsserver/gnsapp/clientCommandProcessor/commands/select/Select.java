@@ -19,12 +19,12 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,8 +55,8 @@ public class Select extends AbstractCommand {
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    String field = json.getString(GNSCommandProtocol.FIELD);
-    String value = json.getString(GNSCommandProtocol.VALUE);
+    String field = json.getString(GNSProtocol.FIELD.toString());
+    String value = json.getString(GNSProtocol.VALUE.toString());
     return FieldAccess.select(field, value, handler);
   }
 

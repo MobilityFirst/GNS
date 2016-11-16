@@ -61,23 +61,8 @@ import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-import edu.umass.cs.utils.Config;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
-import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCOUNT_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.CODE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.EVERYONE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.RSA_ALGORITHM;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery.RequestCallbackWithRequest;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
@@ -87,15 +72,13 @@ import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
 import java.util.logging.Logger;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * This class defines a basic asynchronous client to communicate with a GNS instance over TCP.
@@ -242,7 +225,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    * @throws Exception
    */
   public GuidEntry accountGuidCreate(String alias, String password, RequestCallback callback) throws Exception {
-    KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
+    KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString()).generateKeyPair();
     String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
     KeyPairUtils.saveKeyPair(keyPairHostIndex.getHostString() + ":" + keyPairHostIndex.getPort(), alias, guid, keyPair);
@@ -257,7 +240,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     // set up ACL to look like this
     //"_GNS_ACL": {
     //  "READ_WHITELIST": {"+ALL+": {"MD": "+ALL+"]}}}
-    JSONObject acl = AccountAccess.createACL(ENTIRE_RECORD, Arrays.asList(EVERYONE), null, null);
+    JSONObject acl = AccountAccess.createACL(GNSProtocol.ENTIRE_RECORD.toString(), Arrays.asList(GNSProtocol.EVERYONE.toString()), null, null);
     // prefix is the same for all acls so just pick one to use here
     jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
 
@@ -275,7 +258,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   /**
    * Verify an account guid by sending the verification code to the server.
    *
-   * @param guid the account GUID to verify
+   * @param guid the account GNSProtocol.GUID.toString() to verify
    * @param code the verification code
    * @param callback
    * @return a request id
@@ -283,8 +266,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    */
   public long accountGuidVerify(GuidEntry guid, String code, RequestCallback callback) throws Exception {
     return sendCommandAsynch(createAndSignCommand(CommandType.VerifyAccount,
-            guid.getPrivateKey(), GUID, guid.getGuid(),
-            CODE, code), callback);
+            guid.getPrivateKey(), GNSProtocol.GUID.toString(), guid.getGuid(),
+            GNSProtocol.CODE.toString(), code), callback);
   }
 
   /**
@@ -297,22 +280,22 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    */
   public long accountGuidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
     return sendCommandAsynch(createAndSignCommand(CommandType.RemoveAccount,
-            guid.getPrivateKey(), GUID, guid.getGuid(),
-            NAME, guid.getEntityName()), callback);
+            guid.getPrivateKey(), GNSProtocol.GUID.toString(), guid.getGuid(),
+            GNSProtocol.NAME.toString(), guid.getEntityName()), callback);
   }
 
   /**
-   * Creates an new GUID associated with an account on the GNS server.
+   * Creates an new GNSProtocol.GUID.toString() associated with an account on the GNS server.
    *
    * @param accountGuid
    * @param alias the alias
    * @param callback
-   * @return the newly created GUID entry
+   * @return the newly created GNSProtocol.GUID.toString() entry
    * @throws Exception
    */
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias, RequestCallback callback) throws Exception {
 
-    KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
+    KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString()).generateKeyPair();
     String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
     KeyPairUtils.saveKeyPair(keyPairHostIndex.getHostString() + ":" + keyPairHostIndex.getPort(), alias, guid, keyPair);
@@ -326,8 +309,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     //"_GNS_ACL": {
     //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
     //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
-    JSONObject acl = createACL(ENTIRE_RECORD, Arrays.asList(EVERYONE, accountGuid.getPublicKeyString()),
-            ENTIRE_RECORD, Arrays.asList(accountGuid.getPublicKeyString()));
+    JSONObject acl = createACL(GNSProtocol.ENTIRE_RECORD.toString(), Arrays.asList(GNSProtocol.EVERYONE.toString(), accountGuid.getPublicKeyString()),
+            GNSProtocol.ENTIRE_RECORD.toString(), Arrays.asList(accountGuid.getPublicKeyString()));
     // prefix is the same for all acls so just pick one to use here
     jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
 
@@ -371,8 +354,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
       //"_GNS_ACL": {
       //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
       //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
-      JSONObject acl = createACL(ENTIRE_RECORD, Arrays.asList(EVERYONE, accountGuid.getPublicKeyString()),
-              ENTIRE_RECORD, Arrays.asList(accountGuid.getPublicKeyString()));
+      JSONObject acl = createACL(GNSProtocol.ENTIRE_RECORD.toString(), Arrays.asList(GNSProtocol.EVERYONE.toString(), accountGuid.getPublicKeyString()),
+              GNSProtocol.ENTIRE_RECORD.toString(), Arrays.asList(accountGuid.getPublicKeyString()));
       // prefix is the same for all acls so just pick one to use here
       jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
       state.put(alias, jsonHRN.toString());
@@ -394,7 +377,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    */
   public long guidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
     return sendCommandAsynch(createAndSignCommand(CommandType.RemoveGuid, guid.getPrivateKey(),
-            GUID, guid.getGuid()), callback);
+            GNSProtocol.GUID.toString(), guid.getGuid()), callback);
   }
 
   /**
@@ -408,8 +391,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    */
   public long guidRemove(GuidEntry accountGuid, String guidToRemove, RequestCallback callback) throws Exception {
     return sendCommandAsynch(createAndSignCommand(CommandType.RemoveGuid, accountGuid.getPrivateKey(),
-            ACCOUNT_GUID, accountGuid.getGuid(),
-            GUID, guidToRemove), callback);
+            GNSProtocol.ACCOUNT_GUID.toString(), accountGuid.getGuid(),
+            GNSProtocol.GUID.toString(), guidToRemove), callback);
   }
 
   /**
@@ -425,7 +408,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    */
   @Deprecated // unused
   private long lookupGuid(String alias, RequestCallback callback) throws IOException, JSONException, ClientException {
-    return sendCommandAsynch(createCommand(CommandType.LookupGuid, NAME, alias), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupGuid, GNSProtocol.NAME.toString(), alias), callback);
   }
 
   /**
@@ -442,7 +425,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   @Deprecated
   private long lookupPrimaryGuid(String guid, RequestCallback callback)
           throws UnsupportedEncodingException, IOException, ClientException, JSONException {
-    return sendCommandAsynch(createCommand(CommandType.LookupPrimaryGuid, GUID, guid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupPrimaryGuid, GNSProtocol.GUID.toString(), guid), callback);
   }
 
   /**
@@ -461,7 +444,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   @Deprecated
   private long lookupGuidRecord(String guid, RequestCallback callback)
           throws IOException, ClientException, JSONException {
-    return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, GUID, guid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, GNSProtocol.GUID.toString(), guid), callback);
   }
 
   /**
@@ -483,7 +466,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   @Deprecated // unused except ClientAsynchTest
   protected long lookupAccountRecord(String accountGuid, RequestCallback callback)
           throws IOException, ClientException, JSONException {
-    return sendCommandAsynch(createCommand(CommandType.LookupAccountRecord, GUID, accountGuid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupAccountRecord, GNSProtocol.GUID.toString(), accountGuid), callback);
   }
 
   /**
@@ -501,8 +484,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   public long fieldRead(String guid, String field, RequestCallback callback)
           throws IOException, JSONException, ClientException {
     return sendCommandAsynch(createCommand(CommandType.ReadUnsigned, 
-            GUID, guid, FIELD, field,
-            READER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSProtocol.GUID.toString(), guid, GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.READER.toString(), //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
             GNSConfig.getInternalOpSecret()
             ), callback);
   }
@@ -522,8 +505,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
           throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.ReadArrayUnsigned, 
-            GUID, guid, FIELD, field,
-            READER, 
+            GNSProtocol.GUID.toString(), guid, GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.READER.toString(), 
             //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
             GNSConfig.getInternalOpSecret()
             ), callback);
@@ -546,9 +529,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     JSONObject json = new JSONObject();
     json.put(field, value);
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
-            GUID, guid,
-            USER_JSON, json.toString(),
-            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.USER_JSON.toString(), json.toString(),
+            GNSProtocol.WRITER.toString(), //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
             GNSConfig.getInternalOpSecret()
     		), callback);
   }
@@ -568,10 +551,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   public long fieldReplaceOrCreateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.ReplaceOrCreateListUnsigned,
-            GUID, guid,
-            FIELD, field,
-            VALUE, value.toString(),
-            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.VALUE.toString(), value.toString(),
+            GNSProtocol.WRITER.toString(), //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
             GNSConfig.getInternalOpSecret()
     		), callback);
   }
@@ -591,10 +574,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   public long fieldAppendToArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.AppendListUnsigned,
-            GUID, guid,
-            FIELD, field,
-            VALUE, value.toString(),
-            WRITER, 
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.VALUE.toString(), value.toString(),
+            GNSProtocol.WRITER.toString(), 
             //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
             GNSConfig.getInternalOpSecret()
             ), callback);
@@ -617,9 +600,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     JSONObject json = new JSONObject();
     json.put(field, value);
     return sendCommandAsynch(createCommand(CommandType.RemoveUnsigned,
-            GUID, guid,
-            FIELD, field, VALUE, value.toString(),
-            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value.toString(),
+            GNSProtocol.WRITER.toString(), //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
             GNSConfig.getInternalOpSecret()
     		), callback);
   }
@@ -641,9 +624,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     JSONObject json = new JSONObject();
     json.put(field, value);
     return sendCommandAsynch(createCommand(CommandType.RemoveListUnsigned,
-            GUID, guid,
-            FIELD, field, VALUE, value.toString(),
-            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value.toString(),
+            GNSProtocol.WRITER.toString(), //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
             GNSConfig.getInternalOpSecret()
     		), callback);
   }
@@ -663,9 +646,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   public long update(String guid, String field, JSONObject json, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
-            GUID, guid,
-            USER_JSON, json.toString(),
-            WRITER, //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.USER_JSON.toString(), json.toString(),
+            GNSProtocol.WRITER.toString(), //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
             GNSConfig.getInternalOpSecret()
     		), callback);
   }
@@ -707,7 +690,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
       JSONObject result = CommandUtils.createCommandWithTimestampAndNonce(commandType, keysAndValues);
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
-      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
+      result.put(GNSProtocol.SIGNATURE.toString(), signatureString);
       return result;
     } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
       throw new ClientException("Error encoding message", e);
@@ -729,7 +712,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
           Object... keysAndValues) throws ClientException {
     try {
       JSONObject result = CommandUtils.createCommand(commandType, keysAndValues);
-      //result.put(FORCE_COORDINATE_READS, true);
+      //result.put(GNSProtocol.FORCE_COORDINATE_READS.toString(), true);
       return result;
     } catch (JSONException e) {
       throw new ClientException("Error encoding message", e);

@@ -19,17 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.N;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -79,18 +68,18 @@ public abstract class AbstractUpdate extends AbstractCommand {
   @Override
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GUID);
-    String field = json.optString(FIELD, null);
-    String value = json.optString(VALUE, null);
-    String oldValue = json.optString(OLD_VALUE, null);
-    int index = json.optInt(N, -1);
-    JSONObject userJSON = json.has(USER_JSON) ? new JSONObject(json.getString(USER_JSON)) : null;
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String field = json.optString(GNSProtocol.FIELD.toString(), null);
+    String value = json.optString(GNSProtocol.VALUE.toString(), null);
+    String oldValue = json.optString(GNSProtocol.OLD_VALUE.toString(), null);
+    int index = json.optInt(GNSProtocol.N.toString(), -1);
+    JSONObject userJSON = json.has(GNSProtocol.USER_JSON.toString()) ? new JSONObject(json.getString(GNSProtocol.USER_JSON.toString())) : null;
     // writer might be unspecified so we use the guid
-    String writer = json.optString(WRITER, guid);
-    String signature = json.optString(SIGNATURE, null);
-    String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    Date timestamp = json.has(TIMESTAMP)
-            ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    String writer = json.optString(GNSProtocol.WRITER.toString(), guid);
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
+    Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString())
+            ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
 
     if (json.has("originalBase64")) {
       ClientCommandProcessorConfig.getLogger().warning("||||||||||||||||||||||||||| message:" + message
@@ -102,7 +91,7 @@ public abstract class AbstractUpdate extends AbstractCommand {
       if (!responseCode.isExceptionOrError()) {
         return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
-        return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());
       }
     } else // single field update
     {
@@ -116,7 +105,7 @@ public abstract class AbstractUpdate extends AbstractCommand {
               handler)).isExceptionOrError()) {
         return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
-        return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());
       }
     }
   }

@@ -44,3 +44,19 @@ sed s/"$old"/"$new.toString\(\)"/g > $moddir/$i;
 echo "modified $i and stored it in $moddir/$i"
 cp $moddir/$i $i; 
 done
+
+# also do test hierarchy
+for i in `grep -R $old test/edu/umass/cs|sed s/:.*//g| \
+grep -v GNSCommandProtocol.java`; 
+do 
+echo "working on $i"
+mkdir -p "${moddir}/${i%/*}"
+cat $i|grep -v "import static.*.$prefix$old;"| \
+grep -v "String *$old *="| \
+sed s/"$prefix$old"/"$new.toString\(\)"/g | \
+sed s/"$old"/"$new.toString\(\)"/g > $moddir/$i;
+
+echo "modified $i and stored it in $moddir/$i"
+cp $moddir/$i $i; 
+done
+

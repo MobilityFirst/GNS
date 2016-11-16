@@ -20,11 +20,11 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
@@ -92,7 +92,7 @@ public class UnsignedReadTest {
     try {
       // For this test we remove default all access for reading
       client.aclRemove(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception while removing ACL in UnsignedReadCreateGuids: ", e);
     }
@@ -100,7 +100,7 @@ public class UnsignedReadTest {
     try {
       JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
-              GNSCommandProtocol.ENTIRE_RECORD, unsignedReadTestGuid.getGuid());
+              GNSProtocol.ENTIRE_RECORD.toString(), unsignedReadTestGuid.getGuid());
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       failWithStackTrace("Exception while retrieving ACL in UnsignedReadCreateGuids: ", e);
@@ -118,7 +118,7 @@ public class UnsignedReadTest {
     try {
       client.fieldUpdate(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, "funkadelicread", unsignedReadTestGuid);
       // Add all access to this field
-      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedReadFieldName, GNSCommandProtocol.ALL_GUIDS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedReadFieldName, GNSProtocol.ALL_GUIDS.toString());
       assertEquals("funkadelicread", client.fieldRead(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, null));
     } catch (Exception e) {
       failWithStackTrace("Exception while testing for unsigned access in UnsignedRead: ", e);
@@ -151,7 +151,7 @@ public class UnsignedReadTest {
       // Insures that we can read a world readable field without a guid
       client.fieldCreateOneElementList(unsignedReadTestGuid.getGuid(),
               unsignedOneReadFieldName, "funkadelicread", unsignedReadTestGuid);
-      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedOneReadFieldName, GNSCommandProtocol.ALL_GUIDS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedOneReadFieldName, GNSProtocol.ALL_GUIDS.toString());
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(
               unsignedReadTestGuid.getGuid(), unsignedOneReadFieldName, null));
 

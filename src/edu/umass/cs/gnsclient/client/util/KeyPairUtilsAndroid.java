@@ -40,7 +40,7 @@ import android.os.Environment;
 import android.util.Log;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * Class to store and retrieve key value pairs in Android.
@@ -64,7 +64,7 @@ public class KeyPairUtilsAndroid {
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
    * @param username the user name
-   * @return the GUID entry if found, null otherwise
+   * @return the GNSProtocol.GUID.toString() entry if found, null otherwise
    */
   public static GuidEntry getGuidEntryFromPreferences(String gnsName, String username) {
     if (username == null) {
@@ -146,11 +146,11 @@ public class KeyPairUtilsAndroid {
   }
 
   /**
-   * Set the default GUID to use in the user preferences (usually the account
-   * GUID)
+   * Set the default GNSProtocol.GUID.toString() to use in the user preferences (usually the account
+ GNSProtocol.GUID.toString())
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   * @param username the alias of the default GUID to use
+   * @param username the alias of the default GNSProtocol.GUID.toString() to use
    */
   public static void setDefaultGuidEntryToPreferences(String gnsName, String username) {
     String aliasKey = gnsName + "@default-guid";
@@ -183,8 +183,8 @@ public class KeyPairUtilsAndroid {
   }
 
   /**
-   * Set the default GUID to use in the user preferences (usually the account
-   * GUID)
+   * Set the default GNSProtocol.GUID.toString() to use in the user preferences (usually the account
+ GNSProtocol.GUID.toString())
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
    */
@@ -213,11 +213,11 @@ public class KeyPairUtilsAndroid {
   }
 
   /**
-   * Return the GUID entry for the default GUID set in the user preferences (if
-   * any)
+   * Return the GNSProtocol.GUID.toString() entry for the default GNSProtocol.GUID.toString() set in the user preferences (if
+ any)
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   * @return the default GUID entry or null if not set or invalid
+   * @return the default GNSProtocol.GUID.toString() entry or null if not set or invalid
    */
   public static GuidEntry getDefaultGuidEntryFromPreferences(String gnsName) {
     String aliasKey = gnsName + "@default-guid";
@@ -365,7 +365,7 @@ public class KeyPairUtilsAndroid {
           try {
             byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
             byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
-            KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
+            KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
             X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
             PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
             PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
@@ -449,7 +449,7 @@ public class KeyPairUtilsAndroid {
             try {
               byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
               byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
-              KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
+              KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
               X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
               PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
               PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);

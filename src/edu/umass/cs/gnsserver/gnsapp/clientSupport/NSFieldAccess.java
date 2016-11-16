@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
@@ -56,8 +56,8 @@ public class NSFieldAccess {
   /**
    * Looks up the value of a field in the guid on this NameServer.
    * Active code is automatically handled during this call.
-   *
-   * Returns the value of a field in a GUID as a ValuesMap.
+
+ Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap.
    *
    * @param header
    *
@@ -76,8 +76,8 @@ public class NSFieldAccess {
   /**
    * Looks up the value of a field in the guid on this NameServer.
    * Active code is handled if handleActiveCode is true.
-   *
-   * Returns the value of a field in a GUID as a ValuesMap.
+
+ Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap.
    *
    * @param header
    * @param guid
@@ -106,7 +106,7 @@ public class NSFieldAccess {
     // Try to look up the value in the database
     try {
       // Check for the case where we're returning all the fields the entire record.
-      if (GNSCommandProtocol.ENTIRE_RECORD.equals(field)) {
+      if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
         ClientSupportConfig.getLogger().log(Level.FINE, "ALL FIELDS: Format={0}",
                 new Object[]{returnFormat});
         // need everything so just grab all the fields
@@ -200,8 +200,8 @@ public class NSFieldAccess {
   /**
    * Looks up the value of an old-style list field 
    * in the guid in the local replica.
-   * Returns the value of a field in a GUID as a ResultValue or
-   * an empty ResultValue if field cannot be found.
+   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue or
+ an empty ResultValue if field cannot be found.
    *
    * @param guid
    * @param field
@@ -232,10 +232,10 @@ public class NSFieldAccess {
   /**
    * Looks up the value of an old-style list field
    * in the guid in the local replica. Differs from lookupListFieldLocally
-   * in that it doesn't throw any exceptions and just returns an empty result
-   * if there are exceptions.
-   * Returns the value of a field in a GUID as a ResultValue or
-   * an empty ResultValue if field cannot be found.
+ in that it doesn't throw any exceptions and just returns an empty result
+ if there are exceptions.
+ Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue or
+ an empty ResultValue if field cannot be found.
    *
    * @param guid
    * @param field
@@ -288,8 +288,8 @@ public class NSFieldAccess {
   /**
    * Looks up the value of an old-style list field in the guid.
    * If allowQueryToOtherNSs is true and guid doesn't exists on this Name Server,
-   * sends a read query from this Name Server to a Local Name Server.
-   * Returns the value of a field in a GUID as a ResultValue.
+ sends a read query from this Name Server to a Local Name Server.
+ Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue.
    *
    * @param guid
    * @param field
@@ -326,8 +326,8 @@ public class NSFieldAccess {
   /**
    * Looks up the value of a field in the guid.
    * If guid doesn't exists on this Name Server,
-   * sends a read query from this Name Server to a Local Name Server.
-   * Returns the value of a field in a GUID as a ValuesMap
+ sends a read query from this Name Server to a Local Name Server.
+ Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap
    *
    * @param guid
    * @param field

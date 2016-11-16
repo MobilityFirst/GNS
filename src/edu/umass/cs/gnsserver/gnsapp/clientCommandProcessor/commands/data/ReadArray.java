@@ -25,12 +25,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
@@ -43,7 +37,7 @@ import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * This is the main class for a whole set of commands that support reading of the old style data formatted as
@@ -74,32 +68,32 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ENTIRE_RECORD;
   @Override
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GUID);
-    String field = json.getString(FIELD);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String field = json.getString(GNSProtocol.FIELD.toString());
 
     // Reader can be one of three things:
     // 1) a guid - the guid attempting access
     // 2) the value GNSConfig.GNSC.INTERNAL_OP_SECRET - which means this is a request from another server
     // 3) null (or missing from the JSON) - this is an unsigned read 
-    String reader = json.optString(READER, null);
+    String reader = json.optString(GNSProtocol.READER.toString(), null);
     // signature and message can be empty for unsigned cases
-    String signature = json.optString(SIGNATURE, null);
-    String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
     Date timestamp;
-    if (json.has(TIMESTAMP)) {
-      timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    if (json.has(GNSProtocol.TIMESTAMP.toString())) {
+      timestamp = json.has(GNSProtocol.TIMESTAMP.toString()) ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
     } else {
       timestamp = null;
     }
 
     if (getCommandType().equals(CommandType.ReadArrayOne)
             || getCommandType().equals(CommandType.ReadArrayOneUnsigned)) {
-      if (ENTIRE_RECORD.equals(field)) {
+      if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
         return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, timestamp, handler);
       } else {
         return FieldAccess.lookupOne(guid, field, reader, signature, message, timestamp, handler);
       }
-    } else if (ENTIRE_RECORD.equals(field)) {
+    } else if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
       return FieldAccess.lookupMultipleValues(header, guid, reader, signature, message, timestamp, handler);
     } else {
       return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, timestamp, handler);

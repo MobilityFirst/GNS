@@ -17,7 +17,6 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -190,7 +189,7 @@ public class LNSProxyTest extends DefaultTest {
     org.junit.Assert.fail(message);
   }
 
-  /* We need this below even though a majority being up suffices and account GUID 
+  /* We need this below even though a majority being up suffices and account GNSProtocol.GUID.toString() 
 	 * creation success (with retransmission) auto-detects whether a majority is up,
 	 * it can happen that one server is not yet ready, which sometimes leads to 
 	 * some tests like lookupPrimaryGuid failing because the request goes to a 
@@ -596,7 +595,7 @@ public class LNSProxyTest extends DefaultTest {
     }
     try {
       // remove default read access for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       fail("Exception while removing ACL in ACLCreateGuids: " + e);
       e.printStackTrace();
@@ -604,7 +603,7 @@ public class LNSProxyTest extends DefaultTest {
     try {
       JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(masterGuid.getGuid())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, westyEntry.getGuid());
+              GNSProtocol.ENTIRE_RECORD.toString(), westyEntry.getGuid());
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       fail("Exception while retrieving ACL in ACLCreateGuids: " + e);
@@ -631,7 +630,7 @@ public class LNSProxyTest extends DefaultTest {
 
   //@Test
   /**
-   * This one insures that we can use ENTIRE_RECORD to read all the fields of another guid.
+   * This one insures that we can use GNSProtocol.ENTIRE_RECORD.toString() to read all the fields of another guid.
    */
   public void test_102_ACLReadAllFields() {
     try {
@@ -640,7 +639,7 @@ public class LNSProxyTest extends DefaultTest {
       expected.put("password", new JSONArray(new ArrayList<>(Arrays.asList("666flapJack"))));
       expected.put("ssn", new JSONArray(new ArrayList<>(Arrays.asList("000-00-0000"))));
       expected.put("address", new JSONArray(new ArrayList<>(Arrays.asList("100 Hinkledinkle Drive"))));
-      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ENTIRE_RECORD, masterGuid));
+      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), masterGuid));
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       fail("Exception while reading all fields in ACLReadAllFields: " + e);
@@ -670,12 +669,12 @@ public class LNSProxyTest extends DefaultTest {
 
   //@Test
   /**
-   * This one insures that we can't read using ENTIRE_RECORD when the other guid hasn't given us access.
+   * This one insures that we can't read using GNSProtocol.ENTIRE_RECORD.toString() when the other guid hasn't given us access.
    */
   public void test_105_ACLNotReadOtherGuidAllFieldsTest() {
     try {
       try {
-        String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ENTIRE_RECORD, samEntry);
+        String result = client.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), samEntry);
         fail("Result of read of all of westy's fields by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
@@ -751,14 +750,14 @@ public class LNSProxyTest extends DefaultTest {
       barneyEntry = client.guidCreate(masterGuid, barneyName);
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
       try {
         // let anybody read barney's cell field
         client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
-                GNSCommandProtocol.ALL_GUIDS);
+                GNSProtocol.ALL_GUIDS.toString());
       } catch (Exception e) {
         fail("Exception creating ALLUSERS access for Barney's cell: " + e);
         e.printStackTrace();
@@ -822,7 +821,7 @@ public class LNSProxyTest extends DefaultTest {
       GuidEntry superuserEntry = client.guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ENTIRE_RECORD, superuserEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
 
       assertEquals("413-555-1234",
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
@@ -849,7 +848,7 @@ public class LNSProxyTest extends DefaultTest {
         e.printStackTrace();
       }
       try {
-        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSCommandProtocol.ENTIRE_RECORD);
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSProtocol.ENTIRE_RECORD.toString());
       } catch (Exception e) {
         fail("Problem adding acl: " + e);
         e.printStackTrace();
@@ -857,7 +856,7 @@ public class LNSProxyTest extends DefaultTest {
       try {
         JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSCommandProtocol.ENTIRE_RECORD)));
+        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSProtocol.ENTIRE_RECORD.toString())));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         fail("Problem reading acl: " + e);
@@ -1235,8 +1234,8 @@ public class LNSProxyTest extends DefaultTest {
               groupAccessUserName);
       // remove all fields read by all
       client.aclRemove(AclAccessType.READ_WHITELIST,
-              groupAccessUserEntry, GNSCommandProtocol.ENTIRE_RECORD,
-              GNSCommandProtocol.ALL_GUIDS);
+              groupAccessUserEntry, GNSProtocol.ENTIRE_RECORD.toString(),
+              GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       fail("Exception creating group user: ", e);
     }
@@ -1451,7 +1450,7 @@ public class LNSProxyTest extends DefaultTest {
       client.fieldCreateOneElementList(westyEntry.getGuid(),
               unsignedReadFieldName, "funkadelicread", westyEntry);
       client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
-              unsignedReadFieldName, GNSCommandProtocol.ALL_GUIDS);
+              unsignedReadFieldName, GNSProtocol.ALL_GUIDS.toString());
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), unsignedReadFieldName, null));
 
@@ -1459,7 +1458,7 @@ public class LNSProxyTest extends DefaultTest {
               standardReadFieldName, "bummer", westyEntry);
       // already did this above... doing it again gives us a paxos error
       // client.removeFromACL(AclAccessType.READ_WHITELIST, westyEntry,
-      // GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      // GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
       try {
         String result = client.fieldReadArrayFirstElement(
                 westyEntry.getGuid(), standardReadFieldName, null);
@@ -1488,7 +1487,7 @@ public class LNSProxyTest extends DefaultTest {
               unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
       client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry,
-              unsignedWriteFieldName, GNSCommandProtocol.ALL_GUIDS);
+              unsignedWriteFieldName, GNSProtocol.ALL_GUIDS.toString());
       client.fieldReplaceFirstElement(westyEntry.getGuid(),
               unsignedWriteFieldName, "funkadelicwrite", westyEntry);
       assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(
@@ -1635,8 +1634,7 @@ public class LNSProxyTest extends DefaultTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(
-              GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = client.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
@@ -1655,8 +1653,7 @@ public class LNSProxyTest extends DefaultTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(
-              GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
@@ -1708,8 +1705,7 @@ public class LNSProxyTest extends DefaultTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(
-              GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
@@ -2285,7 +2281,7 @@ public class LNSProxyTest extends DefaultTest {
     assertNotNull("Account record is null", json);
     try {
       assertEquals("Account name doesn't match",
-              accountAlias, json.getString(GNSCommandProtocol.ACCOUNT_RECORD_USERNAME));
+              accountAlias, json.getString(GNSProtocol.ACCOUNT_RECORD_USERNAME.toString()));
     } catch (JSONException e) {
       fail("Exception while looking up account name: " + e);
     }

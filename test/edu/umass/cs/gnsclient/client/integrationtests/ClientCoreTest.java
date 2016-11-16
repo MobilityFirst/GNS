@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsclient.client.integrationtests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -284,7 +283,7 @@ public class ClientCoreTest {
     }
     try {
       // remove default read acces for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
       client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
@@ -357,14 +356,14 @@ public class ClientCoreTest {
       }
       barneyEntry = client.guidCreate(masterGuid, barneyName);
       // remove default read access for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
       try {
         // let anybody read barney's cell field
         client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
-                GNSCommandProtocol.ALL_GUIDS);
+                GNSProtocol.ALL_GUIDS.toString());
       } catch (Exception e) {
         fail("Exception creating ALLUSERS access for Barney's cell: " + e);
         e.printStackTrace();
@@ -420,7 +419,7 @@ public class ClientCoreTest {
       GuidEntry superuserEntry = client.guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ENTIRE_RECORD, superuserEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
 
       assertEquals("413-555-1234",
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
@@ -444,14 +443,14 @@ public class ClientCoreTest {
         fail("Problem updating field: " + e);
       }
       try {
-        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSCommandProtocol.ENTIRE_RECORD);
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSProtocol.ENTIRE_RECORD.toString());
       } catch (Exception e) {
         fail("Problem adding acl: " + e);
       }
       try {
         JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(GNSCommandProtocol.ENTIRE_RECORD)));
+        JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(GNSProtocol.ENTIRE_RECORD.toString())));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         fail("Problem reading acl: " + e);
@@ -763,7 +762,7 @@ public class ClientCoreTest {
     try {
       groupAccessUserEntry = client.guidCreate(masterGuid, groupAccessUserName);
       // remove all fields read by all
-      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
     }
@@ -939,12 +938,12 @@ public class ClientCoreTest {
     String standardReadFieldName = "standardreadaccess";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedReadFieldName, "funkadelicread", westyEntry);
-      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSCommandProtocol.ALL_GUIDS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSProtocol.ALL_GUIDS.toString());
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedReadFieldName, null));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
       // already did this above... doing it again gives us a paxos error
-      //client.removeFromACL(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+      //client.removeFromACL(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
       try {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
@@ -966,7 +965,7 @@ public class ClientCoreTest {
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
-      client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSCommandProtocol.ALL_GUIDS);
+      client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSProtocol.ALL_GUIDS.toString());
       client.fieldReplaceFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, "funkadelicwrite", westyEntry);
       assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, westyEntry));
 
@@ -1085,7 +1084,7 @@ public class ClientCoreTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = client.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -1103,7 +1102,7 @@ public class ClientCoreTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -1150,7 +1149,7 @@ public class ClientCoreTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {

@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -44,6 +43,7 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.CommandType;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -152,7 +152,7 @@ public class BatchCreateTest {
         //System.out.println("Looking up: " + guidEntry.getGuid());
         JSONObject guidRecord = client.lookupGuidRecord(guidEntry.getGuid());
         System.out.print(prefix);
-        System.out.print(guidRecord.getString(GNSCommandProtocol.GUID_RECORD_GUID));
+        System.out.print(guidRecord.getString(GNSProtocol.GUID_RECORD_GUID.toString()));
         prefix = ", ";
       } catch (IOException | ClientException | JSONException e) {
         System.out.println("Problem looking up guid: " + e);
@@ -165,10 +165,10 @@ public class BatchCreateTest {
     if (writeTo > 0) {
       try {
         command = createCommand(CommandType.LookupRandomGuids,
-                GNSCommandProtocol.GUID, masterGuid.getGuid(), GNSCommandProtocol.GUIDCNT, writeTo);
+                GNSProtocol.GUID.toString(), masterGuid.getGuid(), GNSProtocol.GUIDCNT.toString(), writeTo);
         result = client.execute(new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command)).getResultString();
         //checkResponse(client.sendCommandAndWait(command));
-        if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
+        if (!result.startsWith(GNSProtocol.BAD_RESPONSE.toString())) {
           randomGuids = new JSONArray(result);
           //System.out.println("Random guids " + result);
         } else {

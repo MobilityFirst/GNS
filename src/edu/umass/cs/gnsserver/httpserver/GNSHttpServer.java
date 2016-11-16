@@ -31,12 +31,6 @@ import com.sun.net.httpserver.HttpServer;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import static edu.umass.cs.gnsclient.client.GNSCommand.createGNSCommandFromJSONObject;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.QUERY_PROCESSING_ERROR;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -70,6 +64,7 @@ import java.util.logging.Logger;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  *
@@ -204,8 +199,8 @@ public class GNSHttpServer {
             LOGGER.log(Level.FINE, "Action: {0} Query:{1}", new Object[]{commandName, query});
             response = processQuery(host, commandName, query);
           } else {
-            response = new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE
-                    + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + commandName + " " + query);
+            response = new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, GNSProtocol.BAD_RESPONSE.toString()
+                    + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString() + " Don't understand " + commandName + " " + query);
           }
           LOGGER.log(Level.FINER, "Response: " + response);
           // FIXME: This totally ignores the error code.
@@ -216,7 +211,7 @@ public class GNSHttpServer {
         LOGGER.log(Level.SEVERE, "Error: " + e);
         e.printStackTrace();
         try {
-          String response = BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e;
+          String response = GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString() + " " + e;
           OutputStream responseBody = exchange.getResponseBody();
           responseBody.write(response.getBytes());
           responseBody.close();
@@ -241,11 +236,11 @@ public class GNSHttpServer {
       CommandType commandType = CommandType.getCommandForHttp(commandName);
       if (commandType == null) {
         return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
-                BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+                GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
                 + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
       }
-      // We need to stuff in the COMMAND_INT for the signature check and execution.
-      jsonCommand.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
+      // We need to stuff in the GNSProtocol.COMMAND_INT.toString() for the signature check and execution.
+      jsonCommand.put(GNSProtocol.COMMAND_INT.toString(), commandType.getInt());
       // Possibly do some work on the signature for later use.
       processSignature(jsonCommand);
       // Hair below is to handle some commands locally (creates, delets, selects, admin)
@@ -265,7 +260,7 @@ public class GNSHttpServer {
           LOGGER.log(Level.FINE, "lookupCommand failed for {0}", commandName);
         }
         return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
-                BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+                GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
                 + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
       } else {
         // Send the command remotely using a client
@@ -278,26 +273,26 @@ public class GNSHttpServer {
                   specialCaseSingleFieldRead(commandResponsePacket.getResultString(),
                           commandType, jsonCommand));
         } catch (IOException | ClientException e) {
-          return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " "
-                  + GNSCommandProtocol.UNSPECIFIED_ERROR + " " + e.toString());
+          return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
+                  + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.toString());
 //      } catch (ClientException e) {
-//        return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
-//                BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+//        return new CommandResponse(ResponseCode.GNSProtocol.UNSPECIFIED_ERROR.toString(),
+//                GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
 //                + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
         }
       }
     } catch (JSONException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " "
-              + GNSCommandProtocol.UNSPECIFIED_ERROR + " " + e.toString());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
+              + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.toString());
     }
   }
 
   private static void processSignature(JSONObject jsonCommand) throws JSONException {
-    if (jsonCommand.has(GNSCommandProtocol.SIGNATURE)) {
+    if (jsonCommand.has(GNSProtocol.SIGNATURE.toString())) {
       // Squirrel away the signature. Note that it is encoded as a hex string.
-      String signature = jsonCommand.getString(GNSCommandProtocol.SIGNATURE);
+      String signature = jsonCommand.getString(GNSProtocol.SIGNATURE.toString());
       // Pull it out of the command because we don't want to have it there when we check the message.
-      jsonCommand.remove(SIGNATURE);
+      jsonCommand.remove(GNSProtocol.SIGNATURE.toString());
       // FIXME: Remove this debugging aid at some point
       String originalMessage = null;
       if (jsonCommand.has("originalBase64")) {
@@ -317,7 +312,7 @@ public class GNSHttpServer {
       }
       // Put the decoded signature back as well as the message that we're going to
       // later compare the signature against.
-      jsonCommand.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
+      jsonCommand.put(GNSProtocol.SIGNATURE.toString(), signature).put(GNSProtocol.SIGNATUREFULLMESSAGE.toString(),
               commandSansSignature);
 
     }
@@ -327,10 +322,10 @@ public class GNSHttpServer {
   private static String specialCaseSingleFieldRead(String response, CommandType commandType,
           JSONObject jsonFormattedArguments) {
     try {
-      if (commandType.isRead() && jsonFormattedArguments.has(GNSCommandProtocol.FIELD)
-              && !jsonFormattedArguments.getString(GNSCommandProtocol.FIELD).equals(GNSCommandProtocol.ENTIRE_RECORD)
+      if (commandType.isRead() && jsonFormattedArguments.has(GNSProtocol.FIELD.toString())
+              && !jsonFormattedArguments.getString(GNSProtocol.FIELD.toString()).equals(GNSProtocol.ENTIRE_RECORD.toString())
               && JSONPacket.couldBeJSON(response) && response.startsWith("{")) {
-        String key = jsonFormattedArguments.getString(GNSCommandProtocol.FIELD);
+        String key = jsonFormattedArguments.getString(GNSProtocol.FIELD.toString());
         JSONObject json = new JSONObject(response);
         return json.getString(key);
       }

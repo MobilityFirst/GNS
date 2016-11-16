@@ -14,7 +14,7 @@ import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.awt.geom.Point2D;
@@ -28,12 +28,10 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import org.junit.Assert;
 
 /**
  *
@@ -71,7 +69,7 @@ public class HttpClientTest {
   @Test
   public void test_900_Http_LookupGuid() {
     try {
-      assertEquals(masterGuid.getGuid(), client.lookupGuid(ACCOUNT_ALIAS));
+      Assert.assertEquals(masterGuid.getGuid(), client.lookupGuid(ACCOUNT_ALIAS));
     } catch (IOException | ClientException e) {
       failWithStackTrace("Exception in LookupGuid: " + e);
     }
@@ -100,7 +98,7 @@ public class HttpClientTest {
     try {
       // remove default read acces for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, httpOneEntry,
-              GNSCommandProtocol.ENTIRE_RECORD, GNSCommandProtocol.ALL_GUIDS);
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (IOException | ClientException e) {
       failWithStackTrace("Exception in Http_RemoveACL: " + e);
     }
@@ -122,13 +120,13 @@ public class HttpClientTest {
   public void test_911_Http_CheckFields() {
     try {
       // read my own field
-      assertEquals("work",
+      Assert.assertEquals("work",
               client.fieldRead(httpOneEntry.getGuid(), "environment", httpOneEntry));
       // read another field
-      assertEquals("000-00-0000",
+      Assert.assertEquals("000-00-0000",
               client.fieldRead(httpOneEntry.getGuid(), "ssn", httpOneEntry));
       // read another field
-      assertEquals("666flapJack",
+      Assert.assertEquals("666flapJack",
               client.fieldRead(httpOneEntry.getGuid(), "password", httpOneEntry));
     } catch (IOException | ClientException e) {
       failWithStackTrace("Exception in Http_CheckFields: " + e);
@@ -172,7 +170,7 @@ public class HttpClientTest {
   public void test_921_Http_CheckAccess() {
     try {
       try {
-        assertEquals("work",
+        Assert.assertEquals("work",
                 client.fieldRead(httpOneEntry.getGuid(), "environment", httpTwoEntry));
       } catch (IOException | ClientException e) {
         failWithStackTrace("Exception while Sam reading Westy's field: " + e);
@@ -199,7 +197,7 @@ public class HttpClientTest {
       json.put("flapjack", subJson);
       client.update(httpOneEntry, json);
     } catch (JSONException | IOException | ClientException e) {
-      fail("Exception while adding field \"flapjack\": " + e);
+      failWithStackTrace("Exception while adding field \"flapjack\": " + e);
     }
   }
 
@@ -230,7 +228,7 @@ public class HttpClientTest {
   public void test_934_ReadDeep() {
     try {
       String actual = client.fieldRead(httpOneEntry.getGuid(), "flapjack.sally.right", httpOneEntry);
-      assertEquals("seven", actual);
+      Assert.assertEquals("seven", actual);
     } catch (IOException | ClientException e) {
       failWithStackTrace("Exception while reading \"flapjack.sally.right\": " + e);
     }
@@ -274,7 +272,7 @@ public class HttpClientTest {
   @Test
   public void test_952_Http_testCats() {
     try {
-      assertEquals("whacky",
+      Assert.assertEquals("whacky",
               client.fieldReadFirstElement(httpOneEntry.getGuid(), "cats", httpOneEntry));
     } catch (IOException | ClientException e) {
       failWithStackTrace("Exception when we were not expecting testing cats: " + e);
@@ -299,7 +297,7 @@ public class HttpClientTest {
               "maya", "red", "sox", "toby", "whacky"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(httpOneEntry.getGuid(), 
               "cats", httpOneEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
       failWithStackTrace("Exception in checkMoreCats: " + e);
@@ -323,7 +321,7 @@ public class HttpClientTest {
               "whacky"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               httpOneEntry.getGuid(), "cats", httpOneEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
       failWithStackTrace("Exception in checkClearCats: " + e);
@@ -347,7 +345,7 @@ public class HttpClientTest {
               "whacky", "fred"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               httpOneEntry.getGuid(), "cats", httpOneEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (IOException | ClientException | JSONException e) {
       failWithStackTrace("Exception in checkEvenMoreCats: " + e);
     }
@@ -361,7 +359,7 @@ public class HttpClientTest {
     try {
       JSONArray result = client.select("cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(1));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
     } catch (IOException | ClientException | JSONException e) {
       failWithStackTrace("Exception when we were not expecting it: " + e);
     }
@@ -386,9 +384,9 @@ public class HttpClientTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = client.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (JSONException | IOException | ClientException e) {
       failWithStackTrace("Exception executing selectNear: " + e);
     }
@@ -404,9 +402,9 @@ public class HttpClientTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (JSONException | IOException | ClientException e) {
       failWithStackTrace("Exception executing selectWithin: " + e);
     }
@@ -435,7 +433,7 @@ public class HttpClientTest {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (IOException | ClientException | JSONException e) {
       failWithStackTrace("Exception executing selectNear: " + e);
     }
@@ -451,9 +449,9 @@ public class HttpClientTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (JSONException | IOException | ClientException e) {
       failWithStackTrace("Exception executing selectWithin: " + e);
     }
@@ -497,7 +495,7 @@ public class HttpClientTest {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(1));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
     } catch (JSONException | IOException | ClientException e) {
       failWithStackTrace("Exception executing second selectNear: " + e);
     }
@@ -514,7 +512,7 @@ public class HttpClientTest {
     try {
       try {
         client.lookupGuid(mygroupName);
-        fail(mygroupName + " entity should not exist");
+        failWithStackTrace(mygroupName + " entity should not exist");
       } catch (ClientException e) {
       }
       guidToDeleteEntry = client.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(6));
@@ -568,11 +566,11 @@ public class HttpClientTest {
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(httpOneEntry.getGuid(), httpTwoEntry.getGuid(), guidToDeleteEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
       expected = new HashSet<String>(Arrays.asList(mygroupEntry.getGuid()));
       actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(httpOneEntry.getGuid(), httpOneEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
     } catch (Exception e) {
       failWithStackTrace("Exception while getting members and groups: " + e);
@@ -608,7 +606,7 @@ public class HttpClientTest {
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(httpOneEntry.getGuid(), httpTwoEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
       failWithStackTrace("Exception during remove guid group update test: " + e);

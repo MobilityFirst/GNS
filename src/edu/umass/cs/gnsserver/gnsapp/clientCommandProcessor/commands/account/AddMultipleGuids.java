@@ -27,19 +27,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUIDCNT;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAMES;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEYS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.TOO_MANY_GUIDS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFICATION_ERROR;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -55,6 +42,7 @@ import java.security.spec.InvalidKeySpecException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * Command to add a multiple guids using batch support.
@@ -85,26 +73,26 @@ public class AddMultipleGuids extends AbstractCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
 
-    String guid = json.getString(GUID);
-    String guidCntString = json.optString(GUIDCNT);
-    JSONArray names = json.optJSONArray(NAMES);
-    JSONArray publicKeys = json.optJSONArray(PUBLIC_KEYS);
-    String signature = json.getString(SIGNATURE);
-    String message = json.getString(SIGNATUREFULLMESSAGE);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String guidCntString = json.optString(GNSProtocol.GUIDCNT.toString());
+    JSONArray names = json.optJSONArray(GNSProtocol.NAMES.toString());
+    JSONArray publicKeys = json.optJSONArray(GNSProtocol.PUBLIC_KEYS.toString());
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
 
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(guid, handler)) == null) {
-      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(guid, handler);
       if (accountInfo == null) {
-        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse(ResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+        return new CommandResponse(ResponseCode.VERIFICATION_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.VERIFICATION_ERROR.toString() + " Account not verified");
       } else if (accountInfo.getGuids().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_SUBGUIDS)) {
-        return new CommandResponse(ResponseCode.TOO_MANY_GUIDS_EXCEPTION, BAD_RESPONSE + " " + TOO_MANY_GUIDS);
+        return new CommandResponse(ResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_GUIDS.toString());
       } else if (names != null && publicKeys != null) {
         GNSConfig.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
         return AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
@@ -119,11 +107,11 @@ public class AddMultipleGuids extends AbstractCommand {
         int guidCnt = Integer.parseInt(guidCntString);
         return AccountAccess.addMultipleGuidsFasterAllRandom(guidCnt, accountInfo, accountGuidInfo, handler);
       } else {
-        return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR
-                + " bad arguments: need " + NAMES + " or " + NAMES + " and " + PUBLIC_KEYS + " or " + GUIDCNT);
+        return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString()
+                + " bad arguments: need " + GNSProtocol.NAMES.toString() + " or " + GNSProtocol.NAMES.toString() + " and " + GNSProtocol.PUBLIC_KEYS.toString() + " or " + GNSProtocol.GUIDCNT.toString());
       }
     } else {
-      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
+      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
     //}
   }

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -207,7 +207,7 @@ public enum UpdateOperation {
   }
 
   private static boolean valuesListHasNullFirstElement(ResultValue valuesList) {
-    return !valuesList.isEmpty() && valuesList.get(0).equals(GNSCommandProtocol.NULL_RESPONSE);
+    return !valuesList.isEmpty() && valuesList.get(0).equals(GNSProtocol.NULL_RESPONSE.toString());
   }
 
   private static boolean UpdateSingleField(ResultValue valuesList, ResultValue newValues, ResultValue oldValues,
@@ -302,7 +302,7 @@ public enum UpdateOperation {
           return false;
         }
         valuesList.clear();
-        valuesList.add(GNSCommandProtocol.NULL_RESPONSE);
+        valuesList.add(GNSProtocol.NULL_RESPONSE.toString());
         return true;
       default:
         return false;

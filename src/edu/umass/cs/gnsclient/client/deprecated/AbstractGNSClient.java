@@ -37,8 +37,8 @@ import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -171,7 +171,7 @@ public abstract class AbstractGNSClient {
             new Object[]{me, me.readTimeout, commandPacket.getRequestID() + "", commandPacket.getSummary()});
     /* FIXME: Remove use of string reponse codes */
     return new ResponsePacket(commandPacket.getServiceName(), commandPacket.getRequestID(), ResponseCode.TIMEOUT,
-            GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT + " for command " + commandPacket.getSummary());
+            GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TIMEOUT.toString() + " for command " + commandPacket.getSummary());
   }
 
   private CommandPacket desktopSendCommmandNoWait(JSONObject command) throws IOException {

@@ -9,18 +9,12 @@ import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.utils.Config;
 
 /**
  * @author arun
@@ -51,12 +45,12 @@ public class GNSCommandInternal extends InternalCommandPacket {
   private static JSONObject makeInternal(CommandType type, JSONObject command)
           throws JSONException {
     // internal commands can not and need not be signed
-    assert (!command.has(GNSCommandProtocol.SIGNATURE));
+    assert (!command.has(GNSProtocol.SIGNATURE.toString()));
     // currently only read/write requests can be internal
     assert (type.isRead() || type.isUpdate());
     // only unsigned commands can be modified this way
-    return command.put(type.isRead() ? GNSCommandProtocol.READER
-            : GNSCommandProtocol.WRITER, 
+    return command.put(type.isRead() ? GNSProtocol.READER.toString()
+            : GNSProtocol.WRITER.toString(), 
             //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
             GNSConfig.getInternalOpSecret()
     		);
@@ -126,7 +120,7 @@ public class GNSCommandInternal extends InternalCommandPacket {
   public static final InternalCommandPacket fieldRead(String targetGUID,
           String field, InternalRequestHeader header) throws JSONException, InternalRequestException {
     return getCommand(CommandType.ReadUnsigned, header,
-            GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
+            GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.FIELD.toString(),
             field);
   }
 
@@ -144,7 +138,7 @@ public class GNSCommandInternal extends InternalCommandPacket {
           ArrayList<String> fields, InternalRequestHeader header)
           throws JSONException, InternalRequestException {
     return getCommand(CommandType.ReadUnsigned, header,
-            GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELDS,
+            GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.FIELDS.toString(),
             fields);
   }
 
@@ -170,8 +164,8 @@ public class GNSCommandInternal extends InternalCommandPacket {
           JSONObject value, InternalRequestHeader header)
           throws JSONException, InternalRequestException {
     return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
-            GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
-            field, GNSCommandProtocol.USER_JSON,
+            GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.FIELD.toString(),
+            field, GNSProtocol.USER_JSON.toString(),
             new JSONObject().put(field, value));
   }
 }

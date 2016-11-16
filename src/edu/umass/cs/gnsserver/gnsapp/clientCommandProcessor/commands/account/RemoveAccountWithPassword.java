@@ -24,25 +24,10 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESS_DENIED;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSWORD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
-
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -52,6 +37,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  *
@@ -81,26 +67,26 @@ public class RemoveAccountWithPassword extends AbstractCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
     // The name of the account we are removing.
-    String name = json.getString(NAME);
+    String name = json.getString(GNSProtocol.NAME.toString());
     // The guid of that wants to remove this account.
-    String password = json.getString(PASSWORD);
+    String password = json.getString(GNSProtocol.PASSWORD.toString());
     String guid = AccountAccess.lookupGuidAnywhere(name, handler);
     if (guid == null) {
-      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + name);
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + name);
     }
     try {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(name, handler);
       if (accountInfo == null) {
-        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
+        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
       }
       if (!password.equals(accountInfo.getPassword())) {
-        return new CommandResponse(ResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED);
+        return new CommandResponse(ResponseCode.ACCESS_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.ACCESS_DENIED.toString());
       } else {
         return AccountAccess.removeAccount(accountInfo, handler);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " "
-              + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
+              + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
     }
   }
 

@@ -34,7 +34,7 @@ import org.json.JSONException;
 public class SharedGuidUtils {
 
   /**
-   * Uses a hash function to generate a GUID from a public key string.
+   * Uses a hash function to generate a GNSProtocol.GUID.toString() from a public key string.
    * This code is duplicated in client so if you
    * change it you should change it there as well.
    *
@@ -75,8 +75,8 @@ public class SharedGuidUtils {
     for (int i = 0; i < publicKeys.length(); i++) {
       // Special case
       try {
-        if (publicKeys.getString(i).equals(GNSCommandProtocol.ALL_GUIDS)) {
-          guids.put(GNSCommandProtocol.ALL_GUIDS);
+        if (publicKeys.getString(i).equals(GNSProtocol.ALL_GUIDS.toString())) {
+          guids.put(GNSProtocol.ALL_GUIDS.toString());
         } else {
           guids.put(createGuidStringFromBase64PublicKey(publicKeys.getString(i)));
         }

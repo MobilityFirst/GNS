@@ -1,14 +1,5 @@
 package edu.umass.cs.contextservice.integration;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.N;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 
 import org.json.JSONObject;
 
@@ -17,9 +8,9 @@ import edu.umass.cs.contextservice.client.callback.implementations.NoopCallBack;
 import edu.umass.cs.contextservice.client.callback.implementations.NoopUpdateReply;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.utils.Config;
 
 import java.util.logging.Level;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * This class interacts with context service using context service client.
@@ -55,23 +46,23 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
   
 
 //	@Override
-//	public void sendUpdateToCS(String GUID, JSONObject attrValPairJSON, long versionNum, boolean blocking) 
+//	public void sendUpdateToCS(String GNSProtocol.GUID.toString(), JSONObject attrValPairJSON, long versionNum, boolean blocking) 
 //	{	
 //	}
   @Override
   public void sendTiggerOnGnsCommand(JSONObject jsonFormattedCommand, AbstractCommand command, boolean blocking) {
     try {
       // code copied exactly from AbstractUpdate class
-      String guid = jsonFormattedCommand.getString(GUID);
-      String field = jsonFormattedCommand.optString(FIELD, null);
-      String value = jsonFormattedCommand.optString(VALUE, null);
-      String oldValue = jsonFormattedCommand.optString(OLD_VALUE, null);
-      int index = jsonFormattedCommand.optInt(N, -1);
-      JSONObject userJSON = jsonFormattedCommand.has(USER_JSON) ? new JSONObject(jsonFormattedCommand.getString(USER_JSON)) : null;
+      String guid = jsonFormattedCommand.getString(GNSProtocol.GUID.toString());
+      String field = jsonFormattedCommand.optString(GNSProtocol.FIELD.toString(), null);
+      String value = jsonFormattedCommand.optString(GNSProtocol.VALUE.toString(), null);
+      String oldValue = jsonFormattedCommand.optString(GNSProtocol.OLD_VALUE.toString(), null);
+      int index = jsonFormattedCommand.optInt(GNSProtocol.N.toString(), -1);
+      JSONObject userJSON = jsonFormattedCommand.has(GNSProtocol.USER_JSON.toString()) ? new JSONObject(jsonFormattedCommand.getString(GNSProtocol.USER_JSON.toString())) : null;
       // writer might be unspecified so we use the guid
-      String writer = jsonFormattedCommand.optString(WRITER, guid);
-      String signature = jsonFormattedCommand.optString(SIGNATURE, null);
-      String message = jsonFormattedCommand.optString(SIGNATUREFULLMESSAGE, null);
+      String writer = jsonFormattedCommand.optString(GNSProtocol.WRITER.toString(), guid);
+      String signature = jsonFormattedCommand.optString(GNSProtocol.SIGNATURE.toString(), null);
+      String message = jsonFormattedCommand.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
 
       if (writer.equals(
     		  GNSConfig.getInternalOpSecret()

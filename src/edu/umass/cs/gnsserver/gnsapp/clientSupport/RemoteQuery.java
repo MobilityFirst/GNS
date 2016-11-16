@@ -12,8 +12,6 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
 import edu.umass.cs.gnsclient.client.CommandUtils;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -49,6 +47,7 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * A synchronized version of ClientAsynchBase for sending requests to other servers.
@@ -556,7 +555,7 @@ public class RemoteQuery extends ClientAsynchBase {
     RequestCallbackWithRequest callback;
     long requestId = fieldUpdate(guid, field, value, callback = this.getRequestCallback(monitor));
     return handleQueryResponse(requestId, monitor, callback, REPLICA_UPDATE_TIMEOUT,
-            BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+            GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
   }
 
   /**
@@ -580,7 +579,7 @@ public class RemoteQuery extends ClientAsynchBase {
     RequestCallbackWithRequest callback;
     long requestId = fieldReplaceOrCreateArray(guid, field, value, callback = this.getRequestCallback(monitor));
     return handleQueryResponse(requestId, monitor, callback, REPLICA_UPDATE_TIMEOUT,
-            BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+            GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
   }
 
   /**
@@ -603,7 +602,7 @@ public class RemoteQuery extends ClientAsynchBase {
     RequestCallbackWithRequest callback;
     long requestId = fieldAppendToArray(guid, field, value, callback = this.getRequestCallback(monitor));
     return handleQueryResponse(requestId, monitor, callback, REPLICA_UPDATE_TIMEOUT,
-            BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+            GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
   }
 
   /**
@@ -627,7 +626,7 @@ public class RemoteQuery extends ClientAsynchBase {
     RequestCallbackWithRequest callback;
     long requestId = fieldRemove(guid, field, value, callback = this.getRequestCallback(monitor));
     return handleQueryResponse(requestId, monitor, callback,
-            REPLICA_UPDATE_TIMEOUT, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+            REPLICA_UPDATE_TIMEOUT, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
   }
 
   /**
@@ -650,7 +649,7 @@ public class RemoteQuery extends ClientAsynchBase {
     RequestCallbackWithRequest callback;
     long requestId = fieldRemoveMultiple(guid, field, value, callback = this.getRequestCallback(monitor));
     return handleQueryResponse(requestId, monitor, callback, REPLICA_UPDATE_TIMEOUT,
-            BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+            GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
   }
 
   /**

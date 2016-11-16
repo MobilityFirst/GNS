@@ -22,7 +22,6 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 
@@ -38,6 +37,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
 import java.io.IOException;
@@ -66,7 +66,7 @@ public class TestSignatureTest {
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }
-      // Retrive the GUID using the account id
+      // Retrive the GNSProtocol.GUID.toString() using the account id
       String guidString;
       try {
         guidString = client.lookupGuid(ACCOUNT_ALIAS);
@@ -108,10 +108,9 @@ public class TestSignatureTest {
   @Test
   public void test_01() {
     try {
-      JSONObject command = CommandUtils.createAndSignCommand(
-              CommandType.ReadArrayUnsigned, guid.getPrivateKey(),
+      JSONObject command = CommandUtils.createAndSignCommand(CommandType.ReadArrayUnsigned, guid.getPrivateKey(),
               guid.getPublicKey(),
-              GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, "joe");
+              GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), "joe");
       System.out.println(command);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

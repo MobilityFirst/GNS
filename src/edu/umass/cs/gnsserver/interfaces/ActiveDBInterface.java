@@ -4,17 +4,11 @@ import java.util.ArrayList;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.exceptions.GNSException;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.activegns.ActiveGNSClient;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
  * @author arun

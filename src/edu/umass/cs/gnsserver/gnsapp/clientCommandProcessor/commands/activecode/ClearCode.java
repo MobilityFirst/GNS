@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Format;
 
 import java.security.InvalidKeyException;
@@ -40,7 +39,7 @@ import java.text.ParseException;
 import java.util.Date;
 
 /**
- * The command to clear the active code for the specified GUID and action.
+ * The command to clear the active code for the specified GNSProtocol.GUID.toString() and action.
  *
  */
 public class ClearCode extends AbstractCommand {
@@ -68,18 +67,18 @@ public class ClearCode extends AbstractCommand {
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
-    String guid = json.getString(GNSCommandProtocol.GUID);
-    String writer = json.getString(GNSCommandProtocol.WRITER);
-    String action = json.getString(GNSCommandProtocol.AC_ACTION);
-    String signature = json.getString(GNSCommandProtocol.SIGNATURE);
-    String message = json.getString(GNSCommandProtocol.SIGNATUREFULLMESSAGE);
-    Date timestamp = json.has(GNSCommandProtocol.TIMESTAMP)
-            ? Format.parseDateISO8601UTC(json.getString(GNSCommandProtocol.TIMESTAMP)) : null; // can be null on older client
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String writer = json.getString(GNSProtocol.WRITER.toString());
+    String action = json.getString(GNSProtocol.AC_ACTION.toString());
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
+    Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString())
+            ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
     ResponseCode response = ActiveCode.clearCode(guid, action,
             writer, signature, message, timestamp, handler);
 
     if (response.isExceptionOrError()) {
-      return new CommandResponse(response, GNSCommandProtocol.BAD_RESPONSE 
+      return new CommandResponse(response, GNSProtocol.BAD_RESPONSE.toString() 
               + " " + response.getProtocolCode());
     } else {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());

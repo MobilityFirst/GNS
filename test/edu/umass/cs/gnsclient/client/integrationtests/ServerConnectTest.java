@@ -17,36 +17,15 @@ package edu.umass.cs.gnsclient.client.integrationtests;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.util.BasicGuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.JSONUtils;
-import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
-import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
-import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
-import edu.umass.cs.gnscommon.utils.Base64;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import static org.hamcrest.Matchers.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -58,20 +37,11 @@ import org.junit.runner.notification.Failure;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.database.MongoRecords;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
-import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
-import java.awt.geom.Point2D;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.Set;
-
-import org.apache.commons.lang3.RandomUtils;
-import org.json.JSONException;
 
 /**
  * Functionality test for core elements in the client using the

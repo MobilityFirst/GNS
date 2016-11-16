@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
@@ -66,20 +65,20 @@ public class AclCreateField extends AbstractCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GNSCommandProtocol.GUID);
-    String field = json.getString(GNSCommandProtocol.FIELD);
-    String accessType = json.getString(GNSCommandProtocol.ACL_TYPE);
+    String guid = json.getString(GNSProtocol.GUID.toString());
+    String field = json.getString(GNSProtocol.FIELD.toString());
+    String accessType = json.getString(GNSProtocol.ACL_TYPE.toString());
     // allows someone other than guid to create acl, defaults to guid
-    String writer = json.optString(GNSCommandProtocol.WRITER, guid);
-    String signature = json.getString(GNSCommandProtocol.SIGNATURE);
-    String message = json.getString(GNSCommandProtocol.SIGNATUREFULLMESSAGE);
-    Date timestamp = json.has(GNSCommandProtocol.TIMESTAMP)
-            ? Format.parseDateISO8601UTC(json.getString(GNSCommandProtocol.TIMESTAMP)) : null; // can be null on older client
+    String writer = json.optString(GNSProtocol.WRITER.toString(), guid);
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
+    Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString())
+            ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
 
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
       return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR,
-              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_ACL_TYPE
+              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
     ResponseCode responseCode;
@@ -88,7 +87,7 @@ public class AclCreateField extends AbstractCommand {
                     signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {
-      return new CommandResponse(responseCode, GNSCommandProtocol.BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());
     }
   }
 

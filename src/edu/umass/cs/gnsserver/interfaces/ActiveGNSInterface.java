@@ -4,11 +4,7 @@ import java.util.ArrayList;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 
 /**
  * @author arun
