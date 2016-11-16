@@ -178,7 +178,7 @@ public class ByteUtils {
   public static String toHex(byte[] bytes) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < bytes.length; i++) {
-      sb.append(ByteUtils.toHex(bytes[i]));
+      sb.append(toHex(bytes[i]));
     }
     return sb.toString();
   }

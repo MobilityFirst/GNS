@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnscommon.utils.Util;
+import edu.umass.cs.gnscommon.utils.StringUtil;
 
 /**
  * Command to remove a member from a group GUID
@@ -91,7 +91,7 @@ public class GroupMemberRemove extends ConsoleCommand
       else if (st.countTokens() == 2)
       {
         groupGuid = st.nextToken();
-        if (!Util.isValidGuidString(groupGuid))
+        if (!StringUtil.isValidGuidString(groupGuid))
         {
           // We probably have an alias, lookup the GUID
           groupGuid = gnsClient.lookupGuid(groupGuid);

@@ -16,6 +16,7 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsclient.client.CommandResultType;
+import edu.umass.cs.gnscommon.utils.StringUtil;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DefaultTest;
@@ -1797,25 +1798,11 @@ public enum CommandType {
     //return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
   }
 
-  private static String insertUnderScoresBeforeCapitals(String str) {
-    StringBuilder result = new StringBuilder();
-    // SKIP THE FIRST CAPITAL
-    result.append(str.charAt(0));
-    // START AT ONE SO WE SKIP THE FIRST CAPITAL
-    for (int i = 1; i < str.length(); i++) {
-      if (Character.isUpperCase(str.charAt(i))) {
-        result.append("_");
-      }
-      result.append(str.charAt(i));
-    }
-    return result.toString();
-  }
-
   private static String generateSwiftConstants() {
     StringBuilder result = new StringBuilder();
     for (CommandType commandType : CommandType.values()) {
       result.append("    public static let ");
-      result.append(insertUnderScoresBeforeCapitals(
+      result.append(StringUtil.insertUnderScoresBeforeCapitals(
               commandType.toString()).toUpperCase());
       result.append("\t\t\t\t = ");
       result.append("\"");

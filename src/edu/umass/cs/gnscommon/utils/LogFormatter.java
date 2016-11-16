@@ -29,6 +29,7 @@ import java.util.logging.LogRecord;
  * Alter the default formatter to be less verbose.
  * 
  */
+// This is used in all of the logging .properties files so don't delete it.
 public class LogFormatter extends Formatter {
 
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");

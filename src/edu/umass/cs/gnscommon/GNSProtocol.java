@@ -1,5 +1,6 @@
 package edu.umass.cs.gnscommon;
 
+import edu.umass.cs.gnscommon.utils.StringUtil;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 
 /**
@@ -520,5 +521,22 @@ public enum GNSProtocol {
   @Override
   public String toString() {
     return this.label;
+  }
+  
+  private static String generateSwiftConstants() {
+    StringBuilder result = new StringBuilder();
+    for (GNSProtocol entry : GNSProtocol.values()) {
+      result.append("    public static let ");
+      result.append(entry.name().toUpperCase());
+      result.append("\t\t\t\t = ");
+      result.append("\"");
+      result.append(entry.toString());
+      result.append("\"\n");
+    }
+    return result.toString();
+  }
+  
+  public static void main(String args[]) {
+    System.out.println(generateSwiftConstants());
   }
 }

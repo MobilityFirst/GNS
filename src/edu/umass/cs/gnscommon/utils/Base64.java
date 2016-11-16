@@ -25,24 +25,23 @@ import java.util.Arrays;
  */
 public class Base64 {
 
-  private static final char[] CharacterArry = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
-  private static final int[] IntegerArray = new int[256];
+  private static final char[] CHARACTER_ARRAY = 
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
+  private static final int[] INTEGER_ARRAY = new int[256];
 
   static {
-    Arrays.fill(IntegerArray, -1);
-    for (int i = 0, iS = CharacterArry.length; i < iS; i++) {
-      IntegerArray[CharacterArry[i]] = i;
+    Arrays.fill(INTEGER_ARRAY, -1);
+    for (int i = 0, iS = CHARACTER_ARRAY.length; i < iS; i++) {
+      INTEGER_ARRAY[CHARACTER_ARRAY[i]] = i;
     }
-    IntegerArray['='] = 0;
+    INTEGER_ARRAY['='] = 0;
   }
 
-  // ****************************************************************************************
-  // *  char[] version
-  // ****************************************************************************************
   /**
-   * Encodes a raw byte array into a BASE64 <code>char[]</code> representation in accordance with RFC 2045.
+   * Encodes a byte array into a BASE64 <code>char[]</code> representation in accordance with RFC 2045.
    *
-   * @param sourceArray The bytes to convert. If <code>null</code> or length 0 an empty array will be returned.
+   * @param sourceArray The bytes to convert. 
+   * If <code>null</code> or length 0 an empty array will be returned.
    * @param lineSep Optional "\r\n" after 76 characters, unless end of file.<br>
    * No line separator will be in breach of RFC 2045 which specifies max 76 per line but will be a
    * little faster.
@@ -66,10 +65,10 @@ public class Base64 {
       int i = (sourceArray[s++] & 0xff) << 16 | (sourceArray[s++] & 0xff) << 8 | (sourceArray[s++] & 0xff);
 
       // Encode the int into four chars
-      destArray[d++] = CharacterArry[(i >>> 18) & 0x3f];
-      destArray[d++] = CharacterArry[(i >>> 12) & 0x3f];
-      destArray[d++] = CharacterArry[(i >>> 6) & 0x3f];
-      destArray[d++] = CharacterArry[i & 0x3f];
+      destArray[d++] = CHARACTER_ARRAY[(i >>> 18) & 0x3f];
+      destArray[d++] = CHARACTER_ARRAY[(i >>> 12) & 0x3f];
+      destArray[d++] = CHARACTER_ARRAY[(i >>> 6) & 0x3f];
+      destArray[d++] = CHARACTER_ARRAY[i & 0x3f];
 
       // Add optional line separator
       if (lineSep && ++cc == 19 && d < destLen - 2) {
@@ -86,21 +85,24 @@ public class Base64 {
       int i = ((sourceArray[eLen] & 0xff) << 10) | (left == 2 ? ((sourceArray[sourceLength - 1] & 0xff) << 2) : 0);
 
       // Set last four chars
-      destArray[destLen - 4] = CharacterArry[i >> 12];
-      destArray[destLen - 3] = CharacterArry[(i >>> 6) & 0x3f];
-      destArray[destLen - 2] = left == 2 ? CharacterArry[i & 0x3f] : '=';
+      destArray[destLen - 4] = CHARACTER_ARRAY[i >> 12];
+      destArray[destLen - 3] = CHARACTER_ARRAY[(i >>> 6) & 0x3f];
+      destArray[destLen - 2] = left == 2 ? CHARACTER_ARRAY[i & 0x3f] : '=';
       destArray[destLen - 1] = '=';
     }
     return destArray;
   }
 
   /**
-   * Decodes a BASE64 encoded char array. All illegal characters will be ignored and can handle both arrays with
+   * Decodes a BASE64 encoded char array. 
+   * All illegal characters will be ignored and can handle both arrays with
    * and without line separators.
    *
-   * @param sourceArray The source array. <code>null</code> or length 0 will return an empty array.
-   * @return The decoded array of bytes. May be of length 0. Will be <code>null</code> if the legal characters
-   * (including '=') isn't divideable by 4. (I.e. definitely corrupted).
+   * @param sourceArray The source array. 
+   * <code>null</code> or length 0 will return an empty array.
+   * @return The decoded array of bytes. May be of length 0. 
+   * Will be <code>null</code> if the legal characters
+   * (including '=') isn't dividable by 4. (I.e. definitely corrupted).
    */
   public final static byte[] decode(char[] sourceArray) {
     // Check special case
@@ -114,7 +116,7 @@ public class Base64 {
     int sepCnt = 0; // Number of separator characters. (Actually illegal characters, but that's a bonus...)
     for (int i = 0; i < sourceLength; i++) // If input is "pure" (I.e. no line separators or illegal chars) base64 this loop can be commented out.
     {
-      if (IntegerArray[sourceArray[i]] < 0) {
+      if (INTEGER_ARRAY[sourceArray[i]] < 0) {
         sepCnt++;
       }
     }
@@ -125,7 +127,7 @@ public class Base64 {
     }
 
     int pad = 0;
-    for (int i = sourceLength; i > 1 && IntegerArray[sourceArray[--i]] <= 0;) {
+    for (int i = sourceLength; i > 1 && INTEGER_ARRAY[sourceArray[--i]] <= 0;) {
       if (sourceArray[i] == '=') {
         pad++;
       }
@@ -139,7 +141,7 @@ public class Base64 {
       // Assemble three bytes into an int from four "valid" characters.
       int i = 0;
       for (int j = 0; j < 4; j++) {   // j only increased if a valid char was found.
-        int c = IntegerArray[sourceArray[s++]];
+        int c = INTEGER_ARRAY[sourceArray[s++]];
         if (c >= 0) {
           i |= c << (18 - j * 6);
         } else {
@@ -159,9 +161,10 @@ public class Base64 {
   }
 
   /**
-   * Encodes a raw byte array into a BASE64 <code>byte[]</code> representation i accordance with RFC 2045.
+   * Encodes a byte array into a BASE64 <code>byte[]</code> representation in accordance with RFC 2045.
    *
-   * @param sourceArray The bytes to convert. If <code>null</code> or length 0 an empty array will be returned.
+   * @param sourceArray The bytes to convert. 
+   * If <code>null</code> or length 0 an empty array will be returned.
    * @param lineSep Optional "\r\n" after 76 characters, unless end of file.<br>
    * No line separator will be in breach of RFC 2045 which specifies max 76 per line but will be a
    * little faster.
@@ -185,10 +188,10 @@ public class Base64 {
       int i = (sourceArray[s++] & 0xff) << 16 | (sourceArray[s++] & 0xff) << 8 | (sourceArray[s++] & 0xff);
 
       // Encode the int into four chars
-      destArray[d++] = (byte) CharacterArry[(i >>> 18) & 0x3f];
-      destArray[d++] = (byte) CharacterArry[(i >>> 12) & 0x3f];
-      destArray[d++] = (byte) CharacterArry[(i >>> 6) & 0x3f];
-      destArray[d++] = (byte) CharacterArry[i & 0x3f];
+      destArray[d++] = (byte) CHARACTER_ARRAY[(i >>> 18) & 0x3f];
+      destArray[d++] = (byte) CHARACTER_ARRAY[(i >>> 12) & 0x3f];
+      destArray[d++] = (byte) CHARACTER_ARRAY[(i >>> 6) & 0x3f];
+      destArray[d++] = (byte) CHARACTER_ARRAY[i & 0x3f];
 
       // Add optional line separator
       if (lineSep && ++cc == 19 && d < destLen - 2) {
@@ -205,20 +208,23 @@ public class Base64 {
       int i = ((sourceArray[eLen] & 0xff) << 10) | (left == 2 ? ((sourceArray[sourceLength - 1] & 0xff) << 2) : 0);
 
       // Set last four chars
-      destArray[destLen - 4] = (byte) CharacterArry[i >> 12];
-      destArray[destLen - 3] = (byte) CharacterArry[(i >>> 6) & 0x3f];
-      destArray[destLen - 2] = left == 2 ? (byte) CharacterArry[i & 0x3f] : (byte) '=';
+      destArray[destLen - 4] = (byte) CHARACTER_ARRAY[i >> 12];
+      destArray[destLen - 3] = (byte) CHARACTER_ARRAY[(i >>> 6) & 0x3f];
+      destArray[destLen - 2] = left == 2 ? (byte) CHARACTER_ARRAY[i & 0x3f] : (byte) '=';
       destArray[destLen - 1] = '=';
     }
     return destArray;
   }
 
   /**
-   * Decodes a BASE64 encoded byte array. All illegal characters will be ignored and can handle both arrays with
+   * Decodes a BASE64 encoded byte array. 
+   * All illegal characters will be ignored and can handle both arrays with
    * and without line separators.
    *
-   * @param sourceArray The source array. Length 0 will return an empty array. <code>null</code> will throw an exception.
-   * @return The decoded array of bytes. May be of length 0. Will be <code>null</code> if the legal characters
+   * @param sourceArray The source array. Length 0 will return an empty array. 
+   * <code>null</code> will throw an exception.
+   * @return The decoded array of bytes. May be of length 0. 
+   * Will be <code>null</code> if the legal characters
    * (including '=') isn't dividable by 4. (I.e. definitely corrupted).
    */
   public final static byte[] decode(byte[] sourceArray) {
@@ -230,7 +236,7 @@ public class Base64 {
     int sepCnt = 0; // Number of separator characters. (Actually illegal characters, but that's a bonus...)
     for (int i = 0; i < sourceLength; i++) // If input is "pure" (I.e. no line separators or illegal chars) base64 this loop can be commented out.
     {
-      if (IntegerArray[sourceArray[i] & 0xff] < 0) {
+      if (INTEGER_ARRAY[sourceArray[i] & 0xff] < 0) {
         sepCnt++;
       }
     }
@@ -241,7 +247,7 @@ public class Base64 {
     }
 
     int pad = 0;
-    for (int i = sourceLength; i > 1 && IntegerArray[sourceArray[--i] & 0xff] <= 0;) {
+    for (int i = sourceLength; i > 1 && INTEGER_ARRAY[sourceArray[--i] & 0xff] <= 0;) {
       if (sourceArray[i] == '=') {
         pad++;
       }
@@ -255,7 +261,7 @@ public class Base64 {
       // Assemble three bytes into an int from four "valid" characters.
       int i = 0;
       for (int j = 0; j < 4; j++) {   // j only increased if a valid char was found.
-        int c = IntegerArray[sourceArray[s++] & 0xff];
+        int c = INTEGER_ARRAY[sourceArray[s++] & 0xff];
         if (c >= 0) {
           i |= c << (18 - j * 6);
         } else {
@@ -312,7 +318,7 @@ public class Base64 {
     int sepCnt = 0; // Number of separator characters. (Actually illegal characters, but that's a bonus...)
     for (int i = 0; i < sourceLength; i++) // If input is "pure" (I.e. no line separators or illegal chars) base64 this loop can be commented out.
     {
-      if (IntegerArray[str.charAt(i)] < 0) {
+      if (INTEGER_ARRAY[str.charAt(i)] < 0) {
         sepCnt++;
       }
     }
@@ -324,7 +330,7 @@ public class Base64 {
 
     // Count '=' at end
     int pad = 0;
-    for (int i = sourceLength; i > 1 && IntegerArray[str.charAt(--i)] <= 0;) {
+    for (int i = sourceLength; i > 1 && INTEGER_ARRAY[str.charAt(--i)] <= 0;) {
       if (str.charAt(i) == '=') {
         pad++;
       }
@@ -338,7 +344,7 @@ public class Base64 {
       // Assemble three bytes into an int from four "valid" characters.
       int i = 0;
       for (int j = 0; j < 4; j++) {   // j only increased if a valid char was found.
-        int c = IntegerArray[str.charAt(s++)];
+        int c = INTEGER_ARRAY[str.charAt(s++)];
         if (c >= 0) {
           i |= c << (18 - j * 6);
         } else {

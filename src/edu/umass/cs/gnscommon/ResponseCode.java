@@ -42,7 +42,8 @@ public enum ResponseCode implements Serializable {
    * command was executed without error.
    * For other response codes the return value only contains
    * additional information to describe the error or exception.
-   *//**
+   */
+  /**
    * A positive acknowledgment. This indicates that the
    * return value contains the result of the command or in
    * the case of commands that don't return a value that the
@@ -209,15 +210,12 @@ public enum ResponseCode implements Serializable {
    * A remote query failed on the server side.
    */
   REMOTE_QUERY_EXCEPTION(410, GNSProtocol.REMOTE_QUERY_EXCEPTION.toString(), TYPE.EXCEPTION),
-  
-	/**
-	 * An internal request, possibly an active request, failed probably because the TTL expired
-	 * or it was attempting to cause a cycle.
-	 */
-	INTERNAL_REQUEST_EXCEPTION(411, GNSProtocol.INTERNAL_REQUEST_EXCEPTION
-			.toString(), TYPE.EXCEPTION),
-  
-  ;
+  /**
+   * An internal request, possibly an active request, failed probably because the TTL expired
+   * or it was attempting to cause a cycle.
+   */
+  INTERNAL_REQUEST_EXCEPTION(411, GNSProtocol.INTERNAL_REQUEST_EXCEPTION
+          .toString(), TYPE.EXCEPTION),;
 
   // stash the codes in a lookup table
   private static final Map<Integer, ResponseCode> responseCodes = new HashMap<>();
@@ -345,5 +343,21 @@ public enum ResponseCode implements Serializable {
    */
   public boolean isException() {
     return type == TYPE.EXCEPTION;
+  }
+
+  private static String generateSwiftConstants() {
+    StringBuilder result = new StringBuilder();
+    for (ResponseCode entry : ResponseCode.values()) {
+      result.append("    public static let ");
+      result.append(entry.name().toUpperCase());
+      result.append("\t\t\t\t = ");
+      result.append(entry.getCodeValue());
+      result.append("\n");
+    }
+    return result.toString();
+  }
+
+  public static void main(String args[]) {
+    System.out.println(generateSwiftConstants());
   }
 }

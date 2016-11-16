@@ -68,14 +68,14 @@ public class CanonicalJSON {
         JSONObject theObject = (JSONObject) x;
 
         // Sort the keys
-        TreeSet<String> t = new TreeSet<String>();
+        TreeSet<String> t = new TreeSet<>();
         Iterator<?> i = theObject.keys();
         while (i.hasNext()) {
           t.add((String) i.next());
         }
         Iterator<String> keys = t.iterator();
 
-        StringBuffer sb = new StringBuffer("{");
+        StringBuilder sb = new StringBuilder("{");
         while (keys.hasNext()) {
           if (sb.length() > 1) {
             sb.append(',');
@@ -89,7 +89,7 @@ public class CanonicalJSON {
         return sb.toString();
       } else if (x instanceof JSONArray) {
         JSONArray theArray = (JSONArray) x;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("[");
         int len = theArray.length();
         for (int i = 0; i < len; i += 1) {

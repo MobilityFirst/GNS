@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnscommon.utils.Util;
+import edu.umass.cs.gnscommon.utils.StringUtil;
 import org.json.JSONObject;
 
 /**
@@ -82,7 +82,7 @@ public class Read extends ConsoleCommand {
         guid = module.getCurrentGuid().getGuid();
       } else if (st.countTokens() == 1) {
         guid = st.nextToken();
-        if (!Util.isValidGuidString(guid)) {
+        if (!StringUtil.isValidGuidString(guid)) {
           // We probably have an alias, lookup the GUID
           guid = gnsClient.lookupGuid(guid);
         }
