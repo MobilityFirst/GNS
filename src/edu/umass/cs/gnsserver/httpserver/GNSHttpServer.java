@@ -65,6 +65,7 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import java.io.UnsupportedEncodingException;
 
 /**
  *
@@ -231,7 +232,16 @@ public class GNSHttpServer {
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
     try {
+      // Note that the commandName is not part of the queryString string here so
+      // it doesn't end up in the jsonCommand. Also see below where we put the 
+      // command integer into the jsonCommand.
       JSONObject jsonCommand = Util.parseURIQueryStringIntoJSONObject(queryString);
+      // If the signature exists it is Base64 encoded so decode it now.
+      if (jsonCommand.has(GNSProtocol.SIGNATURE.toString())) {
+        jsonCommand.put(GNSProtocol.SIGNATURE.toString(),
+                new String(Base64.decode(jsonCommand.getString(GNSProtocol.SIGNATURE.toString())),
+                        GNSProtocol.CHARSET.toString()));
+      }
       // getCommandForHttp allows for "dump" as well as "Dump"
       CommandType commandType = CommandType.getCommandForHttp(commandName);
       if (commandType == null) {
@@ -239,10 +249,14 @@ public class GNSHttpServer {
                 GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
                 + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
       }
-      // We need to stuff in the GNSProtocol.COMMAND_INT.toString() for the signature check and execution.
+      // The client currently just uses the command name (which is not part of the
+      // query string above) so we need to stuff 
+      // in the Command integer for the signature check and execution.
       jsonCommand.put(GNSProtocol.COMMAND_INT.toString(), commandType.getInt());
-      // Possibly do some work on the signature for later use.
-      processSignature(jsonCommand);
+      // Optionally does some sanity checking on the message if that was enabled at the client.
+      // This makes necessary changes to the jsonCommand so don't remove this call
+      // unless you know what you're doing and also change the code in the HTTP client.
+      sanityCheckMessage(jsonCommand);
       // Hair below is to handle some commands locally (creates, delets, selects, admin)
       // and the rest by invoking the GNS client and sending them out.
       // Client will be null if GNSC.DISABLE_MULTI_SERVER_HTTP (see above)
@@ -252,6 +266,11 @@ public class GNSHttpServer {
         AbstractCommand command;
         try {
           command = commandModule.lookupCommand(commandType);
+          // Do some work to get the signature and message into the command for
+          // signature checking that happens later on. 
+          // This only happens for local execution because remote handling (in the 
+          // other side of the if) already does this.
+          processSignature(jsonCommand);
           if (command != null) {
             return CommandHandler.executeCommand(command, jsonCommand, requestHandler);
           }
@@ -266,10 +285,10 @@ public class GNSHttpServer {
         // Send the command remotely using a client
         try {
           LOGGER.log(Level.FINE, "Sending command out to a remote server: " + jsonCommand);
-          CommandPacket commandResponsePacket
-                  = getResponseUsingGNSClient(client, jsonCommand);
+          CommandPacket commandResponsePacket = getResponseUsingGNSClient(client, jsonCommand);
           return new CommandResponse(ResponseCode.NO_ERROR,
-                  // some crap here to make single field reads return just the value for backward compatibility 
+                  // Some crap here to make single field reads return just the value for backward compatibility 
+                  // There is similar code to this other places.
                   specialCaseSingleFieldRead(commandResponsePacket.getResultString(),
                           commandType, jsonCommand));
         } catch (IOException | ClientException e) {
@@ -281,35 +300,36 @@ public class GNSHttpServer {
 //                + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
         }
       }
-    } catch (JSONException e) {
+    } catch (JSONException | UnsupportedEncodingException e) {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
               + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.toString());
     }
   }
 
+  private static void sanityCheckMessage(JSONObject jsonCommand) throws JSONException,
+          UnsupportedEncodingException {
+    if (jsonCommand.has("originalMessageBase64")) {
+      String originalMessage = new String(Base64.decode(jsonCommand.getString("originalMessageBase64")),
+              GNSProtocol.CHARSET.toString());
+      jsonCommand.remove("originalMessageBase64");
+      String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
+      if (!originalMessage.equals(commandSansSignature)) {
+        LOGGER.log(Level.SEVERE, "signature message mismatch! original: " + originalMessage
+                + " computed for signature: " + commandSansSignature);
+      } else {
+        LOGGER.log(Level.FINE, "######## original: " + originalMessage);
+      }
+    }
+  }
+
   private static void processSignature(JSONObject jsonCommand) throws JSONException {
     if (jsonCommand.has(GNSProtocol.SIGNATURE.toString())) {
-      // Squirrel away the signature. Note that it is encoded as a hex string.
+      // Squirrel away the signature.
       String signature = jsonCommand.getString(GNSProtocol.SIGNATURE.toString());
       // Pull it out of the command because we don't want to have it there when we check the message.
       jsonCommand.remove(GNSProtocol.SIGNATURE.toString());
-      // FIXME: Remove this debugging aid at some point
-      String originalMessage = null;
-      if (jsonCommand.has("originalBase64")) {
-        originalMessage = new String(Base64.decode(jsonCommand.getString("originalBase64")));
-        jsonCommand.remove("originalBase64");
-      }
       // Convert it to a conanical string (the message) that we can use later to check against the signature.
       String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
-      // FIXME: Remove this debugging aid at some point
-      if (originalMessage != null) {
-        if (!originalMessage.equals(commandSansSignature)) {
-          LOGGER.log(Level.SEVERE, "signature message mismatch! original: " + originalMessage
-                  + " computed for signature: " + commandSansSignature);
-        } else {
-           LOGGER.log(Level.FINE, "######## original: " + originalMessage);
-        }
-      }
       // Put the decoded signature back as well as the message that we're going to
       // later compare the signature against.
       jsonCommand.put(GNSProtocol.SIGNATURE.toString(), signature).put(GNSProtocol.SIGNATUREFULLMESSAGE.toString(),
@@ -339,9 +359,13 @@ public class GNSHttpServer {
   private CommandPacket getResponseUsingGNSClient(GNSClient client,
           JSONObject jsonFormattedArguments) throws ClientException, IOException, JSONException {
     LOGGER.log(Level.FINE, "jsonFormattedCommand =" + jsonFormattedArguments.toString());
+
     CommandPacket outgoingPacket = createGNSCommandFromJSONObject(jsonFormattedArguments);
+
     LOGGER.log(Level.FINE, "outgoingPacket =" + outgoingPacket.toString());
+
     CommandPacket returnPacket = client.execute(outgoingPacket);
+
     LOGGER.log(Level.FINE, "returnPacket =" + returnPacket.toString());
     /**
      * Can also invoke getResponse(), getResponseString(), getResponseJSONObject()

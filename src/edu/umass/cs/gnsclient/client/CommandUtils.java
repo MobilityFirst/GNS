@@ -160,7 +160,7 @@ public class CommandUtils {
    *
    * @param privateKey
    * @param message
-   * @return a signed digest of the message string
+   * @return a signed digest of the message string encoded as a hex string
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
@@ -176,15 +176,16 @@ public class CommandUtils {
     Signature signatureInstance = getSignatureInstance();
     synchronized (signatureInstance) {
       signatureInstance.initSign(privateKey);
+      // iOS client uses UTF-8 - should switch to ISO-8859-1 to be consistent with
+      // secret key version
       signatureInstance.update(message.getBytes("UTF-8"));
       byte[] signedString = signatureInstance.sign();
-      // We encode this as a hex so we can send it with the html without
-      // encoding. Not really necessary for the socket based client.
-      // FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
-      // IOS CLIENT IS UPDATED AS WELL
-      // Also note that the secret based method doesn't do this - it just returns a string.
+      // We used to encode this as a hex so we could send it with the html without
+      // encoding. Not really necessary anymore for the socket based client,
+      // but the iOS client does as well so we need to keep it like this.
+      // Also note that the secret based method doesn't do this - it just returns a string
+      // using the ISO-8859-1 charset.
       String result = ByteUtils.toHex(signedString);
-      // String result = Base64.encodeToString(signedString, false);
       return result;
     }
   }
@@ -234,7 +235,7 @@ public class CommandUtils {
    * @param privateKey
    * @param publicKey
    * @param message
-   * @return Signature as string
+   * @return Signature encoded as a hex string
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeyException
    * @throws SignatureException
@@ -253,6 +254,8 @@ public class CommandUtils {
             privateKey);
     MessageDigest md = getMessageDigestInstance();
     byte[] digest;
+    // FIXME: The reason why we use CHARSET should be more throughly documented here.
+    // This might be important for folks writing clients in other languages.
     byte[] body = message.getBytes(GNSProtocol.CHARSET.toString());
     synchronized (md) {
       digest = md.digest(body);
@@ -269,9 +272,9 @@ public class CommandUtils {
             .getSecretKeyCertificate(publicKey);
     byte[] encodedSKCert = skCert.getEncoded(false);
 
-    /* arun: Combining them like this because the rest of the GNS code seems
-		 * poorly organized to add more signature related fields in a systematic
-		 * manner. */
+    // arun: Combining them like this because the rest of the GNS code seems
+    // poorly organized to add more signature related fields in a systematic
+    // manner.
     byte[] combined = new byte[Short.BYTES + signature.length + Short.BYTES
             + encodedSKCert.length];
     ByteBuffer.wrap(combined)
@@ -280,17 +283,8 @@ public class CommandUtils {
             // certificate
             .putShort((short) encodedSKCert.length).put(encodedSKCert);
 
-    // iOS client currently hex encodes the non-secret version of this 
-    // and we have now way of checking which client we are receiving from or whether 
-    // they have ENABLE_SECRET_KEY on or off so we're going to hex encode this here as well. 
-    // The cost is a longer signature. - Westy
-    // Base64 would be better 
-    // better, but the non-secret version uses hex so we'll do this for consistency.
-    // The non-secret version still uses hex because the iOS client hasn't been
-    // updated yet to use Base64.
-    // This also means we don't have to further encode these for the HTTP client.
-    return ByteUtils.toHex(combined);
-    //return new String(combined, GNSProtocol.CHARSET.toString());
+    // FIXME: The reason why we use CHARSET should be more throughly documented here.
+    return new String(combined, GNSProtocol.CHARSET.toString());
   }
 
   /**

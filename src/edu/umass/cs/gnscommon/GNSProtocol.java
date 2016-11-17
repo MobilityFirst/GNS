@@ -191,6 +191,7 @@ public enum GNSProtocol {
   /**
    * The character set used by client and server for reading and writing command packets.
    */
+  // FIXME: The reason why we use ISO-8859-1 should be more throughly documented here.
   CHARSET("ISO-8859-1"),
   //
   // Argument fields in commands.

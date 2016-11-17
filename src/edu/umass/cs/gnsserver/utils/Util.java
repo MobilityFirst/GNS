@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.utils;
 
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
 import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
@@ -137,6 +138,7 @@ public class Util {
     JSONObject json = new JSONObject();
     URLQueryStringParser parser = new URLQueryStringParser(query);
     while (parser.next()) {
+      GNSConfig.getLogger().info("PARSE: " + parser.getValue());
       json.put(parser.getName(), JSONParseString(parser.getValue()));
     }
     return json;

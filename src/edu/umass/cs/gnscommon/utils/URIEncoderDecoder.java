@@ -95,18 +95,16 @@ public class URIEncoderDecoder {
    * <br>
    * Other characters, which are Unicode chars that are not US-ASCII, and are
    * not ISO Control or are not ISO Space chars, are preserved.
-   * <br>
-   * Called from URI.quoteComponent() (for multiple argument constructors)
-   * <br>
    *
    * @param s java.lang.String the string to be converted
-   * @param legal java.lang.String the characters allowed to be preserved in the
-   * string s
    * @return java.lang.String the converted string
    * @throws java.io.UnsupportedEncodingException
    */
-  public static String quoteIllegal(String s, String legal)
-          throws UnsupportedEncodingException {
+  public static String quoteIllegal(String s) throws UnsupportedEncodingException {
+    return quoteIllegal(s, "");
+  }
+
+  private static String quoteIllegal(String s, String legal) throws UnsupportedEncodingException {
     StringBuilder buf = new StringBuilder();
     for (int i = 0; i < s.length(); i++) {
       char ch = s.charAt(i);

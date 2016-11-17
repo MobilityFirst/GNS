@@ -90,7 +90,7 @@ public class HttpClient {
   private final static String QUERYPREFIX = "?";
   private final static String VALSEP = "=";
   private final static String KEYSEP = "&";
-  
+
   private static final String GNS_KEY = "GNS";
   /**
    * The host address used when attempting to connect to the HTTP service.
@@ -124,7 +124,7 @@ public class HttpClient {
     this.port = port;
   }
 
- /**
+  /**
    * This name represents the service to which this client connects. Currently
    * this name is unused as the reconfigurator(s) are read from a properties
    * file, but it is conceivable also to use a well known service to query for
@@ -1087,7 +1087,7 @@ public class HttpClient {
 
   /**
    * Removes a GNSProtocol.GUID.toString() from an access control list of the given user's field on the
- GNS server to include the guid specified in the accesser param. The
+   * GNS server to include the guid specified in the accesser param. The
    * accesser can be a guid of a user or a group guid or null which means anyone
    * can access the field. The field can be also be +ALL+ which means all fields
    * can be read by the reader. Signs the query using the private key of the
@@ -1647,8 +1647,8 @@ public class HttpClient {
     for (int i = 0; i < keysAndValues.length; i += 2) {
       key = keysAndValues[i].toString();
       value = keysAndValues[i + 1].toString();
-      result.append(URIEncoderDecoder.quoteIllegal(key, ""))
-              .append(VALSEP).append(URIEncoderDecoder.quoteIllegal(value, ""))
+      result.append(URIEncoderDecoder.quoteIllegal(key))
+              .append(VALSEP).append(URIEncoderDecoder.quoteIllegal(value))
               .append(i + 2 < keysAndValues.length ? KEYSEP : "");
     }
     return result.toString();
@@ -1680,8 +1680,8 @@ public class HttpClient {
       for (int i = 0; i < keysAndValues.length; i += 2) {
         key = keysAndValues[i].toString();
         value = keysAndValues[i + 1].toString();
-        encodedString.append(URIEncoderDecoder.quoteIllegal(key, ""))
-                .append(VALSEP).append(URIEncoderDecoder.quoteIllegal(value, ""))
+        encodedString.append(URIEncoderDecoder.quoteIllegal(key))
+                .append(VALSEP).append(URIEncoderDecoder.quoteIllegal(value))
                 .append(i + 2 < keysAndValues.length ? KEYSEP : "");
       }
       // Now we create the JSON version that we can use to sign the command with
@@ -1691,13 +1691,13 @@ public class HttpClient {
       encodedString.append(KEYSEP)
               .append(GNSProtocol.TIMESTAMP.toString())
               .append(VALSEP)
-              .append(URIEncoderDecoder.quoteIllegal(jsonVersionOfCommand.getString(GNSProtocol.TIMESTAMP.toString()), ""))
+              .append(URIEncoderDecoder.quoteIllegal(jsonVersionOfCommand.getString(GNSProtocol.TIMESTAMP.toString())))
               .append(KEYSEP)
               .append(GNSProtocol.NONCE.toString())
               .append(VALSEP)
-              .append(URIEncoderDecoder.quoteIllegal(jsonVersionOfCommand.getString(GNSProtocol.NONCE.toString()), ""));
+              .append(URIEncoderDecoder.quoteIllegal(jsonVersionOfCommand.getString(GNSProtocol.NONCE.toString())));
 
-      
+      // Signature handling part
       // And make a canonical version of the JSON
       String canonicalJSON = CanonicalJSON.getCanonicalForm(jsonVersionOfCommand);
       LOGGER.log(Level.FINE, "Canonical JSON: {0}", canonicalJSON);
@@ -1714,12 +1714,18 @@ public class HttpClient {
       } else {
         signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
       }
-      // Finally return the encoded query with the signature appended
-      return encodedString.toString() + KEYSEP + GNSProtocol.SIGNATURE.toString()
-              + VALSEP + signatureString // note that signatureString is already encoded as hex
-              // This is a debugging aid so we can auto check on the other side. 
-              // Remove it to make our messages shorter if you care.
-              + KEYSEP + "originalBase64" + VALSEP + Base64.encodeToString(canonicalJSON.getBytes(), false);
+      String signaturePart = KEYSEP + GNSProtocol.SIGNATURE.toString()
+              // Base64 encode the signature since it's guaranteed to be a lot of non-ASCII characters
+              // and Base64 will be shorter than URI encoding; requires special handling at server side
+              + VALSEP + Base64.encodeToString(signatureString.getBytes(GNSProtocol.CHARSET.toString()), false);
+      // This is a debugging aid so we can auto check the message part on the other side. 
+      String debuggingPart = "";
+      // Currently not being used.
+      if (false) {
+        debuggingPart = KEYSEP + "originalMessageBase64" + VALSEP
+                + Base64.encodeToString(canonicalJSON.getBytes(GNSProtocol.CHARSET.toString()), false);
+      }
+      return encodedString.toString() + signaturePart + debuggingPart;
     } catch (JSONException | UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | IllegalBlockSizeException |
             BadPaddingException | NoSuchPaddingException e) {
       throw new ClientException("Error encoding message", e);

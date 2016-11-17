@@ -66,11 +66,6 @@ public class GNSConfig {
      */
     IN_MEMORY_DB(false),
     /**
-     * Under the old model empty ACLs did not prevent us from going further
-     * up the tree toward the root to check for access.
-     */
-    USE_OLD_ACL_MODEL(false),
-    /**
      * If enabled, the GNS will cache and return the same value for reads.
      *
      * Code-breaking if enabled. Meant only for instrumentation.
@@ -320,13 +315,22 @@ public class GNSConfig {
      */
     CNS_NODE_ADDRESS(NONE),
     /**
-     * Temporary
-     */
-    DISABLE_MULTI_SERVER_HTTP(true),
-    /**
      * The alias of the private key in the java keyStore.
      */
-    PRIVATE_KEY_ALIAS("node100");
+    PRIVATE_KEY_ALIAS("node100"),
+    /**
+     * Temporary - The use of this will go away at some point.
+     * Under the old model empty ACLs did not prevent us from going further
+     * up the tree toward the root to check for access.
+     *
+     */
+    USE_OLD_ACL_MODEL(false),
+    /**
+     * Temporary - The use of this will go away at some point.
+     */
+    DISABLE_MULTI_SERVER_HTTP(false)
+    
+    ;
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;
@@ -495,8 +499,7 @@ public class GNSConfig {
     try {
       return Util.truncate(String.format("%040x", new BigInteger(1, getPrivateKey()
               .getEncoded())), 32).toString();
-    } catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException 
-            | CertificateException | IOException e) {
+    } catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
       e.printStackTrace();
     }
     return null;

@@ -94,10 +94,6 @@ public class NSAccessSupport {
    */
   public static boolean verifySignature(String accessorPublicKey, String signature, String message) throws
           InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
-	  // Arun: This is a security hazard.
-//    if (!Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_SIGNATURE_AUTHENTICATION)) {
-//      return true;
-//    }
     byte[] publickeyBytes = Base64.decode(accessorPublicKey);
     if (publickeyBytes == null) { // bogus public key
       ClientSupportConfig.getLogger().log(Level.FINE, "&&&&Base 64 decoding is bogus!!!");
@@ -116,9 +112,9 @@ public class NSAccessSupport {
 
     ClientSupportConfig.getLogger().log(Level.FINE,
             "public_key:{0} {1} as author of message:{2}",
-            new Object[]{Util.truncate(accessorPublicKey, 16, 16),
+            new Object[]{accessorPublicKey,
               (result ? " verified " : " NOT verified "),
-              Util.truncate(message, 16, 16)});
+              message});
     return result;
   }
 
@@ -135,10 +131,7 @@ public class NSAccessSupport {
       try {
         return verifySignatureInternalSecretKey(publickeyBytes, signature, message);
       } catch (Exception e) {
-        // don't print anything
-        //e.printStackTrace();
-        // don't return false, public key anyway
-        //return false;
+        // Note that: This just falls through to the older non-secret method if it fails
       }
     }
 
@@ -148,12 +141,12 @@ public class NSAccessSupport {
     Signature sigInstance = getSignatureInstance();
     synchronized (sigInstance) {
       sigInstance.initVerify(publicKey);
+      // iOS client uses UTF-8 - should switch to ISO-8859-1 to be consistent with
+      // secret key version
       sigInstance.update(message.getBytes("UTF-8"));
-      // FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
-      // IOS CLIENT IS UPDATED AS WELL
-      return sigInstance.verify(ByteUtils
-              .hexStringToByteArray(signature));
-      //return sig.verify(Base64.decode(signature));
+      // Non secret uses ISO-8859-1, but the iOS client uses hex so 
+      // we need to keep this for now.
+      return sigInstance.verify(ByteUtils.hexStringToByteArray(signature));
     }
   }
 
@@ -199,11 +192,12 @@ public class NSAccessSupport {
 
     PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publickeyBytes));
 
-    // Client side now encodes this as a hex string
-    byte[] sigBytes = ByteUtils.hexStringToByteArray(signature);
-    //byte[] sigBytes = signature.getBytes(GNSProtocol.CHARSET.toString());
+    // FIXME: The reason why we use CHARSET should be more throughly documented here.
+    byte[] sigBytes = signature.getBytes(GNSProtocol.CHARSET.toString());
     byte[] bytes = message.getBytes(GNSProtocol.CHARSET.toString());
 
+    // Pull the parts out of the signature
+    // See CommandUtils.signDigestOfMessage for the other side of this.
     ByteBuffer bbuf = ByteBuffer.wrap(sigBytes);
     byte[] sign = new byte[bbuf.getShort()];
     bbuf.get(sign);
@@ -396,7 +390,7 @@ public class NSAccessSupport {
   /**
    * Performs the ultimate check to see if guid is in the list of allowed users (which is a list of public keys).
    * Also handles the case where one of the groups that accessorguid is in is a member of allowed users.
- Finally handles the case where the allowed users contains the GNSProtocol.EVERYONE.toString() symbol.
+   * Finally handles the case where the allowed users contains the GNSProtocol.EVERYONE.toString() symbol.
    *
    * @param accessorGuid - the guid that we are checking for access
    * @param allowedUsers - the list of publickeys that are in the acl
@@ -451,7 +445,7 @@ public class NSAccessSupport {
   /**
    * Looks up the public key for a guid using the acl of a field.
    * Handles fields that uses dot notation. Recursively goes up the tree
- towards the root (GNSProtocol.ENTIRE_RECORD.toString()) node.
+   * towards the root (GNSProtocol.ENTIRE_RECORD.toString()) node.
    *
    * @param access
    * @param guid
@@ -529,9 +523,9 @@ public class NSAccessSupport {
    * @return the string without the signature
    */
   public static String removeSignature(String messageStringWithSignatureParts, String signatureParts) {
-    ClientSupportConfig.getLogger().log(Level.FINER, 
+    ClientSupportConfig.getLogger().log(Level.FINER,
             "fullstring = {0} fullSignatureField = {1}", new Object[]{messageStringWithSignatureParts, signatureParts});
-    String result = messageStringWithSignatureParts.substring(0, 
+    String result = messageStringWithSignatureParts.substring(0,
             messageStringWithSignatureParts.lastIndexOf(signatureParts));
     ClientSupportConfig.getLogger().log(Level.FINER, "result = {0}", result);
     return result;
