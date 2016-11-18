@@ -13,7 +13,6 @@
  * the License.
  * 
  * Initial developer(s): Westy */
-
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
@@ -24,6 +23,7 @@ import java.util.logging.Logger;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
+import java.util.Enumeration;
 
 /**
  * Contains logging and other main utilities for the GNS client. This file
@@ -33,7 +33,7 @@ import edu.umass.cs.utils.Config;
  * @author westy, arun
  */
 public class GNSClientConfig {
-
+  
   private final static Logger LOGGER = Logger.getLogger(GNSClientConfig.class
           .getName());
 
@@ -89,7 +89,7 @@ public class GNSClientConfig {
     LOCAL_NAME_SERVER_PORT(24398);
     
     final Object defaultValue;
-
+    
     GNSCC(Object defaultValue) {
       this.defaultValue = defaultValue;
     }
@@ -124,27 +124,32 @@ public class GNSClientConfig {
 
   /**
    * Try to figure out the build version.
-   * 
+   *
    * @return the build version
    */
   public static String readBuildVersion() {
-    String result = null;
+    String result = "Unknown";
     try {
       Class<?> clazz = GNSClientConfig.class;
-      String className = clazz.getSimpleName() + ".class";
-      String classPath = clazz.getResource(className).toString();
-      // System.out.println("readBuildVersion: classPath is " +
-      // classPath);
-      if (classPath.startsWith("jar")) {
-        String manifestPath = classPath.substring(0,
-                classPath.lastIndexOf("!") + 1)
-                + "/META-INF/MANIFEST.MF";
-        // System.out.println("readBuildVersion: manifestPath is " +
-        // manifestPath);
-        Manifest manifest = new Manifest(
-                new URL(manifestPath).openStream());
-        Attributes attr = manifest.getMainAttributes();
-        result = attr.getValue("Build-Version");
+      //String className = clazz.getSimpleName() + ".class";
+      //String classPath = clazz.getResource(className).toString();
+      //System.out.println("readBuildVersion: classPath is " + classPath);
+      // Look in all the resources that have META-INF to try to find the
+      // gnsclient jar file.
+      Enumeration<URL> urls = clazz.getClassLoader().getResources("META-INF");
+      while (urls.hasMoreElements()) {
+        URL url = urls.nextElement();
+        //System.out.println("url: " + url.toString());
+        String classPath = url.toString();
+        if (classPath.startsWith("jar") && classPath.contains("gnsclient-")) {
+          String manifestPath = classPath.substring(0,
+                  classPath.lastIndexOf("!") + 1)
+                  + "/META-INF/MANIFEST.MF";
+          //System.out.println("readBuildVersion: manifestPath is " + manifestPath);
+          Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+          Attributes attr = manifest.getMainAttributes();
+          return attr.getValue("Build-Version");
+        }
       }
     } catch (IOException e) {
     }

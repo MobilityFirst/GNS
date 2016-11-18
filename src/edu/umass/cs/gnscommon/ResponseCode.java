@@ -64,7 +64,7 @@ public enum ResponseCode implements Serializable {
   FIELD_NOT_FOUND_ERROR(2, GNSProtocol.FIELD_NOT_FOUND.toString(), TYPE.ERROR),
   // The following three are access or signature errors
   /**
-   * Bad signature. An access or signature error.
+   * Bad signature. A signature error.
    * This will happen when the message in a command packet fails signature verification.
    * See {@link edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication#signatureAndACLCheck}
    */
@@ -77,7 +77,7 @@ public enum ResponseCode implements Serializable {
    */
   STALE_COMMAND_VALUE(6, GNSProtocol.STALE_COMMMAND.toString(), TYPE.ERROR),
   /**
-   * Access denied. An access or signature error.
+   * Access denied. An access error.
    * This will happen when a command packet arrives that tries to access a field
    * for which it does not have the correct access control.
    *

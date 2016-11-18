@@ -81,14 +81,16 @@ public class NSAuthentication {
       if (NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp)) {
         return ResponseCode.NO_ERROR;
       } else {
-        ClientSupportConfig.getLogger().log(Level.FINE, "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
+        ClientSupportConfig.getLogger().log(Level.FINE, "Name {0} key={1} : ACCESS_ERROR",
+                new Object[]{guid, field});
         return ResponseCode.ACCESS_ERROR;
       }
     }
     // If the signature isn't null a null accessorGuid is also an access failure because
     // only unsigned reads (handled above) can have a null accessorGuid
     if (accessorGuid == null) {
-      ClientSupportConfig.getLogger().log(Level.WARNING, "Name {0} key={1} : NULL accessorGuid", new Object[]{guid, field});
+      ClientSupportConfig.getLogger().log(Level.WARNING, "Name {0} key={1} : NULL accessorGuid",
+              new Object[]{guid, field});
       return ResponseCode.ACCESS_ERROR;
     }
 
@@ -109,36 +111,23 @@ public class NSAuthentication {
           return aclResult.getResponseCode();
         }
       }
-    }
-    if (aclResult == null) {
-      assert (false) : "Should never come here";
-      // Something went wrong above, but we shouldn't really get here.
-      ClientSupportConfig.getLogger().log(Level.WARNING,
-              "Name {0} key={1} : UNEXPECTED ACCESS_ERROR", new Object[]{guid, field});
+      // If one field or fields is not null then this is also an access error.
+    } else {
+      ClientSupportConfig.getLogger().log(Level.SEVERE, "Name {0} key={1} : Field and Fiels are both NULL",
+              new Object[]{guid, field});
       return ResponseCode.ACCESS_ERROR;
     }
 
-    String publicKey = aclResult.getPublicKey();
-    boolean aclCheckPassed = aclResult.isAclCheckPassed();
-    // This is set up to return the signature error even if the ACL check failed.
-    // Not sure if this makes any difference, but essentially we're saying that
-    // signature checks take precedence and if it fails we don't care about the ACL
-    // failure.
-
     // Now check signatures
-    if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
+    if (NSAccessSupport.verifySignature(aclResult.getPublicKey(), signature, message)) {
+      return ResponseCode.NO_ERROR;
+    } else {
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Name {0} key={1} : SIGNATURE_ERROR", new Object[]{guid, field});
       return ResponseCode.SIGNATURE_ERROR;
-    } else if (!aclCheckPassed) {
-      ClientSupportConfig.getLogger().log(Level.FINE,
-              "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
-      return ResponseCode.ACCESS_ERROR;
     }
-    // otherwise everything passed and we return a happy result
-    return ResponseCode.NO_ERROR;
   }
-  
+
   private static AclCheckResult aclCheck(String targetGuid, String field,
           String accessorGuid, MetaDataTypeName access,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
@@ -166,7 +155,7 @@ public class NSAuthentication {
       // Return an error immediately here because if we can't find the public key 
       // the guid must not be local which is a problem.
       if (publicKey == null) {
-        return new AclCheckResult("", false, ResponseCode.BAD_GUID_ERROR);
+        return new AclCheckResult("", ResponseCode.BAD_GUID_ERROR);
       }
     } else {
       // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
@@ -194,14 +183,14 @@ public class NSAuthentication {
         }
       }
     }
-    // If we found a public key then the ACL checks out
-    if (publicKey != null) {
-      return new AclCheckResult(publicKey, true, ResponseCode.NO_ERROR);
+    // If we didn't find the public key return an ACCESS_ERROR
+    if (publicKey == null) {
+      return new AclCheckResult("", ResponseCode.ACCESS_ERROR);
     } else {
-      return new AclCheckResult("", false, ResponseCode.NO_ERROR);
+      return new AclCheckResult(publicKey, ResponseCode.NO_ERROR);
     }
   }
-  
+
   @Deprecated
   private static AclCheckResult oldAclCheck(String targetGuid, String field,
           String accessorGuid, MetaDataTypeName access,
@@ -221,7 +210,7 @@ public class NSAuthentication {
       // Return an error immediately here because if we can't find the public key 
       // the guid must not be local which is a problem.
       if (publicKey == null) {
-        return new AclCheckResult("", false, ResponseCode.BAD_GUID_ERROR);
+        return new AclCheckResult("", ResponseCode.BAD_GUID_ERROR);
       }
       aclCheckPassed = true;
     } else {
@@ -248,7 +237,7 @@ public class NSAuthentication {
     }
     if (publicKey == null) {
       // If we haven't found the publicKey of the accessorGuid yet it's not allowed access.
-      return new AclCheckResult("", false, ResponseCode.BAD_ACCESSOR_ERROR);
+      return new AclCheckResult("", ResponseCode.BAD_ACCESSOR_ERROR);
     } else if (!aclCheckPassed) {
       // Otherwise, we need to find out if this accessorGuid is in a group guid that
       // is in the acl of the field.
@@ -257,14 +246,14 @@ public class NSAuthentication {
       // that is in the acl.
       aclCheckPassed = NSAccessSupport.verifyAccess(access, targetGuid, field, accessorGuid, gnsApp);
     }
-    return new AclCheckResult(publicKey, aclCheckPassed, ResponseCode.NO_ERROR);
+    return new AclCheckResult(publicKey, ResponseCode.NO_ERROR);
   }
 
   /**
    * Attempts to look up the public key for a accessorGuid using the
    * ACL of the guid for the given field.
    * Will resort to a lookup on another server in certain circumstances.
- Like when an ACL uses the GNSProtocol.EVERYONE.toString() flag.
+   * Like when an ACL uses the GNSProtocol.EVERYONE.toString() flag.
    *
    * @param guid
    * @param field
