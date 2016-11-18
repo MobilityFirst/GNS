@@ -3075,12 +3075,15 @@ public class ServerIntegrationTest extends DefaultTest {
       failWithStackTrace("Trying to remove previous test's fields: " + e);
     }
   }
+  
+  private static boolean enable552 = false;
 
   /**
    * Setup some guids for group testing.
    */
   @Test
   public void test_552_QuerySetupGuids() {
+	  if(!enable552) return;
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
@@ -3120,6 +3123,8 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_553_QuerySetupGroup() {
+	  if(!enable552) return;
+
     try {
       String query = "~" + groupTestFieldName + " : {$gt: 20}";
       JSONArray result = client.selectSetupGroupQuery(masterGuid, groupOneGuid.getPublicKeyString(), query, 0); // make the min refresh 0 seconds so the test will never fail
@@ -3140,6 +3145,8 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_554_QuerySetupSecondGroup() {
+	  if(!enable552) return;
+
     try {
       String query = "~" + groupTestFieldName + " : 0";
       JSONArray result = client.selectSetupGroupQuery(masterGuid, groupTwoGuid.getPublicKeyString(), query, 0); // make the min refresh 0 seconds so the test will never fail
@@ -3160,6 +3167,8 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_555_QueryLookupGroup() {
+	  if(!enable552) return;
+
     try {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       checkSelectTheReturnValues(result);
@@ -3174,6 +3183,8 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_556_QueryLookupGroupAgain() {
+	  if(!enable552) return;
+
     try {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       checkSelectTheReturnValues(result);
@@ -3188,6 +3199,8 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_557_LookupGroupAgain2() {
+	  if(!enable552) return;
+
     try {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       checkSelectTheReturnValues(result);
@@ -3202,6 +3215,8 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_558_QueryLookupGroupAgain3() {
+	  if(!enable552) return;
+
     try {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       checkSelectTheReturnValues(result);
@@ -3217,6 +3232,8 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   // Change all the testQuery fields except 1 to be equal to zero
   public void test_559_QueryAlterGroup() {
+	  if(!enable552) return;
+
     try {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       // change ALL BUT ONE to be ZERO
@@ -3237,6 +3254,8 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_560_QueryLookupGroupAfterAlterations() {
+	  if(!enable552) return;
+
     // Westy - Added this to see if it helps with failures...
     try {
       Thread.sleep(100);
@@ -3265,6 +3284,8 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   @Test
   public void test_561_QueryLookupSecondGroup() {
+	  if(!enable552) return;
+
     try {
       JSONArray result = client.selectLookupGroupQuery(groupTwoGuid.getGuid());
       // should be 4 now
