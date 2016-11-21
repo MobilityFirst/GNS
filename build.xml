@@ -818,4 +818,10 @@ integration tests sequentially"
     </propertyfile>
   </target>
 
+  <target name="wiki" description="Generates the wiki constants file and updates wiki pages if needed"
+          depends="compile">
+    <java classname="edu.umass.cs.wiki.WikiConstantsGenerator">
+      <classpath refid="classpath.base"/>
+    </java>
+  </target>
 </project>
