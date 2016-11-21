@@ -380,10 +380,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
           throws Exception {
     if (reader != null) {
       return CommandUtils.specialCaseSingleField(getResponse(CommandType.Read, reader,
-              GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field, GNSProtocol.READER.toString(), reader.getGuid()));
+              GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field, 
+              GNSProtocol.READER.toString(), reader.getGuid()));
     } else {
       return CommandUtils.specialCaseSingleField(getResponse(CommandType.ReadUnsigned, reader,
-              GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field, GNSProtocol.READER.toString(), null));
+              GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field, 
+              GNSProtocol.READER.toString(), null));
     }
   }
 

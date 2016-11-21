@@ -47,7 +47,7 @@ import static org.hamcrest.Matchers.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -71,6 +71,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.json.JSONException;
+import org.junit.Assert;
 
 /**
  * Functionality test for core elements in the client using the
@@ -475,8 +476,8 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       failWithStackTrace("Exception while creating guid: ", e);
     }
-    assertNotNull(guidEntry);
-    assertEquals(alias, guidEntry.getEntityName());
+    Assert.assertNotNull(guidEntry);
+    Assert.assertEquals(alias, guidEntry.getEntityName());
   }
 
   /**
@@ -557,7 +558,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD, true);
     } catch (Exception e) {
-      fail("Exception creating account in RemoveAccountWithPasswordTest: " + e);
+      failWithStackTrace("Exception creating account in RemoveAccountWithPasswordTest: " + e);
     }
   }
 
@@ -572,9 +573,9 @@ public class ServerIntegrationTest extends DefaultTest {
       ThreadUtils.sleep(100);
       client.lookupAccountRecord(accountToRemoveGuid.getGuid());
     } catch (ClientException e) {
-      fail("lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " failed.");
+      failWithStackTrace("lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " failed.");
     } catch (IOException e) {
-      fail("Exception while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
+      failWithStackTrace("Exception while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
     }
   }
 
@@ -587,7 +588,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       client.accountGuidRemoveWithPassword(ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD);
     } catch (Exception e) {
-      fail("Exception while removing masterGuid in RemoveAccountWithPasswordTest: " + e);
+      failWithStackTrace("Exception while removing masterGuid in RemoveAccountWithPasswordTest: " + e);
     }
   }
 
@@ -599,11 +600,11 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       client.lookupGuid(ACCOUNT_TO_REMOVE_WITH_PASSWORD);
-      fail("lookupGuid for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " should have throw an exception.");
+      failWithStackTrace("lookupGuid for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " should have throw an exception.");
     } catch (ClientException e) {
 
     } catch (IOException e) {
-      fail("Exception in RemoveAccountWithPasswordTest while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
+      failWithStackTrace("Exception in RemoveAccountWithPasswordTest while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
     }
   }
 
@@ -622,7 +623,7 @@ public class ServerIntegrationTest extends DefaultTest {
     }
     waitSettle();
     try {
-      assertEquals(masterGuid.getGuid(),
+      Assert.assertEquals(masterGuid.getGuid(),
               client.lookupPrimaryGuid(testGuid.getGuid()));
     } catch (Exception e) {
       failWithStackTrace("Exception while looking up primary guid for testGuid: ", e);
@@ -668,7 +669,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_070_FieldExistsFalse() {
     //CHECKED FOR VALIDITY
     try {
-      assertFalse(client.fieldExists(subGuidEntry.getGuid(),
+       Assert.assertFalse(client.fieldExists(subGuidEntry.getGuid(),
               "environment", subGuidEntry));
     } catch (ClientException e) {
       // System.out.println("This was expected: " , e);
@@ -687,7 +688,6 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(),
               "environment", "work", subGuidEntry);
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception during create field: ", e);
     }
   }
@@ -699,7 +699,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_090_FieldExistsTrue() {
     //CHECKED FOR VALIDITY
     try {
-      assertTrue(client.fieldExists(subGuidEntry.getGuid(),
+       Assert.assertTrue(client.fieldExists(subGuidEntry.getGuid(),
               "environment", subGuidEntry));
     } catch (Exception e) {
       System.out.println("Exception testing field exists true: " + e);
@@ -718,7 +718,6 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldCreateOneElementList(masterGuid.getGuid(), TEST_FIELD_NAME, "testValue", masterGuid);
     } catch (Exception e) {
       failWithStackTrace("Exception while creating fields in ACLCreateFields: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -741,7 +740,6 @@ public class ServerIntegrationTest extends DefaultTest {
       }
     } catch (Exception e) {
       failWithStackTrace("Exception while checking for ALL_FIELDS in ACLMaybeAddAllFields: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -759,7 +757,6 @@ public class ServerIntegrationTest extends DefaultTest {
                       GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()), true);
     } catch (Exception e) {
       failWithStackTrace("Exception while checking ALL_FIELDS in ACLCheckForAllFieldsPass: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -772,7 +769,6 @@ public class ServerIntegrationTest extends DefaultTest {
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception while removing ACL in ACLRemoveAllFields: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -786,7 +782,6 @@ public class ServerIntegrationTest extends DefaultTest {
                       GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()), true);
     } catch (Exception e) {
       failWithStackTrace("Exception while checking ALL_FIELDS in ACLCheckForAllFieldsMissing: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -794,7 +789,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_114_CheckAllFieldsAcl() {
     //CHECKED FOR VALIDITY
     try {
-      assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
+       Assert.assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAllFieldsAcl: " + e);
     }
@@ -814,7 +809,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_116_CheckAllFieldsAclGone() {
     //CHECKED FOR VALIDITY
     try {
-      assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
+       Assert.assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAllFieldsAclGone: " + e);
     }
@@ -834,7 +829,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_121_CheckAcl() {
     //CHECKED FOR VALIDITY
     try {
-      assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
+       Assert.assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
       failWithStackTrace("Exception CheckAcl: " + e);
     }
@@ -854,7 +849,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_123_CheckAclGone() {
     //CHECKED FOR VALIDITY
     try {
-      assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
+       Assert.assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAclGonewhile: " + e);
     }
@@ -871,7 +866,6 @@ public class ServerIntegrationTest extends DefaultTest {
       samEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, "sam" + RandomString.randomString(6));
     } catch (Exception e) {
       failWithStackTrace("Exception registering guids in ACLCreateGuids: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -886,7 +880,6 @@ public class ServerIntegrationTest extends DefaultTest {
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception while removing ACL in ACLRemoveAllFields: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -903,7 +896,6 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldUpdate(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
     } catch (Exception e) {
       failWithStackTrace("Exception while creating fields in ACLCreateFields: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -920,7 +912,6 @@ public class ServerIntegrationTest extends DefaultTest {
       }
     } catch (Exception e) {
       failWithStackTrace("Exception while checking for ALL_FIELDS in ACLMaybeAddAllFields: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -941,7 +932,6 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading all fields in ACLReadAllFields: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -953,15 +943,14 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       // read my own field
-      assertEquals("work",
+      Assert.assertEquals("work",
               client.fieldRead(westyEntry.getGuid(), "environment", westyEntry));
       // read another one of my fields field
-      assertEquals("000-00-0000",
+      Assert.assertEquals("000-00-0000",
               client.fieldRead(westyEntry.getGuid(), "ssn", westyEntry));
 
     } catch (Exception e) {
       failWithStackTrace("Exception while reading fields in ACLReadMyFields: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -980,7 +969,6 @@ public class ServerIntegrationTest extends DefaultTest {
       }
     } catch (Exception e) {
       failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidAllFieldsTest: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1000,7 +988,7 @@ public class ServerIntegrationTest extends DefaultTest {
       }
     } catch (Exception e) {
       failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidFieldTest: " + e);
-      e.printStackTrace();
+
     }
   }
 
@@ -1015,11 +1003,9 @@ public class ServerIntegrationTest extends DefaultTest {
         client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
       } catch (Exception e) {
         failWithStackTrace("Exception adding Sam to Westy's readlist: " + e);
-        e.printStackTrace();
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLPartOne: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1028,14 +1014,12 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       try {
-        assertEquals("work", client.fieldRead(westyEntry.getGuid(), "environment", samEntry));
+        Assert.assertEquals("work", client.fieldRead(westyEntry.getGuid(), "environment", samEntry));
       } catch (Exception e) {
         failWithStackTrace("Exception while Sam reading Westy's field: " + e);
-        e.printStackTrace();
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLPartOne: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1053,12 +1037,10 @@ public class ServerIntegrationTest extends DefaultTest {
       } catch (ClientException e) {
       } catch (Exception e) {
         failWithStackTrace("Exception looking up Barney: " + e);
-        e.printStackTrace();
       }
       barneyEntry = client.guidCreate(masterGuid, barneyName);
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1071,7 +1053,6 @@ public class ServerIntegrationTest extends DefaultTest {
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1084,7 +1065,6 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldUpdate(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1098,11 +1078,9 @@ public class ServerIntegrationTest extends DefaultTest {
                 GNSProtocol.ALL_GUIDS.toString());
       } catch (Exception e) {
         failWithStackTrace("Exception creating ALL_GUIDS access for Barney's cell: " + e);
-        e.printStackTrace();
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1111,15 +1089,13 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       try {
-        assertEquals("413-555-1234",
+        Assert.assertEquals("413-555-1234",
                 client.fieldRead(barneyEntry.getGuid(), "cell", samEntry));
       } catch (Exception e) {
         failWithStackTrace("Exception while Sam reading Barney' cell: " + e);
-        e.printStackTrace();
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLPartOne: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1128,15 +1104,13 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       try {
-        assertEquals("413-555-1234",
+        Assert.assertEquals("413-555-1234",
                 client.fieldRead(barneyEntry.getGuid(), "cell", westyEntry));
       } catch (Exception e) {
         failWithStackTrace("Exception while Westy reading Barney' cell: " + e);
-        e.printStackTrace();
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLTestReadsTwo: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1158,12 +1132,10 @@ public class ServerIntegrationTest extends DefaultTest {
         }
       } catch (Exception e) {
         failWithStackTrace("Exception while Sam reading Barney' address: " + e);
-        e.printStackTrace();
       }
 
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLTestReadsThree: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1184,14 +1156,13 @@ public class ServerIntegrationTest extends DefaultTest {
       client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry,
               GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
 
-      assertEquals("413-555-1234",
+      Assert.assertEquals("413-555-1234",
               client.fieldRead(barneyEntry.getGuid(), "cell", superuserEntry));
-      assertEquals("100 Main Street",
+      Assert.assertEquals("100 Main Street",
               client.fieldRead(barneyEntry.getGuid(), "address", superuserEntry));
 
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it in ACLALLFields: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1203,11 +1174,9 @@ public class ServerIntegrationTest extends DefaultTest {
         client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
       } catch (Exception e) {
         failWithStackTrace("Problem updating field: " + e);
-        e.printStackTrace();
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1220,11 +1189,9 @@ public class ServerIntegrationTest extends DefaultTest {
         client.aclCreateField(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
       } catch (Exception e) {
         failWithStackTrace("Problem adding acl: " + e);
-        e.printStackTrace();
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1233,14 +1200,12 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       try {
-        assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
+         Assert.assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
       } catch (Exception e) {
         failWithStackTrace("Problem reading acl: " + e);
-        e.printStackTrace();
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1251,14 +1216,12 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       try {
-        assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", westyEntry));
+        Assert.assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", westyEntry));
       } catch (Exception e) {
         failWithStackTrace("Problem adding read field: " + e);
-        e.printStackTrace();
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1268,13 +1231,12 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       try {
-        assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
+        Assert.assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
         failWithStackTrace("This read should have failed.");
       } catch (Exception e) {
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1284,13 +1246,12 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       try {
-        assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper", samEntry));
+        Assert.assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper", samEntry));
         failWithStackTrace("This read should have failed.");
       } catch (Exception e) {
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1301,7 +1262,6 @@ public class ServerIntegrationTest extends DefaultTest {
       client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test", GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
-      e.printStackTrace();
     }
   }
 
@@ -1312,296 +1272,15 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       try {
-        assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
+        Assert.assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
         failWithStackTrace("This read should have failed.");
       } catch (Exception e) {
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
-      e.printStackTrace();
     }
   }
 
-//  /**
-//   * Create guids for ACL tests.
-//   */
-//  @Test
-//  public void test_100_ACLCreateGuids() {
-//    try {
-//      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-//      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
-//      System.out.println("Created: " + westyEntry);
-//      System.out.println("Created: " + samEntry);
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception registering guids in ACLCreateGuids: " + e);
-//      e.printStackTrace();
-//    }
-//    try {
-//      // remove default read access for this test
-//      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception while removing ACL in ACLCreateGuids: " + e);
-//      e.printStackTrace();
-//    }
-//    try {
-//      JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(masterGuid.getGuid())));
-//      JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
-//              GNSProtocol.ENTIRE_RECORD.toString(), westyEntry.getGuid());
-//      JSONAssert.assertEquals(expected, actual, true);
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception while retrieving ACL in ACLCreateGuids: " + e);
-//      e.printStackTrace();
-//    }
-//  }
-//
-//  /**
-//   * Create fields for ACL tests.
-//   */
-//  @Test
-//  public void test_101_ACLCreateFields() {
-//    try {
-//      client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
-//      client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
-//      client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
-//      client.fieldCreateOneElementList(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
-//    } catch (IOException | ClientException e) {
-//      failWithStackTrace("Exception while creating fields in ACLCreateFields: " + e);
-//      e.printStackTrace();
-//    }
-//  }
-//
-//  /**
-//   * This one insures that we can use GNSProtocol.ENTIRE_RECORD.toString() to read all the fields of another guid.
-//   */
-//  @Test
-//  public void test_102_ACLReadAllFields() {
-//    try {
-//      JSONObject expected = new JSONObject();
-//      expected.put("environment", new JSONArray(new ArrayList<>(Arrays.asList("work"))));
-//      expected.put("password", new JSONArray(new ArrayList<>(Arrays.asList("666flapJack"))));
-//      expected.put("ssn", new JSONArray(new ArrayList<>(Arrays.asList("000-00-0000"))));
-//      expected.put("address", new JSONArray(new ArrayList<>(Arrays.asList("100 Hinkledinkle Drive"))));
-//      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), masterGuid));
-//      JSONAssert.assertEquals(expected, actual, true);
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception while reading all fields in ACLReadAllFields: " + e);
-//      e.printStackTrace();
-//    }
-//  }
-//
-//  /**
-//   * This one insures I can read all my own fields.
-//   */
-//  @Test
-//  public void test_104_ACLReadMyFields() {
-//    try {
-//      // read my own field
-//      assertEquals("work",
-//              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", westyEntry));
-//      // read another one of my fields field
-//      assertEquals("000-00-0000",
-//              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "ssn", westyEntry));
-//
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception while reading fields in ACLReadMyFields: " + e);
-//      e.printStackTrace();
-//    }
-//  }
-//
-//  /**
-//   * This one insures that we can't read using GNSProtocol.ENTIRE_RECORD.toString() when the other guid hasn't given us access.
-//   */
-//  @Test
-//  public void test_105_ACLNotReadOtherGuidAllFieldsTest() {
-//    try {
-//      try {
-//        String result = client.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), samEntry);
-//        failWithStackTrace("Result of read of all of westy's fields by sam is " + result
-//                + " which is wrong because it should have been rejected.");
-//      } catch (ClientException e) {
-//      }
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidAllFieldsTest: " + e);
-//      e.printStackTrace();
-//    }
-//  }
-//
-//  /**
-//   * This one insures that we can't read a single field when the other guid hasn't given us access.
-//   */
-//  @Test
-//  public void test_106_ACLNotReadOtherGuidFieldTest() {
-//    try {
-//      try {
-//        String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment",
-//                samEntry);
-//        failWithStackTrace("Result of read of westy's environment by sam is " + result
-//                + " which is wrong because it should have been rejected.");
-//      } catch (ClientException e) {
-//      }
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidFieldTest: " + e);
-//      e.printStackTrace();
-//    }
-//  }
-//
-//  /**
-//   * This one insures we can read a field when given access.
-//   */
-//  @Test
-//  public void test_110_ACLPartOne() {
-//    try {
-//      try {
-//        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
-//      } catch (Exception e) {
-//        failWithStackTrace("Exception adding Sam to Westy's readlist: " + e);
-//        e.printStackTrace();
-//      }
-//      try {
-//        assertEquals("work",
-//                client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry));
-//      } catch (Exception e) {
-//        failWithStackTrace("Exception while Sam reading Westy's field: " + e);
-//        e.printStackTrace();
-//      }
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception when we were not expecting it in ACLPartOne: " + e);
-//      e.printStackTrace();
-//    }
-//  }
-//
-//  /**
-//   * Tests a bunch of field access.
-//   */
-//  @Test
-//  public void test_120_ACLPartTwo() {
-//    try {
-//      String barneyName = "barney" + RandomString.randomString(6);
-//      try {
-//        client.lookupGuid(barneyName);
-//        failWithStackTrace(barneyName + " entity should not exist");
-//      } catch (ClientException e) {
-//      } catch (Exception e) {
-//        failWithStackTrace("Exception looking up Barney: " + e);
-//        e.printStackTrace();
-//      }
-//      barneyEntry = client.guidCreate(masterGuid, barneyName);
-//      // remove default read access for this test
-//      client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
-//              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
-//      client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
-//      client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
-//
-//      try {
-//        // let anybody read barney's cell field
-//        client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
-//                GNSProtocol.ALL_GUIDS.toString());
-//      } catch (Exception e) {
-//        failWithStackTrace("Exception creating ALLUSERS access for Barney's cell: " + e);
-//        e.printStackTrace();
-//      }
-//
-//      try {
-//        assertEquals("413-555-1234",
-//                client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", samEntry));
-//      } catch (Exception e) {
-//        failWithStackTrace("Exception while Sam reading Barney' cell: " + e);
-//        e.printStackTrace();
-//      }
-//
-//      try {
-//        assertEquals("413-555-1234",
-//                client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", westyEntry));
-//      } catch (Exception e) {
-//        failWithStackTrace("Exception while Westy reading Barney' cell: " + e);
-//        e.printStackTrace();
-//      }
-//
-//      try {
-//        String result = client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address",
-//                samEntry);
-//        failWithStackTrace("Result of read of barney's address by sam is " + result
-//                + " which is wrong because it should have been rejected.");
-//      } catch (ClientException e) {
-//        if (e.getCode() == ResponseCode.ACCESS_ERROR) {
-//          System.out
-//                  .print("This was expected for null querier trying to ReadUnsigned "
-//                          + barneyEntry.getGuid()
-//                          + "'s address: "
-//                          + e);
-//        }
-//      } catch (Exception e) {
-//        failWithStackTrace("Exception while Sam reading Barney' address: " + e);
-//        e.printStackTrace();
-//      }
-//
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
-//      e.printStackTrace();
-//    }
-//  }
-//
-//  /**
-//   * Tests a bunch of field access.
-//   */
-//  @Test
-//  public void test_130_ACLALLFields() {
-//    String superUserName = "superuser" + RandomString.randomString(6);
-//    try {
-//      try {
-//        client.lookupGuid(superUserName);
-//        failWithStackTrace(superUserName + " entity should not exist");
-//      } catch (ClientException e) {
-//      }
-//
-//      GuidEntry superuserEntry = client.guidCreate(masterGuid, superUserName);
-//
-//      // let superuser read any of barney's fields
-//      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
-//
-//      assertEquals("413-555-1234",
-//              client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
-//      assertEquals("100 Main Street",
-//              client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address", superuserEntry));
-//
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: " + e);
-//      e.printStackTrace();
-//    }
-//  }
-//
-//  /**
-//   * Tests ACL access of dotted fields.
-//   */
-//  @Test
-//  public void test_140_ACLCreateDeeperField() {
-//    try {
-//      try {
-//        client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
-//      } catch (IOException | ClientException | JSONException e) {
-//        failWithStackTrace("Problem updating field: " + e);
-//        e.printStackTrace();
-//      }
-//      try {
-//        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSProtocol.ENTIRE_RECORD.toString());
-//      } catch (Exception e) {
-//        failWithStackTrace("Problem adding acl: " + e);
-//        e.printStackTrace();
-//      }
-//      try {
-//        JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
-//                "test.deeper.field", westyEntry.getGuid());
-//        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSProtocol.ENTIRE_RECORD.toString())));
-//        JSONAssert.assertEquals(expected, actual, true);
-//      } catch (Exception e) {
-//        failWithStackTrace("Problem reading acl: " + e);
-//        e.printStackTrace();
-//      }
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
-//      e.printStackTrace();
-//    }
-//  }
   /**
    * Tests a bunch of different access methods.
    */
@@ -1614,7 +1293,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "whacky", westyEntry);
 
       waitSettle();
-      assertEquals("whacky", client.fieldReadArrayFirstElement(
+      Assert.assertEquals("whacky", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), "cats", westyEntry));
 
       client.fieldAppendWithSetSemantics(
@@ -1628,7 +1307,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "hooch", "maya", "red", "sox", "toby", "whacky"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
               .fieldReadArray(westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
       client.fieldClear(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("maya", "toby")), westyEntry);
@@ -1637,12 +1316,12 @@ public class ServerIntegrationTest extends DefaultTest {
               "whacky"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
       client.fieldReplaceFirstElement(westyEntry.getGuid(), "cats",
               "maya", westyEntry);
       waitSettle();
-      assertEquals("maya", client.fieldReadArrayFirstElement(
+      Assert.assertEquals("maya", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), "cats", westyEntry));
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats",
               "fred", westyEntry);
@@ -1650,7 +1329,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected = new HashSet<String>(Arrays.asList("maya", "fred"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats",
               "fred", westyEntry);
@@ -1658,7 +1337,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected = new HashSet<String>(Arrays.asList("maya", "fred"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting testing DB: ", e);
     }
@@ -1680,7 +1359,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected = new HashSet<String>(Arrays.asList("bear"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "dogs", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
     } catch (Exception e) {
       failWithStackTrace("1) Looking for bear: ", e);
@@ -1693,7 +1372,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "tucker"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "dogs", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (Exception e) {
       failWithStackTrace("2) Looking for bear, wags, tucker: ", e);
     }
@@ -1704,7 +1383,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected = new HashSet<String>(Arrays.asList("sue"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "goats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (Exception e) {
       failWithStackTrace("3) Looking for sue: ", e);
     }
@@ -1715,7 +1394,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected = new HashSet<String>(Arrays.asList("william"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "goats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (Exception e) {
       failWithStackTrace("4) Looking for william: ", e);
     }
@@ -1726,7 +1405,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected = new HashSet<String>(Arrays.asList("dink", "tink"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "goats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (Exception e) {
       failWithStackTrace("5) Looking for dink, tink: ", e);
     }
@@ -1766,7 +1445,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "Frank", "Joe", "Sally", "Rita"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
               .fieldReadArray(testEntry.getGuid(), field, testEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it: ", e);
     }
@@ -1783,7 +1462,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "Frank", "Joe", "Christy", "Rita"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
               .fieldReadArray(testEntry.getGuid(), field, testEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it: ", e);
     }
@@ -1824,7 +1503,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "Frank", "Joe", "Sally", "Rita"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
               .fieldReadArray(testEntry.getGuid(), field, testEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it: ", e);
     }
@@ -1842,7 +1521,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "BillyBob", "Hank", "Sally", "Rita"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
               .fieldReadArray(testEntry.getGuid(), field, testEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it: ", e);
     }
@@ -1892,13 +1571,13 @@ public class ServerIntegrationTest extends DefaultTest {
               guidToDeleteEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
               .groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
       expected = new HashSet<String>(
               Arrays.asList(mygroupEntry.getGuid()));
       actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(
               westyEntry.getGuid(), westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
     } catch (Exception e) {
       failWithStackTrace("Exception while getting members and groups: ", e);
@@ -1966,7 +1645,7 @@ public class ServerIntegrationTest extends DefaultTest {
                       GNSProtocol.ENTIRE_RECORD.toString(), groupAccessUserEntry.getGuid()),
               JSONCompareMode.STRICT);
     } catch (Exception e) {
-      fail("Exception test acl: " + e);
+      failWithStackTrace("Exception test acl: " + e);
     }
 
     try {
@@ -2016,7 +1695,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_222_GroupAndACLTestGoodAccess() {
     //CHECKED FOR VALIDITY
     try {
-      assertEquals("whoville", client.fieldReadArrayFirstElement(
+      Assert.assertEquals("whoville", client.fieldReadArrayFirstElement(
               groupAccessUserEntry.getGuid(), "hometown", westyEntry));
     } catch (Exception e) {
       failWithStackTrace("Exception while attempting read of groupAccessUser's hometown by westy: ",
@@ -2061,7 +1740,7 @@ public class ServerIntegrationTest extends DefaultTest {
     if (count < 49) {
       System.out.println("Waited " + (49 - count) + " times");
     }
-    assertEquals(expected, actual);
+    Assert.assertEquals(expected, actual);
   }
 
   private static String alias = "ALIAS-" + RandomString.randomString(4)
@@ -2078,7 +1757,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // add an alias to the masterGuid
       client.addAlias(masterGuid, alias);
       // lookup the guid using the alias
-      assertEquals(masterGuid.getGuid(), client.lookupGuid(alias));
+      Assert.assertEquals(masterGuid.getGuid(), client.lookupGuid(alias));
     } catch (Exception e) {
       failWithStackTrace("Exception while adding alias: ", e);
     }
@@ -2099,7 +1778,7 @@ public class ServerIntegrationTest extends DefaultTest {
 			 * not coordinated or forceCoordinateable.
        */
       // make sure our new one is in there
-      assertThat(actual, hasItem(alias));
+      Assert.assertThat(actual, hasItem(alias));
       // now remove it
       client.removeAlias(masterGuid, alias);
     } catch (Exception e) {
@@ -2138,7 +1817,6 @@ public class ServerIntegrationTest extends DefaultTest {
                 fieldName, samEntry.getGuid());
       } catch (Exception e) {
         failWithStackTrace("Exception adding Sam to Westy's writelist: ", e);
-        e.printStackTrace();
       }
       this.waitSettle();
       // write my own field
@@ -2147,11 +1825,10 @@ public class ServerIntegrationTest extends DefaultTest {
                 fieldName, "shopping", westyEntry);
       } catch (Exception e) {
         failWithStackTrace("Exception while Westy's writing own field: ", e);
-        e.printStackTrace();
       }
       this.waitSettle();
       // now check the value
-      assertEquals("shopping", client.fieldReadArrayFirstElement(
+      Assert.assertEquals("shopping", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), fieldName, westyEntry));
       // someone else write my field
       try {
@@ -2159,11 +1836,10 @@ public class ServerIntegrationTest extends DefaultTest {
                 fieldName, "driving", samEntry);
       } catch (Exception e) {
         failWithStackTrace("Exception while Sam writing Westy's field: ", e);
-        e.printStackTrace();
       }
       this.waitSettle();
       // now check the value
-      assertEquals("driving", client.fieldReadArrayFirstElement(
+      Assert.assertEquals("driving", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), fieldName, westyEntry));
       // do one that should fail
       try {
@@ -2172,13 +1848,51 @@ public class ServerIntegrationTest extends DefaultTest {
         failWithStackTrace("Write by barney should have failed!");
       } catch (ClientException e) {
       } catch (Exception e) {
-        e.printStackTrace();
         failWithStackTrace("Exception during read of westy's " + fieldName
                 + " by sam: ", e);
       }
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it: ", e);
-      e.printStackTrace();
+    }
+  }
+  
+  private static GuidEntry unsignedReadAccountGuid;
+
+  @Test
+  public void test_249_UnsignedReadDefaultWriteCreateAccountGuid() {
+    try {
+      unsignedReadAccountGuid = GuidUtils.lookupOrCreateAccountGuid(client, 
+              "unsignedReadAccountGuid" + RandomString.randomString(12), PASSWORD, true);
+    } catch (Exception e) {
+      failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
+    }
+  }
+   
+  
+  /**
+   * Tests for the default ACL list working with unsigned read.
+   * Sets up the field in the account guid.
+   */
+  @Test
+  public void test_250_UnsignedReadDefaultAccountGuidWrite() {
+    try {
+      client.fieldUpdate(unsignedReadAccountGuid, "aRandomFieldForUnsignedRead", "aRandomValue");
+    } catch (IOException | JSONException | ClientException e) {
+      failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
+    }
+  }
+
+  /**
+   * Tests for the default ACL list working with unsigned read.
+   * Attempts to read the field.
+   */
+  @Test
+  public void test_251_UnsignedReadDefaultAccountGuidRead() {
+    try {
+      String response = client.fieldRead(unsignedReadAccountGuid.getGuid(), "aRandomFieldForUnsignedRead", null);
+      Assert.assertEquals("aRandomValue", response);
+    } catch (Exception e) {
+      failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
     }
   }
 
@@ -2186,69 +1900,115 @@ public class ServerIntegrationTest extends DefaultTest {
 
   // Creating 4 fields
   private static final String unsignedReadFieldName = "allreadaccess";
-  private static final String standardReadFieldName = "standardreadaccess";
-  private static final String unsignedOneReadFieldName = "allonereadaccess";
-  private static final String standardOneReadFieldName = "standardonereadaccess";
+  private static final String unreadAbleReadFieldName = "cannotreadreadaccess";
 
   /**
-   * Create some guids for unsigned read tests.
+   * Create the subguid for the unsigned read tests.
    */
   @Test
-  public void test_250_UnsignedReadCreateGuids() {
-    //CHECKED FOR VALIDITY
+  public void test_252_UnsignedReadCreateGuids() {
     try {
-      unsignedReadTestGuid = client.guidCreate(masterGuid, "unsignedReadTestGuid" + RandomString.randomString(6));
+      unsignedReadTestGuid = client.guidCreate(masterGuid, "unsignedReadTestGuid" + RandomString.randomString(12));
       System.out.println("Created: " + unsignedReadTestGuid);
     } catch (Exception e) {
       failWithStackTrace("Exception registering guids in UnsignedReadCreateGuids: ", e);
     }
+  }
+
+  /**
+   * Check the default ACL for the unsigned read tests.
+   * The account guid and EVERYONE should be in the ENTIRE_RECORD ACL.
+   */
+  @Test
+  public void test_253_UnsignedReadCheckACL() {
     try {
-      // For this test we remove default all access for reading
-      client.aclRemove(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
-              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
-    } catch (Exception e) {
-      failWithStackTrace("Exception while removing ACL in UnsignedReadCreateGuids: ", e);
-    }
-    // Only the account guid should be in the ACL - check this here
-    try {
-      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
+      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid(),
+              GNSProtocol.EVERYONE.toString())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
               GNSProtocol.ENTIRE_RECORD.toString(), unsignedReadTestGuid.getGuid());
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, false);
     } catch (Exception e) {
-      failWithStackTrace("Exception while retrieving ACL in UnsignedReadCreateGuids: ", e);
-      e.printStackTrace();
+      failWithStackTrace("Exception while retrieving ACL in UnsignedReadCheckACL: ", e);
     }
   }
 
   /**
-   * Runs these tests:<br>
-   * Insure that we can read a world readable field without a guid.<br>
-   * Insure that we can't read non-world-readable field without a guid.<br>
-   * <br>
-   * <br>
-   *
+   * Write the value the unsigned read tests.
    */
   @Test
-  public void test_251_UnsignedRead() {
-    //CHECKED FOR VALIDITY
-
-    // Insures that we can read a world readable field without a guid
+  public void test_254_UnsignedReadDefaultWrite() {
     try {
-      client.fieldUpdate(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, "funkadelicread", unsignedReadTestGuid);
-      // Add all access to this field
-      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedReadFieldName, GNSProtocol.ALL_GUIDS.toString());
-      assertEquals("funkadelicread", client.fieldRead(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, null));
+      client.fieldUpdate(unsignedReadTestGuid.getGuid(),
+              unsignedReadFieldName, "funkadelicread", unsignedReadTestGuid);
     } catch (Exception e) {
-      failWithStackTrace("Exception while testing for unsigned access in UnsignedRead: ", e);
+      failWithStackTrace("Exception while writing value UnsignedReadDefaultWrite: ", e);
     }
-    // Insures that we can't read non-world-readable field without a guid
+  }
+
+  /**
+   * Check the value the unsigned read tests.
+   */
+  @Test
+  public void test_255_UnsignedReadDefaultRead() {
     try {
-      client.fieldUpdate(unsignedReadTestGuid.getGuid(), standardReadFieldName, "bummer", unsignedReadTestGuid);
+      Assert.assertEquals("funkadelicread",
+              client.fieldRead(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, null));
+    } catch (Exception e) {
+      failWithStackTrace("Exception reading value in UnsignedReadDefaultRead: ", e);
+    }
+  }
+
+  /**
+   * Remove the default ENTIRE_RECORD read access.
+   */
+  @Test
+  public void test_256_UnsignedReadFailRemoveDefaultReadAccess() {
+    try {
+      client.aclRemove(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+    } catch (Exception e) {
+      failWithStackTrace("Exception removing defa in UnsignedReadDefaultRead: ", e);
+    }
+  }
+
+  /**
+   * Ensure that only the master guid is in the ACL.
+   */
+  @Test
+  public void test_257_UnsignedReadCheckACLForRecord() {
+    try {
+      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
+      JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
+              GNSProtocol.ENTIRE_RECORD.toString(), unsignedReadTestGuid.getGuid());
+      JSONAssert.assertEquals(expected, actual, false);
+    } catch (Exception e) {
+      failWithStackTrace("Exception while retrieving ACL in UnsignedReadCheckACL: ", e);
+    }
+  }
+
+  /**
+   * Write a value to the field we're going to try to read.
+   */
+  @Test
+  public void test_258_UnsignedReadFailWriteField() {
+
+    try {
+      client.fieldUpdate(unsignedReadTestGuid.getGuid(), unreadAbleReadFieldName, "bummer", unsignedReadTestGuid);
+    } catch (Exception e) {
+      failWithStackTrace("Exception while testing for denied unsigned access in UnsignedRead: ", e);
+    }
+  }
+
+  /**
+   * Attempt a read that should fail because ENTIRE_RECORD was removed.
+   */
+  @Test
+  public void test_259_UnsignedReadFailRead() {
+    try {
       try {
-        String result = client.fieldRead(unsignedReadTestGuid.getGuid(), standardReadFieldName, null);
+        String result = client.fieldRead(unsignedReadTestGuid.getGuid(), unreadAbleReadFieldName, null);
         failWithStackTrace("Result of read of westy's "
-                + standardReadFieldName
+                + unreadAbleReadFieldName
                 + " in "
                 + unsignedReadTestGuid.entityName
                 + " as world readable was "
@@ -2262,42 +2022,51 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   * Runs these tests:<br>
-   * Insure that we can read a world readable field without a guid.<br>
+   * Adds access for just the field we are trying to read.
    */
   @Test
-  public void test_252_UnsignedReadOne() {
-    //CHECKED FOR VALIDITY
+  public void test_260_UnsignedReadAddFieldAccess() {
     try {
-      // Insures that we can read a world readable field without a guid
-      // Insure that we can't read non-world-readable field without a guid
-      client.fieldCreateOneElementList(unsignedReadTestGuid.getGuid(),
-              unsignedOneReadFieldName, "funkadelicread", unsignedReadTestGuid);
-      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedOneReadFieldName, GNSProtocol.ALL_GUIDS.toString());
-      assertEquals("funkadelicread", client.fieldReadArrayFirstElement(
-              unsignedReadTestGuid.getGuid(), unsignedOneReadFieldName, null));
-
+      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedReadFieldName,
+              GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
-      failWithStackTrace("Exception while testing for unsigned access in UnsignedReadOne: ", e);
+      failWithStackTrace("Exception adding unsigned access in UnsignedReadAddFieldAccess: ", e);
     }
+  }
+
+  /**
+   * Insures that we can read a world readable field without a guid.
+   * This one has an ALL_GUIDS ACL just for this field.
+   */
+  @Test
+  public void test_261_UnsignedReadWithFieldAccess() {
     try {
-      // Insures that we can't read non-world-readable field without a guid
+      Assert.assertEquals("funkadelicread", client.fieldRead(unsignedReadTestGuid.getGuid(),
+              unsignedReadFieldName, null));
+    } catch (Exception e) {
+      failWithStackTrace("Exception while testing for unsigned access in UnsignedReadAddReadWithFieldAccess: ", e);
+    }
+  }
+
+  /**
+   * Insures that we still can't read the non-world-readable field without a guid.
+   */
+  @Test
+  public void test_262_UnsignedReadFailAgain() {
+    try {
       try {
-        client.fieldCreateOneElementList(unsignedReadTestGuid.getGuid(),
-                standardOneReadFieldName, "bummer", unsignedReadTestGuid);
-        String result = client.fieldReadArrayFirstElement(
-                unsignedReadTestGuid.getGuid(), standardOneReadFieldName, null);
-        failWithStackTrace("Result of read of "
-                + standardOneReadFieldName
+        String result = client.fieldRead(unsignedReadTestGuid.getGuid(), unreadAbleReadFieldName, null);
+        failWithStackTrace("Result of read of westy's "
+                + unreadAbleReadFieldName
                 + " in "
                 + unsignedReadTestGuid.entityName
-                + " as world readable was '"
+                + " as world readable was "
                 + result
-                + "' which is wrong because it should have been rejected.");
+                + " which is wrong because it should have been rejected in UnsignedRead.");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in UnsignedReadOne: ", e);
+      failWithStackTrace("Exception while testing for denied unsigned access in UnsignedRead: ", e);
     }
   }
 
@@ -2305,7 +2074,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * Unsigned write tests.
    */
   @Test
-  public void test_260_UnsignedWrite() {
+  public void test_265_UnsignedWrite() {
     //CHECKED FOR VALIDITY
     String unsignedWriteFieldName = "allwriteaccess";
     String standardWriteFieldName = "standardwriteaccess";
@@ -2317,7 +2086,7 @@ public class ServerIntegrationTest extends DefaultTest {
               unsignedWriteFieldName, GNSProtocol.ALL_GUIDS.toString());
       client.fieldReplaceFirstElement(westyEntry.getGuid(),
               unsignedWriteFieldName, "funkadelicwrite", westyEntry);
-      assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(
+      Assert.assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), unsignedWriteFieldName, westyEntry));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(),
@@ -2349,7 +2118,7 @@ public class ServerIntegrationTest extends DefaultTest {
     }
     try {
       // read my own field
-      assertEquals("work", client.fieldReadArrayFirstElement(
+      Assert.assertEquals("work", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), fieldToDelete, westyEntry));
     } catch (Exception e) {
       failWithStackTrace("Exception while reading the field " + fieldToDelete + ": ", e);
@@ -2390,7 +2159,7 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldCreateOneElementList(westyEntry.getGuid(), "numbers",
               "one", westyEntry);
 
-      assertEquals("one", client.fieldReadArrayFirstElement(
+      Assert.assertEquals("one", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), "numbers", westyEntry));
 
       client.fieldAppend(westyEntry.getGuid(), "numbers", "two",
@@ -2407,7 +2176,7 @@ public class ServerIntegrationTest extends DefaultTest {
       ArrayList<String> actual = JSONUtils
               .JSONArrayToArrayList(client.fieldReadArray(
                       westyEntry.getGuid(), "numbers", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
       client.fieldSetElement(westyEntry.getGuid(), "numbers", "frank", 2,
               westyEntry);
@@ -2416,7 +2185,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "frank", "four", "five"));
       actual = JSONUtils.JSONArrayToArrayList(client.fieldReadArray(
               westyEntry.getGuid(), "numbers", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
     } catch (Exception e) {
       failWithStackTrace("Unexpected exception during test: ", e);
@@ -2429,7 +2198,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // JSONArray result = client.select("cats", "fred");
   // // best we can do since there will be one, but possibly more objects
   // // in results
-  // assertThat(result.length(), greaterThanOrEqualTo(1));
+  // Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
   // } catch (Exception e) {
   // fail("Exception when we were not expecting it: " , e);
   // }
@@ -2471,7 +2240,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = client.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in
       // results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectNear: ", e);
     }
@@ -2490,7 +2259,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectWithin: ", e);
     }
@@ -2522,7 +2291,7 @@ public class ServerIntegrationTest extends DefaultTest {
       }
       // best we can do should be at least 5, but possibly more objects in
       // results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectNear: ", e);
     }
@@ -2541,7 +2310,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectWithin: ", e);
     }
@@ -2571,7 +2340,7 @@ public class ServerIntegrationTest extends DefaultTest {
     this.waitSettle();
     try {
       // read my own field
-      assertEquals("work", client.fieldReadArrayFirstElement(
+      Assert.assertEquals("work", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), field, westyEntry));
     } catch (Exception e) {
       failWithStackTrace("Exception while reading the field " + field + ": ", e);
@@ -2583,7 +2352,7 @@ public class ServerIntegrationTest extends DefaultTest {
     }
     this.waitSettle();
     try {
-      assertEquals(null, client.fieldReadArrayFirstElement(
+      Assert.assertEquals(null, client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), field, westyEntry));
     } catch (Exception e) {
       failWithStackTrace("Exception while reading the field " + field + ": ", e);
@@ -2765,7 +2534,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       String actual = client.fieldRead(westyEntry.getGuid(),
               "flapjack.sally.right", westyEntry);
-      assertEquals("seven", actual);
+      Assert.assertEquals("seven", actual);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading \"flapjack.sally.right\": ", e);
     }
@@ -2917,7 +2686,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       String string = client.fieldRead(masterGuid, BYTE_TEST_FIELD);
       // System.out.println("Read string: " + string);
-      assertArrayEquals(byteTestValue, Base64.decode(string));
+      Assert.assertArrayEquals(byteTestValue, Base64.decode(string));
     } catch (Exception e) {
       failWithStackTrace("Exception while reading field: ", e);
     }
@@ -2967,7 +2736,7 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       failWithStackTrace("Exception while creating guids: ", e);
     }
-    assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
+    Assert.assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
   }
 
   /**
@@ -2979,7 +2748,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       JSONObject accountRecord = client
               .lookupAccountRecord(accountGuidForBatch.getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+      Assert.assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
     } catch (JSONException | ClientException | IOException e) {
       failWithStackTrace("Exception while fetching account record: ", e);
     }
@@ -2998,7 +2767,6 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldUpdate(masterGuid, createIndexTestField,
               createGeoJSONPolygon(AREA_EXTENT));
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception during create field: ", e);
     }
   }
@@ -3030,7 +2798,7 @@ public class ServerIntegrationTest extends DefaultTest {
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
-      assertThat(result.length(), greaterThanOrEqualTo(1));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
     } catch (Exception e) {
       failWithStackTrace("Exception executing second selectNear: ", e);
     }
@@ -3046,13 +2814,13 @@ public class ServerIntegrationTest extends DefaultTest {
 
   private static void checkSelectTheReturnValues(JSONArray result) throws Exception {
     // should be 5
-    assertThat(result.length(), equalTo(5));
+    Assert.assertThat(result.length(), equalTo(5));
     // look up the individual values
     for (int i = 0; i < result.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
       GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
-      assertEquals(TEST_HIGH_VALUE, value);
+      Assert.assertEquals(TEST_HIGH_VALUE, value);
     }
   }
 
@@ -3104,7 +2872,6 @@ public class ServerIntegrationTest extends DefaultTest {
       groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, client.getGNSProvider());
       //groupGuid = client.guidCreate(masterGuid, groupGuidName + RandomString.randomString(6));
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception while trying to create the guids: " + e);
     }
     try {
@@ -3113,7 +2880,6 @@ public class ServerIntegrationTest extends DefaultTest {
       groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, client.getGNSProvider());
       //groupTwoGuid = client.guidCreate(masterGuid, groupTwoGuidName + RandomString.randomString(6));
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception while trying to create the guids: " + e);
     }
   }
@@ -3133,9 +2899,8 @@ public class ServerIntegrationTest extends DefaultTest {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception executing selectSetupGroupQuery: " + e);
     }
   }
@@ -3155,9 +2920,8 @@ public class ServerIntegrationTest extends DefaultTest {
         System.out.println(result.get(i).toString());
       }
       // should be nothing in this group now
-      assertThat(result.length(), equalTo(0));
+      Assert.assertThat(result.length(), equalTo(0));
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception executing second selectSetupGroupQuery: " + e);
     }
   }
@@ -3173,7 +2937,6 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       checkSelectTheReturnValues(result);
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
     }
   }
@@ -3189,7 +2952,6 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       checkSelectTheReturnValues(result);
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
     }
   }
@@ -3205,7 +2967,6 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       checkSelectTheReturnValues(result);
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
     }
   }
@@ -3221,7 +2982,6 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       checkSelectTheReturnValues(result);
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
     }
   }
@@ -3244,7 +3004,6 @@ public class ServerIntegrationTest extends DefaultTest {
         client.fieldReplaceOrCreateList(entry, groupTestFieldName, array);
       }
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception while trying to alter the fields: " + e);
     }
   }
@@ -3265,16 +3024,15 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       // should only be one
-      assertThat(result.length(), equalTo(1));
+      Assert.assertThat(result.length(), equalTo(1));
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
         GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
         String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
-        assertEquals(TEST_HIGH_VALUE, value);
+        Assert.assertEquals(TEST_HIGH_VALUE, value);
       }
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
     }
   }
@@ -3289,16 +3047,15 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       JSONArray result = client.selectLookupGroupQuery(groupTwoGuid.getGuid());
       // should be 4 now
-      assertThat(result.length(), equalTo(4));
+      Assert.assertThat(result.length(), equalTo(4));
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
         GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
         String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
-        assertEquals("0", value);
+        Assert.assertEquals("0", value);
       }
     } catch (Exception e) {
-      e.printStackTrace();
       failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
     }
   }
@@ -3339,10 +3096,9 @@ public class ServerIntegrationTest extends DefaultTest {
         // third argument is arbitrary expiry time, not used now
         int resultSize = csClient.sendSearchQuery(query, resultArray,
                 300000);
-        assertThat(resultSize, greaterThanOrEqualTo(1));
+        Assert.assertThat(resultSize, greaterThanOrEqualTo(1));
 
       } catch (Exception e) {
-        e.printStackTrace();
         failWithStackTrace("Exception during contextServiceTest: ", e);
       }
     }
@@ -3375,9 +3131,9 @@ public class ServerIntegrationTest extends DefaultTest {
         failWithStackTrace("Exception while looking up account record: " + e);
       }
     }
-    assertNotNull("Account record is null", json);
+    Assert.assertNotNull("Account record is null", json);
     try {
-      assertEquals("Account name doesn't match",
+      Assert.assertEquals("Account name doesn't match",
               accountAlias, json.getString(GNSProtocol.ACCOUNT_RECORD_USERNAME.toString()));
     } catch (JSONException e) {
       failWithStackTrace("Exception while looking up account name: " + e);

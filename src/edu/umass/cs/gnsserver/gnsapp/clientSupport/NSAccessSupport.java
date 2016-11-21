@@ -428,12 +428,23 @@ public class NSAccessSupport {
    */
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+    // First we check to see if the field has an acl that allows everyone access.
+    // Note: If ACL exists and doesn't give all access we return false because this ACL
+    // overrides the ENTIRE_RECORD ACL.
     try {
-      return NSFieldMetaData.lookupLocally(access, guid, field, activeReplica.getDB()).contains(GNSProtocol.EVERYONE.toString())
-              || NSFieldMetaData.lookupLocally(access, guid, GNSProtocol.ENTIRE_RECORD.toString(), activeReplica.getDB()).contains(GNSProtocol.EVERYONE.toString());
-    } catch (FieldNotFoundException e) {
-      // This is actually a normal result.. so no warning here.
-      return false;
+      try {
+        return (NSFieldMetaData.lookupLocally(access, guid, field, activeReplica.getDB())
+                .contains(GNSProtocol.EVERYONE.toString()));
+      } catch (FieldNotFoundException e) {
+        // If the field has no ACL then we also want to check to see if the entire record has an
+        // ACL that allows access to everyone.
+        try {
+          return NSFieldMetaData.lookupLocally(access, guid, GNSProtocol.ENTIRE_RECORD.toString(),
+                  activeReplica.getDB()).contains(GNSProtocol.EVERYONE.toString());
+        } catch (FieldNotFoundException f) {
+          return false;
+        }
+      }
     } catch (RecordNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.WARNING,
               // Message template wasn't working here... odd.

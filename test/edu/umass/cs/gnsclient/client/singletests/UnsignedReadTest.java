@@ -33,7 +33,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.json.JSONArray;
-import static org.junit.Assert.*;
+import org.json.JSONException;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -70,66 +71,151 @@ public class UnsignedReadTest {
     }
   }
 
+  /**
+   * Tests for the default ACL list working with unsigned read.
+   * Sets up the field in the master guid.
+   */
+  @Test
+  public void test_250_UnsignedReadDefaultWrite() {
+    try {
+      client.fieldUpdate(masterGuid, "aRandomFieldForUnsignedRead", "aRandomValue");
+    } catch (IOException | JSONException | ClientException e) {
+      failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
+    }
+  }
+
+  /**
+   * Tests for the default ACL list working with unsigned read.
+   * Attempts to read the field.
+   */
+  @Test
+  public void test_251_UnsignedReadDefaultRead() {
+    try {
+      String response = client.fieldRead(masterGuid.getGuid(), "aRandomFieldForUnsignedRead", null);
+      Assert.assertEquals("aRandomValue", response);
+    } catch (Exception e) {
+      failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
+    }
+  }
+
   private static GuidEntry unsignedReadTestGuid;
 
   // Creating 4 fields
   private static final String unsignedReadFieldName = "allreadaccess";
-  private static final String standardReadFieldName = "standardreadaccess";
-  private static final String unsignedOneReadFieldName = "allonereadaccess";
-  private static final String standardOneReadFieldName = "standardonereadaccess";
+  private static final String unreadAbleReadFieldName = "cannotreadreadaccess";
 
   /**
-   *
+   * Create the subguid for the unsigned read tests.
    */
   @Test
-  public void test_250_UnsignedReadCreateGuids() {
+  public void test_252_UnsignedReadCreateGuids() {
     try {
-      unsignedReadTestGuid = client.guidCreate(masterGuid, "unsignedReadTestGuid" + RandomString.randomString(6));
+      unsignedReadTestGuid = client.guidCreate(masterGuid, "unsignedReadTestGuid" + RandomString.randomString(12));
       System.out.println("Created: " + unsignedReadTestGuid);
     } catch (Exception e) {
       failWithStackTrace("Exception registering guids in UnsignedReadCreateGuids: ", e);
     }
+  }
+
+  /**
+   * Check the default ACL for the unsigned read tests.
+   * The account guid and EVERYONE should be in the ENTIRE_RECORD ACL.
+   */
+  @Test
+  public void test_253_UnsignedReadCheckACL() {
     try {
-      // For this test we remove default all access for reading
-      client.aclRemove(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
-              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
-    } catch (Exception e) {
-      failWithStackTrace("Exception while removing ACL in UnsignedReadCreateGuids: ", e);
-    }
-    // Only the account guid should be in the ACL - check this here
-    try {
-      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
+      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid(),
+              GNSProtocol.EVERYONE.toString())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
               GNSProtocol.ENTIRE_RECORD.toString(), unsignedReadTestGuid.getGuid());
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, false);
     } catch (Exception e) {
-      failWithStackTrace("Exception while retrieving ACL in UnsignedReadCreateGuids: ", e);
+      failWithStackTrace("Exception while retrieving ACL in UnsignedReadCheckACL: ", e);
       e.printStackTrace();
     }
   }
 
   /**
-   *
+   * Write the value the unsigned read tests.
    */
   @Test
-  public void test_251_UnsignedRead() {
-
-    // Insures that we can read a world readable field without a guid
+  public void test_254_UnsignedReadDefaultWrite() {
     try {
-      client.fieldUpdate(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, "funkadelicread", unsignedReadTestGuid);
-      // Add all access to this field
-      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedReadFieldName, GNSProtocol.ALL_GUIDS.toString());
-      assertEquals("funkadelicread", client.fieldRead(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, null));
+      client.fieldUpdate(unsignedReadTestGuid.getGuid(),
+              unsignedReadFieldName, "funkadelicread", unsignedReadTestGuid);
     } catch (Exception e) {
-      failWithStackTrace("Exception while testing for unsigned access in UnsignedRead: ", e);
+      failWithStackTrace("Exception while writing value UnsignedReadDefaultWrite: ", e);
+      e.printStackTrace();
     }
-    // Insures that we can't read non-world-readable field without a guid
+  }
+
+  /**
+   * Check the value the unsigned read tests.
+   */
+  @Test
+  public void test_255_UnsignedReadDefaultRead() {
     try {
-      client.fieldUpdate(unsignedReadTestGuid.getGuid(), standardReadFieldName, "bummer", unsignedReadTestGuid);
+      Assert.assertEquals("funkadelicread",
+              client.fieldRead(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, null));
+    } catch (Exception e) {
+      failWithStackTrace("Exception reading value in UnsignedReadDefaultRead: ", e);
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Remove the default ENTIRE_RECORD read access.
+   */
+  @Test
+  public void test_256_UnsignedReadFailRemoveDefaultReadAccess() {
+    try {
+      client.aclRemove(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+    } catch (Exception e) {
+      failWithStackTrace("Exception removing defa in UnsignedReadDefaultRead: ", e);
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Ensure that only the master guid is in the ACL.
+   */
+  @Test
+  public void test_257_UnsignedReadCheckACLForRecord() {
+    try {
+      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
+      JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
+              GNSProtocol.ENTIRE_RECORD.toString(), unsignedReadTestGuid.getGuid());
+      JSONAssert.assertEquals(expected, actual, false);
+    } catch (Exception e) {
+      failWithStackTrace("Exception while retrieving ACL in UnsignedReadCheckACL: ", e);
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Write a value to the field we're going to try to read.
+   */
+  @Test
+  public void test_258_UnsignedReadFailWriteField() {
+
+    try {
+      client.fieldUpdate(unsignedReadTestGuid.getGuid(), unreadAbleReadFieldName, "bummer", unsignedReadTestGuid);
+    } catch (Exception e) {
+      failWithStackTrace("Exception while testing for denied unsigned access in UnsignedRead: ", e);
+    }
+  }
+
+  /**
+   * Attempt a read that should fail because ENTIRE_RECORD was removed.
+   */
+  @Test
+  public void test_259_UnsignedReadFailRead() {
+    try {
       try {
-        String result = client.fieldRead(unsignedReadTestGuid.getGuid(), standardReadFieldName, null);
+        String result = client.fieldRead(unsignedReadTestGuid.getGuid(), unreadAbleReadFieldName, null);
         failWithStackTrace("Result of read of westy's "
-                + standardReadFieldName
+                + unreadAbleReadFieldName
                 + " in "
                 + unsignedReadTestGuid.entityName
                 + " as world readable was "
@@ -143,39 +229,51 @@ public class UnsignedReadTest {
   }
 
   /**
-   *
+   * Adds access for just the field we are trying to read.
    */
   @Test
-  public void test_252_UnsignedReadOne() {
+  public void test_260_UnsignedReadAddFieldAccess() {
     try {
-      // Insures that we can read a world readable field without a guid
-      client.fieldCreateOneElementList(unsignedReadTestGuid.getGuid(),
-              unsignedOneReadFieldName, "funkadelicread", unsignedReadTestGuid);
-      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedOneReadFieldName, GNSProtocol.ALL_GUIDS.toString());
-      assertEquals("funkadelicread", client.fieldReadArrayFirstElement(
-              unsignedReadTestGuid.getGuid(), unsignedOneReadFieldName, null));
-
+      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedReadFieldName,
+              GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
-      failWithStackTrace("Exception while testing for unsigned access in UnsignedReadOne: ", e);
+      failWithStackTrace("Exception adding unsigned access in UnsignedReadAddFieldAccess: ", e);
     }
+  }
+
+  /**
+   * Insures that we can read a world readable field without a guid.
+   * This one has an ALL_GUIDS ACL just for this field.
+   */
+  @Test
+  public void test_261_UnsignedReadWithFieldAccess() {
     try {
-      // Insures that we can't read non-world-readable field without a guid
+      Assert.assertEquals("funkadelicread", client.fieldRead(unsignedReadTestGuid.getGuid(),
+              unsignedReadFieldName, null));
+    } catch (Exception e) {
+      failWithStackTrace("Exception while testing for unsigned access in UnsignedReadAddReadWithFieldAccess: ", e);
+    }
+  }
+
+  /**
+   * Insures that we still can't read the non-world-readable field without a guid.
+   */
+  @Test
+  public void test_262_UnsignedReadFailAgain() {
+    try {
       try {
-        client.fieldCreateOneElementList(unsignedReadTestGuid.getGuid(),
-                standardOneReadFieldName, "bummer", unsignedReadTestGuid);
-        String result = client.fieldReadArrayFirstElement(
-                unsignedReadTestGuid.getGuid(), standardOneReadFieldName, null);
-        failWithStackTrace("Result of read of "
-                + standardOneReadFieldName
+        String result = client.fieldRead(unsignedReadTestGuid.getGuid(), unreadAbleReadFieldName, null);
+        failWithStackTrace("Result of read of westy's "
+                + unreadAbleReadFieldName
                 + " in "
                 + unsignedReadTestGuid.entityName
-                + " as world readable was '"
+                + " as world readable was "
                 + result
-                + "' which is wrong because it should have been rejected.");
+                + " which is wrong because it should have been rejected in UnsignedRead.");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in UnsignedReadOne: ", e);
+      failWithStackTrace("Exception while testing for denied unsigned access in UnsignedRead: ", e);
     }
   }
 

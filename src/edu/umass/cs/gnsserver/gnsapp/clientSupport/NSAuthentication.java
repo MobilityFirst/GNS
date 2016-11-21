@@ -113,7 +113,7 @@ public class NSAuthentication {
       }
       // If one field or fields is not null then this is also an access error.
     } else {
-      ClientSupportConfig.getLogger().log(Level.SEVERE, "Name {0} key={1} : Field and Fiels are both NULL",
+      ClientSupportConfig.getLogger().log(Level.SEVERE, "Name {0} key={1} : Field and Fields are both NULL",
               new Object[]{guid, field});
       return ResponseCode.ACCESS_ERROR;
     }
