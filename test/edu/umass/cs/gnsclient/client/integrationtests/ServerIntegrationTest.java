@@ -47,7 +47,6 @@ import static org.hamcrest.Matchers.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;

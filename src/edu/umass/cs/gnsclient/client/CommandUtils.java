@@ -330,7 +330,7 @@ public class CommandUtils {
    * 2) "+NULL+" - another nominal which meant we should return null as the
    * value<br>
    * 3) "+NO+"{space}{error code string}{{space}{additional info string}}+<br>
- Later a special case 4 was added for GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString().<br>
+   * Later a special case 4 was added for GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString().<br>
    *
    * For case 3 the additional info strings (could be any number) were
    * interpreted by the error handlers and generally used to help provide
@@ -338,8 +338,8 @@ public class CommandUtils {
    *
    * Also note that:<br>
    * GNSCommandProtocol.OK_RESPONSE = "+OK+"<br>
- GNSProtocol.BAD_RESPONSE.toString() = "+NO+"<br>
- GNSProtocol.NULL_RESPONSE.toString() = "+NULL+"<br>
+   * GNSProtocol.BAD_RESPONSE.toString() = "+NO+"<br>
+   * GNSProtocol.NULL_RESPONSE.toString() = "+NULL+"<br>
    *
    * @param response
    * @return Response as string.
@@ -493,15 +493,18 @@ public class CommandUtils {
    * @throws ClientException
    * @throws JSONException
    */
-  public static JSONObject createCommandWithTimestampAndNonce(CommandType commandType, Object... keysAndValues)
+  public static JSONObject createCommandWithTimestampAndNonce(CommandType commandType, boolean includeTimestamp,
+          Object... keysAndValues)
           throws ClientException, JSONException {
     JSONObject result = createCommand(commandType, keysAndValues);
-    result.put(GNSProtocol.TIMESTAMP.toString(),
-            Format.formatDateISO8601UTC(new Date()));
+    if (includeTimestamp) {
+      result.put(GNSProtocol.TIMESTAMP.toString(),
+              Format.formatDateISO8601UTC(new Date()));
+    }
     result.put(GNSProtocol.NONCE.toString(), getRandomRequestNonce());
     return result;
   }
-
+  
   /**
    * @param commandType
    * @param privateKey
@@ -514,7 +517,7 @@ public class CommandUtils {
           PrivateKey privateKey, PublicKey publicKey, Object... keysAndValues)
           throws ClientException {
     try {
-      JSONObject result = createCommandWithTimestampAndNonce(commandType, keysAndValues);
+      JSONObject result = createCommandWithTimestampAndNonce(commandType, true, keysAndValues);
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = null;
       long t = System.nanoTime();

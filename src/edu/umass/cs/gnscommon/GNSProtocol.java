@@ -330,6 +330,9 @@ public enum GNSProtocol {
   //
   // Command packet fields
   //
+  /**
+   * The timestamp of the command. Currently optional.
+   */
   TIMESTAMP("timestamp"),
   /**
    * The sequence number field in a command packet.

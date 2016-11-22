@@ -698,18 +698,20 @@ public enum CommandType {
    */
   SelectGroupLookupQuery(311, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupLookupQuery.class,
           CommandResultType.LIST, false, false,
-          "Returns all records for a group guid that was previously setup with a query. "
+          "Prototype functionality of a full-fledged Context Name Service. "
+          + "Returns all records for a group guid that was previously setup with SelectGroupSetupQuery. "
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of JSON Objects.",
+          + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.GUID.toString()}),
   /**
    *
    */
   SelectGroupSetupQuery(312, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQuery.class,
           CommandResultType.LIST, false, false,
-          "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
+          "Prototype functionality of a full-fledged Context Name Service. "
+          + "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of JSON Objects.",
+          + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.QUERY.toString()}),
   /**
@@ -717,9 +719,10 @@ public enum CommandType {
    */
   SelectGroupSetupQueryWithGuid(313, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuid.class,
           CommandResultType.LIST, false, false,
-          "Initializes the given group guid to automatically update and maintain all records that satisfy the query. "
+          "Prototype functionality of a full-fledged Context Name Service. "
+          + "Initializes the given group guid to automatically update and maintain all records that satisfy the query. "
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of JSON Objects.",
+          + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString(),
             GNSProtocol.GUID.toString()}),
   /**
@@ -727,10 +730,11 @@ public enum CommandType {
    */
   SelectGroupSetupQueryWithGuidAndInterval(314, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuidAndInterval.class,
           CommandResultType.LIST, false, false,
-          "Initializes the group guid to automatically update and maintain all records that satisfy the query. "
+           "Prototype functionality of a full-fledged Context Name Service. "
+          + "Initializes the group guid to automatically update and maintain all records that satisfy the query. "
           + "Interval is the minimum refresh interval of the query - lookups happening more quickly than this "
           + "interval will retrieve a stale value.For details see http://gns.name/wiki/index.php/Query_Syntax"
-          + "Values are returned as a JSON array of JSON Objects.",
+          + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.QUERY.toString(),
             GNSProtocol.INTERVAL.toString()}),
@@ -739,11 +743,12 @@ public enum CommandType {
    */
   SelectGroupSetupQueryWithInterval(315, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithInterval.class,
           CommandResultType.LIST, false, false,
-          "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
+           "Prototype functionality of a full-fledged Context Name Service. "
+          + "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
           + "Interval is the minimum refresh interval of the query - lookups happening more "
           + "quickly than this interval will retrieve a stale value. "
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of JSON Objects.",
+          + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString(),
             GNSProtocol.INTERVAL.toString()}),
   //
@@ -866,10 +871,11 @@ public enum CommandType {
   /**
    *
    */
+  @Deprecated
   RegisterAccountUnsigned(432, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountUnsigned.class,
           CommandResultType.NULL, false, false,
           "Creates an account guid associated with the human readable name and the supplied public key. "
-          + "Must be sign dwith the public key. Returns a guid.",
+          + "Returns a guid.",
           new String[]{GNSProtocol.NAME.toString(),
             GNSProtocol.PUBLIC_KEY.toString(),
             GNSProtocol.PASSWORD.toString()}),
@@ -1245,13 +1251,13 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands in wiki format.",
           new String[]{"tcpwiki"}),
-//  /**
-//   *
-//   */
-//  Admin(715, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class,
-//          CommandResultType.NULL, true, true,
-//          "Turns on admin mode.",
-//          new String[]{GNSProtocol.PASSKEY.toString()}),
+  //  /**
+  //   *
+  //   */
+  //  Admin(715, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class,
+  //          CommandResultType.NULL, true, true,
+  //          "Turns on admin mode.",
+  //          new String[]{GNSProtocol.PASSKEY.toString()}),
   /**
    *
    */
@@ -1259,50 +1265,50 @@ public enum CommandType {
           CommandResultType.STRING, true, true,
           "Returns the contents of the GNS.",
           new String[]{GNSProtocol.PASSKEY.toString()}),
-//  /**
-//   *
-//   */
-//  @Deprecated
-//  GetParameter(720, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
-//          CommandResultType.STRING, true, true,
-//          "Returns one field from the GNS for the given guid after authenticating "
-//          + "that guid making request has access authority. "
-//          + "Values are always returned as a JSON list. "
-//          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
-//          new String[]{GNSProtocol.FIELD.toString()}),
-//  /**
-//   *
-//   */
-//  @Deprecated
-//  SetParameter(721, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class,
-//          CommandResultType.NULL, true, true,
-//          "[ONLY IN ADMIN MODE] Changes a parameter value.",
-//          new String[]{GNSProtocol.FIELD.toString(),
-//            GNSProtocol.VALUE.toString()}),
-//  /**
-//   *
-//   */
-//  @Deprecated
-//  ListParameters(722, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class,
-//          CommandResultType.STRING, true, true,
-//          "[ONLY IN ADMIN MODE] Lists all parameter values.",
-//          new String[]{}),
-//  /**
-//   *
-//   */
-//  @Deprecated
-//  ClearCache(725, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
-//          CommandResultType.NULL, true, true,
-//          "[ONLY IN ADMIN MODE] Clears the local name server cache.",
-//          new String[]{}),
-//  /**
-//   *
-//   */
-//  @Deprecated
-//  DumpCache(726, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
-//          CommandResultType.STRING, true, false,
-//          "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.",
-//          new String[]{}),
+  //  /**
+  //   *
+  //   */
+  //  @Deprecated
+  //  GetParameter(720, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
+  //          CommandResultType.STRING, true, true,
+  //          "Returns one field from the GNS for the given guid after authenticating "
+  //          + "that guid making request has access authority. "
+  //          + "Values are always returned as a JSON list. "
+  //          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
+  //          new String[]{GNSProtocol.FIELD.toString()}),
+  //  /**
+  //   *
+  //   */
+  //  @Deprecated
+  //  SetParameter(721, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class,
+  //          CommandResultType.NULL, true, true,
+  //          "[ONLY IN ADMIN MODE] Changes a parameter value.",
+  //          new String[]{GNSProtocol.FIELD.toString(),
+  //            GNSProtocol.VALUE.toString()}),
+  //  /**
+  //   *
+  //   */
+  //  @Deprecated
+  //  ListParameters(722, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class,
+  //          CommandResultType.STRING, true, true,
+  //          "[ONLY IN ADMIN MODE] Lists all parameter values.",
+  //          new String[]{}),
+  //  /**
+  //   *
+  //   */
+  //  @Deprecated
+  //  ClearCache(725, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
+  //          CommandResultType.NULL, true, true,
+  //          "[ONLY IN ADMIN MODE] Clears the local name server cache.",
+  //          new String[]{}),
+  //  /**
+  //   *
+  //   */
+  //  @Deprecated
+  //  DumpCache(726, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
+  //          CommandResultType.STRING, true, false,
+  //          "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.",
+  //          new String[]{}),
   /**
    *
    */

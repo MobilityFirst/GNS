@@ -112,6 +112,8 @@ public class HttpClient {
    */
   private int readRetries = 1;
 
+  private static final boolean includeTimestamp = false;
+
   /**
    * Creates a new <code>AbstractGnrsClient</code> object
    *
@@ -1686,13 +1688,17 @@ public class HttpClient {
       }
       // Now we create the JSON version that we can use to sign the command with
       // Do this first so we can pull out the timestamp and nonce to use in the URI
-      JSONObject jsonVersionOfCommand = CommandUtils.createCommandWithTimestampAndNonce(commandType, keysAndValues);
+      JSONObject jsonVersionOfCommand = CommandUtils.createCommandWithTimestampAndNonce(
+              commandType, includeTimestamp, keysAndValues);
+
       // Also add the Timestamp and Nonce to the URI
+      if (includeTimestamp) {
+        encodedString.append(KEYSEP)
+                .append(GNSProtocol.TIMESTAMP.toString())
+                .append(VALSEP)
+                .append(URIEncoderDecoder.quoteIllegal(jsonVersionOfCommand.getString(GNSProtocol.TIMESTAMP.toString())));
+      }
       encodedString.append(KEYSEP)
-              .append(GNSProtocol.TIMESTAMP.toString())
-              .append(VALSEP)
-              .append(URIEncoderDecoder.quoteIllegal(jsonVersionOfCommand.getString(GNSProtocol.TIMESTAMP.toString())))
-              .append(KEYSEP)
               .append(GNSProtocol.NONCE.toString())
               .append(VALSEP)
               .append(URIEncoderDecoder.quoteIllegal(jsonVersionOfCommand.getString(GNSProtocol.NONCE.toString())));

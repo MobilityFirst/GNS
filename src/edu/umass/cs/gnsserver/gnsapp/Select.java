@@ -59,11 +59,22 @@ import java.util.logging.Logger;
 
 /**
  * This class handles select operations which have a similar semantics to an SQL SELECT.
+ * The base architecture of the select methods is that we broadcast a query 
+ * to all the servers and collate the responses.
+ * The most general purpose select method is implemented in SelectQuery. It takes a 
+ * mongo-style query and returns all the records that match that query.
+ * Select, SelectNear, SelectWithin all handle specific types of queries. 
+ * They remove the need for the user to understand mongo syntax, but are really not necessary.
+ * 
+ * SelectGroupSetupQuery and SelectGroupLookupQuery were implemented as 
+ * prototypes of a full-fledged Context Notification Service. They use the 
+ * underlying select architecture, but add on to it the notion that the 
+ * results of the query are stored in a group guid. Lookups return the 
+ * current value of the group guid as determined by executing the query 
+ * with the optimization that lookups done more often than user specified interval simply return the last value.
+ * 
  * The idea is that we want to look up all the records with a given value or whose
  * value falls in a given range or that more generally match a query.
- *
- * The SelectRequestPacket is sent to some NS (determining which one is done by the
- * LNS). This NS handles the broadcast to all of the NSs and the collection of results.
  *
  * For all select operations the NS which receive the broadcasted select packet execute the
  * appropriate query to collect all the guids that satisfy it. They then send the full records

@@ -687,7 +687,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
           PrivateKey privateKey, Object... keysAndValues)
           throws ClientException {
     try {
-      JSONObject result = CommandUtils.createCommandWithTimestampAndNonce(commandType, keysAndValues);
+      JSONObject result = CommandUtils.createCommandWithTimestampAndNonce(commandType, true, keysAndValues);
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
       result.put(GNSProtocol.SIGNATURE.toString(), signatureString);
