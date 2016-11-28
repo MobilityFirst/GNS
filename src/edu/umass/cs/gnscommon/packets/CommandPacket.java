@@ -537,7 +537,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    * @return Set coordination mode to true if this is a read command.
    */
   public ClientRequest setForceCoordinatedReads(boolean force) {
-    if (force && (getCommandType().isRead() || getCommandType().isSystemLookup())) {
+    if (force && (getCommandType().isRead())) {
       this.forceCoordination = true;
     }
     return this;

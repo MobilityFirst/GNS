@@ -730,7 +730,7 @@ public enum CommandType {
    */
   SelectGroupSetupQueryWithGuidAndInterval(314, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuidAndInterval.class,
           CommandResultType.LIST, false, false,
-           "Prototype functionality of a full-fledged Context Name Service. "
+          "Prototype functionality of a full-fledged Context Name Service. "
           + "Initializes the group guid to automatically update and maintain all records that satisfy the query. "
           + "Interval is the minimum refresh interval of the query - lookups happening more quickly than this "
           + "interval will retrieve a stale value.For details see http://gns.name/wiki/index.php/Query_Syntax"
@@ -743,7 +743,7 @@ public enum CommandType {
    */
   SelectGroupSetupQueryWithInterval(315, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithInterval.class,
           CommandResultType.LIST, false, false,
-           "Prototype functionality of a full-fledged Context Name Service. "
+          "Prototype functionality of a full-fledged Context Name Service. "
           + "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
           + "Interval is the minimum refresh interval of the query - lookups happening more "
           + "quickly than this interval will retrieve a stale value. "
@@ -859,7 +859,8 @@ public enum CommandType {
   /**
    *
    */
-  RegisterAccount(430, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount.class,
+  RegisterAccount(430, CommandCategory.CREATE_DELETE, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount.class,
           CommandResultType.NULL, false, false,
           "Creates an account guid associated with the human readable name and the supplied public key. "
           + "Must be sign with the public key. Returns a guid.",
@@ -868,6 +869,16 @@ public enum CommandType {
             GNSProtocol.PASSWORD.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+  /**
+   *
+   */
+  RegisterAccountSecured(431, CommandCategory.CREATE_DELETE, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.RegisterAccountSecured.class,
+          CommandResultType.STRING, true, true,
+          "Returns the contents of the GNS.",
+          new String[]{GNSProtocol.PASSKEY.toString()}, 
+          CommandFlag.MUTUAL_AUTH
+  ),
   /**
    *
    */
@@ -1233,82 +1244,34 @@ public enum CommandType {
   /**
    *
    */
-  Help(710, CommandCategory.LOCAL, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Help.class,
+  Help(710, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Help.class,
           CommandResultType.STRING, true, false,
           "Returns this help message.",
           new String[]{}),
   /**
    *
    */
-  HelpTcp(711, CommandCategory.LOCAL, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcp.class,
+  HelpTcp(711, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcp.class,
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands.",
-          new String[]{"tcp"}),
+          new String[]{"tcp"},
+  CommandFlag.LOCAL),
   /**
    *
    */
-  HelpTcpWiki(712, CommandCategory.LOCAL, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcpWiki.class,
+  HelpTcpWiki(712, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcpWiki.class,
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands in wiki format.",
-          new String[]{"tcpwiki"}),
-  //  /**
-  //   *
-  //   */
-  //  Admin(715, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class,
-  //          CommandResultType.NULL, true, true,
-  //          "Turns on admin mode.",
-  //          new String[]{GNSProtocol.PASSKEY.toString()}),
+          new String[]{"tcpwiki"},
+  CommandFlag.LOCAL),
   /**
    *
    */
-  Dump(716, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
+  Dump(716, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
           CommandResultType.STRING, true, true,
           "Returns the contents of the GNS.",
-          new String[]{GNSProtocol.PASSKEY.toString()}),
-  //  /**
-  //   *
-  //   */
-  //  @Deprecated
-  //  GetParameter(720, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
-  //          CommandResultType.STRING, true, true,
-  //          "Returns one field from the GNS for the given guid after authenticating "
-  //          + "that guid making request has access authority. "
-  //          + "Values are always returned as a JSON list. "
-  //          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
-  //          new String[]{GNSProtocol.FIELD.toString()}),
-  //  /**
-  //   *
-  //   */
-  //  @Deprecated
-  //  SetParameter(721, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class,
-  //          CommandResultType.NULL, true, true,
-  //          "[ONLY IN ADMIN MODE] Changes a parameter value.",
-  //          new String[]{GNSProtocol.FIELD.toString(),
-  //            GNSProtocol.VALUE.toString()}),
-  //  /**
-  //   *
-  //   */
-  //  @Deprecated
-  //  ListParameters(722, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class,
-  //          CommandResultType.STRING, true, true,
-  //          "[ONLY IN ADMIN MODE] Lists all parameter values.",
-  //          new String[]{}),
-  //  /**
-  //   *
-  //   */
-  //  @Deprecated
-  //  ClearCache(725, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
-  //          CommandResultType.NULL, true, true,
-  //          "[ONLY IN ADMIN MODE] Clears the local name server cache.",
-  //          new String[]{}),
-  //  /**
-  //   *
-  //   */
-  //  @Deprecated
-  //  DumpCache(726, CommandCategory.MUTUAL_AUTH, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
-  //          CommandResultType.STRING, true, false,
-  //          "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.",
-  //          new String[]{}),
+          new String[]{GNSProtocol.PASSKEY.toString()},
+  CommandFlag.MUTUAL_AUTH),
   /**
    *
    */
@@ -1360,6 +1323,7 @@ public enum CommandType {
 
   private final int number;
   private final CommandCategory category;
+  private final CommandFlag[] flags;
   private final Class<?> commandClass;
   private final CommandResultType returnType;
 
@@ -1395,8 +1359,7 @@ public enum CommandType {
   /**
    * The command category.
    */
-  public enum CommandCategory {
-
+  private enum CommandCategory {
     /**
      *
      */
@@ -1416,13 +1379,10 @@ public enum CommandType {
     /**
      *
      */
-    OTHER,
-    /**
-     *
-     */
-    // What is this used for?
-    @Deprecated
-    SYSTEM_LOOKUP,
+    OTHER
+  }
+
+  private enum CommandFlag {
     /**
      *
      */
@@ -1435,7 +1395,7 @@ public enum CommandType {
 
   private CommandType(int number, CommandCategory category, Class<?> commandClass,
           CommandResultType returnType, boolean canBeSafelyCoordinated,
-          boolean notForRogueClients, String description, String[] parameters) {
+          boolean notForRogueClients, String description, String[] parameters, CommandFlag... flags) {
     this.number = number;
     this.category = category;
     this.commandClass = commandClass;
@@ -1448,6 +1408,7 @@ public enum CommandType {
 
     this.commandDescription = description;
     this.commandParameters = parameters;
+    this.flags = flags;
 
   }
 
@@ -1578,19 +1539,10 @@ public enum CommandType {
 
   /**
    *
-   * @return true if it's a system lookup command
-   */
-  @Deprecated
-  public boolean isSystemLookup() {
-    return category.equals(CommandCategory.SYSTEM_LOOKUP);
-  }
-
-  /**
-   *
    * @return true if it's mutual auth command
    */
   public boolean isMutualAuth() {
-    return category.equals(CommandCategory.MUTUAL_AUTH);
+    return Arrays.asList(flags).contains(CommandFlag.MUTUAL_AUTH);
   }
 
   /**
@@ -1598,7 +1550,7 @@ public enum CommandType {
    * @return true if this is a command any replica can handle itself
    */
   public boolean isLocallyHandled() {
-    return CommandCategory.LOCAL.equals(category) || isCreateDelete() || isSelect() || isMutualAuth();
+    return isCreateDelete() || isSelect() || Arrays.asList(flags).contains(CommandFlag.LOCAL);
   }
 
   /**
