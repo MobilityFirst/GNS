@@ -105,6 +105,9 @@ public class ServerIntegrationTest extends DefaultTest {
   private static final String HOME = System.getProperty("user.home");
   private static final String GNS_DIR = "GNS";
   private static final String GNS_HOME = HOME + "/" + GNS_DIR + "/";
+  
+  private static final int DEFAULT_READ_TIMEOUT = 10*1000; //Default read timeout in ms.
+  private static final int LONG_READ_TIMEOUT = 30*1000; //Read timeout for tests that require more time.
 
   private static final String getPath(String filename) {
     if (new File(filename).exists()) {
@@ -315,6 +318,9 @@ public class ServerIntegrationTest extends DefaultTest {
     client = new GNSClientCommands();
     // Make all the reads be coordinated
     client.setForceCoordinatedReads(true);
+    //Set default read timoeut
+    client.setReadTimeout(DEFAULT_READ_TIMEOUT);
+    
     // arun: connectivity check embedded in GNSClient constructor
     boolean connected = client instanceof GNSClient;
     if (connected) {
@@ -422,7 +428,10 @@ public class ServerIntegrationTest extends DefaultTest {
 
   private static final int RETRANSMISSION_INTERVAL = 100;
   // arun: this should be zero
-  private static final int COORDINATION_WAIT = 00;
+  /* Brendan: setting this to nonzero so it can be used for SELECT tests since
+   * SELECTS don't consistently read UPDATES.
+   */
+  private static final int COORDINATION_WAIT = 10000;
 
   /**
    * arun: Coordinated operations generally need some settling time before
@@ -492,13 +501,11 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       failWithStackTrace("Exception while creating testGuid: ", e);
     }
-    waitSettle();
     try {
       client.guidRemove(masterGuid, testGuid.getGuid());
     } catch (Exception e) {
       failWithStackTrace("Exception while removing testGuid: ", e);
     }
-    waitSettle();
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       failWithStackTrace("Lookup testGuid should have throw an exception.");
@@ -522,13 +529,12 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       failWithStackTrace("Exception while creating testGuid: ", e);
     }
-    waitSettle();
     try {
       client.guidRemove(testGuid);
     } catch (Exception e) {
       failWithStackTrace("Exception while removing testGuid: ", e);
     }
-    waitSettle();
+    
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       failWithStackTrace("Lookup testGuid should have throw an exception.");
@@ -620,7 +626,7 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       failWithStackTrace("Exception while creating testGuid: ", e);
     }
-    waitSettle();
+    
     try {
       Assert.assertEquals(masterGuid.getGuid(),
               client.lookupPrimaryGuid(testGuid.getGuid()));
@@ -1291,7 +1297,7 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldCreateOneElementList(westyEntry.getGuid(), "cats",
               "whacky", westyEntry);
 
-      waitSettle();
+      
       Assert.assertEquals("whacky", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), "cats", westyEntry));
 
@@ -1301,7 +1307,7 @@ public class ServerIntegrationTest extends DefaultTest {
               new JSONArray(Arrays.asList("hooch", "maya", "red", "sox",
                       "toby")), westyEntry);
 
-      waitSettle();
+      
       HashSet<String> expected = new HashSet<String>(Arrays.asList(
               "hooch", "maya", "red", "sox", "toby", "whacky"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
@@ -1310,7 +1316,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
       client.fieldClear(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("maya", "toby")), westyEntry);
-      waitSettle();
+      
       expected = new HashSet<String>(Arrays.asList("hooch", "red", "sox",
               "whacky"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
@@ -1319,12 +1325,12 @@ public class ServerIntegrationTest extends DefaultTest {
 
       client.fieldReplaceFirstElement(westyEntry.getGuid(), "cats",
               "maya", westyEntry);
-      waitSettle();
+      
       Assert.assertEquals("maya", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), "cats", westyEntry));
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats",
               "fred", westyEntry);
-      waitSettle();
+      
       expected = new HashSet<String>(Arrays.asList("maya", "fred"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
@@ -1332,7 +1338,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats",
               "fred", westyEntry);
-      waitSettle();
+      
       expected = new HashSet<String>(Arrays.asList("maya", "fred"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
@@ -1354,7 +1360,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
       client.fieldAppendOrCreate(westyEntry.getGuid(), "dogs", "bear",
               westyEntry);
-      waitSettle();
+      
       expected = new HashSet<String>(Arrays.asList("bear"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "dogs", westyEntry));
@@ -1366,7 +1372,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       client.fieldAppendOrCreateList(westyEntry.getGuid(), "dogs",
               new JSONArray(Arrays.asList("wags", "tucker")), westyEntry);
-      waitSettle();
+      
       expected = new HashSet<String>(Arrays.asList("bear", "wags",
               "tucker"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
@@ -1378,7 +1384,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       client.fieldReplaceOrCreate(westyEntry.getGuid(), "goats", "sue",
               westyEntry);
-      waitSettle();
+      
       expected = new HashSet<String>(Arrays.asList("sue"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "goats", westyEntry));
@@ -1389,7 +1395,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       client.fieldReplaceOrCreate(westyEntry.getGuid(), "goats",
               "william", westyEntry);
-      waitSettle();
+      
       expected = new HashSet<String>(Arrays.asList("william"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "goats", westyEntry));
@@ -1400,7 +1406,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       client.fieldReplaceOrCreateList(westyEntry.getGuid(), "goats",
               new JSONArray(Arrays.asList("dink", "tink")), westyEntry);
-      waitSettle();
+      
       expected = new HashSet<String>(Arrays.asList("dink", "tink"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "goats", westyEntry));
@@ -1496,7 +1502,6 @@ public class ServerIntegrationTest extends DefaultTest {
       failWithStackTrace("Exception during create: ", e);
     }
 
-    this.waitSettle();
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(
               "Frank", "Joe", "Sally", "Rita"));
@@ -1541,7 +1546,7 @@ public class ServerIntegrationTest extends DefaultTest {
       }
       guidToDeleteEntry = client.guidCreate(masterGuid, "deleteMe"
               + RandomString.randomString(12));
-      this.waitSettle();
+      this.
       mygroupEntry = client.guidCreate(masterGuid, mygroupName);
     } catch (Exception e) {
       failWithStackTrace("Exception while creating guids: ", e);
@@ -1817,7 +1822,6 @@ public class ServerIntegrationTest extends DefaultTest {
       } catch (Exception e) {
         failWithStackTrace("Exception adding Sam to Westy's writelist: ", e);
       }
-      this.waitSettle();
       // write my own field
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(),
@@ -1825,7 +1829,6 @@ public class ServerIntegrationTest extends DefaultTest {
       } catch (Exception e) {
         failWithStackTrace("Exception while Westy's writing own field: ", e);
       }
-      this.waitSettle();
       // now check the value
       Assert.assertEquals("shopping", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), fieldName, westyEntry));
@@ -1836,7 +1839,6 @@ public class ServerIntegrationTest extends DefaultTest {
       } catch (Exception e) {
         failWithStackTrace("Exception while Sam writing Westy's field: ", e);
       }
-      this.waitSettle();
       // now check the value
       Assert.assertEquals("driving", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), fieldName, westyEntry));
@@ -2212,7 +2214,7 @@ public class ServerIntegrationTest extends DefaultTest {
 	   * and implementing force-coordination would be very complicated, and may not
 	   * worth the trouble since it would only be used for testing purposes.
 	   * 
-	   * TODO: Add in waitSettle() between client.setLocation and the select call
+	   * DONE: Add in waitSettle() between client.setLocation and the select call
 	   * for this test and any other similar ones.
 	   */
     try {
@@ -2220,13 +2222,14 @@ public class ServerIntegrationTest extends DefaultTest {
         GuidEntry testEntry = client.guidCreate(masterGuid, "geoTest-"
                 + RandomString.randomString(12));
         client.setLocation(testEntry, 0.0, 0.0);
+        
+        waitSettle(); //See comment under the method header.
+        
         // arun: added this but unclear why we should need this at all
         JSONArray location = client.getLocation(testEntry.getGuid(),
                 testEntry);
         assert (location.getDouble(0) == 0.0 && location.getDouble(1) == 0.0);
       }
-      // Thread.sleep(2000); // wait a bit to make sure everything is
-      // updated
     } catch (Exception e) {
       failWithStackTrace("Exception while writing fields for GeoSpatialSelect: ", e);
     }
@@ -2283,6 +2286,7 @@ public class ServerIntegrationTest extends DefaultTest {
     }
 
     try {
+      waitSettle(); //See comment under the method header for test_320_GeoSpatialSelect
       String query = "~" + fieldName + " : ($gt: 0)";
       JSONArray result = client.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
@@ -2329,14 +2333,12 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       failWithStackTrace("Exception when we were not expecting it: ", e);
     }
-    this.waitSettle();
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), field,
               "work", westyEntry);
     } catch (Exception e) {
       failWithStackTrace("Exception while creating the field: ", e);
     }
-    this.waitSettle();
     try {
       // read my own field
       Assert.assertEquals("work", client.fieldReadArrayFirstElement(
@@ -2349,7 +2351,6 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       failWithStackTrace("Exception while setting field to null field: ", e);
     }
-    this.waitSettle();
     try {
       Assert.assertEquals(null, client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), field, westyEntry));
@@ -2570,7 +2571,6 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       failWithStackTrace("Exception while updating field \"flapjack.sally.right\": ", e);
     }
-    this.waitSettle();
     try {
       JSONObject expected = new JSONObject();
       expected.put("name", "frank");
