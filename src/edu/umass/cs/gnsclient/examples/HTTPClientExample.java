@@ -62,24 +62,21 @@ public class HTTPClientExample {
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
-    /* Create the client that connects to a default reconfigurator as
-		 * specified in gigapaxos properties file. */
+    // Create the client will connect to GNS HTTP server running locally.	 
     client = new HttpClient("127.0.0.1", 8080);
     try {
       /**
        * Create an account GUID if one doesn't already exists. The true
        * flag makes it verbosely print out what it is doing. The password
-       * is for future use and is needed mainly if the keypair is
-       * generated on the server in order to retrieve the private key.
+       * is for future use.
        * lookupOrCreateAccountGuid "cheats" by bypassing email-based or
        * other verification mechanisms using a shared secret between the
        * server and the client.
        *
        */
-      System.out
-              .println("// account GUID creation\n"
-                      + "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
-                      + " \"password\", true)");
+      System.out.println("// account GUID creation\n"
+              + "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
+              + " \"password\", true)");
       guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
               "password", true);
     } catch (Exception | Error e) {
