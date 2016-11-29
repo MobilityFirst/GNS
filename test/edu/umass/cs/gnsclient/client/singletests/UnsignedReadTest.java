@@ -50,7 +50,6 @@ public class UnsignedReadTest {
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands client = null;
-  private static GuidEntry masterGuid;
 
   /**
    *
@@ -63,22 +62,30 @@ public class UnsignedReadTest {
       } catch (IOException e) {
         failWithStackTrace("Exception creating client: ", e);
       }
-      try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
-      } catch (Exception e) {
-        failWithStackTrace("Exception when we were not expecting it: ", e);
-      }
     }
   }
+ 
+  private static GuidEntry unsignedReadAccountGuid;
 
+  @Test
+  public void test_249_UnsignedReadDefaultWriteCreateAccountGuid() {
+    try {
+      unsignedReadAccountGuid = GuidUtils.lookupOrCreateAccountGuid(client, 
+              "unsignedReadAccountGuid" + RandomString.randomString(12), PASSWORD, true);
+    } catch (Exception e) {
+      failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
+    }
+  }
+   
+  
   /**
    * Tests for the default ACL list working with unsigned read.
-   * Sets up the field in the master guid.
+   * Sets up the field in the account guid.
    */
   @Test
-  public void test_250_UnsignedReadDefaultWrite() {
+  public void test_250_UnsignedReadDefaultAccountGuidWrite() {
     try {
-      client.fieldUpdate(masterGuid, "aRandomFieldForUnsignedRead", "aRandomValue");
+      client.fieldUpdate(unsignedReadAccountGuid, "aRandomFieldForUnsignedRead", "aRandomValue");
     } catch (IOException | JSONException | ClientException e) {
       failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
     }
@@ -89,9 +96,9 @@ public class UnsignedReadTest {
    * Attempts to read the field.
    */
   @Test
-  public void test_251_UnsignedReadDefaultRead() {
+  public void test_251_UnsignedReadDefaultAccountGuidRead() {
     try {
-      String response = client.fieldRead(masterGuid.getGuid(), "aRandomFieldForUnsignedRead", null);
+      String response = client.fieldRead(unsignedReadAccountGuid.getGuid(), "aRandomFieldForUnsignedRead", null);
       Assert.assertEquals("aRandomValue", response);
     } catch (Exception e) {
       failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
@@ -110,7 +117,7 @@ public class UnsignedReadTest {
   @Test
   public void test_252_UnsignedReadCreateGuids() {
     try {
-      unsignedReadTestGuid = client.guidCreate(masterGuid, "unsignedReadTestGuid" + RandomString.randomString(12));
+      unsignedReadTestGuid = client.guidCreate(unsignedReadAccountGuid, "unsignedReadTestGuid" + RandomString.randomString(12));
       System.out.println("Created: " + unsignedReadTestGuid);
     } catch (Exception e) {
       failWithStackTrace("Exception registering guids in UnsignedReadCreateGuids: ", e);
@@ -124,14 +131,13 @@ public class UnsignedReadTest {
   @Test
   public void test_253_UnsignedReadCheckACL() {
     try {
-      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid(),
+      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(unsignedReadAccountGuid.getGuid(),
               GNSProtocol.EVERYONE.toString())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
               GNSProtocol.ENTIRE_RECORD.toString(), unsignedReadTestGuid.getGuid());
       JSONAssert.assertEquals(expected, actual, false);
     } catch (Exception e) {
       failWithStackTrace("Exception while retrieving ACL in UnsignedReadCheckACL: ", e);
-      e.printStackTrace();
     }
   }
 
@@ -145,7 +151,6 @@ public class UnsignedReadTest {
               unsignedReadFieldName, "funkadelicread", unsignedReadTestGuid);
     } catch (Exception e) {
       failWithStackTrace("Exception while writing value UnsignedReadDefaultWrite: ", e);
-      e.printStackTrace();
     }
   }
 
@@ -159,7 +164,6 @@ public class UnsignedReadTest {
               client.fieldRead(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, null));
     } catch (Exception e) {
       failWithStackTrace("Exception reading value in UnsignedReadDefaultRead: ", e);
-      e.printStackTrace();
     }
   }
 
@@ -173,7 +177,6 @@ public class UnsignedReadTest {
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception removing defa in UnsignedReadDefaultRead: ", e);
-      e.printStackTrace();
     }
   }
 
@@ -183,13 +186,12 @@ public class UnsignedReadTest {
   @Test
   public void test_257_UnsignedReadCheckACLForRecord() {
     try {
-      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
+      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(unsignedReadAccountGuid.getGuid())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
               GNSProtocol.ENTIRE_RECORD.toString(), unsignedReadTestGuid.getGuid());
       JSONAssert.assertEquals(expected, actual, false);
     } catch (Exception e) {
       failWithStackTrace("Exception while retrieving ACL in UnsignedReadCheckACL: ", e);
-      e.printStackTrace();
     }
   }
 
@@ -276,6 +278,28 @@ public class UnsignedReadTest {
       failWithStackTrace("Exception while testing for denied unsigned access in UnsignedRead: ", e);
     }
   }
+  
+   @Test
+  public void test_263_UnsignedReadFailMissingField() {
+    String missingFieldName = "missingField" + RandomString.randomString(12);
+    try {
+      try {
+        String result = client.fieldRead(unsignedReadTestGuid.getGuid(), missingFieldName, null);
+        failWithStackTrace("Result of read of test guid's nonexistant field "
+                + missingFieldName
+                + " in "
+                + unsignedReadTestGuid.entityName
+                + " as world readable was "
+                + result
+                + " which is wrong because it should have failed.");
+      } catch (ClientException e) {
+        // The normal result
+      }
+    } catch (Exception e) {
+      failWithStackTrace("Exception while testing for denied unsigned access in UnsignedRead: ", e);
+    }
+  }
+
 
   private static final void failWithStackTrace(String message, Exception... e) {
     if (e != null && e.length > 0) {

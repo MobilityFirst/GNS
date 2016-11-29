@@ -1909,7 +1909,7 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   public void test_252_UnsignedReadCreateGuids() {
     try {
-      unsignedReadTestGuid = client.guidCreate(masterGuid, "unsignedReadTestGuid" + RandomString.randomString(12));
+      unsignedReadTestGuid = client.guidCreate(unsignedReadAccountGuid, "unsignedReadTestGuid" + RandomString.randomString(12));
       System.out.println("Created: " + unsignedReadTestGuid);
     } catch (Exception e) {
       failWithStackTrace("Exception registering guids in UnsignedReadCreateGuids: ", e);
@@ -1923,7 +1923,7 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   public void test_253_UnsignedReadCheckACL() {
     try {
-      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid(),
+      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(unsignedReadAccountGuid.getGuid(),
               GNSProtocol.EVERYONE.toString())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
               GNSProtocol.ENTIRE_RECORD.toString(), unsignedReadTestGuid.getGuid());
@@ -1973,12 +1973,12 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   /**
-   * Ensure that only the master guid is in the ACL.
+   * Ensure that only the account guid is in the ACL.
    */
   @Test
   public void test_257_UnsignedReadCheckACLForRecord() {
     try {
-      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
+      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(unsignedReadAccountGuid.getGuid())));
       JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
               GNSProtocol.ENTIRE_RECORD.toString(), unsignedReadTestGuid.getGuid());
       JSONAssert.assertEquals(expected, actual, false);
@@ -2008,7 +2008,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       try {
         String result = client.fieldRead(unsignedReadTestGuid.getGuid(), unreadAbleReadFieldName, null);
-        failWithStackTrace("Result of read of westy's "
+        failWithStackTrace("Result of read of test guid's "
                 + unreadAbleReadFieldName
                 + " in "
                 + unsignedReadTestGuid.entityName
@@ -2057,7 +2057,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       try {
         String result = client.fieldRead(unsignedReadTestGuid.getGuid(), unreadAbleReadFieldName, null);
-        failWithStackTrace("Result of read of westy's "
+        failWithStackTrace("Result of read of test guid's "
                 + unreadAbleReadFieldName
                 + " in "
                 + unsignedReadTestGuid.entityName
@@ -2065,6 +2065,27 @@ public class ServerIntegrationTest extends DefaultTest {
                 + result
                 + " which is wrong because it should have been rejected in UnsignedRead.");
       } catch (ClientException e) {
+      }
+    } catch (Exception e) {
+      failWithStackTrace("Exception while testing for denied unsigned access in UnsignedRead: ", e);
+    }
+  }
+  
+  @Test
+  public void test_263_UnsignedReadFailMissingField() {
+    String missingFieldName = "missingField" + RandomString.randomString(12);
+    try {
+      try {
+        String result = client.fieldRead(unsignedReadTestGuid.getGuid(), missingFieldName, null);
+        failWithStackTrace("Result of read of test guid's nonexistant field "
+                + missingFieldName
+                + " in "
+                + unsignedReadTestGuid.entityName
+                + " as world readable was "
+                + result
+                + " which is wrong because it should have failed.");
+      } catch (ClientException e) {
+        // The normal result
       }
     } catch (Exception e) {
       failWithStackTrace("Exception while testing for denied unsigned access in UnsignedRead: ", e);
