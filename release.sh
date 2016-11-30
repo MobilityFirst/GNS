@@ -9,6 +9,7 @@
 # to make a binary distribution
 #
 # You'll also need a github auth token: https://help.github.com/articles/creating-an-access-token-for-command-line-use/
+# This script requires curl be installed in order to send the release to github.
 
 #!/bin/bash
 #BINARIES="./bin/*"
@@ -28,7 +29,7 @@ if [ $# -lt 1 ]; then
 	echo $USAGE
 	exit 1
 fi
-#VERSION="$1" #First argument is the version
+#This automatically gets the version numbers from build.properties
 MAJOR=$(cat build.properties | grep build.major | sed 's/^build.major.number=//' | sed s/$(printf '\r')\$//)
 echo $MAJOR.
 MINOR=$(cat build.properties | grep build.minor | sed 's/^build.minor.number=//'| sed s/$(printf '\r')\$//)
@@ -38,7 +39,6 @@ echo $REVISION.
 VERSION=v$MAJOR.$MINOR.$REVISION
 echo $VERSION
 BINARIES="GNS-$MAJOR.$MINOR.$REVISION"
-#DESCRIPTION="${*:2}" #Second argument and on is the description.
 DESCRIPTION="$@" #The commandline argument is the description.
 # First prompt for an auth token if one is not already stored.
 if [ "$GNSGitToken" == "" ]; then
