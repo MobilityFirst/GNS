@@ -105,6 +105,10 @@ public enum UpdateOperation {
    * Sets the element of the list specified by the argument index.
    */
   SINGLE_FIELD_SET(true, false, false),
+   /**
+   * Gets the element of the list specified by the argument index.
+   */
+  SINGLE_FIELD_GET(true, false, false),
   /**
    * Sets the field to null (a singleton).
    */

@@ -43,6 +43,8 @@ import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 
 /**
  * @author arun
@@ -287,10 +289,10 @@ public class GNSCommand extends CommandPacket {
    * @param targetGUID
    * The guid being queried.
    * @return CommandPacket
-   * @throws Exception
+   * @throws ClientException
    */
   public static final CommandPacket read(GuidEntry targetGUID)
-          throws Exception {
+          throws ClientException {
     return read(targetGUID.getGuid(), targetGUID);
   }
 
@@ -525,10 +527,12 @@ public class GNSCommand extends CommandPacket {
    * an email address
    * @param password
    * @return CommandPacket
-   * @throws Exception
+   * @throws ClientException
+   * @throws java.io.IOException
+   * @throws java.security.NoSuchAlgorithmException
    */
   public static final CommandPacket accountGuidCreate(String gnsInstance,
-          String alias, String password) throws Exception {
+          String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
     GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
     /* arun: Don't recreate pair if one already exists. Otherwise you can
 			 * not get out of the funk where the account creation timed out but
@@ -567,10 +571,10 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * Makes the server ressend the authentication email which was originally
+   * Makes the server resend the authentication email which was originally
    * sent during account creation.
    *
-   * @param accountGUID he account guid
+   * @param accountGUID the account guid
    * @return CommandPacket
    * @throws ClientException
    */
@@ -582,10 +586,9 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * Deletes the account named {@code name}.
+   * Deletes the account.
    *
-   * @param accountGUID
-   * GuidEntry for the account being removed.
+   * @param accountGUID GuidEntry for the account being removed.
    * @return CommandPacket
    * @throws ClientException
    */
@@ -593,6 +596,26 @@ public class GNSCommand extends CommandPacket {
           throws ClientException {
     return getCommand(CommandType.RemoveAccount, accountGUID, GNSProtocol.GUID.toString(),
             accountGUID.getGuid(), GNSProtocol.NAME.toString(), accountGUID.getEntityName());
+  }
+
+  /**
+   * Deletes the account named {@code name} using the account password to authenticate.
+   *
+   * @param name name of the account being removed.
+   * @param password
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket accountGuidRemoveWithPassword(String name, String password)
+          throws ClientException {
+    String encodedPassword;
+    try {
+      encodedPassword = Password.encryptAndEncodePassword(password, name);
+    } catch (NoSuchAlgorithmException e) {
+      throw new ClientException(e);
+    }
+    return getCommand(CommandType.RemoveAccountWithPassword, GNSProtocol.NAME.toString(),
+            name, GNSProtocol.PASSWORD.toString(), encodedPassword);
   }
 
   /**
@@ -736,7 +759,27 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket groupAddGuid(String groupGUID,
           String toAddGUID, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.AddToGroup, querierGUID, GNSProtocol.GUID.toString(), groupGUID,
-            GNSProtocol.MEMBER.toString(), toAddGUID, GNSProtocol.WRITER.toString(), querierGUID.getGuid());
+            GNSProtocol.MEMBER.toString(), toAddGUID,
+            GNSProtocol.WRITER.toString(), querierGUID.getGuid());
+  }
+
+  /**
+   * Add multiple members to a group.
+   *
+   * @param groupGUID
+   * The guid of the group.
+   * @param members
+   * The member GUIDs to add to the group.
+   * @param querierGUID
+   * The guid issuing the query.
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket groupAddGUIDs(String groupGUID,
+          JSONArray members, GuidEntry querierGUID) throws ClientException {
+    return getCommand(CommandType.AddMembersToGroup, querierGUID, GNSProtocol.GUID.toString(),
+            groupGUID, GNSProtocol.MEMBERS.toString(), members.toString(),
+            GNSProtocol.WRITER.toString(), querierGUID.getGuid());
   }
 
   /**
@@ -753,13 +796,11 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket groupAddGUIDs(String groupGUID,
           Set<String> members, GuidEntry querierGUID) throws ClientException {
-    return getCommand(CommandType.AddMembersToGroup, querierGUID, GNSProtocol.GUID.toString(),
-            groupGUID, GNSProtocol.MEMBERS.toString(), new JSONArray(members).toString(), GNSProtocol.WRITER.toString(),
-            querierGUID.getGuid());
+    return groupAddGUIDs(groupGUID, new JSONArray(members), querierGUID);
   }
 
   /**
-   * Removes a guid from a group guid. 
+   * Removes a guid from a group guid.
    * Any guid can be a group guid.
    *
    *
@@ -952,6 +993,72 @@ public class GNSCommand extends CommandPacket {
     return aclGet(accessType.name(), targetGUID, field, querierGUID);
   }
 
+  /**
+   * Create an empty ACL for the field in the guid.
+   *
+   * @param accessType
+   * @param guid
+   * The guid to create the ACL in.
+   * @param field
+   * The field to create the ACL for.
+   * @param writerGuid
+   * @return
+   * @throws ClientException
+   */
+  public static final CommandPacket fieldCreateAcl(AclAccessType accessType,
+          GuidEntry guid, String field, String writerGuid)
+          throws ClientException {
+    return getCommand(CommandType.FieldCreateAcl, guid,
+            GNSProtocol.ACL_TYPE.toString(), accessType.name(),
+            GNSProtocol.GUID.toString(), guid.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.WRITER.toString(), writerGuid);
+  }
+
+  /**
+   * Delete the ACL for the field in the guid.
+   *
+   * @param accessType
+   * @param guid
+   * The guid to create the ACL in.
+   * @param field
+   * The field to create the ACL for.
+   * @param writerGuid
+   * @return
+   * @throws ClientException
+   */
+  public static final CommandPacket fieldDeleteAcl(AclAccessType accessType,
+          GuidEntry guid, String field, String writerGuid)
+          throws ClientException {
+    return getCommand(CommandType.FieldDeleteAcl, guid,
+            GNSProtocol.ACL_TYPE.toString(), accessType.name(),
+            GNSProtocol.GUID.toString(), guid.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.WRITER.toString(), writerGuid);
+  }
+
+  /**
+   * Delete the ACL for the field in the guid.
+   *
+   * @param accessType
+   * @param guid
+   * The guid to create the ACL in.
+   * @param field
+   * The field to create the ACL for.
+   * @param reader
+   * @return
+   * @throws ClientException
+   */
+  public static final CommandPacket fieldAclExists(AclAccessType accessType,
+          GuidEntry guid, String field, String reader)
+          throws ClientException {
+    return getCommand(CommandType.FieldAclExists, guid,
+            GNSProtocol.ACL_TYPE.toString(), accessType.name(),
+            GNSProtocol.GUID.toString(), guid.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.READER.toString(), reader);
+  }
+
   /* ********************* ALIASES ******************** */
   /**
    * Creates an alias for {@code targetGUID}. The alias can be used just like
@@ -990,10 +1097,10 @@ public class GNSCommand extends CommandPacket {
    *
    * @param guid
    * @return - a JSONArray containing the aliases
-   * @throws Exception
+   * @throws ClientException
    */
   public static final CommandPacket getAliases(GuidEntry guid)
-          throws Exception {
+          throws ClientException {
     return getCommand(CommandType.RetrieveAliases, guid, GNSProtocol.GUID.toString(),
             guid.getGuid());
   }
@@ -1008,7 +1115,7 @@ public class GNSCommand extends CommandPacket {
    * @param name
    * @param publicKey
    * @return a command packet
-   * @throws Exception
+   * @throws ClientException
    */
   private static final CommandPacket guidCreateHelper(GuidEntry accountGuid,
           String name, PublicKey publicKey) throws ClientException {
@@ -1385,10 +1492,10 @@ public class GNSCommand extends CommandPacket {
    * @param value
    * - [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
    * @return CommandPacket
-   * @throws Exception
+   * @throws ClientException
    */
   public static final CommandPacket selectWithin(String field, JSONArray value)
-          throws Exception {
+          throws ClientException {
     return getCommand(CommandType.SelectWithin, GNSProtocol.FIELD.toString(), field, GNSProtocol.WITHIN.toString(),
             value.toString());
   }
@@ -1520,6 +1627,8 @@ public class GNSCommand extends CommandPacket {
           throws ClientException {
     return getCommand(CommandType.SetCode, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.AC_CODE.toString(),
+            // This doesn't agree with the original method.
+            // Is this encoding the byes for the user? Where is it decoded?
             Base64.encodeToString(code, true), GNSProtocol.WRITER.toString(),
             querierGUID.getGuid());
   }
@@ -1870,6 +1979,49 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
+   * Replaces the first element of {@code field} in {@code targetGUID}
+   * with the value (assuming that value is a array).
+   * Note: This is a legacy command used by the unit tests. Will be phased out.
+   *
+   * @param targetGuid
+   * @param field
+   * @param value
+   * @param writer
+   * @return CommandPacket
+   * @throws IOException
+   * @throws ClientException
+   */
+  @Deprecated
+  public static final CommandPacket fieldReplaceFirstElement(String targetGuid, String field,
+          String value, GuidEntry writer)
+          throws IOException, ClientException {
+    return getCommand(writer != null ? CommandType.Replace : CommandType.ReplaceUnsigned,
+            writer,
+            GNSProtocol.GUID.toString(), targetGuid,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.VALUE.toString(), value,
+            GNSProtocol.WRITER.toString(), writer != null ? writer.getGuid() : null);
+  }
+
+  /**
+   * Replaces the first element of {@code field} in {@code targetGUID}
+   * with the value (assuming that value is a array).
+   * Note: This is a legacy command used by the unit tests. Will be phased out.
+   *
+   * @param targetGuid
+   * @param field
+   * @param value
+   * @return CommandPacket
+   * @throws IOException
+   * @throws ClientException
+   */
+  @Deprecated
+  public CommandPacket fieldReplaceFirstElement(GuidEntry targetGuid, String field,
+          String value) throws IOException, ClientException {
+    return fieldReplaceFirstElement(targetGuid.getGuid(), field, value, targetGuid);
+  }
+
+  /**
    * Substitutes {@code targetGUID}:{@code field}'s value with
    * {@code newValue} if the current value is {@code oldValue}.
    *
@@ -1962,6 +2114,44 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
+   * Reads the first value (assuming that value is a array) for {@code field}
+   * from the GNS server for the given {@code targetGUID}.
+   * Note: This is a legacy command used by the unit tests. Will be phased out.
+   *
+   * @param targetGUID
+   * @param field
+   * @param reader
+   * @return
+   * @throws ClientException
+   */
+  @Deprecated
+  public static final CommandPacket fieldReadArrayFirstElement(String targetGUID, String field,
+          GuidEntry reader) throws ClientException {
+    return getCommand(reader != null ? CommandType.ReadArrayOne
+            : CommandType.ReadArrayOneUnsigned, reader,
+            GNSProtocol.GUID.toString(), targetGUID,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.READER.toString(), reader != null ? reader.getGuid() : null);
+  }
+
+  /**
+   * Reads the first value (assuming that value is a array) for {@code field}
+   * in the {@code targetGUID}.
+   * Note: This is a legacy command used by the unit tests. Will be phased out.
+   *
+   * @param targetGUID
+   * @param field
+   * @return First value of {@code field} whose value is expected to be an
+   * array.
+   * @throws ClientException
+   */
+  @Deprecated
+  public static final CommandPacket fieldReadArrayFirstElement(GuidEntry targetGUID, String field)
+          throws ClientException {
+    return fieldReadArrayFirstElement(targetGUID.getGuid(), field, targetGUID);
+  }
+
+  /**
    * Removes the field {@code targetGUID}:{@code field}.
    *
    * @param targetGUID
@@ -1976,14 +2166,18 @@ public class GNSCommand extends CommandPacket {
     return fieldRemove(targetGUID.getGuid(), field, targetGUID);
   }
 
-//  /**
-//   * @return CommandPacket
-//   * @throws ClientException
-//   */
-//  public static final CommandPacket adminEnable()
-//          throws ClientException {
-//    return getCommand(CommandType.Admin);
-//  }
+  /**
+   * Executes the {@code dump} command.
+   *
+   * @return CommandPacket
+   * @throws ClientException
+   * @throws IOException
+   */
+  public static final CommandPacket dump()
+          throws ClientException, IOException {
+    return getCommand(CommandType.Dump, GNSProtocol.NAME.toString(), "Admin");
+  }
+
   /**
    * @return The {@link GNSCommand.ResultType} type of the result obtained by
    * executing this query.

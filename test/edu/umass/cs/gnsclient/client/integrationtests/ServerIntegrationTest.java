@@ -86,6 +86,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands client = null;
+  //private static GNSClientCommandsV2 client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
   private static GuidEntry westyEntry;
@@ -316,6 +317,7 @@ public class ServerIntegrationTest extends DefaultTest {
     System.out.println("Starting client");
 
     client = new GNSClientCommands();
+    //client = new GNSClientCommandsV2();
     // Make all the reads be coordinated
     client.setForceCoordinatedReads(true);
     //Set default read timoeut
@@ -794,7 +796,8 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_114_CheckAllFieldsAcl() {
     //CHECKED FOR VALIDITY
     try {
-       Assert.assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
+       Assert.assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, 
+               GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAllFieldsAcl: " + e);
     }
@@ -804,7 +807,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_115_DeleteAllFieldsAcl() {
     //CHECKED FOR VALIDITY
     try {
-      client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString());
+      client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception in DeleteAllFieldsAcl: " + e);
     }
@@ -814,7 +817,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_116_CheckAllFieldsAclGone() {
     //CHECKED FOR VALIDITY
     try {
-       Assert.assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
+       Assert.assertFalse(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAllFieldsAclGone: " + e);
     }
@@ -824,7 +827,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_120_CreateAcl() {
     //CHECKED FOR VALIDITY
     try {
-      client.aclCreateField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
+      client.fieldCreateAcl(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
       failWithStackTrace("Exception CreateAcl while creating ACL field: " + e);
     }
@@ -834,7 +837,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_121_CheckAcl() {
     //CHECKED FOR VALIDITY
     try {
-       Assert.assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
+       Assert.assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
       failWithStackTrace("Exception CheckAcl: " + e);
     }
@@ -844,7 +847,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_122_DeleteAcl() {
     //CHECKED FOR VALIDITY
     try {
-      client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
+      client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
       failWithStackTrace("Exception in DeleteAcl: " + e);
     }
@@ -854,7 +857,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_123_CheckAclGone() {
     //CHECKED FOR VALIDITY
     try {
-       Assert.assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
+       Assert.assertFalse(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAclGonewhile: " + e);
     }
@@ -1191,7 +1194,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       try {
         // Create an empty ACL, effectively disabling access except by the guid itself.
-        client.aclCreateField(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
+        client.fieldCreateAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
       } catch (Exception e) {
         failWithStackTrace("Problem adding acl: " + e);
       }
@@ -1205,7 +1208,7 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     try {
       try {
-         Assert.assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
+         Assert.assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
       } catch (Exception e) {
         failWithStackTrace("Problem reading acl: " + e);
       }
@@ -1878,7 +1881,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_250_UnsignedReadDefaultAccountGuidWrite() {
     try {
       client.fieldUpdate(unsignedReadAccountGuid, "aRandomFieldForUnsignedRead", "aRandomValue");
-    } catch (IOException | JSONException | ClientException e) {
+    } catch (IOException | ClientException e) {
       failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
     }
   }
@@ -2692,7 +2695,7 @@ public class ServerIntegrationTest extends DefaultTest {
       String encodedValue = Base64.encodeToString(byteTestValue, true);
       // System.out.println("Encoded string: " + encodedValue);
       client.fieldUpdate(masterGuid, BYTE_TEST_FIELD, encodedValue);
-    } catch (IOException | ClientException | JSONException e) {
+    } catch (IOException | ClientException e) {
       failWithStackTrace("Exception during create field: ", e);
     }
   }
@@ -2751,12 +2754,13 @@ public class ServerIntegrationTest extends DefaultTest {
     long oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(20 * 1000); // 30 seconds
-      result = client.guidBatchCreate(accountGuidForBatch, aliases);
+      client.guidBatchCreate(accountGuidForBatch, aliases);
+      //result = client.guidBatchCreate(accountGuidForBatch, aliases);
       client.setReadTimeout(oldTimeout);
     } catch (Exception e) {
       failWithStackTrace("Exception while creating guids: ", e);
     }
-    Assert.assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
+    //Assert.assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
   }
 
   /**

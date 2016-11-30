@@ -45,13 +45,13 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AclDeleteField extends AbstractCommand {
+public class FieldDeleteAcl extends AbstractCommand {
 
   /**
    *
    * @param module
    */
-  public AclDeleteField(CommandModule module) {
+  public FieldDeleteAcl(CommandModule module) {
     super(module);
   }
 
@@ -61,7 +61,7 @@ public class AclDeleteField extends AbstractCommand {
    */
   @Override
   public CommandType getCommandType() {
-    return CommandType.AclDeleteField;
+    return CommandType.FieldDeleteAcl;
   }
 
   @Override

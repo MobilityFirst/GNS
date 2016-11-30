@@ -43,13 +43,13 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AclFieldExists extends AbstractCommand {
+public class FieldCreateAcl extends AbstractCommand {
 
   /**
    *
    * @param module
    */
-  public AclFieldExists(CommandModule module) {
+  public FieldCreateAcl(CommandModule module) {
     super(module);
   }
 
@@ -59,7 +59,7 @@ public class AclFieldExists extends AbstractCommand {
    */
   @Override
   public CommandType getCommandType() {
-    return CommandType.AclFieldExists;
+    return CommandType.FieldCreateAcl;
   }
 
   @Override
@@ -68,8 +68,8 @@ public class AclFieldExists extends AbstractCommand {
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.getString(GNSProtocol.FIELD.toString());
     String accessType = json.getString(GNSProtocol.ACL_TYPE.toString());
-    // allows someone other than guid to read acl, defaults to guid
-    String reader = json.optString(GNSProtocol.READER.toString(), guid);
+    // allows someone other than guid to create acl, defaults to guid
+    String writer = json.optString(GNSProtocol.WRITER.toString(), guid);
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString())
@@ -77,15 +77,18 @@ public class AclFieldExists extends AbstractCommand {
 
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, GNSProtocol.BAD_RESPONSE.toString() 
-              + " " + GNSProtocol.BAD_ACL_TYPE.toString()
+      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR,
+              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
-    return new CommandResponse(
-            ResponseCode.NO_ERROR,
-            Boolean.toString(
-                    FieldMetaData.fieldExists(access, guid, field, reader,
-                            signature, message, timestamp, handler)));
+    ResponseCode responseCode;
+    if (!(responseCode
+            = FieldMetaData.createField(access, guid, field, writer,
+                    signature, message, timestamp, handler)).isExceptionOrError()) {
+      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+    } else {
+      return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());
+    }
   }
 
 }

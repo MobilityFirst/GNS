@@ -163,7 +163,7 @@ public class AclDefaultsTest {
   @Test
   public void test_114_CheckAllFieldsAcl() {
     try {
-      assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
+      assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAllFieldsAcl: " + e);
     }
@@ -172,7 +172,7 @@ public class AclDefaultsTest {
   @Test
   public void test_115_DeleteAllFieldsAcl() {
     try {
-      client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString());
+      client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString());
     } catch (Exception e) {
       failWithStackTrace("Exception in DeleteAllFieldsAcl: " + e);
     }
@@ -181,7 +181,7 @@ public class AclDefaultsTest {
   @Test
   public void test_116_CheckAllFieldsAclGone() {
     try {
-      assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
+      assertFalse(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAllFieldsAclGone: " + e);
     }
@@ -190,7 +190,7 @@ public class AclDefaultsTest {
   @Test
   public void test_120_CreateAcl() {
     try {
-      client.aclCreateField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
+      client.fieldCreateAcl(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
       failWithStackTrace("Exception CreateAcl while creating ACL field: " + e);
     }
@@ -199,7 +199,7 @@ public class AclDefaultsTest {
   @Test
   public void test_121_CheckAcl() {
     try {
-      assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
+      assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
       failWithStackTrace("Exception CheckAcl: " + e);
     }
@@ -208,7 +208,7 @@ public class AclDefaultsTest {
   @Test
   public void test_122_DeleteAcl() {
     try {
-      client.aclDeleteField(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
+      client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
       failWithStackTrace("Exception in DeleteAcl: " + e);
     }
@@ -217,7 +217,7 @@ public class AclDefaultsTest {
   @Test
   public void test_123_CheckAclGone() {
     try {
-      assertFalse(client.aclFieldExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
+      assertFalse(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
       failWithStackTrace("Exception in CheckAclGonewhile: " + e);
     }
@@ -565,7 +565,7 @@ public class AclDefaultsTest {
     try {
       try {
         // Create an empty ACL, effectively disabling access except by the guid itself.
-        client.aclCreateField(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
+        client.fieldCreateAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
       } catch (Exception e) {
         failWithStackTrace("Problem adding acl: " + e);
         e.printStackTrace();
@@ -580,7 +580,7 @@ public class AclDefaultsTest {
   public void test_152_ACLCheckDeeperFieldACLExists() {
     try {
       try {
-        assertTrue(client.aclFieldExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
+        assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
       } catch (Exception e) {
         failWithStackTrace("Problem reading acl: " + e);
         e.printStackTrace();

@@ -42,6 +42,68 @@ import org.junit.Test;
 public enum CommandType {
   /**
    *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
+   *//**
+   *
    */
   Append(110, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,
           CommandResultType.NULL, true, false,
@@ -1072,8 +1134,8 @@ public enum CommandType {
   /**
    *
    */
-  AclCreateField(516, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclCreateField.class,
+  FieldCreateAcl(516, CommandCategory.UPDATE,
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.FieldCreateAcl.class,
           CommandResultType.NULL, true, false,
           "Creates an empty ACL.",
           new String[]{GNSProtocol.GUID.toString(),
@@ -1085,8 +1147,8 @@ public enum CommandType {
   /**
    *
    */
-  AclDeleteField(517, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclDeleteField.class,
+  FieldDeleteAcl(517, CommandCategory.UPDATE,
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.FieldDeleteAcl.class,
           CommandResultType.NULL, true, false,
           "Deletes an ACL.",
           new String[]{GNSProtocol.GUID.toString(),
@@ -1098,8 +1160,8 @@ public enum CommandType {
   /**
    *
    */
-  AclFieldExists(518, CommandCategory.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclFieldExists.class,
+  FieldAclExists(518, CommandCategory.READ,
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.FieldAclExists.class,
           CommandResultType.BOOLEAN, true, false,
           "Returns \"true\" if the ACL exists \"false\" otherwise.",
           new String[]{GNSProtocol.GUID.toString(),
@@ -1713,9 +1775,9 @@ public enum CommandType {
     AclRetrieveSelf.setChain(ReadUnsigned);
     AclRetrieve.setChain(ReadUnsigned);
     AclRemove.setChain(ReadUnsigned);
-    AclCreateField.setChain(ReadUnsigned);
-    AclDeleteField.setChain(ReadUnsigned);
-    AclFieldExists.setChain(ReadUnsigned);
+    FieldCreateAcl.setChain(ReadUnsigned);
+    FieldDeleteAcl.setChain(ReadUnsigned);
+    FieldAclExists.setChain(ReadUnsigned);
     //
     AddMembersToGroup.setChain(AppendListUnsigned);
     AddMembersToGroupSelf.setChain(AppendListUnsigned);

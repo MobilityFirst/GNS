@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.HashSet;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -42,24 +42,23 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class AliasTest {
+public class AliasTestNew {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
-  private static final String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
 
   /**
    *
    */
-  public AliasTest() {
+  public AliasTestNew() {
     if (client == null) {
       try {
         client = new GNSClientCommands();
-        //client.setForceCoordinatedReads(true);
+        client.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        failWithStackTrace("Exception creating client: " + e);
       }
     }
   }
@@ -68,85 +67,80 @@ public class AliasTest {
    *
    */
   @Test
-  public void test_01_CreateAccount() {
+  public void test_100_CreateGuid() {
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      failWithStackTrace("Exception while creating guid: " + e);
     }
   }
 
+  private static String alias = "ALIAS-" + RandomString.randomString(12)
+          + "@blah.org";
+
   /**
-   *
+   * Add an alias.
    */
   @Test
-  public void test_02_AliasAdd() {
+  public void test_230_AliasAdd() {
+    //CHECKED FOR VALIDITY
     try {
-      //
       // KEEP IN MIND THAT CURRENTLY ONLY ACCOUNT GUIDS HAVE ALIASES
-      //
       // add an alias to the masterGuid
       client.addAlias(masterGuid, alias);
-    } catch (Exception e) {
-      fail("Exception when we adding alias: " + e);
-    }
-  }
-
-  /**
-   *
-   */
-  @Test
-  public void test_03_AliasAddCheck() {
-    try {
       // lookup the guid using the alias
-      assertEquals(masterGuid.getGuid(), client.lookupGuid(alias));
-
-      // grab all the aliases from the guid
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.getAliases(masterGuid));
-      // make sure our new one is in there
-      assertThat(actual, hasItem(alias));
-
+      Assert.assertEquals(masterGuid.getGuid(), client.lookupGuid(alias));
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      failWithStackTrace("Exception while adding alias: ", e);
     }
   }
 
   /**
-   *
+   * Test that recently added alias is present.
    */
   @Test
-  public void test_04_AliasRemove() {
+  public void test_231_AliasIsPresent() {
+    //CHECKED FOR VALIDITY
     try {
-      // now remove it 
+      // grab all the alias from the guid
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
+              .getAliases(masterGuid));
+
+      /* arun: This test has no reason to succeed because getAliases is
+			 * not coordinated or forceCoordinateable.
+       */
+      // make sure our new one is in there
+      Assert.assertThat(actual, hasItem(alias));
+      // now remove it
       client.removeAlias(masterGuid, alias);
     } catch (Exception e) {
-      fail("Exception while removing alias: " + e);
+      failWithStackTrace("Exception removing alias: ", e);
     }
   }
 
   /**
-   *
+   * Check that removed alias is gone.
    */
   @Test
-  public void test_05_AliasRemoveCheck() {
-    int cnt = 0;
+  public void test_232_AliasCheckRemove() {
+    //CHECKED FOR VALIDITY
     try {
-      do {
-        try {
-          client.lookupGuid(alias);
-          if (cnt++ > 10) {
-            fail(alias + " should not exist (after 10 checks)");
-            break;
-          }
-
-        } catch (IOException e) {
-          fail("Exception while looking up alias: " + e);
-        }
-        ThreadUtils.sleep(10);
-      } while (true);
-      // the lookup should fail and throw to here
-    } catch (ClientException e) {
-      System.out.println(alias + " was gone on " + (cnt + 1) + " read");
+      // and make sure it is gone
+      try {
+        client.lookupGuid(alias);
+        failWithStackTrace(alias + " should not exist");
+      } catch (ClientException e) {
+      }
+    } catch (Exception e) {
+      failWithStackTrace("Exception while checking alias: ", e);
     }
   }
+
+  private static final void failWithStackTrace(String message, Exception... e) {
+    if (e != null && e.length > 0) {
+      e[0].printStackTrace();
+    }
+    org.junit.Assert.fail(message);
+  }
+
 }
