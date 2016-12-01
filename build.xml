@@ -189,7 +189,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
   </target>
     
 
-  <target name="jar" depends="server_jarbuild, client_jarbuild, client_console_jarbuild, msocket-jar, msocket-proxy-console-jar">
+  <target name="jar" depends="server_jarbuild, client_jarbuild, client_console_jarbuild">
     <symlink link="${build.jar.dir}/GNS.jar" overwrite="yes"
              resource="gnsserver-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
     <symlink link="${build.jar.dir}/GNSClient.jar" overwrite="yes"
@@ -671,115 +671,6 @@ integration tests sequentially"
     <echo>Version: ${version.code}</echo>
 
   </target>
-	
-	
-  <!-- Msocket jar build -->
-	
-  <!-- Documentation -->
-	
-  <target name="msocketdoc" depends="compile" description="Builds the Javadoc">
-    <javadoc packagenames="edu.umass.cs.msocket.*"
-             sourcepath="${src.dir}"
-             destdir="${build.dir}/docs/api"
-             author="true"
-             version="true"
-             use="true"
-             public="true"
-             windowtitle="mSocket library API (specification ${VERSION}-${RELEASE})">
-      <doctitle>
-        <![CDATA[<h1>mSocket library API (specification ${VERSION}-${RELEASE})</h1>]]>
-      </doctitle>
-      <bottom>
-      <![CDATA[<i>Copyright &#169; 2013-2014 University of Massachusetts - All Rights Reserved.</i>]]>
-      </bottom>
-      <classpath refid="classpath.base" />
-    </javadoc>
-  </target>
-	
-  <!-- Release -->
-  <!--<target name="msocket-jars"
-  depends="msocket-jar,msocket-nodoc-jar,msocket-proxy-console-jar,msocketdocdoc"
-  description="Build both mSocket and proxy jars" />-->
-
-  <target name="msocket-jar"
-          depends="compile"
-          description="Builds the mSocket Jar">
-    <mkdir dir="${build.jar.dir}"/>
-    <jar jarfile="${build.jar.dir}/msocket.jar">
-		
-      <!-- including gns client -->
-      <fileset refid="client.includes"/>
-      <fileset refid="client.keystore" />
-      <zipgroupfileset refid="client.lib" />
-
-		
-      <!-- including msocket core code -->
-      <fileset dir="${build.classes.dir}">
-        <include name="edu/umass/cs/msocket/**" />
-        <exclude name="edu/umass/cs/msocket/docs/**" />
-        <exclude name="edu/umass/cs/msocket/proxy/**" />
-        <exclude name="edu/umass/cs/msocket/watchdog/**" />
-      </fileset>
-
-      <fileset dir="${conf.dir}">
-        <include name="gnsclient.msocket.properties" />
-        <include name="trustStore.jks" />
-        <include name="keyStore.jks" />
-      </fileset>
-
-	  
-      <manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Implementation-Vendor"
-                   value="University of Massachusetts" />
-        <attribute name="Implementation-Title" value="MSocket Library" />
-        <attribute name="Implementation-Version"
-                   value="${VERSION}-${RELEASE}" />
-        <attribute name="Build-Version" value="${version.code}" />
-      </manifest>
-    </jar>
-  </target>
-	
-  <target name="msocket-proxy-console-jar"
-          depends="compile"
-          description="Builds the mSocket proxy console Jar">
-    <mkdir dir="${build.jar.dir}"/>
-    <jar jarfile="${build.jar.dir}/msocket-proxy-console.jar">
-			
-      <!-- including gns client -->
-      <fileset refid="client.includes"/>
-      <fileset refid="client.keystore" />
-      <zipgroupfileset refid="client.lib" />
-
-			
-      <!-- including msocket core code -->
-      <fileset dir="${build.classes.dir}">
-        <include name="edu/umass/cs/msocket/**" />
-      </fileset>
-
-      <fileset dir="${conf.dir}">
-        <include name="gnsclient.msocket.properties" />
-        <include name="trustStore.jks" />
-        <include name="keyStore.jks" />
-      </fileset>
-			
-      <fileset dir="${src.dir}">
-        <include name="edu/umass/cs/msocket/proxy/console/console.ini" />
-      </fileset>
-		  
-      <manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Implementation-Vendor"
-                   value="University of Massachusetts" />
-        <attribute name="Implementation-Title" value="MSocket Library" />
-        <attribute name="Implementation-Version"
-                   value="${VERSION}-${RELEASE}" />
-        <attribute name="Build-Version" value="${version.code}" />
-      </manifest>
-    </jar>
-  </target>
-
-
 
   <!-- Stuff below for updating versions -->
 
