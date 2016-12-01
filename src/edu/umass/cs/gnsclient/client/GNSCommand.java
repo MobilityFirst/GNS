@@ -567,7 +567,8 @@ public class GNSCommand extends CommandPacket {
           String code) throws ClientException {
     return getCommand(CommandType.VerifyAccount, accountGUID,
             GNSProtocol.GUID.toString(),
-            accountGUID.getGuid(), GNSProtocol.CODE.toString(), code);
+            accountGUID.getGuid(), 
+            GNSProtocol.CODE.toString(), code);
   }
 
   /**

@@ -86,7 +86,7 @@ public class UnsignedReadTest {
   public void test_250_UnsignedReadDefaultAccountGuidWrite() {
     try {
       client.fieldUpdate(unsignedReadAccountGuid, "aRandomFieldForUnsignedRead", "aRandomValue");
-    } catch (IOException | JSONException | ClientException e) {
+    } catch (IOException | ClientException e) {
       failWithStackTrace("Exception writing field UnsignedReadDefaultMasterWrite: ", e);
     }
   }

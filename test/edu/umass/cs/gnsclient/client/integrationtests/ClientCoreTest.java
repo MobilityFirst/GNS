@@ -1468,7 +1468,7 @@ public class ClientCoreTest {
       String encodedValue = Base64.encodeToString(byteTestValue, true);
       //System.out.println("Encoded string: " + encodedValue);
       client.fieldUpdate(masterGuid, BYTE_TEST_FIELD, encodedValue);
-    } catch (IOException | ClientException | JSONException e) {
+    } catch (IOException | ClientException e) {
       fail("Exception during create field: " + e);
     }
   }

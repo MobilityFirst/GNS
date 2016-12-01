@@ -81,7 +81,7 @@ public class WriteReadBytesTest {
       String encodedValue = Base64.encodeToString(testValue, true);
       //System.out.println("Encoded string: " + encodedValue);
       client.fieldUpdate(masterGuid, TEST_FIELD, encodedValue);
-    } catch (IOException | ClientException | JSONException e) {
+    } catch (IOException | ClientException e) {
       fail("Exception during create field: " + e);
     }
   }

@@ -189,9 +189,7 @@ public class GuidUtils {
       // rethrow all but GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString()
       do {
         try {
-          client.execute(
-                  GNSCommand.accountGuidVerify(guid,
-                          createVerificationCode(name)))
+          client.execute(GNSCommand.accountGuidVerify(guid, createVerificationCode(name)))
                   .getResultString();
         } catch (ClientException e) {
           if (e.getCode() != ResponseCode.ALREADY_VERIFIED_EXCEPTION) {
@@ -365,8 +363,11 @@ public class GuidUtils {
   }
 
   private static String createVerificationCode(String name) {
-    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET),
+    String code = ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET),
             VERIFICATION_CODE_LENGTH));
+//    GNSClientConfig.getLogger().log(Level.WARNING, "*********** " + name + " " + SECRET 
+//            + " VERIFICATION CODE " + code);  
+    return code;
   }
 
   /**

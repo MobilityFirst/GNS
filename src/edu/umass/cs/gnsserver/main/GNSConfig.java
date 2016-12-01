@@ -213,9 +213,10 @@ public class GNSConfig {
      * This is needed so we can disable salting in the case where we're
      * using email verification and shared secret verification
      * simultaneously.
-     *
-     * ENABLE_EMAIL_VERIFICATION_SALT(true, true),
      */
+    //FIXME:  - currently only used by the ACS; will be disabled soon
+    @Deprecated // DO NOT USE; will be going away shortly
+    ENABLE_EMAIL_VERIFICATION_SALT(true),
     /**
      * Arun: This option is unnecessary.
      *
@@ -328,9 +329,7 @@ public class GNSConfig {
     /**
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_MULTI_SERVER_HTTP(false)
-    
-    ;
+    DISABLE_MULTI_SERVER_HTTP(false);
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;

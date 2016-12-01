@@ -843,7 +843,7 @@ public class LNSProxyTest extends DefaultTest {
     try {
       try {
         client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
-      } catch (IOException | ClientException | JSONException e) {
+      } catch (IOException | ClientException e) {
         fail("Problem updating field: " + e);
         e.printStackTrace();
       }
@@ -2070,7 +2070,7 @@ public class LNSProxyTest extends DefaultTest {
       String encodedValue = Base64.encodeToString(byteTestValue, true);
       // System.out.println("Encoded string: " + encodedValue);
       client.fieldUpdate(masterGuid, BYTE_TEST_FIELD, encodedValue);
-    } catch (IOException | ClientException | JSONException e) {
+    } catch (IOException | ClientException e) {
       fail("Exception during create field: ", e);
     }
   }
