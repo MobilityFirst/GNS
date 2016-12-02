@@ -131,10 +131,16 @@ public class NSAccessSupport {
       try {
         return verifySignatureInternalSecretKey(publickeyBytes, signature, message);
       } catch (Exception e) {
-        // Note that: This just falls through to the older non-secret method if it fails
+        // This provided backward support for clients that don't have ENABLE_SECRET_KEY on by
+        // falling through to non-secret method.
+        // At the cost of potentially masking other issues that might cause exceptions
+        // in the above code.
+        ClientSupportConfig.getLogger().log(Level.FINE, "Falling through to non-secret key verification: {0}",
+                new Object[]{e});
       }
     }
 
+    // Non-secret method kept for backwards compatbility with older clients.
     X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 

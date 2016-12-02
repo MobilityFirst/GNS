@@ -193,4 +193,9 @@ public class ByteUtils {
     return String.format("%02X", b);
   }
   
+//  public static void main(String[] args) {
+//    String random = RandomString.randomString(24);
+//    System.out.println(random + " " + new String(hexStringToByteArray(random)));
+//  }
+//  
 }
