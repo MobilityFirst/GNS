@@ -88,7 +88,6 @@ public class ServerIntegrationTest extends DefaultTest {
   private static GNSClientCommands client = null;
   //private static GNSClientCommandsV2 client = null;
   private static GuidEntry masterGuid;
-  private static GuidEntry subGuidEntry;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
   private static GuidEntry barneyEntry;
@@ -549,70 +548,67 @@ public class ServerIntegrationTest extends DefaultTest {
 
   private static String ACCOUNT_TO_REMOVE_WITH_PASSWORD = "passwordremovetest@gns.name";
   private static final String REMOVE_ACCOUNT_PASSWORD = "removalPassword";
-  private static GuidEntry accountToRemoveGuid;
 
   /**
-   * Create an account to remove using the password.
+   * Runs the RemoveAccountWithPassword tests as one independent unit.
+   * @throws Exception
    */
   @Test
-  public void test_035_RemoveAccountWithPasswordCreateAccount() {
+  public void test_031_RemoveAccountWithPasswordTest() throws Exception{
+	  String accountToRemoveWithPassword =  RandomString.randomString(12)+ "-" + ACCOUNT_TO_REMOVE_WITH_PASSWORD;
+	  GuidEntry accountToRemoveGuid = test_035_RemoveAccountWithPasswordCreateAccount(accountToRemoveWithPassword);
+	  test_036_RemoveAccountWithPasswordCheckAccount(accountToRemoveGuid);
+	  test_037_RemoveAccountWithPasswordRemoveAccount(accountToRemoveWithPassword);
+	  test_038_RemoveAccountWithPasswordCheckAccountAfterRemove(accountToRemoveWithPassword);
+  }
+  
+  /**
+   * Create an account to remove using the password.
+ * @throws Exception 
+   */
+  public GuidEntry test_035_RemoveAccountWithPasswordCreateAccount(String accountToRemoveWithPassword) throws Exception {
     /* FIXED: GuidUtils.lookupOrCreateAccountGuid() is safe 
 	 * since the account verification step is coordinated later on in its chain.
 	 * TODO: Make sure that gigapaxos guaruntees UPDATE your CREATES for servers with 
 	 * greater than 3 replicas.
      */
 
-    try {
-      accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD, true);
-    } catch (Exception e) {
-      failWithStackTrace("Exception creating account in RemoveAccountWithPasswordTest: " + e);
-    }
+      return GuidUtils.lookupOrCreateAccountGuid(client, accountToRemoveWithPassword, REMOVE_ACCOUNT_PASSWORD, true);
   }
 
   /**
    * Check the account to remove using the password.
+ * @throws IOException 
+ * @throws ClientException 
    */
-  @Test
-  public void test_036_RemoveAccountWithPasswordCheckAccount() {
+  public void test_036_RemoveAccountWithPasswordCheckAccount(GuidEntry accountToRemoveGuid) throws ClientException, IOException {
     //CHECKED FOR VALIDITY
-    try {
       // this should be using the guid
       ThreadUtils.sleep(100);
       client.lookupAccountRecord(accountToRemoveGuid.getGuid());
-    } catch (ClientException e) {
-      failWithStackTrace("lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " failed.");
-    } catch (IOException e) {
-      failWithStackTrace("Exception while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
-    }
   }
 
   /**
    * Remove the account using the password.
+ * @throws Exception 
    */
-  @Test
-  public void test_037_RemoveAccountWithPasswordRemoveAccount() {
+  public void test_037_RemoveAccountWithPasswordRemoveAccount(String accountToRemoveWithPassword) throws Exception {
     //CHECKED FOR VALIDITY
-    try {
-      client.accountGuidRemoveWithPassword(ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD);
-    } catch (Exception e) {
-      failWithStackTrace("Exception while removing masterGuid in RemoveAccountWithPasswordTest: " + e);
-    }
+      client.accountGuidRemoveWithPassword(accountToRemoveWithPassword, REMOVE_ACCOUNT_PASSWORD);
   }
 
   /**
    * Check the account removed using the password.
+   * @throws IOException 
    */
-  @Test
-  public void test_038_RemoveAccountWithPasswordCheckAccountAfterRemove() {
+  public void test_038_RemoveAccountWithPasswordCheckAccountAfterRemove(String accountToRemoveWithPassword) throws IOException {
     //CHECKED FOR VALIDITY
     try {
-      client.lookupGuid(ACCOUNT_TO_REMOVE_WITH_PASSWORD);
-      failWithStackTrace("lookupGuid for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " should have throw an exception.");
+      client.lookupGuid(accountToRemoveWithPassword);
+      failWithStackTrace("lookupGuid for " + accountToRemoveWithPassword + " should have throw an exception.");
     } catch (ClientException e) {
-
-    } catch (IOException e) {
-      failWithStackTrace("Exception in RemoveAccountWithPasswordTest while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
-    }
+    		//This exception is expected.
+    } 
   }
 
   /**
@@ -636,81 +632,81 @@ public class ServerIntegrationTest extends DefaultTest {
       failWithStackTrace("Exception while looking up primary guid for testGuid: ", e);
     }
   }
+  /**
+   * Runs the Field tests as one independent unit.
+   * @throws Exception 
+   */
+  @Test
+  public void test_041_FieldTests() throws Exception{
+	  GuidEntry subGuidEntry = test_050_CreateSubGuid();
+	  test_060_FieldNotFoundException(subGuidEntry);
+	  test_070_FieldExistsFalse(subGuidEntry);
+	  test_080_CreateFieldForFieldExists(subGuidEntry);
+	  test_090_FieldExistsTrue(subGuidEntry);
+	  
+	  
+  }
 
   /**
    * Create a sub guid.
+   * @throws Exception 
    */
-  @Test
-  public void test_050_CreateSubGuid() {
+  public GuidEntry test_050_CreateSubGuid() throws Exception {
     //CHECKED FOR VALIDITY
-    try {
-      subGuidEntry = client.guidCreate(masterGuid, "subGuid"
+      GuidEntry subGuidEntry = client.guidCreate(masterGuid, "subGuid"
               + RandomString.randomString(12));
       System.out.print("Created: " + subGuidEntry);
-    } catch (Exception e) {
-      failWithStackTrace("Exception creating subguid: ", e);
-    }
+      return subGuidEntry;
   }
 
   /**
    * Check field not found exception.
+   * @throws Exception 
    */
-  @Test
-  public void test_060_FieldNotFoundException() {
+  public void test_060_FieldNotFoundException(GuidEntry subGuidEntry) throws Exception {
     //CHECKED FOR VALIDITY
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(),
               "environment", subGuidEntry);
       failWithStackTrace("Should have thrown an exception.");
     } catch (FieldNotFoundException e) {
-      System.out.print("This was expected: " + e);
-    } catch (Exception e) {
-      System.out.println("Exception testing field not found: " + e);
+      //This is expected.
     }
   }
 
   /**
    * Test fieldExists.
+   * @throws Exception 
    */
-  @Test
-  public void test_070_FieldExistsFalse() {
+  public void test_070_FieldExistsFalse(GuidEntry subGuidEntry) throws Exception {
     //CHECKED FOR VALIDITY
     try {
        Assert.assertFalse(client.fieldExists(subGuidEntry.getGuid(),
               "environment", subGuidEntry));
     } catch (ClientException e) {
       // System.out.println("This was expected: " , e);
-    } catch (Exception e) {
-      System.out.println("Exception testing field exists false: " + e);
     }
   }
 
   /**
    * Create a field for fieldExists.
+   * @throws IOException 
+   * @throws ClientException 
    */
-  @Test
-  public void test_080_CreateFieldForFieldExists() {
-    //CHECKED FOR VALIDITY
-    try {
-      client.fieldCreateOneElementList(subGuidEntry.getGuid(),
-              "environment", "work", subGuidEntry);
-    } catch (Exception e) {
-      failWithStackTrace("Exception during create field: ", e);
-    }
+  public void test_080_CreateFieldForFieldExists(GuidEntry subGuidEntry) throws ClientException, IOException {
+	  //CHECKED FOR VALIDITY
+	  client.fieldCreateOneElementList(subGuidEntry.getGuid(),
+			  "environment", "work", subGuidEntry);
   }
 
   /**
    * Create a field for fieldExists true.
+   * @throws Exception 
    */
-  @Test
-  public void test_090_FieldExistsTrue() {
-    //CHECKED FOR VALIDITY
-    try {
-       Assert.assertTrue(client.fieldExists(subGuidEntry.getGuid(),
-              "environment", subGuidEntry));
-    } catch (Exception e) {
-      System.out.println("Exception testing field exists true: " + e);
-    }
+  public void test_090_FieldExistsTrue(GuidEntry subGuidEntry) throws Exception {
+	  //CHECKED FOR VALIDITY
+	  Assert.assertTrue(client.fieldExists(subGuidEntry.getGuid(),
+			  "environment", subGuidEntry));
   }
 
   private static final String TEST_FIELD_NAME = "testField";
