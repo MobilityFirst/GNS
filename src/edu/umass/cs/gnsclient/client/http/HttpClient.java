@@ -1721,16 +1721,21 @@ public class HttpClient {
         signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
       }
       String signaturePart = KEYSEP + GNSProtocol.SIGNATURE.toString()
-              // Base64 encode the signature since it's guaranteed to be a lot of non-ASCII characters
-              // and Base64 will be shorter than URI encoding; requires special handling at server side
-              + VALSEP + Base64.encodeToString(signatureString.getBytes(GNSProtocol.CHARSET.toString()), false);
+              // Base64 encode the signature first since it's guaranteed to be a lot of non-ASCII characters
+              // and this will limit the percent encoding to just /,+,= in the base64 string.
+              + VALSEP + 
+              URIEncoderDecoder.quoteIllegal(
+                      Base64.encodeToString(
+                              signatureString.getBytes(GNSProtocol.CHARSET.toString()), false));
       // This is a debugging aid so we can auto check the message part on the other side. 
       String debuggingPart = "";
       // Currently not being used.
       if (false) {
         debuggingPart = KEYSEP + "originalMessageBase64" + VALSEP
-                + Base64.encodeToString(canonicalJSON.getBytes(GNSProtocol.CHARSET.toString()), false);
+                + URIEncoderDecoder.quoteIllegal(
+                        Base64.encodeToString(canonicalJSON.getBytes(GNSProtocol.CHARSET.toString()), false));
       }
+      // Finally return everything
       return encodedString.toString() + signaturePart + debuggingPart;
     } catch (JSONException | UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | IllegalBlockSizeException |
             BadPaddingException | NoSuchPaddingException e) {
