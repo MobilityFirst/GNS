@@ -1,6 +1,7 @@
 function run(value, field, querier){
-    var map = querier.readGuid(null,"depthField");
-    var depth = map.get("depthField");
-   
-    return value.put(field,depth);
+	var targetGuid = value.get("someField");
+	if(targetGuid !="Depth query succeeds!"){
+		value.put(field, querier.readGuid(targetGuid, "someField").get("someField"));
+	}
+    return value;
 }
