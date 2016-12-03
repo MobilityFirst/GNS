@@ -1,7 +1,8 @@
 package edu.umass.cs.gnsserver.activecode.prototype.interfaces;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
+
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 /**
  * This interface is used for active code to send back queries
@@ -11,6 +12,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  * @author gaozy
  *
  */
+@SuppressWarnings("restriction")
 public interface Querier {
 	
 	/**
@@ -34,12 +36,13 @@ public interface Querier {
 	 * @return the ValuesMap read from the field of the guid
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
-	public ValuesMap readGuid(String queriedGuid, String field) throws ActiveException;
+	public ScriptObjectMirror readGuid(String queriedGuid, String field) throws ActiveException;
 	
 	
 	/**
 	 * This method allows customer's active code to update a field of some other guid.
 	 * It allows querierGuid to write value into a field of the queriedGuid.
+	 * 
 	 * 
 	 * <p>Queried guid and field must be provided 
 	 * for ACL check. GNS returns true if the write operation succeeds on the GNS side, 
@@ -54,6 +57,5 @@ public interface Querier {
 	 * @param value
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
-	public void writeGuid(String queriedGuid, String field, ValuesMap value) throws ActiveException;
-	
+	public void writeGuid(String queriedGuid, String field, ScriptObjectMirror value) throws ActiveException;
 }

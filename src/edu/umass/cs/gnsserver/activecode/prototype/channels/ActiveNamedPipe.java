@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode.prototype;
+package edu.umass.cs.gnsserver.activecode.prototype.channels;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 
@@ -26,7 +27,6 @@ public class ActiveNamedPipe implements Channel {
 	byte[] readerLengthBuffer = new byte[Integer.BYTES];
 	byte[] writerLengthBuffer = new byte[Integer.BYTES];
 	
-	private boolean isReady = false;
 	/**
 	 * @param ifile 
 	 * @param ofile 
@@ -54,8 +54,6 @@ public class ActiveNamedPipe implements Channel {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-		isReady = true;
 	}
 	
 	@Override
@@ -75,8 +73,9 @@ public class ActiveNamedPipe implements Channel {
 	@Override
 	public Message receiveMessage() throws IOException {
 		Message am = null;
-		int len = -1;			
-		len = reader.read(readerLengthBuffer, 0, readerLengthBuffer.length);
+		int len = -1;
+		if(reader != null)
+			len = reader.read(readerLengthBuffer, 0, readerLengthBuffer.length);
 		if(len>0){
 			int length = ByteBuffer.wrap(readerLengthBuffer).getInt();
 			byte[] buffer = new byte[length];
@@ -84,7 +83,7 @@ public class ActiveNamedPipe implements Channel {
 			try {
 				am = new ActiveMessage(buffer);
 			} catch (JSONException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 		}
 		
@@ -92,7 +91,7 @@ public class ActiveNamedPipe implements Channel {
 	}
 	
 	@Override
-	public void shutdown() {
+	public void close() {
 		try{
 			if(reader != null)
 				reader.close();
@@ -101,12 +100,5 @@ public class ActiveNamedPipe implements Channel {
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * @return the status of the channel
-	 */
-	public boolean getReady(){
-		return isReady;
 	}
 }

@@ -1,13 +1,11 @@
-package edu.umass.cs.gnsserver.activecode.prototype.unblockingworker;
+package edu.umass.cs.gnsserver.activecode.prototype.unblocking;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 import javax.script.ScriptException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 
 /**
  * @author gaozy
@@ -15,10 +13,10 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
  */
 public class ActiveWorkerTask implements Callable<ActiveMessage>  {
 	
-	final ActiveRunner runner;
+	final ActiveNonBlockingRunner runner;
 	final ActiveMessage request;
 	
-	ActiveWorkerTask(ActiveRunner runner, ActiveMessage request){
+	ActiveWorkerTask(ActiveNonBlockingRunner runner, ActiveMessage request){
 		this.runner = runner;
 		this.request = request;
 	}
@@ -30,7 +28,11 @@ public class ActiveWorkerTask implements Callable<ActiveMessage>  {
 			response = new ActiveMessage(request.getId(), 
 					runner.runCode(request.getGuid(), request.getField(), request.getCode(), request.getValue(), request.getTtl(), request.getId()),
 					null);
-		} catch (NoSuchMethodException | ScriptException e) {
+		} catch (NoSuchMethodException | ScriptException e) {	
+			//e.printStackTrace();
+			ActiveNonBlockingWorker.getLogger().log(Level.FINE, 
+					"get an exception {0} when executing request {1} with code {2}", 
+					new Object[]{e, request, request.getCode()});
 			response = new ActiveMessage(request.getId(), null, e.getMessage());
 		}
 

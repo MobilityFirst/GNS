@@ -1,12 +1,14 @@
-package edu.umass.cs.gnsserver.activecode.prototype.unblockingworker;
+package edu.umass.cs.gnsserver.activecode.prototype.unblocking;
 
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+
+import com.maxmind.geoip2.DatabaseReader;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
@@ -18,18 +20,16 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 public class ActiveWorkerSubmittedTask implements Runnable {
 	
 	final ThreadPoolExecutor executor;
-	final ActiveRunner runner;
+	final ActiveNonBlockingRunner runner;
 	final ActiveMessage request;
 	final Channel channel;
-	final ConcurrentHashMap<Long, ActiveRunner> map;
 	
-	ActiveWorkerSubmittedTask(ThreadPoolExecutor executor, ActiveRunner runner, ActiveMessage request, 
-			Channel channel, ConcurrentHashMap<Long, ActiveRunner> map){
+	ActiveWorkerSubmittedTask(ThreadPoolExecutor executor, ActiveNonBlockingRunner runner, ActiveMessage request, 
+			Channel channel){
 		this.executor = executor;
 		this.runner = runner;
 		this.request = request;
 		this.channel = channel;
-		this.map = map;
 	}
 	
 	@Override
@@ -42,17 +42,19 @@ public class ActiveWorkerSubmittedTask implements Runnable {
 		try {
 			response = future.get(timeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			//e.printStackTrace();
 			// return an error
-			runner.release(null);
-			response = new ActiveMessage(request.getId(), null, e.getMessage());			
+			response = new ActiveMessage(request.getId(), null, e.getMessage());
+			ActiveNonBlockingWorker.getLogger().log(Level.FINE, 
+					"get an exception {0} when executing request {1} with code {2}", 
+					new Object[]{e, request, request.getCode()});
 		}
 		
 		try {
 			channel.sendMessage(response);
 		} catch (IOException e) {
 			throw new RuntimeException();
-		}
-		map.remove(request.getId());		
+		}	
 	}
 
 }

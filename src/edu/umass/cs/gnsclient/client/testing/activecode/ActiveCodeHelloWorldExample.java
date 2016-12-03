@@ -38,7 +38,16 @@ public class ActiveCodeHelloWorldExample {
 			isRead = Boolean.parseBoolean(System.getProperty("isRead"));
 		}
 		
+		String name = "benign";
+		if(System.getProperty("name")!=null){
+			name=System.getProperty("name");
+		}
+		
 		String codeFile = "scripts/activeCode/noop.js";
+		if(System.getProperty("codeFile")!=null){
+			codeFile = System.getProperty("codeFile");
+		}
+		
 		if(args.length > 0){
 			codeFile = args[0];
 		}
@@ -46,21 +55,26 @@ public class ActiveCodeHelloWorldExample {
 		// create a client
 		final GNSClientCommands client = new GNSClientCommands();
 		
-		final String ACCOUNT_GUID_PREFIX = "GNS_ACCOUNT";
+		final String ACCOUNT_GUID_PREFIX = "GNS_ACCOUNT_";
+		final String ACCOUNT_GUID = ACCOUNT_GUID_PREFIX + name;
 		final String PASSWORD = "";
 		
 		// create an account
-		final edu.umass.cs.gnsclient.client.util.GuidEntry entry = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_GUID_PREFIX, PASSWORD);
+		final edu.umass.cs.gnsclient.client.util.GuidEntry entry = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_GUID, PASSWORD);
 		
 		String field = "someField";
-		String value = "someValue";
+		String value = "original value";
 		
 		String depth_field = "depthField";
 		String depth_result = "Depth query succeeds";
 		
 		// set up a field
-		client.fieldUpdate(entry,  field, value);
+		client.fieldUpdate(entry, field, value);
 		client.fieldUpdate(entry, depth_field, depth_result);
+		
+		// clear code for both read and write action
+		client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
+		client.activeCodeClear(entry.getGuid(), ActiveCode.WRITE_ACTION, entry);
 		
 		// get the value of the field
 		String response = client.fieldRead(entry, field);
@@ -72,11 +86,9 @@ public class ActiveCodeHelloWorldExample {
 		
 		// set up the code for on read operation
 		if(isRead){
-			client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
 			if(update)
 				client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
 		} else {
-			client.activeCodeClear(entry.getGuid(), ActiveCode.WRITE_ACTION, entry);
 			if(update)
 				client.activeCodeSet(entry.getGuid(), ActiveCode.WRITE_ACTION, code, entry);
 		}

@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode.prototype.unblockingworker;
+package edu.umass.cs.gnsserver.activecode.prototype.blocking;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,41 +15,57 @@ import java.util.concurrent.TimeUnit;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Runner;
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
+
 
 /**
  * @author gaozy
  *
  */
-public class ActiveRunner {
+public class ActiveBlockingRunner implements Runner {
 	
-	private ScriptEngine engine;
-	private Invocable invocable;
+	final private ScriptEngine engine;
+	final private Invocable invocable;
 	
 	private final HashMap<String, ScriptContext> contexts = new HashMap<String, ScriptContext>();
 	private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
 	
-	private ActiveQuerier querier;
+	private final Channel channel;
 	
+	private final ScriptObjectMirror JSON;
+		
 	/**
 	 * @param querier
 	 */
-	public ActiveRunner(ActiveQuerier querier){
-		this.querier = querier;
+	public ActiveBlockingRunner(Channel channel){
+		this.channel = channel; 
 		
-		engine = new ScriptEngineManager().getEngineByName("nashorn");
+		// Initialize an script engine without extensions and java
+		NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
+		engine = factory.getScriptEngine("-strict", "--no-java", "--no-syntax-extensions");
 		
 		invocable = (Invocable) engine;
+		
+		try {
+			JSON = (ScriptObjectMirror) engine.eval("JSON");
+		} catch (ScriptException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Can not eval JSON");
+		}
 	}
 	
-	private void updateCache(String codeId, String code) throws ScriptException {
+	private synchronized void updateCache(String codeId, String code) throws ScriptException {
 	    if (!contexts.containsKey(codeId)) {
 	      // Create a context if one does not yet exist and eval the code
 	      ScriptContext sc = new SimpleScriptContext();
@@ -65,7 +81,16 @@ public class ActiveRunner {
 	}
 	
 	/**
-	 * @param guid
+	 * This method first update the cache of code, 
+	 * then set the context with the cached code 
+	 * for the script engine, finally invokes the
+	 * "run" method.
+	 * 
+	 * <p>Based on the answer of Nashorn builder on stackoverflow:
+	 * http://stackoverflow.com/questions/30140103/should-i-use-a-separate-scriptengine-and-compiledscript-instances-per-each-threa/30159424#30159424
+	 * there is no need to make this method synchronized any more.
+	 * 
+	 * @param guid the owner of the active code, it is used as the key to cache the code
 	 * @param field
 	 * @param code
 	 * @param value
@@ -75,37 +100,29 @@ public class ActiveRunner {
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
 	 */
-	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl, long id) throws ScriptException, NoSuchMethodException {		
+	public String runCode(String guid, String field, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
-		if(querier != null) querier.resetQuerier(guid, ttl, id);
-		ValuesMap valuesMap;
+		ActiveBlockingQuerier querier = new ActiveBlockingQuerier(channel, JSON, ttl, guid, id);
+		String valuesMap = null;
 		
-		valuesMap = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
+		valuesMap = querier.js2String((ScriptObjectMirror) invocable.invokeFunction("run", querier.string2JS(value), field, querier));
 		
 		return valuesMap;
 	}
 	
-  /**
-   *
-   * @param am
-   */
-  protected void release(ActiveMessage am){
-		querier.release(am, true);
-	}
-	
-	private static class SimpleTask implements Callable<ValuesMap>{
+	private static class SimpleTask implements Callable<String>{
 		
-		ActiveRunner runner;
+		ActiveBlockingRunner runner;
 		ActiveMessage am;
 		
-		SimpleTask(ActiveRunner runner, ActiveMessage am){
+		SimpleTask(ActiveBlockingRunner runner, ActiveMessage am){
 			this.runner = runner;
 			this.am = am;
 		}
 		
 		@Override
-		public ValuesMap call() throws Exception {
+		public String call() throws Exception {
 			return runner.runCode(am.getGuid(), am.getField(), am.getCode(), am.getValue(), am.getTtl(), am.getId());
 		}
 		
@@ -121,15 +138,15 @@ public class ActiveRunner {
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
 		
 		int numThread = 10; 		
-		final ActiveRunner[] runners = new ActiveRunner[numThread];
+		final ActiveBlockingRunner[] runners = new ActiveBlockingRunner[numThread];
 		for (int i=0; i<numThread; i++){
-			runners[i] = new ActiveRunner(null);
+			runners[i] = new ActiveBlockingRunner(null);
 		}
 		
 		final ThreadPoolExecutor executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		executor.prestartAllCoreThreads();
 		
-		ArrayList<Future<ValuesMap>> tasks = new ArrayList<Future<ValuesMap>>();
+		ArrayList<Future<String>> tasks = new ArrayList<Future<String>>();
 		
 		String guid = "zhaoyu";
 		String field = "gao";
@@ -139,10 +156,10 @@ public class ActiveRunner {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
-		ValuesMap value = new ValuesMap();
+		JSONObject value = new JSONObject();
 		value.put("string", "hello world");
 		
-		ActiveMessage msg = new ActiveMessage(guid, field, noop_code, value, 0, 500);
+		ActiveMessage msg = new ActiveMessage(guid, field, noop_code, value.toString(), 0, 500);
 		int n = 1000000;
 		
 		long t1 = System.currentTimeMillis();
@@ -150,7 +167,7 @@ public class ActiveRunner {
 		for(int i=0; i<n; i++){
 			tasks.add(executor.submit(new SimpleTask(runners[0], msg)));
 		}
-		for(Future<ValuesMap> task:tasks){
+		for(Future<String> task:tasks){
 			task.get();
 		}
 		
@@ -163,17 +180,17 @@ public class ActiveRunner {
 		/**
 		 * Test runner's protected method
 		 */
-		ActiveRunner runner = new ActiveRunner(new ActiveQuerier(null));
+		ActiveBlockingRunner runner = new ActiveBlockingRunner(null);
 		String chain_code = null;
 		try {
 			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));
-			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
+			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));
 			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/testLoad.js")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		try {
-			runner.runCode(guid, field, chain_code, value, 0, 0);			
+			runner.runCode(guid, field, chain_code, value.toString(), 0, 0);			
 			// fail here
 			assert(false):"The code should not be here";
 		} catch (Exception e) {

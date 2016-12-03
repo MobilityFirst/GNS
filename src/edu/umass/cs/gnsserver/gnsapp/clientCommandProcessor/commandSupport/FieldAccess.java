@@ -25,6 +25,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -424,7 +425,7 @@ public class FieldAccess {
       LOGGER.log(Level.FINE, "Update threw error: {0}", e);
       return ResponseCode.JSON_PARSE_ERROR;
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
-            SignatureException | IOException |
+            SignatureException | IOException | InternalRequestException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
       LOGGER.log(Level.FINE, "Update threw error: {0}", e);
       return ResponseCode.UPDATE_ERROR;
@@ -456,7 +457,7 @@ public class FieldAccess {
               writer, signature, message, timestamp, operation,
               null, null, -1, new ValuesMap(json), handler.getApp(), false);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
-            SignatureException | JSONException | IOException |
+            SignatureException | JSONException | IOException | InternalRequestException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
       LOGGER.log(Level.FINE, "Update threw error: {0}", e);
       return ResponseCode.UPDATE_ERROR;
