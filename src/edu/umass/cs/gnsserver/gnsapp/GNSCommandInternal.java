@@ -164,8 +164,7 @@ public class GNSCommandInternal extends InternalCommandPacket {
           JSONObject value, InternalRequestHeader header)
           throws JSONException, InternalRequestException {
     return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
-            GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.FIELD.toString(),
-            field, GNSProtocol.USER_JSON.toString(),
-            new JSONObject().put(field, value));
+            GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.USER_JSON.toString(),
+            value);
   }
 }
