@@ -123,7 +123,7 @@ public class ActiveCodeHandler {
 	 */
 	private static boolean containInternalField(JSONObject value) {
 		boolean contained = false;
-		Iterator iter = value.keys();
+		Iterator<?> iter = value.keys();
 		while(iter.hasNext()){
 			String field = (String) iter.next();
 			if(InternalField.isInternalField(field)){
