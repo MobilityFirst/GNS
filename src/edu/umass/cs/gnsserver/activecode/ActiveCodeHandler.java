@@ -201,7 +201,7 @@ public class ActiveCodeHandler {
 				} catch (JSONException e) {
 					return value;
 				}
-				String accessorGuid = header.getOriginatingGUID();
+				String accessorGuid = header==null?guid:header.getOriginatingGUID();
 				newResult = runCode(header, code, guid, accessorGuid, action, value, 5);
 			}
 		}
