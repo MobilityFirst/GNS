@@ -38,7 +38,8 @@ import org.json.JSONObject;
 public class ActiveCode {
 
   /**
-   * Active code fields
+   * Active code fields, make the ON_ACTION field to internal field so that the user 
+   * can only change them through the active code API on client.
    */
   /**
    * ON_READ - the string key for the field that stores the read information.
@@ -48,17 +49,17 @@ public class ActiveCode {
    * ON_WRITE - the string key for the field that stores the write information.
    */
   public static final String ON_WRITE = InternalField.makeInternalFieldString("on_write");
-
+  
   /**
-   *
+   * Deploy code on the read operation that needs to trigger the code
    */
   public static final String READ_ACTION = "read";
-
   /**
-   *
+   * Deploy code on the write operation that needs to trigger the code 
    */
   public static final String WRITE_ACTION = "write";
 
+  
   /**
    * Returns the internal field corresponding to the given action.
    *
@@ -122,7 +123,7 @@ public class ActiveCode {
     String field = getCodeField(action);
 
     ResponseCode response = FieldAccess.update(null, guid, field, "", null, -1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, 
+            UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, 
             message, timestamp, handler);
     return response;
   }

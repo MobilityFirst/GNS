@@ -111,7 +111,6 @@ public class ActiveQueryHandler {
 	 * @param monitor
 	 */
 	public void handleQueryAsync(ActiveMessage am, InternalRequestHeader header, Monitor monitor){
-		//System.out.println("ActiveQueryHandler handles query "+am);
 		queryExecutor.execute(new ActiveQuerierTask(am, header, monitor));
 				
 	}

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,7 +105,7 @@ public class ActiveCodeHandler {
 	 * @param action can be 'read' or 'write'
 	 * @return whether or not there is active code
 	 */
-	protected static boolean hasCode(ValuesMap valuesMap, String action) {
+	private static boolean hasCode(ValuesMap valuesMap, String action) {
 
             try {
 				if(valuesMap.get(ActiveCode.getCodeField(action)) != null){
@@ -117,6 +118,20 @@ public class ActiveCodeHandler {
 		return false;
 	}
 	
+	/**
+	 * Check if the value contains an internal field
+	 */
+	private static boolean containInternalField(JSONObject value) {
+		boolean contained = false;
+		Iterator iter = value.keys();
+		while(iter.hasNext()){
+			String field = (String) iter.next();
+			if(InternalField.isInternalField(field)){
+				return true;
+			}
+		}
+		return contained;
+	}
 	
 	/**
 	 * @param header 
@@ -161,18 +176,26 @@ public class ActiveCodeHandler {
 	 */
 	public static JSONObject handleActiveCode(InternalRequestHeader header, 
 			String guid, String field, String action, JSONObject value, BasicRecordMap db) throws InternalRequestException{
-		ActiveCodeHandler.getLogger().log(DEBUG_LEVEL, 
-				"handles:[guid:{0},field:{1},action:{2},value:{3},header:{4}]",
-				new Object[]{guid, field, action, value, header});
-		
-		long t = System.nanoTime();
+				
 		if(!OldHackyConstants.enableActiveCode){
 			return value;
 		}
+		
+		long t = System.nanoTime();
+		ActiveCodeHandler.getLogger().log(DEBUG_LEVEL, 
+				"handles:[guid:{0},field:{1},action:{2},value:{3},header:{4}]",
+				new Object[]{guid, field, action, value, header});
 		/**
 		 * Only execute active code for user field 
+		 * FIXME:
+		 * <p> Read can be a single-field read or multi-field read.
+		 * If it's a single-field read, then the field can not be a internal field.
+		 * If it's a multi-feild read, then there may be some field is internal.
+		 * <p> Write has no field value, but if there should not be an internal
+		 * field in the JSONObject value. 
 		 */		
-		if(field!=null && InternalField.isInternalField(field) ){
+		if(action.equals(ActiveCode.READ_ACTION) && field!=null && InternalField.isInternalField(field) ||
+				(action.equals(ActiveCode.WRITE_ACTION) && containInternalField(value)) ){
 			return value;
 		}
 		JSONObject newResult = value;
