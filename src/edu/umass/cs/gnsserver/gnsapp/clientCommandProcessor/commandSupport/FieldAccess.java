@@ -426,7 +426,7 @@ public class FieldAccess {
       LOGGER.log(Level.FINE, "Update threw error: {0}", e);
       return ResponseCode.JSON_PARSE_ERROR;
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
-            SignatureException | IOException | InternalRequestException |
+            SignatureException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
       LOGGER.log(Level.FINE, "Update threw error: {0}", e);
       return ResponseCode.UPDATE_ERROR;
@@ -458,7 +458,7 @@ public class FieldAccess {
               writer, signature, message, timestamp, operation,
               null, null, -1, new ValuesMap(json), handler.getApp(), false);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
-            SignatureException | JSONException | IOException | InternalRequestException |
+            SignatureException | JSONException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
       LOGGER.log(Level.FINE, "Update threw error: {0}", e);
       return ResponseCode.UPDATE_ERROR;
