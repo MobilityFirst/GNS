@@ -33,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -98,6 +99,21 @@ public class NSUpdateSupport {
                 "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
         return ResponseCode.ACCESS_ERROR;
       }
+    } else {
+    	if(header != null){
+	    	// This ACL check will be only used for active code remote query
+	    	if(field != null){
+	    		errorCode = NSAuthentication.aclCheck(guid, field, header.getOriginatingGUID(), MetaDataTypeName.WRITE_WHITELIST, app).getResponseCode();
+	    	}else if (userJSON != null) {
+	    		List<String> fields = userJSON.getKeys();
+	    		for (String aField : fields) {
+	    	        AclCheckResult aclResult = NSAuthentication.aclCheck(guid, aField, header.getOriginatingGUID(), MetaDataTypeName.WRITE_WHITELIST, app);
+	    	        if (aclResult.getResponseCode().isExceptionOrError()) {
+	    	          errorCode = aclResult.getResponseCode();
+	    	        }
+	    	    }
+	    	}
+    	}
     }
     // Check for stale commands.
     if (timestamp != null) {

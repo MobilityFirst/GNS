@@ -128,7 +128,7 @@ public class NSAuthentication {
     }
   }
 
-  private static AclCheckResult aclCheck(String targetGuid, String field,
+  public static AclCheckResult aclCheck(String targetGuid, String field,
           String accessorGuid, MetaDataTypeName access,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
     if (Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {

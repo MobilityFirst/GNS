@@ -34,6 +34,7 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.Select;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.AclCheckResult;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
@@ -107,7 +108,7 @@ public class FieldAccess {
   public static CommandResponse lookupSingleField(InternalRequestHeader header, String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    ResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
+    ResponseCode errorCode = signatureAndACLCheckForRead(header, guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSProtocol.BAD_RESPONSE.toString() + " " + errorCode.getProtocolCode());
@@ -172,7 +173,7 @@ public class FieldAccess {
           ArrayList<String> fields,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    ResponseCode errorCode = signatureAndACLCheckForRead(guid, null, fields,
+    ResponseCode errorCode = signatureAndACLCheckForRead(header, guid, null, fields,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSProtocol.BAD_RESPONSE.toString() + " " + errorCode.getProtocolCode());
@@ -251,7 +252,7 @@ public class FieldAccess {
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid,
             GNSProtocol.ENTIRE_RECORD.toString(), null,
             reader, signature, message, timestamp,
             handler.getApp());
@@ -761,6 +762,14 @@ public class FieldAccess {
           String reader, String signature, String message,
           Date timestamp,
           GNSApplicationInterface<String> app) {
+	  return signatureAndACLCheckForRead(null, guid, field, fields, reader, signature, message, timestamp, app);
+  }
+  
+  public static ResponseCode signatureAndACLCheckForRead(InternalRequestHeader header, String guid,
+          String field, List<String> fields,
+          String reader, String signature, String message,
+          Date timestamp,
+          GNSApplicationInterface<String> app) {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
     LOGGER.log(Level.FINE,
             "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2}",
@@ -775,6 +784,24 @@ public class FieldAccess {
               && (field != null || fields != null)) {
         errorCode = NSAuthentication.signatureAndACLCheck(guid, field, fields, reader,
                 signature, message, MetaDataTypeName.READ_WHITELIST, app);
+      } else {
+    	  LOGGER.log(Level.FINE,
+  	            "reader does not equal to internal secret reader: {0}, header: {1}",
+  	            new Object[]{reader, header});
+    	  if(header != null){
+	    	  if(field != null){
+	      			errorCode = NSAuthentication.aclCheck(guid, field, 
+	      				header.getOriginatingGUID(), MetaDataTypeName.READ_WHITELIST, app).getResponseCode();
+	      	  } else if (fields != null){
+	  			for (String aField : fields) {
+	      	        AclCheckResult aclResult = NSAuthentication.aclCheck(guid, aField, 
+	      	        		header.getOriginatingGUID(), MetaDataTypeName.READ_WHITELIST, app);
+	      	        if (aclResult.getResponseCode().isExceptionOrError()) {
+	      	          errorCode = aclResult.getResponseCode();
+	  	        }
+	      	  }
+	      	}
+    	  }
       }
       // Check for stale commands.
       if (timestamp != null) {
