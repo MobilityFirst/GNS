@@ -195,7 +195,7 @@ public class ActiveCodeHandler {
 		 * field in the JSONObject value. 
 		 */		
 		if(action.equals(ActiveCode.READ_ACTION) && field!=null && InternalField.isInternalField(field) ||
-				(action.equals(ActiveCode.WRITE_ACTION) && containInternalField(value)) ){
+				(action.equals(ActiveCode.WRITE_ACTION) && value != null && containInternalField(value)) ){
 			return value;
 		}
 		JSONObject newResult = value;
