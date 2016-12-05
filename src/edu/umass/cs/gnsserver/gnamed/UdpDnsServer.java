@@ -71,12 +71,14 @@ public class UdpDnsServer extends Thread implements Shutdownable {
    * <code>new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8")</code>
    * @param gnsServerIP
    * @param handler
+   * @throws SecurityException 
    * @throws java.net.SocketException
    * @throws java.net.UnknownHostException
    */
   public UdpDnsServer(InetAddress addr, int port, String dnsServerIP, String gnsServerIP,
           ClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
-    this.dnsServer = dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
+	// set it to null to make it non-recursive
+    this.dnsServer = null; //dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
     this.gnsServer = gnsServerIP != null ? new SimpleResolver(gnsServerIP) : null;
     this.dnsCache = dnsServerIP != null ? new Cache() : null;
     this.dnsServerIP = dnsServerIP;

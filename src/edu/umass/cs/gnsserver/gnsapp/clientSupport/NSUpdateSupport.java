@@ -10,6 +10,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -32,10 +33,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -77,7 +80,7 @@ public class NSUpdateSupport {
           ValuesMap userJSON, GNSApplicationInterface<String> app, boolean doNotReplyToClient)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException,
           SignatureException, JSONException, IOException, FailedDBOperationException,
-          RecordNotFoundException, FieldNotFoundException {
+          RecordNotFoundException, FieldNotFoundException, InternalRequestException {
     // This is for MOB-893
     ClientSupportConfig.getLogger().log(Level.INFO,
             "Field update: '{'guid : {0}, field: {1}, value: {2}, operation: {3}'}'",
@@ -96,6 +99,21 @@ public class NSUpdateSupport {
                 "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
         return ResponseCode.ACCESS_ERROR;
       }
+    } else {
+    	if(header != null){
+	    	// This ACL check will be only used for active code remote query
+	    	if(field != null){
+	    		errorCode = NSAuthentication.aclCheck(guid, field, header.getOriginatingGUID(), MetaDataTypeName.WRITE_WHITELIST, app).getResponseCode();
+	    	}else if (userJSON != null) {
+	    		List<String> fields = userJSON.getKeys();
+	    		for (String aField : fields) {
+	    	        AclCheckResult aclResult = NSAuthentication.aclCheck(guid, aField, header.getOriginatingGUID(), MetaDataTypeName.WRITE_WHITELIST, app);
+	    	        if (aclResult.getResponseCode().isExceptionOrError()) {
+	    	          errorCode = aclResult.getResponseCode();
+	    	        }
+	    	    }
+	    	}
+    	}
     }
     // Check for stale commands.
     if (timestamp != null) {
@@ -146,18 +164,11 @@ public class NSUpdateSupport {
 
   private static void updateNameRecord(InternalRequestHeader header, NameRecord nameRecord, String guid, String field,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
-          ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException {
-    ValuesMap newValue = null;
-    if (activeCodeHandler != null) {
-      try {
-        newValue = handleActiveCode(header, guid, field, userJSON, db, activeCodeHandler);
-      } catch (JSONException e) {
-        ClientSupportConfig.getLogger().log(Level.SEVERE,
-                "JSON problem while handling active code: {0}", e);
-      }
-    }
-    if (newValue == null) {
-      newValue = userJSON;
+          ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException,InternalRequestException  {
+    ValuesMap newValue = userJSON;
+    if (activeCodeHandler != null ) {    	
+      JSONObject result = ActiveCodeHandler.handleActiveCode(header, guid, field, ActiveCode.WRITE_ACTION, userJSON, db);
+      newValue = result!=null?new ValuesMap(result):null;
     }
     // END ACTIVE CODE HANDLING
     if (field != null) {
@@ -169,35 +180,4 @@ public class NSUpdateSupport {
     // Apply updateEntireValuesMap to record in the database
     nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
   }
-
-  private static ValuesMap handleActiveCode(InternalRequestHeader header, String guid, String field, ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException, JSONException {
-    // Only do active field handling for user fields.
-    if (field == null || !InternalField.isInternalField(field)) {
-      NameRecord activeCodeNameRecord = null;
-      try {
-        activeCodeNameRecord = NameRecord.getNameRecordMultiUserFields(db, guid,
-                ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
-      } catch (RecordNotFoundException e) {
-      }
-      if (activeCodeNameRecord != null) {
-        ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}", activeCodeNameRecord.toString());
-      }
-      ValuesMap codeMap = null;
-      try {
-        codeMap = activeCodeNameRecord.getValuesMap();
-      } catch (FieldNotFoundException e) {
-        // do nothing
-      }
-      int hopLimit = 1;
-      if (activeCodeNameRecord != null
-              && activeCodeHandler.hasCode(codeMap, ActiveCode.WRITE_ACTION)) {
-        String code = codeMap.getString(ActiveCode.ON_WRITE);
-        ValuesMap packetValuesMap = userJSON;
-        ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}", new Object[]{guid, field, packetValuesMap.toReasonableString()});
-        return activeCodeHandler.runCode(header, code, guid, field, "write", packetValuesMap, hopLimit);
-      }
-    }
-    return null;
-  }
-
 }

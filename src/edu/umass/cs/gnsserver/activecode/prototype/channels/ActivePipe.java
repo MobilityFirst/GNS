@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode.prototype;
+package edu.umass.cs.gnsserver.activecode.prototype.channels;
 
 import java.io.File;
 import java.io.FileInputStream;

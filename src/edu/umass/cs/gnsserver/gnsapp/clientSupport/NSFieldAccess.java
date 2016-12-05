@@ -21,9 +21,11 @@ package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Methods for reading field information in guids on NameServers.
@@ -92,7 +95,12 @@ public class NSFieldAccess {
           throws FailedDBOperationException {
     ValuesMap valuesMap = lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, gnsApp.getDB());
     if (handleActiveCode) {
-      valuesMap = NSFieldAccess.handleActiveCode(header, field, guid, valuesMap, gnsApp);
+    	try {
+    		JSONObject result = ActiveCodeHandler.handleActiveCode(header, guid, field, ActiveCode.READ_ACTION, valuesMap, gnsApp.getDB());
+    		valuesMap = result!=null?new ValuesMap(result):valuesMap;
+		} catch (InternalRequestException e) {
+			// Active code field lookup failed, do nothing and return the original value
+		}
     }
     return valuesMap;
   }
@@ -180,13 +188,18 @@ public class NSFieldAccess {
               returnFormat, fieldArray);
 
       if (nameRecord != null) {
-        // active code handling
-        ValuesMap valuesMap = nameRecord.getValuesMap();
-        if (handleActiveCode) {
-          valuesMap = handler.getApp().getActiveCodeHandler().handleActiveCode(header, fields,
-                  guid, valuesMap, handler.getApp());
-        }
-        return valuesMap;
+    	  // active code handling
+    	  ValuesMap valuesMap = nameRecord.getValuesMap();
+    	  if (handleActiveCode) {
+    		  try {
+				JSONObject result =  ActiveCodeHandler.handleActiveCode(header,  guid, null, ActiveCode.READ_ACTION,
+				          valuesMap, handler.getApp().getDB());
+				valuesMap = result!=null?new ValuesMap(result):valuesMap;
+			} catch (InternalRequestException e) {
+				e.printStackTrace();
+			}
+    	  }
+    	  return valuesMap;
       }
     } catch (RecordNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Record not found for name: {0}", guid);
@@ -359,50 +372,4 @@ public class NSFieldAccess {
     return result;
   }
 
-  private static ValuesMap handleActiveCode(InternalRequestHeader header, String field, String guid,
-          ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
-          throws FailedDBOperationException {
-    if (!OldHackyConstants.enableActiveCode) {
-      return originalValues;
-    }
-
-    ValuesMap newResult = originalValues;
-    // Only do this for user fields.
-    if (field == null || !InternalField.isInternalField(field)) {
-      int hopLimit = 1;
-      // Grab the code because it is of a different type
-      NameRecord codeRecord = null;
-      try {
-        codeRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), guid,
-                ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
-      } catch (RecordNotFoundException e) {
-        //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
-      }
-
-      ValuesMap codeMap = null;
-      try {
-        codeMap = codeRecord.getValuesMap();
-      } catch (FieldNotFoundException e) {
-        // do nothing
-      }
-      if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
-              && gnsApp.getActiveCodeHandler().hasCode(codeMap, ActiveCode.READ_ACTION)) {
-        try {
-          String code = codeMap.getString(ActiveCode.ON_READ);
-          ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}",
-                  new Object[]{guid, field, originalValues.toString()});
-
-          newResult = gnsApp.getActiveCodeHandler().runCode(header, code, guid, field,
-                  "read", originalValues, hopLimit);
-          ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}",
-                  newResult.toString());
-
-        } catch (Exception e) {
-          ClientSupportConfig.getLogger().log(Level.FINE, "Active code error: {0}",
-                  e.getMessage());
-        }
-      }
-    }
-    return newResult;
-  }
 }

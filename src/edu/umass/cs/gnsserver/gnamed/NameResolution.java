@@ -26,7 +26,9 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
 import java.io.IOException;
@@ -58,6 +60,7 @@ import org.xbill.DNS.Type;
 import org.xbill.DNS.MXRecord;
 import org.xbill.DNS.NSRecord;
 import org.xbill.DNS.TextParseException;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -162,49 +165,78 @@ public class NameResolution {
     response.getHeader().setFlag(Flags.AA);
 
     /* Request DNS fields of an alias and prepare a DNS response message */
-    ArrayList<String> fieldNames = new ArrayList<>(Arrays.asList("A", "NS", "CNAME", "SOA", "PTR", "MX"));
+    ArrayList<String> fields = new ArrayList<>(Arrays.asList("A", "NS", "CNAME", "SOA", "PTR", "MX"));
     Boolean nameResolved = false;
     String nameToResolve = domainName;
 
     while (!nameResolved) {
       long resolveStart = System.currentTimeMillis();
-      JSONObject fieldResponseJson = lookupGuidField(nameToResolve, null, fieldNames, handler);
+      JSONObject fieldResponseJson = lookupGuidField(nameToResolve, null, fields, handler);
       if (fieldResponseJson == null) {
         NameResolution.getLogger().log(Level.FINE, "GNS lookup for domain {0} failed.", domainName);
         return errorMessage(query, Rcode.NXDOMAIN);
       }
-      /* Parse the response from GNS and create DNS records*/
+      // Parse the response from GNS and create DNS records 
       try {
         NameResolution.getLogger().log(Level.FINE, "fieldResponse all field:{0}", fieldResponseJson.toString());
         if (fieldResponseJson.has("A")) {
+          JSONObject recordObj = fieldResponseJson.getJSONObject("A");
+          JSONArray records = recordObj.getJSONArray(ManagedDNSServiceProxy.RECORD_FIELD);
+          int ttl = recordObj.getInt(ManagedDNSServiceProxy.TTL_FIELD);
+          // The records may contain multiple ip addresses
+          for(int i=0; i<records.length(); i++){
+      		String ip = records.getString(i);
+	        ARecord gnsARecord = new ARecord(new Name(nameToResolve), DClass.IN, ttl, InetAddress.getByName(ip));
+	        response.addRecord(gnsARecord, Section.ANSWER);
+      	  }
+          nameResolved = true;
+          /*
           String ip = fieldResponseJson.getString("A");
           ARecord gnsARecord = new ARecord(new Name(nameToResolve), DClass.IN, 60, InetAddress.getByName(ip));
           response.addRecord(gnsARecord, Section.ANSWER);
           nameResolved = true;
+          */
         }
         if (fieldResponseJson.has("NS")) {
-          String ns = fieldResponseJson.getString("NS");
-          NSRecord nsRecord = new NSRecord(new Name(nameToResolve), DClass.IN, 120, new Name(ns));
-          response.addRecord(nsRecord, Section.AUTHORITY);
-
-          /* Resolve NS Record name to an IP address and add it to ADDITIONAL section */
-          JSONObject nsResponseJson = lookupGuidField(ns, fieldName, null, handler);
-          //CommandResponse nsResponse = lookupGuidGnsServer(ns, fieldName, null, handler);
-          if (nsResponseJson != null) {
-            //if (nsResponse != null && !nsResponse.isError()) {
-            String address = nsResponseJson.getString(ns);
-            //String address = (new JSONArray(nsResponse.getReturnValue())).get(0).toString();
-            NameResolution.getLogger().log(Level.FINE, "single field {0}", address);
-            ARecord nsARecord = new ARecord(new Name(ns), DClass.IN, 60, InetAddress.getByName(address));
-            response.addRecord(nsARecord, Section.ADDITIONAL);
+          JSONObject recordObj = fieldResponseJson.getJSONObject("NS");	
+          JSONArray records = recordObj.getJSONArray(ManagedDNSServiceProxy.RECORD_FIELD);
+          int ttl = recordObj.getInt(ManagedDNSServiceProxy.TTL_FIELD);
+          // The records may contain multiple ip addresses
+          for(int i=0; i<records.length(); i++){
+        	  JSONArray record = records.getJSONArray(i);
+        	  String ns = record.getString(0);
+        	  String address = record.getString(1);
+        	  NSRecord nsRecord = new NSRecord(new Name(nameToResolve), DClass.IN, ttl, new Name(ns));
+        	  response.addRecord(nsRecord, Section.AUTHORITY);
+        	  ARecord nsARecord = new ARecord(new Name(ns), DClass.IN, 60, InetAddress.getByName(address));
+        	  response.addRecord(nsARecord, Section.ADDITIONAL);
           }
+
+          /*
+           * No need for looking up record again
+           * 
+          for(int i=0; i<records.length(); i++){
+        	  String ns = records.getString(i);        	  
+	          // Resolve NS Record name to an IP address and add it to ADDITIONAL section 
+	          JSONObject nsResponseJson = lookupGuidField(ns, fieldName, null, handler);
+	          
+	          if (nsResponseJson != null) {
+	            //if (nsResponse != null && !nsResponse.isError()) {
+	            String address = nsResponseJson.getString(ns);
+	            //String address = (new JSONArray(nsResponse.getReturnValue())).get(0).toString();
+	            NameResolution.getLogger().log(Level.FINE, "single field {0}", address);
+	            ARecord nsARecord = new ARecord(new Name(ns), DClass.IN, 60, InetAddress.getByName(address));
+	            response.addRecord(nsARecord, Section.ADDITIONAL);
+	          }
+          }
+          */
         }
         if (fieldResponseJson.has("MX")) {
           String mxname = fieldResponseJson.getString("MX");
           MXRecord mxRecord = new MXRecord(new Name(nameToResolve), DClass.IN, 120, 100, new Name(mxname));
           response.addRecord(mxRecord, Section.AUTHORITY);
 
-          /* Resolve MX Record name to an IP address and add it to ADDITIONAL section */
+          // Resolve MX Record name to an IP address and add it to ADDITIONAL section 
           JSONObject mxResponseJson = lookupGuidField(mxname, fieldName, null, handler);
           //CommandResponse mxResponse = lookupGuidGnsServer(mxname, fieldName, null, handler);
           if (mxResponseJson != null) {
@@ -217,7 +249,7 @@ public class NameResolution {
           }
         }
         if (fieldResponseJson.has("CNAME")) {
-          /* Resolve CNAME alias to an IP address and add it to ADDITIONAL section */
+          // Resolve CNAME alias to an IP address and add it to ADDITIONAL section 
           String cname = fieldResponseJson.getString("CNAME");
           CNAMERecord cnameRecord = new CNAMERecord(new Name(nameToResolve), DClass.IN, 60, new Name(cname));
           response.addRecord(cnameRecord, Section.ANSWER);
@@ -226,7 +258,7 @@ public class NameResolution {
         }
         DelayProfiler.updateDelay("ResolveName", resolveStart);
         if (!nameResolved) {
-          /* We should reach here only if we fail to resolve to an IP address */
+          // We should reach here only if we fail to resolve to an IP address
           NameResolution.getLogger().log(Level.FINER,
                   "Couldn''t resolve to an IP address for domain {0}", domainName);
           break;
@@ -237,7 +269,7 @@ public class NameResolution {
       } catch (TextParseException | UnknownHostException e) {
         e.printStackTrace();
       }
-
+      
     }
     NameResolution.getLogger().log(Level.FINER, "Outgoing response from GNS: {0}", response.toString());
     return response;
@@ -248,34 +280,65 @@ public class NameResolution {
    * Returns a JSONObject containing the fields and values
    * or null if the domainName doesn't exist.
    *
-   * @param domainName - the HRN of the guid
-   * @param fieldName - the field to lookup (mutually exclusive with fieldNames)
-   * @param fieldNames - the fields to lookup (mutually exclusive with fieldNames)
+   * @param domain - the HRN of the guid
+   * @param field - the field to lookup (mutually exclusive with fieldNames)
+   * @param fields - the fields to lookup (mutually exclusive with fieldNames)
    * @param handler
    * @return a JSONObject containing the fields and values or null
    */
-  public static JSONObject lookupGuidField(String domainName, String fieldName, ArrayList<String> fieldNames, ClientRequestHandlerInterface handler) {
-    long startTime = System.currentTimeMillis();
-    // Make an array of field names to fetch from fieldName or FieldNames
-    String[] fieldArray = null;
-    if (fieldName != null) {
-      fieldArray = new String[1];
-      fieldArray[0] = fieldName;
-    } else if (fieldNames != null) {
-      fieldArray = new String[fieldNames.size()];
-      fieldArray = fieldNames.toArray(fieldArray);
+  public static JSONObject lookupGuidField(String domain, String field, ArrayList<String> fields, ClientRequestHandlerInterface handler) {
+    /**
+     * Querying multiple types together is allowed in DNS protocol, but practically not supported.
+     * Therefore, no need for us to implement support for multi-type query.
+     */
+    
+    /**
+     * 1. Lookup guid for the domain name
+     */
+    String guid = null;
+    try{
+	    ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, domain,
+	            HRN_GUID, handler.getApp(), false);
+	    if (result != null) {
+	        guid = result.getString(HRN_GUID);
+	    }
+    } catch (FailedDBOperationException | JSONException e) {
+    	NameResolution.getLogger().log(Level.FINE,
+                "No guid for {0}: {1}", new Object[]{domain, e});
     }
+    
+    /**
+     * 2. Lookup the record
+     */
+    JSONObject value = null;
+    if(guid != null){
+    	//FIXME: the internal request header should not be null
+    	try {
+			value = NSFieldAccess.lookupFieldsLocalNoAuth(null, guid, fields, ColumnFieldType.USER_JSON, handler);
+		} catch (FailedDBOperationException e) {
+			NameResolution.getLogger().log(Level.FINE,
+	                "Fetching record failed for {0}: {1}", new Object[]{domain, e});
+		}
+    }else{
+    	NameResolution.getLogger().log(Level.FINE,
+                "No guid for {0} is found", new Object[]{domain});
+    }
+    return value;
+    
+    /**
+     * Zhaoyu: to trigger active code, this part needs to be discarded
+    
     // First we lookup the guid from the HRN
     GNSApp app = handler.getApp();
     NameRecord hrnNameRecord = null;
     try {
-      hrnNameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), domainName,
+      hrnNameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), domain,
               ColumnFieldType.USER_JSON, HRN_GUID);
     } catch (RecordNotFoundException e) {
       // Normal result when the record doesn't exist
     } catch (FailedDBOperationException e) {
       NameResolution.getLogger().log(Level.SEVERE,
-              "Problem getting guid for {0}: {1}", new Object[]{domainName, e});
+              "Problem getting guid for {0}: {1}", new Object[]{domain, e});
     }
     DelayProfiler.updateDelay("lookupGuidField.guid", startTime);
     long fieldTime = System.currentTimeMillis();
@@ -295,7 +358,7 @@ public class NameResolution {
           // Normal result
         } catch (FailedDBOperationException e) {
           NameResolution.getLogger().log(Level.SEVERE,
-                  "Problem getting guid for {0}: {1}", new Object[]{domainName, e});
+                  "Problem getting guid for {0}: {1}", new Object[]{domain, e});
         }
       }
     }
@@ -311,6 +374,7 @@ public class NameResolution {
     } else {
       return null;
     }
+    */
   }
 
   /**

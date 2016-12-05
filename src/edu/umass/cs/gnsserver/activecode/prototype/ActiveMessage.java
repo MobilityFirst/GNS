@@ -11,8 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author gaozy
@@ -33,7 +31,7 @@ public class ActiveMessage implements Message{
 	private String guid;
 	private String field;
 	private String code;
-	private ValuesMap value;
+	private String value;
 	private String targetGuid;
 	private String error;
 
@@ -66,7 +64,17 @@ public class ActiveMessage implements Message{
 		 * This message is used for worker to send a write query
 		 * to GNS to update a field.
 		 */
-		WRITE_QUERY(3);		
+		WRITE_QUERY(3),
+		
+		/**
+		 * This message is used for resolving a domain name
+		 */
+		RESOLVE_QUERY(4),
+		
+		/**
+		 * This message is used for sending a HTTP request
+		 */
+		HTTP_QUERY(5);
 		
 		private final int type;
 		Type(int type){
@@ -94,7 +102,7 @@ public class ActiveMessage implements Message{
 	 * @param targetGuid 
 	 * @param error 
 	 */
-	public ActiveMessage(Type type, long id, int ttl, long budget, String guid, String field, String code, ValuesMap value, String targetGuid, String error){
+	public ActiveMessage(Type type, long id, int ttl, long budget, String guid, String field, String code, String value, String targetGuid, String error){
 		this.type = type;
 		this.id = id;
 		this.ttl = ttl;
@@ -116,7 +124,7 @@ public class ActiveMessage implements Message{
 	 * @param ttl
 	 * @param budget 
 	 */
-	public ActiveMessage(String guid, String field, String code, ValuesMap value, int ttl, long budget){
+	public ActiveMessage(String guid, String field, String code, String value, int ttl, long budget){
 		this(Type.REQUEST, counter.getAndIncrement(), ttl, budget, guid, field, code, value, null, null);
 	}
 	
@@ -142,7 +150,7 @@ public class ActiveMessage implements Message{
 	 * @param value
 	 * @param id 
 	 */
-	public ActiveMessage(int ttl, String guid, String field, String targetGuid, ValuesMap value, long id){
+	public ActiveMessage(int ttl, String guid, String field, String targetGuid, String value, long id){
 		this(Type.WRITE_QUERY, id, ttl, 0, guid, field, null, value, targetGuid, null);
 	}
 	
@@ -152,7 +160,7 @@ public class ActiveMessage implements Message{
 	 * @param value
 	 * @param error
 	 */
-	public ActiveMessage(long id, ValuesMap value, String error){
+	public ActiveMessage(long id, String value, String error){
 		this(Type.RESPONSE, id, 0, 0, null, null, null, value, null, error);
 	}
 	
@@ -194,7 +202,7 @@ public class ActiveMessage implements Message{
 	/**
 	 * @return value
 	 */
-	public ValuesMap getValue() {
+	public String getValue() {
 		return value;
 	}
 	
@@ -219,7 +227,11 @@ public class ActiveMessage implements Message{
 		return budget;
 	}
 	
-	private int getEstimatedLengthExceptForValuesMap(){
+	/**
+	 * 
+	 * @return
+	 */
+	private int getEstimatedLengthExceptWithoutValue(){
 		int length = 0;
 		switch(type){
 		case REQUEST:
@@ -266,12 +278,11 @@ public class ActiveMessage implements Message{
 	 */
 	@Override
 	public byte[] toBytes() throws UnsupportedEncodingException{
-		long t = System.nanoTime();
 		
-		// First convert ValuesMap to String, as it is costly
-		String valuesMapString = (value == null)?null:value.toString();
+		//FIXME: one more step
+		String valuesMapString = value;
 		
-		byte[] buffer = new byte[this.getEstimatedLengthExceptForValuesMap()+( (valuesMapString==null)?0:valuesMapString.length() )];
+		byte[] buffer = new byte[this.getEstimatedLengthExceptWithoutValue()+( (valuesMapString==null)?0:valuesMapString.length() )];
 		ByteBuffer bbuf = ByteBuffer.wrap(buffer);
 		byte[] guidBytes,fieldBytes,codeBytes,valuesMapBytes,targetGuidBytes;
 		
@@ -391,6 +402,8 @@ public class ActiveMessage implements Message{
 			bbuf.put(errorBytes);
 			exactLength += (Integer.BYTES + ((error==null)? 0:errorBytes.length));
 			break;
+		default:
+			break;
 		
 		}
 		
@@ -400,7 +413,6 @@ public class ActiveMessage implements Message{
 		
 		bbuf.get(exactBytes);
 		
-		DelayProfiler.updateDelayNano("activeToByte", t);
 		return exactBytes;
 	}
 	
@@ -419,7 +431,6 @@ public class ActiveMessage implements Message{
 	 * @throws JSONException 
 	 */
 	public ActiveMessage(ByteBuffer bbuf) throws UnsupportedEncodingException, JSONException {
-		long t = System.nanoTime();
 		
 		this.type = Type.values()[bbuf.getInt()];	
 		this.id = bbuf.getLong();
@@ -455,7 +466,7 @@ public class ActiveMessage implements Message{
 			length = bbuf.getInt();
 			valueBytes = new byte[length];
 			bbuf.get(valueBytes);
-			value = new ValuesMap(new JSONObject(new String(valueBytes, CHARSET)));
+			value = new String(valueBytes, CHARSET);
 			break;
 		case READ_QUERY:
 			ttl = bbuf.getInt();
@@ -502,7 +513,7 @@ public class ActiveMessage implements Message{
 			length = bbuf.getInt();
 			valueBytes = new byte[length];
 			bbuf.get(valueBytes);
-			value = new ValuesMap(new JSONObject(new String(valueBytes, CHARSET)));
+			value = new String(valueBytes, CHARSET);
 			break;
 			
 		case RESPONSE:
@@ -511,7 +522,7 @@ public class ActiveMessage implements Message{
 			if(length>0){
 				valueBytes = new byte[length];
 				bbuf.get(valueBytes);
-				value = new ValuesMap(new JSONObject(new String(valueBytes, CHARSET)));
+				value = new String(valueBytes, CHARSET);
 			}
 			
 			length = bbuf.getInt();
@@ -522,17 +533,19 @@ public class ActiveMessage implements Message{
 			}
 			
 			break;
+		default:
+			break;
 			
 		}
 		
-		DelayProfiler.updateDelayNano("activeFromByte", t);
 	}
 	
 	@Override
 	public String toString(){
 		
 		return "[id:"+id
-				+ ",guid:"+ ((guid != null)?guid:"null")
+				+",guid:"+ ((guid != null)?guid:"null")
+				+",tguid:"+((targetGuid != null)?targetGuid:"null")
 				+",field:"+((field!=null)?field:"null")
 				+",value:"+((value!=null)?value:"null")
 				+",error:"+((error!=null)?error:"null")
@@ -556,7 +569,7 @@ public class ActiveMessage implements Message{
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
-		ValuesMap value = new ValuesMap();
+		JSONObject value = new JSONObject();
 		value.put("string", "hello world");
 		
 		System.out.println("Test initializing REQUEST message");
@@ -564,12 +577,12 @@ public class ActiveMessage implements Message{
 		long t = System.currentTimeMillis();	
 		for (int i=0; i<n; i++){
 			// budget is set to 500
-			new ActiveMessage(guid, field, noop_code, value, 0, 500);
+			new ActiveMessage(guid, field, noop_code, value.toString(), 0, 500);
 		}
 		long elapsed = System.currentTimeMillis() - t;		
 		System.out.println("It takes "+elapsed+"ms for create 1m REQUEST ActiveMessage, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");
 		
-		ActiveMessage amsg = new ActiveMessage(guid, field, noop_code, value, 0, 500);
+		ActiveMessage amsg = new ActiveMessage(guid, field, noop_code, value.toString(), 0, 500);
 		ActiveMessage rmsg = null;
 		
 		t = System.currentTimeMillis();

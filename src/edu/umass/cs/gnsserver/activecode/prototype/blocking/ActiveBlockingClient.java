@@ -1,18 +1,30 @@
-package edu.umass.cs.gnsserver.activecode.prototype;
+package edu.umass.cs.gnsserver.activecode.prototype.blocking;
 
+
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeConfig;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveQueryHandler;
+import edu.umass.cs.gnsserver.activecode.prototype.channels.ActiveDatagramChannel;
+import edu.umass.cs.gnsserver.activecode.prototype.channels.ActiveNamedPipe;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
@@ -24,35 +36,36 @@ import edu.umass.cs.utils.DelayProfiler;
  * This is a Client implementation with unix named pipe as the way
  * to communicate with workers.
  * 
- * This client send requests to its worker and register a local monitor
- * to block the sending thread. Until the receiving thread receives the 
- * response or a query, it wakes up the sending thread. This design relies
- * on the fact that if the writer end of a named pipe is closed, the
+ * This client send requests to its worker and block the sending thread. 
+ * Until it receives the response, the runCode is done. 
+ * <p> If it receives a query, it call QueryHandler to handle the query.
+ * <p> If it receives a null value, it knows the worker is crashed and
+ * it needs to restart a new worker. This design relies on the fact that
+ * if the writer end of a named pipe is closed, the
  * reader end will also be closed, and return a {@code null} value.
- * Therefore, if the worker is crashed, this client will know immediately.
  *
  * @author gaozy
  *
  */
-public class ActiveNonBlockingClient implements Runnable,Client {
+public class ActiveBlockingClient implements Client {
 	
-	private final static int DEFAULT_HEAP_SIZE = 128;
+	private final static int DEFAULT_HEAP_SIZE = ActiveCodeConfig.activeWorkerHeapSize;
+	private final static String actionOnOutOfMemory = "kill -9 %p";
 	
 	private ActiveQueryHandler queryHandler;
 	
+	private final String nodeId;
 	private Channel channel;
 	private final String ifile;
 	private final String ofile;
 	private final int workerNumThread;
 	
-	private ConcurrentHashMap<Long, Monitor> tasks = new ConcurrentHashMap<Long, Monitor>();
-	
 	private Process workerProc;
-	final private int id;
-	final private boolean pipeEnable;
+	private final int id;
+	private final boolean pipeEnable;
+	private final static boolean crashEnabled = ActiveCodeConfig.activeCrashEnabled;
 	
 	private final int heapSize;
-	
 	
 	private AtomicBoolean isRestarting = new AtomicBoolean();
 	
@@ -75,6 +88,7 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	}
 	
 	/**
+	 * @param nodeId 
 	 * @param app 
 	 * @param ifile
 	 * @param ofile
@@ -82,7 +96,8 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	 * @param workerNumThread 
 	 * @param heapSize 
 	 */
-	public ActiveNonBlockingClient(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread, int heapSize){
+	public ActiveBlockingClient(String nodeId, ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread, int heapSize){
+		this.nodeId = nodeId;
 		this.id = id;
 		this.ifile = ifile;
 		this.ofile = ofile;
@@ -102,9 +117,10 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	 * @param ofile
 	 * @param id
 	 * @param workerNumThread
+	 * @param nodeId 
 	 */
-	public ActiveNonBlockingClient(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
-		this(app, ifile, ofile, id, workerNumThread, DEFAULT_HEAP_SIZE);
+	public ActiveBlockingClient(String nodeId, ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
+		this(nodeId, app, ifile, ofile, id, workerNumThread, DEFAULT_HEAP_SIZE);
 	}
 	
 	private void initializeChannelAndStartWorker(){
@@ -125,13 +141,15 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	
 	/**
 	 * Initialize a client with a UDP channel
+	 * @param nodeId 
 	 * @param app
 	 * @param port
 	 * @param serverPort
 	 * @param id
 	 * @param workerNumThread
 	 */
-	public ActiveNonBlockingClient(ActiveDBInterface app, int port, int serverPort, int id, int workerNumThread){
+	public ActiveBlockingClient(String nodeId, ActiveDBInterface app, int port, int serverPort, int id, int workerNumThread){
+		this.nodeId = nodeId;
 		this.pipeEnable = false;
 		this.id = id;
 		this.workerNumThread = workerNumThread;
@@ -156,47 +174,8 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	 * @param ifile
 	 * @param ofile
 	 */
-	public ActiveNonBlockingClient(ActiveDBInterface app, String ifile, String ofile){
-		this(app, ifile, ofile, 0, 1);
-	}
-	
-	@Override
-	public void run() {
-		/**
-		 * This is the receiving thread, it awakes the sending
-		 * thread if it receives the response or query from the
-		 * worker.
-		 * 
-		 * If a null value is received, it means the worker is
-		 * crashed and the pipe is closed on both end. Therefore,
-		 * we need to restart the worker and establish a new
-		 * connection.
-		 */
-		
-		while(!Thread.currentThread().isInterrupted()){
-			ActiveMessage response;
-			try {
-				if( (response = (ActiveMessage) channel.receiveMessage()) != null){					
-					long id = response.getId();
-					Monitor monitor = tasks.get(id);
-					assert(monitor != null):"the corresponding monitor is null!";
-					monitor.setResult(response, response.type == Type.RESPONSE);
-				} else {
-					if(!isRestarting.getAndSet(true)){
-						// restart the worker
-						this.shutdown();
-						this.initializeChannelAndStartWorker();
-						// resend all the requests that failed
-						for(Monitor monitor:this.tasks.values()){
-							monitor.setResult(null, false);
-						}
-						isRestarting.set(false);
-					}
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+	public ActiveBlockingClient(String nodeId, ActiveDBInterface app, String ifile, String ofile){
+		this(nodeId, app, ifile, ofile, 0, 1);
 	}
 	
 	/**
@@ -216,7 +195,7 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 			(new File(ofile)).delete();
 		}
 		
-		channel.shutdown();
+		channel.close();
 	}
 	
 	/**
@@ -225,7 +204,7 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	 * @param ofile
 	 * @param id
 	 * @param workerNumThread
-	 * @return a process
+	 * @return
 	 * @throws IOException
 	 */
 	private Process startWorker(String ifile, String ofile, int id) throws IOException{
@@ -234,14 +213,19 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	    command.add("java");
 	    command.add("-Xms"+heapSize+"m");
 	    command.add("-Xmx"+heapSize+"m");
+	    // kill the worker on OutOfMemoryError
+	    if(crashEnabled)
+	    	command.add("-XX:OnOutOfMemoryError="+actionOnOutOfMemory);
 	    command.add("-cp");
 	    command.add(classpath);
-	    command.add("edu.umass.cs.gnsserver.activecode.prototype.unblockingworker.ActiveWorker");
+	    command.add("edu.umass.cs.gnsserver.activecode.prototype.blocking.ActiveBlockingWorker");
 	    command.add(ifile);
 	    command.add(ofile);
 	    command.add(""+id);
 	    command.add(""+workerNumThread);
 	    command.add(Boolean.toString(pipeEnable));
+	    command.add("ReconfigurableNode");
+	    command.add(nodeId);
 	    
 	    ProcessBuilder builder = new ProcessBuilder(command);
 		builder.directory(new File(System.getProperty("user.dir")));
@@ -259,7 +243,7 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	 * 
 	 * @param port1
 	 * @param id
-	 * @return a process
+	 * @return
 	 * @throws IOException
 	 */
 	private Process startWorker(int port1, int port2, int id) throws IOException{
@@ -268,15 +252,20 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	    command.add("java");
 	    command.add("-Xms"+heapSize+"m");
 	    command.add("-Xmx"+heapSize+"m");
+	    // kill the worker on OutOfMemoryError
+	    if(crashEnabled)
+	    	command.add("-XX:OnOutOfMemoryError="+actionOnOutOfMemory);
 	    command.add("-cp");
 	    command.add(classpath);
-	    command.add("edu.umass.cs.gnsserver.activecode.prototype.unblockingworker.ActiveWorker");
+	    command.add("edu.umass.cs.gnsserver.activecode.prototype.blocking.ActiveBlockingWorker");
 	    command.add(""+port1);
 	    command.add(""+port2);
 	    command.add(""+id);
 	    command.add(""+workerNumThread);
 		command.add(Boolean.toString(pipeEnable));
-		
+		command.add("ReconfigurableNode");
+	    command.add(nodeId);
+	    
 	    ProcessBuilder builder = new ProcessBuilder(command);
 		builder.directory(new File(System.getProperty("user.dir")));
 		
@@ -288,29 +277,24 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 		return process;
 	}
 	
-  /**
-   *
-   * @return a message
-   */
-  protected ActiveMessage receiveMessage(){		
+	protected ActiveMessage receiveMessage(){		
 		ActiveMessage am = null;
 		try {
 			am = (ActiveMessage) channel.receiveMessage();
+			
 		} catch (IOException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 		return am;
 	}
 	
-  /**
-   *
-   * @param am
-   */
-  protected synchronized void sendMessage(ActiveMessage am){
+	protected synchronized void sendMessage(ActiveMessage am){
 		try {
 			channel.sendMessage(am);
+			ActiveCodeHandler.getLogger().log(Level.FINE, 
+					"sends request:{0}", new Object[]{am});
 		} catch (IOException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 	
@@ -334,97 +318,76 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	 * @param guid
 	 * @param field
 	 * @param code
-	 * @param valuesMap
+	 * @param value
 	 * @param ttl
 	 * @return executed result sent back from worker
-   * @throws edu.umass.cs.gnsserver.activecode.prototype.ActiveException
 	 */
 	@Override
-	public ValuesMap runCode(InternalRequestHeader header, String guid, String field, 
-			String code, ValuesMap valuesMap, int ttl, long budget) throws ActiveException {
+	public synchronized JSONObject runCode(InternalRequestHeader header, String guid, String field, 
+			String code, JSONObject value, int ttl, long budget) throws ActiveException {
 		
-		long t1 = System.nanoTime();
-		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl, budget);
-		Monitor monitor = new Monitor();
-		tasks.put(msg.getId(), monitor);
+		ActiveMessage msg = new ActiveMessage(guid, field, code, value.toString(), ttl, budget);
+		sendMessage(msg);
 		
-		long t2 = 0;
 		ActiveMessage response = null;
-		synchronized(monitor){
-			while( !monitor.getDone() ){				
-				try {
-					if(!monitor.getWait()){
-						sendMessage(msg);
-						DelayProfiler.updateDelayNano("activeSendMessage", t1);
-						monitor.setWait();
-					}					
-					monitor.wait();
-				} catch (InterruptedException e) {
-					// this thread is interrupted, do nothing
-				}				
-				t2 = System.nanoTime();
-				response = monitor.getResult();	
-				
-				if(response == null){
-					/**
-					 *  The worker is crashed, resend the request.
-					 *  It would work even for the query.
-					 */
-					sendMessage(msg);
-				} else if (response.type != Type.RESPONSE){
-					ActiveMessage result = queryHandler.handleQuery(response, header);
-					sendMessage(result);
+		while( true ){
+			try {
+				response = (ActiveMessage) channel.receiveMessage();
+			} catch (IOException e) {
+				// do nothing, as the worker is crashed, the response is null
+			}
+			
+			if(response == null){
+				/**
+				 *  The worker is crashed, restart the
+				 *  worker.
+				 */
+				if(!isRestarting.getAndSet(true)){
+					this.shutdown();
+					this.initializeChannelAndStartWorker();
+					
+					isRestarting.set(false);
 				}
-			}		
+				break;
+			} else if (response.type != Type.RESPONSE){
+				ActiveCodeHandler.getLogger().log(Level.FINE,
+						"receive a query from worker:{0}",
+						new Object[]{response});
+				ActiveMessage result = queryHandler.handleQuery(response, header);
+				sendMessage(result);
+				ActiveCodeHandler.getLogger().log(Level.FINE,
+						"send a response to worker:{0} for the query: {1}",
+						new Object[]{result, response});
+			} else{
+				assert(response.type == Type.RESPONSE):"The message type is not RESPONSE";
+				break;
+			}
 		}
-		response = monitor.getResult();
+		
+		ActiveCodeHandler.getLogger().log(Level.FINE,
+				"receive a response from the worker:{0}",
+				new Object[]{response});
+		
+		if(response == null){
+			throw new ActiveException("Worker crashed!");
+		}
 		
 		if(response.getError() != null){
-			throw new ActiveException();
+			throw new ActiveException(msg.toString());
 		}
 		counter.getAndIncrement();
-		tasks.remove(response.getId());		
-		DelayProfiler.updateDelayNano("activeGetResult", t2);
 		
-		return response.getValue();
+		try {
+			return new JSONObject(response.getValue());
+		} catch (JSONException e) {
+			return value;
+		}
 	}
 	
 	public String toString(){
 		return this.getClass().getSimpleName()+id;
 	}
 	
-	private static class Monitor {
-		boolean isDone;
-		ActiveMessage response;
-		boolean waited;
-		
-		Monitor(){
-			this.isDone = false;
-			this.waited = false;
-		}
-		
-		boolean getDone(){
-			return isDone;
-		}
-		
-		synchronized void setResult(ActiveMessage response, boolean isDone){
-			this.response = response;
-			this.isDone = isDone;
-			notifyAll();
-		}
-		
-		ActiveMessage getResult(){
-			return response;
-		}
-		
-		void setWait(){
-			waited = true;
-		}
-		
-		boolean getWait(){
-			return waited;
-		}
-	}
 	
 	/**
 	 * @param args
@@ -433,7 +396,56 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	 * @throws ActiveException 
 	 */
 	public static void main(String[] args) throws InterruptedException, JSONException, ActiveException{
+		final String suffix = "";
+		String cfile = "/tmp/client"+suffix;
+		String sfile = "/tmp/server"+suffix;
+		final int numThread =2;
 		
+		long executionTime = 1000;
+		if(System.getProperty("executionTime")!=null){
+			executionTime = Long.parseLong(System.getProperty("executionTime"));
+		}
+		
+		String codeFile = "./scripts/activeCode/noop.js";
+		if(System.getProperty("codeFile")!=null){
+			codeFile = System.getProperty("codeFile");
+		}
+		
+		ActiveBlockingClient client = new ActiveBlockingClient("", null, cfile, sfile, 0, numThread);
+		
+		String guid = "guid";
+		String field = "name";
+		String code = "";
+		try {
+			code = new String(Files.readAllBytes(Paths.get(codeFile)));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+		ValuesMap value = new ValuesMap();
+		value.put(field, executionTime);	
+		JSONObject result = client.runCode(null, guid, field, code, value, 0, 1000);
+		System.out.println(result);
+		
+		assertEquals(result.toString(), value.toString());
+		
+		int initial = client.getRecv();
+		
+		int n = 100000;
+		
+		long t1 = System.currentTimeMillis();
+		
+		for (int i=0; i<n; i++){
+			client.runCode(null, guid, field, code, value, 0, executionTime);			
+		}
+		
+		long elapsed = System.currentTimeMillis() - t1;
+		System.out.println("It takes "+elapsed+"ms");
+		System.out.println("The average time for each task is "+elapsed/n+"ms.");
+		assert(client.getRecv()-initial == n):"the number of responses is not the same as the number of requests";
+		
+		System.out.println("Sequential throughput test succeeds.");
+		
+		client.shutdown();
 	}
 	
 }
