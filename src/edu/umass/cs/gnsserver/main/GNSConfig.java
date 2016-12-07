@@ -320,16 +320,23 @@ public class GNSConfig {
      */
     PRIVATE_KEY_ALIAS("node100"),
     /**
-     * Temporary - The use of this will go away at some point.
+     * Set this to true to use the older ACL paradigm. Default is false.
      * Under the old model empty ACLs did not prevent us from going further
      * up the tree toward the root to check for access.
-     *
+     * Temporary - The use of this will go away at some point.
      */
     USE_OLD_ACL_MODEL(false),
     /**
+     * Set this to true to use the old HTTP query handling.  Default is false.
+     * Older HTTP server didn't support multiple server installations.
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_MULTI_SERVER_HTTP(false);
+    DISABLE_MULTI_SERVER_HTTP(false),
+    /**
+     * Turn off active code handling. Default is false.
+     * Temporary - The use of this will go away at some point.
+     */
+    DISABLE_ACTIVE_CODE(false);
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;

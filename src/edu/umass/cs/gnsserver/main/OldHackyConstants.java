@@ -66,11 +66,7 @@ public class OldHackyConstants {
       return offset;
     }
   }
-  //FIXME: The owner of this should move it into GNSConfig
-  /**
-   * Enable active code.
-   */
-  public static boolean enableActiveCode = false;
+
   //FIXME: Remove this.
   /**
    * The default starting port.

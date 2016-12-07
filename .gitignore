@@ -61,3 +61,5 @@ build.number
 /bin/gpServer.sh
 .paxos_logs
 .gradle
+/GNS-1.19.09/
+/GNS-1.19.09.tgz

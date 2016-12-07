@@ -29,12 +29,10 @@ import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
@@ -59,8 +57,8 @@ public class NSFieldAccess {
   /**
    * Looks up the value of a field in the guid on this NameServer.
    * Active code is automatically handled during this call.
-
- Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap.
+   *
+   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap.
    *
    * @param header
    *
@@ -79,8 +77,8 @@ public class NSFieldAccess {
   /**
    * Looks up the value of a field in the guid on this NameServer.
    * Active code is handled if handleActiveCode is true.
-
- Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap.
+   *
+   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap.
    *
    * @param header
    * @param guid
@@ -95,12 +93,12 @@ public class NSFieldAccess {
           throws FailedDBOperationException {
     ValuesMap valuesMap = lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, gnsApp.getDB());
     if (handleActiveCode) {
-    	try {
-    		JSONObject result = ActiveCodeHandler.handleActiveCode(header, guid, field, ActiveCode.READ_ACTION, valuesMap, gnsApp.getDB());
-    		valuesMap = result!=null?new ValuesMap(result):valuesMap;
-		} catch (InternalRequestException e) {
-			// Active code field lookup failed, do nothing and return the original value
-		}
+      try {
+        JSONObject result = ActiveCodeHandler.handleActiveCode(header, guid, field, ActiveCode.READ_ACTION, valuesMap, gnsApp.getDB());
+        valuesMap = result != null ? new ValuesMap(result) : valuesMap;
+      } catch (InternalRequestException e) {
+        // Active code field lookup failed, do nothing and return the original value
+      }
     }
     return valuesMap;
   }
@@ -159,24 +157,6 @@ public class NSFieldAccess {
   public static ValuesMap lookupFieldsLocalNoAuth(InternalRequestHeader header, String guid, List<String> fields,
           ColumnFieldType returnFormat, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
-    return lookupFieldsLocalNoAuth(header, guid, fields, returnFormat, handler, OldHackyConstants.enableActiveCode);
-
-  }
-
-  /**
-   *
-   * @param header
-   * @param guid
-   * @param fields
-   * @param returnFormat
-   * @param handler
-   * @param handleActiveCode
-   * @return a values map
-   * @throws FailedDBOperationException
-   */
-  public static ValuesMap lookupFieldsLocalNoAuth(InternalRequestHeader header, String guid, List<String> fields,
-          ColumnFieldType returnFormat, ClientRequestHandlerInterface handler, boolean handleActiveCode)
-          throws FailedDBOperationException {
     // Try to look up the value in the database
     try {
       ClientSupportConfig.getLogger().log(Level.FINE, "Fields={0} Format={1}",
@@ -188,18 +168,19 @@ public class NSFieldAccess {
               returnFormat, fieldArray);
 
       if (nameRecord != null) {
-    	  // active code handling
-    	  ValuesMap valuesMap = nameRecord.getValuesMap();
-    	  if (handleActiveCode) {
-    		  try {
-				JSONObject result =  ActiveCodeHandler.handleActiveCode(header,  guid, null, ActiveCode.READ_ACTION,
-				          valuesMap, handler.getApp().getDB());
-				valuesMap = result!=null?new ValuesMap(result):valuesMap;
-			} catch (InternalRequestException e) {
-				e.printStackTrace();
-			}
-    	  }
-    	  return valuesMap;
+        // active code handling
+        ValuesMap valuesMap = nameRecord.getValuesMap();
+        // Already checked inside ActiveCodeHandler.handleActiveCode
+        //if (!Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+          try {
+            JSONObject result = ActiveCodeHandler.handleActiveCode(header, guid, null, ActiveCode.READ_ACTION,
+                    valuesMap, handler.getApp().getDB());
+            valuesMap = result != null ? new ValuesMap(result) : valuesMap;
+          } catch (InternalRequestException e) {
+            e.printStackTrace();
+          }
+        //}
+        return valuesMap;
       }
     } catch (RecordNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Record not found for name: {0}", guid);
@@ -211,10 +192,10 @@ public class NSFieldAccess {
   }
 
   /**
-   * Looks up the value of an old-style list field 
+   * Looks up the value of an old-style list field
    * in the guid in the local replica.
    * Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue or
- an empty ResultValue if field cannot be found.
+   * an empty ResultValue if field cannot be found.
    *
    * @param guid
    * @param field
@@ -245,10 +226,10 @@ public class NSFieldAccess {
   /**
    * Looks up the value of an old-style list field
    * in the guid in the local replica. Differs from lookupListFieldLocally
- in that it doesn't throw any exceptions and just returns an empty result
- if there are exceptions.
- Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue or
- an empty ResultValue if field cannot be found.
+   * in that it doesn't throw any exceptions and just returns an empty result
+   * if there are exceptions.
+   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue or
+   * an empty ResultValue if field cannot be found.
    *
    * @param guid
    * @param field
@@ -301,8 +282,8 @@ public class NSFieldAccess {
   /**
    * Looks up the value of an old-style list field in the guid.
    * If allowQueryToOtherNSs is true and guid doesn't exists on this Name Server,
- sends a read query from this Name Server to a Local Name Server.
- Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue.
+   * sends a read query from this Name Server to a Local Name Server.
+   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue.
    *
    * @param guid
    * @param field
@@ -339,8 +320,8 @@ public class NSFieldAccess {
   /**
    * Looks up the value of a field in the guid.
    * If guid doesn't exists on this Name Server,
- sends a read query from this Name Server to a Local Name Server.
- Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap
+   * sends a read query from this Name Server to a Local Name Server.
+   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap
    *
    * @param guid
    * @param field

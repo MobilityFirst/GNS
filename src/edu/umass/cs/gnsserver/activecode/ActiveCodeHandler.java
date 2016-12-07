@@ -46,8 +46,9 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Inter
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.main.OldHackyConstants;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -63,19 +64,14 @@ public class ActiveCodeHandler {
 	
 	private final String nodeId;
 	
-	private static final Logger logger = Logger.getLogger(ActiveCodeHandler.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(ActiveCodeHandler.class.getName());
 	
 	/**
 	 * Debug level
 	 */
-	public static final Level DEBUG_LEVEL = Level.FINE;
+	public static final Level DEBUG_LEVEL = Level.INFO;
 	
 	private static ActiveHandler handler;
-	
-	/**
-	 * enable debug output
-	 */
-	public static final boolean enableDebugging = false; 
 	
 	private static String gigapaxoConfig = PaxosConfig.GIGAPAXOS_CONFIG_FILE_KEY;
 	
@@ -177,13 +173,13 @@ public class ActiveCodeHandler {
 	public static JSONObject handleActiveCode(InternalRequestHeader header, 
 			String guid, String field, String action, JSONObject value, BasicRecordMap db) throws InternalRequestException{
 				
-		if(!OldHackyConstants.enableActiveCode){
+		if(Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
 			return value;
 		}
 		
 		long t = System.nanoTime();
 		ActiveCodeHandler.getLogger().log(DEBUG_LEVEL, 
-				"handles:[guid:{0},field:{1},action:{2},value:{3},header:{4}]",
+				"OOOOOOOOOOOOO handles:[guid:{0},field:{1},action:{2},value:{3},header:{4}]",
 				new Object[]{guid, field, action, value, header});
 		/**
 		 * Only execute active code for user field 
@@ -229,17 +225,17 @@ public class ActiveCodeHandler {
 			}
 		}
 		ActiveCodeHandler.getLogger().log(DEBUG_LEVEL, 
-				"The result after executing active code is {0}",
+				"OOOOOOOOOOOOO The result after executing active code is {0}",
 				new Object[]{newResult});
 		DelayProfiler.updateDelayNano("activeTotal", t);
 		return newResult;
 	}
 	
 	/**
-	 * @return logger
+	 * @return LOGGER
 	 */
 	public static Logger getLogger(){
-		return logger;
+		return LOGGER;
 	}
 	
 	/***************************** TEST CODE *********************/
