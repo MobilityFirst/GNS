@@ -61,7 +61,7 @@ public class CreateAccountSecureTest {
       client = new GNSClient();
       //client.setForceCoordinatedReads(true);
     } catch (IOException e) {
-      fail("Exception creating client: " + e);
+      failWithStackTrace("Exception creating client: ", e);
     }
   }
 
@@ -77,7 +77,7 @@ public class CreateAccountSecureTest {
               accountAlias,
               "password"));
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      failWithStackTrace("Exception while creating account: ", e);
     }
   }
 
@@ -90,23 +90,30 @@ public class CreateAccountSecureTest {
     try {
       guidString = client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
     } catch (Exception e) {
-      fail("Exception while looking up guid: " + e);
+      failWithStackTrace("Exception while looking up guid: ", e);
     }
     JSONObject json = null;
     if (guidString != null) {
       try {
         json = client.execute(GNSCommand.lookupAccountRecord(guidString)).getResultJSONObject();
       } catch (Exception e) {
-        fail("Exception while looking up account record: " + e);
+        failWithStackTrace("Exception while looking up account record: ", e);
       }
     }
     if (json == null) {
       try {
         assertTrue(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
       } catch (Exception e) {
-        fail("Exception while getting field from account record: " + e);
+        failWithStackTrace("Exception while getting field from account record: " , e);
       }
     }
   }
 
+  private static final void failWithStackTrace(String message, Exception... e) {
+    if (e != null && e.length > 0) {
+      e[0].printStackTrace();
+    }
+    org.junit.Assert.fail(message);
+  }
+  
 }

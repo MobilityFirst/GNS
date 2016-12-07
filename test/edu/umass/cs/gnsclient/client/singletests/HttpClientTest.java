@@ -59,7 +59,7 @@ public class HttpClientTest {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
 
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating master guid: " + e);
+      failWithStackTrace("Exception while creating master guid: ", e);
     }
   }
 
@@ -71,7 +71,7 @@ public class HttpClientTest {
     try {
       Assert.assertEquals(masterGuid.getGuid(), client.lookupGuid(ACCOUNT_ALIAS));
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception in LookupGuid: " + e);
+      failWithStackTrace("Exception in LookupGuid: ", e);
     }
   }
 
@@ -89,7 +89,7 @@ public class HttpClientTest {
       System.out.println("Created: " + httpOneEntry);
       System.out.println("Created: " + httpTwoEntry);
     } catch (IOException | ClientException | NoSuchAlgorithmException e) {
-      failWithStackTrace("Exception in Http_CreateFields: " + e);
+      failWithStackTrace("Exception in Http_CreateFields: ", e);
     }
   }
 
@@ -100,7 +100,7 @@ public class HttpClientTest {
       client.aclRemove(AclAccessType.READ_WHITELIST, httpOneEntry,
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception in Http_RemoveACL: " + e);
+      failWithStackTrace("Exception in Http_RemoveACL: ", e);
     }
   }
 
@@ -112,7 +112,7 @@ public class HttpClientTest {
       client.fieldUpdate(httpOneEntry.getGuid(), "password", "666flapJack", httpOneEntry);
       client.fieldUpdate(httpOneEntry.getGuid(), "address", "100 Hinkledinkle Drive", httpOneEntry);
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception in Http_UpdateFields: " + e);
+      failWithStackTrace("Exception in Http_UpdateFields: ", e);
     }
   }
 
@@ -129,7 +129,7 @@ public class HttpClientTest {
       Assert.assertEquals("666flapJack",
               client.fieldRead(httpOneEntry.getGuid(), "password", httpOneEntry));
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception in Http_CheckFields: " + e);
+      failWithStackTrace("Exception in Http_CheckFields: ", e);
     }
   }
 
@@ -142,10 +142,10 @@ public class HttpClientTest {
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
       } catch (IOException e) {
-        failWithStackTrace("Exception during read of westy's environment by sam: " + e);
+        failWithStackTrace("Exception during read of westy's environment by sam: ", e);
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception in Http_CheckFieldsFail: " + e);
+      failWithStackTrace("Exception in Http_CheckFieldsFail: ", e);
     }
   }
 
@@ -158,11 +158,11 @@ public class HttpClientTest {
         client.aclAdd(AclAccessType.READ_WHITELIST, httpOneEntry, "environment",
                 httpTwoEntry.getGuid());
       } catch (IOException | ClientException e) {
-        failWithStackTrace("Exception adding Sam to Westy's readlist: " + e);
+        failWithStackTrace("Exception adding Sam to Westy's readlist: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception in Http_ACLAdd: " + e);
+      failWithStackTrace("Exception in Http_ACLAdd: ", e);
     }
   }
 
@@ -173,10 +173,10 @@ public class HttpClientTest {
         Assert.assertEquals("work",
                 client.fieldRead(httpOneEntry.getGuid(), "environment", httpTwoEntry));
       } catch (IOException | ClientException e) {
-        failWithStackTrace("Exception while Sam reading Westy's field: " + e);
+        failWithStackTrace("Exception while Sam reading Westy's field: ", e);
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception in Http_CheckAccess: " + e);
+      failWithStackTrace("Exception in Http_CheckAccess: ", e);
     }
   }
   
@@ -197,7 +197,7 @@ public class HttpClientTest {
       json.put("flapjack", subJson);
       client.update(httpOneEntry, json);
     } catch (JSONException | IOException | ClientException e) {
-      failWithStackTrace("Exception while adding field \"flapjack\": " + e);
+      failWithStackTrace("Exception while adding field \"flapjack\": ", e);
     }
   }
 
@@ -220,7 +220,7 @@ public class HttpClientTest {
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       //System.out.println(actual);
     } catch (JSONException | IOException | ClientException e) {
-      failWithStackTrace("Exception while reading JSON: " + e);
+      failWithStackTrace("Exception while reading JSON: ", e);
     }
   }
 
@@ -230,7 +230,7 @@ public class HttpClientTest {
       String actual = client.fieldRead(httpOneEntry.getGuid(), "flapjack.sally.right", httpOneEntry);
       Assert.assertEquals("seven", actual);
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception while reading \"flapjack.sally.right\": " + e);
+      failWithStackTrace("Exception while reading \"flapjack.sally.right\": ", e);
     }
   }
 
@@ -243,7 +243,7 @@ public class HttpClientTest {
       //System.out.println("actual:" + actual);
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception while reading \"flapjack.sally\": " + e);
+      failWithStackTrace("Exception while reading \"flapjack.sally\": ", e);
     }
   }
 
@@ -256,7 +256,7 @@ public class HttpClientTest {
       //System.out.println("actual:" + actual);
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception while reading \"flapjack\": " + e);
+      failWithStackTrace("Exception while reading \"flapjack\": ", e);
     }
   }
 
@@ -265,7 +265,7 @@ public class HttpClientTest {
     try {
       client.fieldCreateSingleElementList(httpOneEntry.getGuid(), "cats", "whacky", httpOneEntry);
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception when we were not expecting testing cats: " + e);
+      failWithStackTrace("Exception when we were not expecting testing cats: ", e);
     }
   }
 
@@ -275,7 +275,7 @@ public class HttpClientTest {
       Assert.assertEquals("whacky",
               client.fieldReadFirstElement(httpOneEntry.getGuid(), "cats", httpOneEntry));
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception when we were not expecting testing cats: " + e);
+      failWithStackTrace("Exception when we were not expecting testing cats: ", e);
     }
   }
 
@@ -286,7 +286,7 @@ public class HttpClientTest {
               Arrays.asList("hooch", "maya", "red", "sox", "toby")), httpOneEntry);
 
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception in createMoreCats: " + e);
+      failWithStackTrace("Exception in createMoreCats: ", e);
     }
   }
 
@@ -300,7 +300,7 @@ public class HttpClientTest {
       Assert.assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception in checkMoreCats: " + e);
+      failWithStackTrace("Exception in checkMoreCats: ", e);
     }
   }
 
@@ -310,7 +310,7 @@ public class HttpClientTest {
       client.fieldClear(httpOneEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("maya", "toby")), httpOneEntry);
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception in clearCats: " + e);
+      failWithStackTrace("Exception in clearCats: ", e);
     }
   }
 
@@ -324,7 +324,7 @@ public class HttpClientTest {
       Assert.assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception in checkClearCats: " + e);
+      failWithStackTrace("Exception in checkClearCats: ", e);
     }
   }
 
@@ -333,7 +333,7 @@ public class HttpClientTest {
     try {
       client.fieldAppendWithSetSemantics(httpOneEntry.getGuid(), "cats", "fred", httpOneEntry);
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception in createEvenMoreCats: " + e);
+      failWithStackTrace("Exception in createEvenMoreCats: ", e);
     }
   }
 
@@ -347,7 +347,7 @@ public class HttpClientTest {
               httpOneEntry.getGuid(), "cats", httpOneEntry));
       Assert.assertEquals(expected, actual);
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception in checkEvenMoreCats: " + e);
+      failWithStackTrace("Exception in checkEvenMoreCats: ", e);
     }
   }
 
@@ -361,7 +361,7 @@ public class HttpClientTest {
       // best we can do since there will be one, but possibly more objects in results
       Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception when we were not expecting it: " + e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
   }
 
@@ -376,7 +376,7 @@ public class HttpClientTest {
         client.setLocation(0.0, 0.0, testEntry);
       }
     } catch (IOException | ClientException | NoSuchAlgorithmException e) {
-      failWithStackTrace("Exception when we were not expecting it: " + e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
 
     try {
@@ -388,7 +388,7 @@ public class HttpClientTest {
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (JSONException | IOException | ClientException e) {
-      failWithStackTrace("Exception executing selectNear: " + e);
+      failWithStackTrace("Exception executing selectNear: ", e);
     }
 
     try {
@@ -406,7 +406,7 @@ public class HttpClientTest {
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (JSONException | IOException | ClientException e) {
-      failWithStackTrace("Exception executing selectWithin: " + e);
+      failWithStackTrace("Exception executing selectWithin: ", e);
     }
   }
 
@@ -423,7 +423,7 @@ public class HttpClientTest {
         client.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
     } catch (IOException | ClientException | NoSuchAlgorithmException e) {
-      failWithStackTrace("Exception while tryint to create the guids: " + e);
+      failWithStackTrace("Exception while tryint to create the guids: ", e);
     }
 
     try {
@@ -435,7 +435,7 @@ public class HttpClientTest {
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception executing selectNear: " + e);
+      failWithStackTrace("Exception executing selectNear: ", e);
     }
 
     try {
@@ -453,7 +453,7 @@ public class HttpClientTest {
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (JSONException | IOException | ClientException e) {
-      failWithStackTrace("Exception executing selectWithin: " + e);
+      failWithStackTrace("Exception executing selectWithin: ", e);
     }
   }
 
@@ -468,7 +468,7 @@ public class HttpClientTest {
     try {
       client.fieldUpdate(masterGuid, createIndexTestField, createGeoJSONPolygon(AREA_EXTENT));
     } catch (JSONException | IOException | ClientException e) {
-      failWithStackTrace("Exception during create field: " + e);
+      failWithStackTrace("Exception during create field: ", e);
     }
   }
 
@@ -480,7 +480,7 @@ public class HttpClientTest {
     try {
       client.fieldCreateIndex(masterGuid, createIndexTestField, "2dsphere");
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception while creating index: " + e);
+      failWithStackTrace("Exception while creating index: ", e);
     }
   }
 
@@ -497,7 +497,7 @@ public class HttpClientTest {
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
     } catch (JSONException | IOException | ClientException e) {
-      failWithStackTrace("Exception executing second selectNear: " + e);
+      failWithStackTrace("Exception executing second selectNear: ", e);
     }
   }
   
@@ -518,7 +518,7 @@ public class HttpClientTest {
       guidToDeleteEntry = client.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = client.guidCreate(masterGuid, mygroupName);
     } catch (IOException | ClientException | NoSuchAlgorithmException e) {
-      failWithStackTrace("Exception while creating guids: " + e);
+      failWithStackTrace("Exception while creating guids: ", e);
     }
   }
 
@@ -530,7 +530,7 @@ public class HttpClientTest {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), httpOneEntry.getGuid(), mygroupEntry);
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception while adding Westy: " + e);
+      failWithStackTrace("Exception while adding Westy: ", e);
     }
   }
   
@@ -542,7 +542,7 @@ public class HttpClientTest {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), httpTwoEntry.getGuid(), mygroupEntry);
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception while adding Sam: " + e);
+      failWithStackTrace("Exception while adding Sam: ", e);
     }
   }
 
@@ -554,7 +554,7 @@ public class HttpClientTest {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), guidToDeleteEntry.getGuid(), mygroupEntry);
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception while adding GuidToDelete: " + e);
+      failWithStackTrace("Exception while adding GuidToDelete: ", e);
     }
   }
 
@@ -573,7 +573,7 @@ public class HttpClientTest {
       Assert.assertEquals(expected, actual);
 
     } catch (Exception e) {
-      failWithStackTrace("Exception while getting members and groups: " + e);
+      failWithStackTrace("Exception while getting members and groups: ", e);
     }
   }
 
@@ -586,7 +586,7 @@ public class HttpClientTest {
     try {
       client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
     } catch (Exception e) {
-      failWithStackTrace("Exception while removing testGuid: " + e);
+      failWithStackTrace("Exception while removing testGuid: ", e);
     }
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
@@ -594,7 +594,7 @@ public class HttpClientTest {
     } catch (ClientException e) {
 
     } catch (IOException e) {
-      failWithStackTrace("Exception while doing Lookup testGuid: " + e);
+      failWithStackTrace("Exception while doing Lookup testGuid: ", e);
     }
   }
 
@@ -609,7 +609,7 @@ public class HttpClientTest {
       Assert.assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception during remove guid group update test: " + e);
+      failWithStackTrace("Exception during remove guid group update test: ", e);
       System.exit(2);
     }
   }

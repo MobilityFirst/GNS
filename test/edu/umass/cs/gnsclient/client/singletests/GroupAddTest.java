@@ -71,12 +71,12 @@ public class GroupAddTest {
         client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        failWithStackTrace("Exception creating client: ", e);
       }
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
-        failWithStackTrace("Exception when we were not expecting it: " + e);
+        failWithStackTrace("Exception when we were not expecting it: ", e);
       }
     }
   }
@@ -93,7 +93,7 @@ public class GroupAddTest {
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating guids: " + e);
+      failWithStackTrace("Exception while creating guids: ", e);
     }
   }
 
@@ -112,7 +112,7 @@ public class GroupAddTest {
       
       mygroupEntry = client.guidCreate(masterGuid, mygroupName);
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating guids: " + e);
+      failWithStackTrace("Exception while creating guids: ", e);
     }
   }
   
@@ -125,7 +125,7 @@ public class GroupAddTest {
       JSONArray guids = new JSONArray(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid(), guidToDeleteEntry.getGuid()));
       client.groupAddGuids(mygroupEntry.getGuid(), guids, mygroupEntry);
     } catch (IOException | ClientException e) {
-      failWithStackTrace("Exception while adding to groups: " + e);
+      failWithStackTrace("Exception while adding to groups: ", e);
     }
   }
 
@@ -149,7 +149,7 @@ public class GroupAddTest {
       assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception while getting members and groups: " + e);
+      failWithStackTrace("Exception while getting members and groups: ", e);
     }
   }
   
@@ -165,7 +165,7 @@ public class GroupAddTest {
       twoEntry = client.guidCreate(masterGuid, "two" + RandomString.randomString(6));
       threeEntry = client.guidCreate(masterGuid, "three" + RandomString.randomString(6));
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating guids: " + e);
+      failWithStackTrace("Exception while creating guids: ", e);
     }
   }
   
@@ -181,7 +181,7 @@ public class GroupAddTest {
       
       anotherGroupEntry = client.guidCreate(masterGuid, another);
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating guids: " + e);
+      failWithStackTrace("Exception while creating guids: ", e);
     }
   }
 
@@ -194,7 +194,7 @@ public class GroupAddTest {
     try {
       client.groupAddGuid(anotherGroupEntry.getGuid(), oneEntry.getGuid(), anotherGroupEntry);
     } catch (Exception e) {
-      failWithStackTrace("Exception while adding One: " + e);
+      failWithStackTrace("Exception while adding One: ", e);
     }
   }
 
@@ -206,7 +206,7 @@ public class GroupAddTest {
     try {
       client.groupAddGuid(anotherGroupEntry.getGuid(), twoEntry.getGuid(), anotherGroupEntry);
     } catch (Exception e) {
-      failWithStackTrace("Exception while adding Two: " + e);
+      failWithStackTrace("Exception while adding Two: ", e);
     }
   }
 
@@ -218,7 +218,7 @@ public class GroupAddTest {
     try {
       client.groupAddGuid(anotherGroupEntry.getGuid(), threeEntry.getGuid(), anotherGroupEntry);
     } catch (Exception e) {
-      failWithStackTrace("Exception while adding Three: " + e);
+      failWithStackTrace("Exception while adding Three: ", e);
     }
   }
   
@@ -242,7 +242,7 @@ public class GroupAddTest {
       assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
-      failWithStackTrace("Exception while getting members and groups: " + e);
+      failWithStackTrace("Exception while getting members and groups: ", e);
     }
   }
   

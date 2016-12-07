@@ -64,7 +64,7 @@ public class AclDefaultsTest {
         client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        failWithStackTrace("Exception creating client: " + e);
+        failWithStackTrace("Exception creating client: ", e);
       }
     }
   }
@@ -77,7 +77,7 @@ public class AclDefaultsTest {
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating guid: " + e);
+      failWithStackTrace("Exception while creating guid: ", e);
     }
   }
 
@@ -91,7 +91,7 @@ public class AclDefaultsTest {
     try {
       client.fieldCreateOneElementList(masterGuid.getGuid(), TEST_FIELD_NAME, "testValue", masterGuid);
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating fields in ACLCreateFields: " + e);
+      failWithStackTrace("Exception while creating fields in ACLCreateFields: ", e);
       e.printStackTrace();
     }
   }
@@ -113,7 +113,7 @@ public class AclDefaultsTest {
                 GNSProtocol.ALL_GUIDS.toString());
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception while checking for ALL_FIELDS in ACLMaybeAddAllFields: " + e);
+      failWithStackTrace("Exception while checking for ALL_FIELDS in ACLMaybeAddAllFields: ", e);
       e.printStackTrace();
     }
   }
@@ -130,7 +130,7 @@ public class AclDefaultsTest {
               client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
                       GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()), true);
     } catch (Exception e) {
-      failWithStackTrace("Exception while checking ALL_FIELDS in ACLCheckForAllFieldsPass: " + e);
+      failWithStackTrace("Exception while checking ALL_FIELDS in ACLCheckForAllFieldsPass: ", e);
       e.printStackTrace();
     }
   }
@@ -142,7 +142,7 @@ public class AclDefaultsTest {
       client.aclRemove(AclAccessType.READ_WHITELIST, masterGuid,
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
-      failWithStackTrace("Exception while removing ACL in ACLRemoveAllFields: " + e);
+      failWithStackTrace("Exception while removing ACL in ACLRemoveAllFields: ", e);
       e.printStackTrace();
     }
   }
@@ -155,7 +155,7 @@ public class AclDefaultsTest {
               client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
                       GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()), true);
     } catch (Exception e) {
-      failWithStackTrace("Exception while checking ALL_FIELDS in ACLCheckForAllFieldsMissing: " + e);
+      failWithStackTrace("Exception while checking ALL_FIELDS in ACLCheckForAllFieldsMissing: ", e);
       e.printStackTrace();
     }
   }
@@ -165,7 +165,7 @@ public class AclDefaultsTest {
     try {
       assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
-      failWithStackTrace("Exception in CheckAllFieldsAcl: " + e);
+      failWithStackTrace("Exception in CheckAllFieldsAcl: ", e);
     }
   }
 
@@ -174,7 +174,7 @@ public class AclDefaultsTest {
     try {
       client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString());
     } catch (Exception e) {
-      failWithStackTrace("Exception in DeleteAllFieldsAcl: " + e);
+      failWithStackTrace("Exception in DeleteAllFieldsAcl: ", e);
     }
   }
 
@@ -183,7 +183,7 @@ public class AclDefaultsTest {
     try {
       assertFalse(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
     } catch (Exception e) {
-      failWithStackTrace("Exception in CheckAllFieldsAclGone: " + e);
+      failWithStackTrace("Exception in CheckAllFieldsAclGone: ", e);
     }
   }
 
@@ -192,7 +192,7 @@ public class AclDefaultsTest {
     try {
       client.fieldCreateAcl(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
-      failWithStackTrace("Exception CreateAcl while creating ACL field: " + e);
+      failWithStackTrace("Exception CreateAcl while creating ACL field: ", e);
     }
   }
 
@@ -201,7 +201,7 @@ public class AclDefaultsTest {
     try {
       assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
-      failWithStackTrace("Exception CheckAcl: " + e);
+      failWithStackTrace("Exception CheckAcl: ", e);
     }
   }
 
@@ -210,7 +210,7 @@ public class AclDefaultsTest {
     try {
       client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME);
     } catch (Exception e) {
-      failWithStackTrace("Exception in DeleteAcl: " + e);
+      failWithStackTrace("Exception in DeleteAcl: ", e);
     }
   }
 
@@ -219,7 +219,7 @@ public class AclDefaultsTest {
     try {
       assertFalse(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, TEST_FIELD_NAME));
     } catch (Exception e) {
-      failWithStackTrace("Exception in CheckAclGonewhile: " + e);
+      failWithStackTrace("Exception in CheckAclGonewhile: ", e);
     }
   }
 
@@ -235,7 +235,7 @@ public class AclDefaultsTest {
       westyEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, "westy" + RandomString.randomString(6));
       samEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, "sam" + RandomString.randomString(6));
     } catch (Exception e) {
-      failWithStackTrace("Exception registering guids in ACLCreateGuids: " + e);
+      failWithStackTrace("Exception registering guids in ACLCreateGuids: ", e);
       e.printStackTrace();
     }
   }
@@ -249,7 +249,7 @@ public class AclDefaultsTest {
       client.aclRemove(AclAccessType.READ_WHITELIST, samEntry,
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
-      failWithStackTrace("Exception while removing ACL in ACLRemoveAllFields: " + e);
+      failWithStackTrace("Exception while removing ACL in ACLRemoveAllFields: ", e);
       e.printStackTrace();
     }
   }
@@ -265,7 +265,7 @@ public class AclDefaultsTest {
       client.fieldUpdate(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
       client.fieldUpdate(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating fields in ACLCreateFields: " + e);
+      failWithStackTrace("Exception while creating fields in ACLCreateFields: ", e);
       e.printStackTrace();
     }
   }
@@ -281,7 +281,7 @@ public class AclDefaultsTest {
                 masterGuid.getGuid());
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception while checking for ALL_FIELDS in ACLMaybeAddAllFields: " + e);
+      failWithStackTrace("Exception while checking for ALL_FIELDS in ACLMaybeAddAllFields: ", e);
       e.printStackTrace();
     }
   }
@@ -301,7 +301,7 @@ public class AclDefaultsTest {
               GNSProtocol.ENTIRE_RECORD.toString(), masterGuid));
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
-      failWithStackTrace("Exception while reading all fields in ACLReadAllFields: " + e);
+      failWithStackTrace("Exception while reading all fields in ACLReadAllFields: ", e);
       e.printStackTrace();
     }
   }
@@ -320,7 +320,7 @@ public class AclDefaultsTest {
               client.fieldRead(westyEntry.getGuid(), "ssn", westyEntry));
 
     } catch (Exception e) {
-      failWithStackTrace("Exception while reading fields in ACLReadMyFields: " + e);
+      failWithStackTrace("Exception while reading fields in ACLReadMyFields: ", e);
       e.printStackTrace();
     }
   }
@@ -338,7 +338,7 @@ public class AclDefaultsTest {
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidAllFieldsTest: " + e);
+      failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidAllFieldsTest: ", e);
       e.printStackTrace();
     }
   }
@@ -357,7 +357,7 @@ public class AclDefaultsTest {
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidFieldTest: " + e);
+      failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidFieldTest: ", e);
       e.printStackTrace();
     }
   }
@@ -371,11 +371,11 @@ public class AclDefaultsTest {
       try {
         client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
       } catch (Exception e) {
-        failWithStackTrace("Exception adding Sam to Westy's readlist: " + e);
+        failWithStackTrace("Exception adding Sam to Westy's readlist: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLPartOne: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartOne: ", e);
       e.printStackTrace();
     }
   }
@@ -386,11 +386,11 @@ public class AclDefaultsTest {
       try {
         assertEquals("work", client.fieldRead(westyEntry.getGuid(), "environment", samEntry));
       } catch (Exception e) {
-        failWithStackTrace("Exception while Sam reading Westy's field: " + e);
+        failWithStackTrace("Exception while Sam reading Westy's field: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLPartOne: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartOne: ", e);
       e.printStackTrace();
     }
   }
@@ -409,12 +409,12 @@ public class AclDefaultsTest {
         failWithStackTrace(barneyName + " entity should not exist");
       } catch (ClientException e) {
       } catch (Exception e) {
-        failWithStackTrace("Exception looking up Barney: " + e);
+        failWithStackTrace("Exception looking up Barney: ", e);
         e.printStackTrace();
       }
       barneyEntry = client.guidCreate(masterGuid, barneyName);
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: ", e);
       e.printStackTrace();
     }
   }
@@ -426,7 +426,7 @@ public class AclDefaultsTest {
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: ", e);
       e.printStackTrace();
     }
   }
@@ -438,7 +438,7 @@ public class AclDefaultsTest {
       client.fieldUpdate(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       client.fieldUpdate(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: ", e);
       e.printStackTrace();
     }
   }
@@ -451,11 +451,11 @@ public class AclDefaultsTest {
         client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
                 GNSProtocol.ALL_GUIDS.toString());
       } catch (Exception e) {
-        failWithStackTrace("Exception creating ALL_GUIDS access for Barney's cell: " + e);
+        failWithStackTrace("Exception creating ALL_GUIDS access for Barney's cell: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: ", e);
       e.printStackTrace();
     }
   }
@@ -467,11 +467,11 @@ public class AclDefaultsTest {
         assertEquals("413-555-1234",
                 client.fieldRead(barneyEntry.getGuid(), "cell", samEntry));
       } catch (Exception e) {
-        failWithStackTrace("Exception while Sam reading Barney' cell: " + e);
+        failWithStackTrace("Exception while Sam reading Barney' cell: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLPartOne: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartOne: ", e);
       e.printStackTrace();
     }
   }
@@ -483,11 +483,11 @@ public class AclDefaultsTest {
         assertEquals("413-555-1234",
                 client.fieldRead(barneyEntry.getGuid(), "cell", westyEntry));
       } catch (Exception e) {
-        failWithStackTrace("Exception while Westy reading Barney' cell: " + e);
+        failWithStackTrace("Exception while Westy reading Barney' cell: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLTestReadsTwo: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLTestReadsTwo: ", e);
       e.printStackTrace();
     }
   }
@@ -505,15 +505,15 @@ public class AclDefaultsTest {
           System.out.print("This was expected for null querier trying to ReadUnsigned "
                   + barneyEntry.getGuid()
                   + "'s address: "
-                  + e);
+                 + e);
         }
       } catch (Exception e) {
-        failWithStackTrace("Exception while Sam reading Barney' address: " + e);
+        failWithStackTrace("Exception while Sam reading Barney' address: ", e);
         e.printStackTrace();
       }
 
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLTestReadsThree: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLTestReadsThree: ", e);
       e.printStackTrace();
     }
   }
@@ -540,7 +540,7 @@ public class AclDefaultsTest {
               client.fieldRead(barneyEntry.getGuid(), "address", superuserEntry));
 
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: ", e);
       e.printStackTrace();
     }
   }
@@ -551,11 +551,11 @@ public class AclDefaultsTest {
       try {
         client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
       } catch (Exception e) {
-        failWithStackTrace("Problem updating field: " + e);
+        failWithStackTrace("Problem updating field: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: ", e);
       e.printStackTrace();
     }
   }
@@ -567,11 +567,11 @@ public class AclDefaultsTest {
         // Create an empty ACL, effectively disabling access except by the guid itself.
         client.fieldCreateAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
       } catch (Exception e) {
-        failWithStackTrace("Problem adding acl: " + e);
+        failWithStackTrace("Problem adding acl: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: ", e);
       e.printStackTrace();
     }
   }
@@ -582,11 +582,11 @@ public class AclDefaultsTest {
       try {
         assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
       } catch (Exception e) {
-        failWithStackTrace("Problem reading acl: " + e);
+        failWithStackTrace("Problem reading acl: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: ", e);
       e.printStackTrace();
     }
   }
@@ -599,11 +599,11 @@ public class AclDefaultsTest {
       try {
         assertEquals("fieldValue", client.fieldRead(westyEntry.getGuid(), "test.deeper.field", westyEntry));
       } catch (Exception e) {
-        failWithStackTrace("Problem adding read field: " + e);
+        failWithStackTrace("Problem adding read field: ", e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: ", e);
       e.printStackTrace();
     }
   }
@@ -618,7 +618,7 @@ public class AclDefaultsTest {
       } catch (Exception e) {
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: ", e);
       e.printStackTrace();
     }
   }
@@ -633,7 +633,7 @@ public class AclDefaultsTest {
       } catch (Exception e) {
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: ", e);
       e.printStackTrace();
     }
   }
@@ -643,7 +643,7 @@ public class AclDefaultsTest {
     try {
       client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test", GNSProtocol.ALL_GUIDS.toString());
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: ", e);
       e.printStackTrace();
     }
   }
@@ -659,7 +659,7 @@ public class AclDefaultsTest {
       } catch (Exception e) {
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: ", e);
       e.printStackTrace();
     }
   }
