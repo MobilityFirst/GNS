@@ -298,14 +298,14 @@ public class ServerIntegrationTest extends DefaultTest {
       numLogFiles = Integer.parseInt(temp);
     }
 
-    output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+    output = RunServer.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
     temp = output.get(0);
     temp = temp.replaceAll("\\s", "");
     int numServersUp = Integer.parseInt(temp);
     System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
     while (numServersUp < numServers) {
       Thread.sleep(5000);
-      output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+      output = RunServer.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
       temp = output.get(0);
       temp = temp.replaceAll("\\s", "");
       numServersUp = Integer.parseInt(temp);
