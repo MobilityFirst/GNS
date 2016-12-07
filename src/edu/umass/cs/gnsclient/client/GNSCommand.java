@@ -16,7 +16,6 @@
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -43,8 +42,7 @@ import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
-import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
 /**
  * @author arun
@@ -533,24 +531,34 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket accountGuidCreate(String gnsInstance,
           String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
-    GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
-    /* arun: Don't recreate pair if one already exists. Otherwise you can
-			 * not get out of the funk where the account creation timed out but
-			 * wasn't rolled back fully at the server. Re-using
-			 * the same guid will at least pass verification as opposed to 
-			 * incurring an GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString() for a new (non-existent) guid.
-     */
-    if (entry == null) {
-      KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
-              .generateKeyPair();
-      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-              .getPublic().getEncoded());
-      // Squirrel this away now just in case the call below times out.
-      KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
-      entry = new GuidEntry(alias, guid, keyPair.getPublic(),
-              keyPair.getPrivate());
-    }
-    return accountGuidCreateHelper(alias, entry, password);
+    GuidEntry guidEntry = lookupOrCreateGuidEntry(gnsInstance, alias);
+    return accountGuidCreateInternal(alias, password, CommandType.RegisterAccount, guidEntry);
+  }
+
+  /**
+   * Register a new account guid with the name {@code alias} and a password
+   * {@code password}. Executing this query generates a new guid and a public
+   * / private key pair. {@code password} can be used to retrieve account
+   * information if the client loses the private key corresponding to the
+   * account guid.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys.
+   *
+   * @param gnsInstance
+   *
+   * @param alias
+   * Human readable alias for the account guid being created, e.g.,
+   * an email address
+   * @param password
+   * @return CommandPacket
+   * @throws ClientException
+   * @throws java.io.IOException
+   * @throws java.security.NoSuchAlgorithmException
+   */
+  public static final CommandPacket accountGuidCreateSecure(String gnsInstance,
+          String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
+    GuidEntry guidEntry = lookupOrCreateGuidEntry(gnsInstance, alias);
+    return accountGuidCreateInternal(alias, password, CommandType.RegisterAccountSecured, guidEntry);
   }
 
   /**
@@ -567,7 +575,7 @@ public class GNSCommand extends CommandPacket {
           String code) throws ClientException {
     return getCommand(CommandType.VerifyAccount, accountGUID,
             GNSProtocol.GUID.toString(),
-            accountGUID.getGuid(), 
+            accountGUID.getGuid(),
             GNSProtocol.CODE.toString(), code);
   }
 
@@ -659,7 +667,7 @@ public class GNSCommand extends CommandPacket {
           GuidEntry accountGUID, Set<String> aliases) throws ClientException {
 
     List<String> aliasList = new ArrayList<>(aliases);
-    List<String> publicKeys = null;
+    List<String> publicKeys;
     publicKeys = new ArrayList<>();
     for (String alias : aliasList) {
       GuidEntry entry;
@@ -1109,60 +1117,63 @@ public class GNSCommand extends CommandPacket {
   // ///////////////////////////////
   // // PRIVATE METHODS BELOW /////
   // /////////////////////////////
-  /**
-   * Creates a new guid associated with an account.
-   *
-   * @param accountGuid
-   * @param name
-   * @param publicKey
-   * @return a command packet
-   * @throws ClientException
-   */
-  private static final CommandPacket guidCreateHelper(GuidEntry accountGuid,
-          String name, PublicKey publicKey) throws ClientException {
-    byte[] publicKeyBytes = publicKey.getEncoded();
-    String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
-    return getCommand(CommandType.AddGuid, accountGuid, GNSProtocol.GUID.toString(),
-            accountGuid.getGuid(), GNSProtocol.NAME.toString(), name, GNSProtocol.PUBLIC_KEY.toString(), publicKeyString);
+  private static GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
+          String alias) throws NoSuchAlgorithmException, EncryptionException {
+    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
+    /*
+     * Don't recreate pair if one already exists. Otherwise you can
+     * not get out of the funk where the account creation timed out but
+     * wasn't rolled back fully at the server. Re-using
+     * the same guid will at least pass verification as opposed to
+     * incurring an GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString() for a new (non-existent) guid.
+     */
+    if (guidEntry == null) {
+      KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
+              .generateKeyPair();
+      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
+              .getPublic().getEncoded());
+      // Squirrel this away now just in case the call below times out.
+      KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
+      guidEntry = new GuidEntry(alias, guid, keyPair.getPublic(),
+              keyPair.getPrivate());
+    }
+    return guidEntry;
   }
 
-  /**
-   * Register a new account guid with the corresponding alias and the given
-   * public key on the GNS server. Returns a new guid.
-   *
-   * @param alias
-   * the alias to register (usually an email address)
-   * @param guidEntry
-   * @param password
-   * the public key associate with the account
-   * @return guid the guid generated by the GNS
-   * @throws IOException
-   * @throws UnsupportedEncodingException
-   * @throws ClientException
-   * @throws InvalidGuidException
-   * if the user already exists
-   * @throws NoSuchAlgorithmException
-   */
-  public static final CommandPacket accountGuidCreateHelper(String alias,
-          GuidEntry guidEntry, String password)
-          throws UnsupportedEncodingException, IOException, ClientException,
-          InvalidGuidException, NoSuchAlgorithmException {
-    return getCommand(CommandType.RegisterAccount,
-            guidEntry, GNSProtocol.NAME.toString(), alias, GNSProtocol.PUBLIC_KEY.toString(), Base64.encodeToString(
+  private static CommandPacket accountGuidCreateInternal(String alias, String password,
+          CommandType commandType, GuidEntry guidEntry)
+          throws ClientException, NoSuchAlgorithmException {
+    return getCommand(commandType,
+            guidEntry, GNSProtocol.NAME.toString(), alias,
+            GNSProtocol.PUBLIC_KEY.toString(),
+            Base64.encodeToString(
                     guidEntry.publicKey.getEncoded(), false),
             GNSProtocol.PASSWORD.toString(),
             password != null ? Password.encryptAndEncodePassword(password, alias) : "");
   }
 
-  private static final CommandPacket aclAdd(String accessType,
+  private static CommandPacket guidCreateHelper(GuidEntry accountGuid,
+          String name, PublicKey publicKey) throws ClientException {
+    byte[] publicKeyBytes = publicKey.getEncoded();
+    String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
+    return getCommand(CommandType.AddGuid, accountGuid,
+            GNSProtocol.GUID.toString(), accountGuid.getGuid(),
+            GNSProtocol.NAME.toString(), name,
+            GNSProtocol.PUBLIC_KEY.toString(), publicKeyString);
+  }
+
+  private static CommandPacket aclAdd(String accessType,
           GuidEntry guid, String field, String accesserGuid)
           throws ClientException {
-    return getCommand(CommandType.AclAddSelf, guid, GNSProtocol.ACL_TYPE.toString(), accessType,
-            GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.ACCESSER.toString(),
+    return getCommand(CommandType.AclAddSelf, guid,
+            GNSProtocol.ACL_TYPE.toString(), accessType,
+            GNSProtocol.GUID.toString(), guid.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.ACCESSER.toString(),
             accesserGuid == null ? GNSProtocol.ALL_GUIDS.toString() : accesserGuid);
   }
 
-  private static final CommandPacket aclRemove(String accessType,
+  private static CommandPacket aclRemove(String accessType,
           GuidEntry guid, String field, String accesserGuid)
           throws ClientException {
     return getCommand(CommandType.AclRemoveSelf, guid, GNSProtocol.ACL_TYPE.toString(),
@@ -1170,7 +1181,7 @@ public class GNSCommand extends CommandPacket {
             accesserGuid == null ? GNSProtocol.ALL_GUIDS.toString() : accesserGuid);
   }
 
-  private static final CommandPacket aclGet(String accessType,
+  private static CommandPacket aclGet(String accessType,
           GuidEntry guid, String field, String readerGuid)
           throws ClientException {
     return getCommand(CommandType.AclRetrieve, guid, GNSProtocol.ACL_TYPE.toString(), accessType,
@@ -1957,8 +1968,9 @@ public class GNSCommand extends CommandPacket {
           String targetGUID, String field, String value, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.Append, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
-            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value.toString(), GNSProtocol.WRITER.toString(),
-            querierGUID.getGuid());
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.VALUE.toString(), value,
+            GNSProtocol.WRITER.toString(), querierGUID.getGuid());
   }
 
   /**

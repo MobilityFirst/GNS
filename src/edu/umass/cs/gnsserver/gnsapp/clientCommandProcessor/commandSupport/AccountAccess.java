@@ -467,21 +467,21 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse addAccountWithVerification(
+  public static CommandResponse addAccount(
           final String hostPortString, final String name, final String guid,
-          String publicKey, String password,
+          String publicKey, String password, boolean useEmailVerification,
           ClientRequestHandlerInterface handler) throws ClientException,
           IOException, JSONException {
 
     CommandResponse response;
     // make this even if  we don't need it
     String verifyCode = createVerificationCode(name);
-    if ((response = addAccount(name, guid, publicKey, password,
-            Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION),
+    if ((response = addAccountInternal(name, guid, publicKey, password,
+            useEmailVerification,
             verifyCode, handler)).getExceptionOrErrorCode().isOKResult()) {
 
       // Account creation was succesful so maybe send email verification.
-      if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)) {
+      if (useEmailVerification) {
         boolean emailSent = sendEmailAuthentication(name, guid, hostPortString, verifyCode);
         if (emailSent) {
           return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
@@ -738,7 +738,7 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse addAccount(String name, String guid,
+  public static CommandResponse addAccountInternal(String name, String guid,
           String publicKey, String password, boolean emailVerify,
           String verifyCode, ClientRequestHandlerInterface handler) {
     try {

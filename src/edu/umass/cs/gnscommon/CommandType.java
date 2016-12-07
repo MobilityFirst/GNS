@@ -42,67 +42,98 @@ import org.junit.Test;
 public enum CommandType {
   /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
-   *//**
+   */
+  /**
    *
    */
   Append(110, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,
@@ -921,11 +952,11 @@ public enum CommandType {
   /**
    *
    */
-  RegisterAccount(430, CommandCategory.CREATE_DELETE, 
+  RegisterAccount(430, CommandCategory.CREATE_DELETE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount.class,
           CommandResultType.NULL, false, false,
           "Creates an account guid associated with the human readable name and the supplied public key. "
-          + "Must be sign with the public key. Returns a guid.",
+          + "Must be signed with the public key. Returns a guid.",
           new String[]{GNSProtocol.NAME.toString(),
             GNSProtocol.PUBLIC_KEY.toString(),
             GNSProtocol.PASSWORD.toString(),
@@ -934,11 +965,18 @@ public enum CommandType {
   /**
    *
    */
-  RegisterAccountSecured(431, CommandCategory.CREATE_DELETE, 
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.RegisterAccountSecured.class,
-          CommandResultType.STRING, true, true,
-          "Returns the contents of the GNS.",
-          new String[]{GNSProtocol.PASSKEY.toString()}, 
+  RegisterAccountSecured(431, CommandCategory.CREATE_DELETE,
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountSecured.class,
+          CommandResultType.NULL, false, false,
+          "Creates an account guid associated with the human readable name and the supplied public key. "
+          + "Must be signed with the public key. Returns a guid. "
+          + "Sent on the mutual auth channel. "
+          + "Can only be sent from a client that has the correct ssl keys.",
+          new String[]{GNSProtocol.NAME.toString(),
+            GNSProtocol.PUBLIC_KEY.toString(),
+            GNSProtocol.PASSWORD.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           CommandFlag.MUTUAL_AUTH
   ),
   /**
@@ -1317,7 +1355,7 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands.",
           new String[]{"tcp"},
-  CommandFlag.LOCAL),
+          CommandFlag.LOCAL),
   /**
    *
    */
@@ -1325,15 +1363,15 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands in wiki format.",
           new String[]{"tcpwiki"},
-  CommandFlag.LOCAL),
+          CommandFlag.LOCAL),
   /**
    *
    */
   Dump(716, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
           CommandResultType.STRING, true, true,
           "Returns the contents of the GNS.",
-          new String[]{GNSProtocol.PASSKEY.toString()},
-  CommandFlag.MUTUAL_AUTH),
+          new String[]{},
+          CommandFlag.MUTUAL_AUTH),
   /**
    *
    */
@@ -1761,6 +1799,7 @@ public enum CommandType {
     LookupPrimaryGuid.setChain(ReadUnsigned);
     LookupGuidRecord.setChain();
     RegisterAccount.setChain(ReadUnsigned);
+    RegisterAccountSecured.setChain(ReadUnsigned);
     RegisterAccountUnsigned.setChain(ReadUnsigned);
     ResendAuthenticationEmail.setChain();
     RemoveAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);

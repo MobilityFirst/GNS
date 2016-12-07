@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
@@ -42,7 +42,9 @@ import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
- *
+ * The same as RegisterAccount, but doesn't use email verification.
+ * Sent on the mutual auth channel.
+ * Can only be sent from a client that  has the correct ssl keys.
  * @author westy
  */
 public class RegisterAccountSecured extends AbstractCommand {
@@ -73,25 +75,22 @@ public class RegisterAccountSecured extends AbstractCommand {
     String password = json.getString(GNSProtocol.PASSWORD.toString());
     String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
     String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
-    
+
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
-    // FIXME: this lacking signature check is for temporary backward compatability... remove it.
-    // See RegisterAccountUnsigned
-    if (signature != null && message != null) {
-      if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
-        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
-      }
+    if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
+      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
     try {
-      CommandResponse result = AccountAccess.addAccountWithVerification(
+      // Add the account but don't enable email verification
+      CommandResponse result = AccountAccess.addAccount(
               handler.getHttpServerHostPortString(),
               name, guid, publicKey,
-              password, handler);
+              password, false, handler);
       if (result.getExceptionOrErrorCode().isOKResult()) {
         // Everything is hunkey dorey so return the new guid
         return new CommandResponse(ResponseCode.NO_ERROR, guid);
       } else {
-    	  assert(result.getExceptionOrErrorCode()!=null);
+        assert (result.getExceptionOrErrorCode() != null);
         // Otherwise return the error response.
         return result;
       }

@@ -334,6 +334,8 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-Djavax.net.ssl.keyStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks"/>
       <jvmarg value="-Dalias=${alias}"/>
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
