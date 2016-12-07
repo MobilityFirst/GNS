@@ -103,14 +103,15 @@ public class ServerIntegrationTestThreaded {
 		TreeMap<String, Method> dontRepeatMethodTree = new TreeMap<String, Method>();
 		for (Method method : allMethods){
 			String methodName = method.getName();
+			Test testAnnotation = method.getAnnotation(Test.class);
 			//Exclude non test methods by not putting them in our list.
-			if (!methodName.startsWith("test_")){
+			if (testAnnotation == null){
 				continue;
 			}
 			methodTree.put(methodName,method);
 				
 			//Create a list of test methods that will only be run once each.
-			for (String exclusion : runOnlyOnce){
+			/*for (String exclusion : runOnlyOnce){
 				if (methodName.equals(exclusion)){
 						dontRepeatMethodTree.put(methodName,method);
 				}
@@ -121,6 +122,7 @@ public class ServerIntegrationTestThreaded {
 					nonparallelMethodTree.put(methodName, method);
 				}
 			}
+			*/
 		}
 		for (Method method : methodTree.values()){	
 			//Create numThreads threads.
