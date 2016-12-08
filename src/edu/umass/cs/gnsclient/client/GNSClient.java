@@ -37,6 +37,7 @@ import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
@@ -510,7 +511,15 @@ public class GNSClient {
    */
   public GNSCommand execute(CommandPacket command) throws IOException,
           ClientException {
-    return (GNSCommand) this.sendSync(command);
+    Request returnPacket = this.sendSync(command);
+    // This is a hack to support AdminCommandPacket
+    // There is probably a better way involving restructuring the class
+    // hierarchy.
+    if (returnPacket instanceof AdminCommandPacket) {
+      return new GNSCommand(command.getRequestID(), command.getCommand(), false);
+    } else {
+      return (GNSCommand) returnPacket;
+    }
   }
 
   /**

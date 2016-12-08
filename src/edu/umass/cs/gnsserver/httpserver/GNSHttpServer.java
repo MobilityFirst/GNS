@@ -356,7 +356,7 @@ public class GNSHttpServer {
     return response;
   }
 
-  private CommandPacket getResponseUsingGNSClient(GNSClient client,
+    private CommandPacket getResponseUsingGNSClient(GNSClient client,
           JSONObject jsonFormattedArguments) throws ClientException, IOException, JSONException {
     LOGGER.log(Level.FINE, "jsonFormattedCommand =" + jsonFormattedArguments.toString());
 

@@ -73,6 +73,17 @@ public class GNSCommand extends CommandPacket {
   protected GNSCommand(long id, JSONObject command) {
     super(id, command);
   }
+  
+   /**
+   *
+   * @param id
+   * @param command
+   */
+  // This is a hack to support AdminCommandPacket being returned in GNSClient
+  // execute method.
+  protected GNSCommand(long id, JSONObject command, boolean validate) {
+    super(id, command, validate);
+  }
 
   // Need this for the HTTP server. Since we can't make the methods above public.
   /**
@@ -82,7 +93,8 @@ public class GNSCommand extends CommandPacket {
    * @return
    */
   public static GNSCommand createGNSCommandFromJSONObject(JSONObject command) {
-    return new GNSCommand(command);
+    // false so the validation doesn't happen for the http server
+    return new GNSCommand(randomLong(), command, false);
   }
 
   /**

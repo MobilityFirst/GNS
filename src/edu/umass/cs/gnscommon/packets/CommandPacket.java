@@ -76,7 +76,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
   /**
    * The JSON form of the command. Always includes a GNSProtocol.COMMANDNAME.toString() field. Almost
- always has a GNSProtocol.GUID.toString() field or GNSProtocol.NAME.toString() (for HRN records) field. Serialized.
+   * always has a GNSProtocol.GUID.toString() field or GNSProtocol.NAME.toString() (for HRN records) field. Serialized.
    */
   private final JSONObject command;
 
@@ -95,13 +95,26 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    * @param command
    */
   public CommandPacket(long requestId, JSONObject command) {
+    this(requestId, command, true);
+  }
+
+  /**
+   * Create a CommandPacket instance.
+   *
+   * @param requestId
+   * @param command
+   * @param validate
+   */
+  public CommandPacket(long requestId, JSONObject command, boolean validate) {
     this.setType(Packet.PacketType.COMMAND);
     this.clientRequestId = requestId;
     this.command = command;
-    validateCommandType();
-
+    if (validate) {
+      validateCommandType();
+    }
   }
 
+  
   /**
    * Creates a CommandPacket instance from a JSONObject.
    *
@@ -170,9 +183,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   }
 
   /**
-   * Checks that the command type of the packet is not MUTUAL_AUTH 
+   * Checks that the command type of the packet is not MUTUAL_AUTH
    * as those should be an AdminCommandPacket instead.
-   * This being a separate method allows AdminCommandPacket 
+   * This being a separate method allows AdminCommandPacket
    * to override it to change its validation while still reusing the constructor code here.
    */
   // Note that this implementation of this method will do nothing in production code because
@@ -250,7 +263,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
   /**
    * Converts the CommandPacket to bytes. Assumes that all fields other than
- GNSProtocol.COMMAND_INT.toString() have strings for values.
+   * GNSProtocol.COMMAND_INT.toString() have strings for values.
    *
    * @return Refer {@link Byteable#toBytes()}
    */
@@ -451,13 +464,13 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    *
    * @return the command
    */
-  protected JSONObject getCommand() {
+  public JSONObject getCommand() {
     return command;
   }
 
   /**
    * The service name is the name of the GNSProtocol.GUID.toString()/HRN that is being written to or
- read.
+   * read.
    *
    * @return the service name
    */
