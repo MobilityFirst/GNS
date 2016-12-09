@@ -43,99 +43,6 @@ public enum CommandType {
   /**
    *
    */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
-  /**
-   *
-   */
   Append(110, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,
           CommandResultType.NULL, true, false,
           "Appends the value onto the field for the given GUID. "
@@ -1831,9 +1738,9 @@ public enum CommandType {
     RemoveFromGroupSelf.setChain(ReadUnsigned);
     RemoveMembersFromGroupSelf.setChain(ReadUnsigned);
     //
-    SetCode.setChain(RemoveUnsigned);
-    ClearCode.setChain(RemoveUnsigned);
-    GetCode.setChain(RemoveUnsigned);
+    SetCode.setChain();
+    ClearCode.setChain();
+    GetCode.setChain();
     // admin
     Help.setChain();
     HelpTcp.setChain();
@@ -1871,6 +1778,56 @@ public enum CommandType {
     return result.toString();
   }
 
+  /**
+   * 
+   * enum CommandType: Int {
+   *   case tab = "\t"
+   *   case lineFeed = "\n"
+   *   case carriageReturn = "\r"
+   * }
+   *
+   * @return
+   */
+  private static String generateSwiftEnum() {
+    StringBuilder result = new StringBuilder();
+    result.append("enum CommandType: Int {\n");
+    for (CommandType commandType : CommandType.values()) {
+      result.append("  case ");
+      result.append(commandType.toString());
+      result.append(" = ");
+      result.append(commandType.getInt());
+      result.append("\n");
+    }
+    result.append("}");
+    return result.toString();
+  }
+  
+  private static String generateSwiftStructStaticConstants() {
+    StringBuilder result = new StringBuilder();
+    result.append("extension CommandType {\n");
+    for (CommandType commandType : CommandType.values()) {
+      result.append("  static let ");
+      result.append(commandType.toString());
+      result.append(" = CommandType(\"");
+      result.append(commandType.toString());
+      result.append("\"");
+      result.append(", ");
+      result.append(commandType.getInt());
+      result.append(")");
+      result.append("\n");
+    }
+    result.append("  static let allValues = [");
+    String prefix = "";
+    for (CommandType commandType : CommandType.values()) {
+      result.append(prefix);
+      result.append(commandType.toString());
+      prefix = ", ";
+    }
+    result.append("]\n");
+    result.append("}");
+    return result.toString();
+  }
+  
   /**
    * Append(110, CommandCategory.UPDATE,
    * edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,
@@ -2009,7 +1966,9 @@ public enum CommandType {
    * @param args
    */
   public static void main(String args[]) {
-    CommandType.enforceChecks();
+    //CommandType.enforceChecks();
+    //System.out.println(generateSwiftEnum());
+    System.out.println(generateSwiftStructStaticConstants());
     //System.out.println(generateEmptySetChains());
     //System.out.println(generateSwiftConstants());
     //System.out.println(generateCommandTypeCode());

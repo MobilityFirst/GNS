@@ -1,6 +1,5 @@
 package edu.umass.cs.gnscommon;
 
-import edu.umass.cs.gnscommon.utils.StringUtil;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 
 /**
