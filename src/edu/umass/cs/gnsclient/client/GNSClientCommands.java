@@ -660,26 +660,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public GuidEntry accountGuidCreate(String alias, String password)
           throws Exception {
 
-    GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
-    /* arun: Don't recreate pair if one already exists. Otherwise you can
-		 * not get out of the funk where the account creation timed out but
-		 * wasn't rolled back fully at the server. Re-using
-		 * the same guid will at least pass verification as opposed to 
-		 * incurring an GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString() for a new (non-existent) guid.
-     */
-    if (entry == null) {
-      KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
-              .generateKeyPair();
-      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-              .getPublic().getEncoded());
-      // Squirrel this away now just in case the call below times out.
-      KeyPairUtils.saveKeyPair(getGNSProvider(), alias, guid, keyPair);
-      entry = new GuidEntry(alias, guid, keyPair.getPublic(),
-              keyPair.getPrivate());
-    }
+    GuidEntry entry = lookupOrCreateGuidEntry(getGNSProvider(), alias);
     assert (entry != null);
-    String returnedGuid = accountGuidCreateHelper(alias,
-            entry, password);
+    String returnedGuid = accountGuidCreateHelper(alias, password, CommandType.RegisterAccount, entry);
     // Anything else we want to do here?
     if (!returnedGuid.equals(entry.guid)) {
       GNSClientConfig
@@ -689,7 +672,37 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
                       new Object[]{returnedGuid, entry.guid});
     }
     assert returnedGuid.equals(entry.guid);
+    return entry;
+  }
+  
+  /**
+   * Register a new account guid with the corresponding alias on the GNS
+   * server. This generates a new guid and a public / private key pair.
+   * Returns a GuidEntry for the new account which contains all of this
+   * information.
+   *
+   * @param alias
+   * - a human readable alias to the guid - usually an email
+   * address
+   * @param password
+   * @return GuidEntry for {@code alias}
+   * @throws Exception
+   */
+  public GuidEntry accountGuidCreateSecure(String alias, String password)
+          throws Exception {
 
+    GuidEntry entry = lookupOrCreateGuidEntry(getGNSProvider(), alias);
+    assert (entry != null);
+    String returnedGuid = accountGuidCreateHelper(alias, password, CommandType.RegisterAccountSecured, entry);
+    // Anything else we want to do here?
+    if (!returnedGuid.equals(entry.guid)) {
+      GNSClientConfig
+              .getLogger()
+              .log(Level.WARNING,
+                      "Returned guid {0} doesn''t match locally created guid {1}",
+                      new Object[]{returnedGuid, entry.guid});
+    }
+    assert returnedGuid.equals(entry.guid);
     return entry;
   }
 
@@ -1265,6 +1278,28 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
     return result;
   }
 
+  private GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
+          String alias) throws NoSuchAlgorithmException, EncryptionException {
+     GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+    /* arun: Don't recreate pair if one already exists. Otherwise you can
+     * not get out of the funk where the account creation timed out but
+     * wasn't rolled back fully at the server. Re-using
+     * the same guid will at least pass verification as opposed to 
+     * incurring an GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString() for a new (non-existent) guid.
+     */
+    if (entry == null) {
+      KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
+              .generateKeyPair();
+      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
+              .getPublic().getEncoded());
+      // Squirrel this away now just in case the call below times out.
+      KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
+      entry = new GuidEntry(alias, guid, keyPair.getPublic(),
+              keyPair.getPrivate());
+    }
+    return entry;
+  }
+  
   /**
    * Register a new account guid with the corresponding alias and the given
    * public key on the GNS server. Returns a new guid.
@@ -1280,11 +1315,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws InvalidGuidException
    * if the user already exists
    */
-  private String accountGuidCreateHelper(String alias, GuidEntry guidEntry, String password)
+  private String accountGuidCreateHelper(String alias, String password, 
+          CommandType commandType, GuidEntry guidEntry)
           throws UnsupportedEncodingException, IOException, ClientException,
           InvalidGuidException, NoSuchAlgorithmException {
     long startTime = System.currentTimeMillis();
-    String result = getResponse(CommandType.RegisterAccount, guidEntry, GNSProtocol.NAME.toString(), alias,
+    String result = getResponse(commandType, guidEntry, GNSProtocol.NAME.toString(), alias,
             GNSProtocol.PUBLIC_KEY.toString(), Base64.encodeToString(
                     guidEntry.publicKey.getEncoded(), false), GNSProtocol.PASSWORD.toString(),
             password != null
