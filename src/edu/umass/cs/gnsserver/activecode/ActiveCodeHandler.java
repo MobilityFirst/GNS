@@ -69,7 +69,7 @@ public class ActiveCodeHandler {
 	/**
 	 * Debug level
 	 */
-	public static final Level DEBUG_LEVEL = Level.INFO;
+	public static final Level DEBUG_LEVEL = Level.FINE;
 	
 	private static ActiveHandler handler;
 	
