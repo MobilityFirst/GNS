@@ -365,7 +365,7 @@ public class GNSClient {
   /**
    * Straightforward async client implementation that expects only one packet
    * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}. Public in scope so
-   * that it can be overrided for testing purposes.
+   * that it can be overridden for testing purposes.
    */
   public static class AsyncClient extends
           ReconfigurableAppClientAsync<CommandPacket> implements
@@ -442,7 +442,7 @@ public class GNSClient {
 
     /**
      *
-     * @return the request types
+     * @return a set of packet types
      */
     @Override
     public Set<IntegerPacketType> getRequestTypes() {
@@ -454,7 +454,7 @@ public class GNSClient {
      * admin commands that is different from {@link Packet.PacketType#COMMAND}
      * and carries {@link CommandType} types corresponding to admin commands.
      *
-     * @return
+     * @return a set of packet types
      */
     @SuppressWarnings("javadoc")
     @Override

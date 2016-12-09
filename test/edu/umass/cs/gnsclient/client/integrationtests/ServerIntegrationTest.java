@@ -2730,7 +2730,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   /**
    * Tests that updating a field with bytes.
- * @return 
+ * @return a byte array
  * @throws IOException 
  * @throws ClientException 
    */

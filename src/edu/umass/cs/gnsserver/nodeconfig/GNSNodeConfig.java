@@ -559,7 +559,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Converts a string representation of a node id into the appropriate node id type.
    *
    * @param nodeAsString
-   * @return 
+   * @return the node id
    */
   @SuppressWarnings("unchecked")
   @Override

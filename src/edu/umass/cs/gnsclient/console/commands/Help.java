@@ -52,7 +52,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
-   * @return 
+   * @return the command name
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandName()
    */
   public String getCommandName()
@@ -61,7 +61,7 @@ public class Help extends ConsoleCommand
   }
 
   /**
-   * @return 
+   * @return the command description
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandDescription()
    */
   public String getCommandDescription()

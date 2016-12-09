@@ -1135,7 +1135,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   *
+   * Create an empty acl for the field.
+   * 
    * @param accessType
    * @param guid
    * @param field
@@ -1149,7 +1150,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   *
+   * Create an empty acl for the field.
+   * 
    * @param accessType
    * @param guid
    * @param field
@@ -1160,7 +1162,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   *
+   * Delete the acl for the field.
+   * 
    * @param accessType
    * @param guid
    * @param field
@@ -1174,7 +1177,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   *
+   * Delete the acl for the field.
+   * 
    * @param accessType
    * @param guid
    * @param field
@@ -1185,12 +1189,13 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   *
+   * Return true if the acl exists for the field.
+   * 
    * @param accessType
    * @param guid
    * @param field
    * @param readerGuid
-   * @return
+   * @return true if the field exists
    * @throws Exception
    */
   public boolean fieldAclExists(AclAccessType accessType, GuidEntry guid, String field,
@@ -1200,11 +1205,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   *
+   * Return true if the acl exists for the field.
+   * 
    * @param accessType
    * @param guid
    * @param field
-   * @return
+   * @return true if the field exists
    * @throws Exception
    */
   public boolean fieldAclExists(AclAccessType accessType, GuidEntry guid, String field) throws Exception {

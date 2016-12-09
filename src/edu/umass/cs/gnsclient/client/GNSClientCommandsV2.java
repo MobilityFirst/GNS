@@ -1205,7 +1205,7 @@ public class GNSClientCommandsV2 extends GNSClient {
    * @param guid
    * @param field
    * @param readerGuid
-   * @return
+   * @return true if the acl exists
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * if a protocol error occurs or the list cannot be parsed
    * @throws java.io.IOException

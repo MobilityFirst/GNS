@@ -1786,7 +1786,6 @@ public enum CommandType {
    *   case carriageReturn = "\r"
    * }
    *
-   * @return
    */
   private static String generateSwiftEnum() {
     StringBuilder result = new StringBuilder();

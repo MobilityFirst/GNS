@@ -16,38 +16,38 @@
 package edu.umass.cs.gnsclient.client;
 
 /**
- * The result types that can be returned by executing {@link CommandPacket}.
+ * The result types that can be returned by executing {@link edu.umass.cs.gnscommon.packets.CommandPacket}.
  */
 public enum CommandResultType {
   /**
-   * The default methods {@link CommandPacket#getResultString()} or
-   * {@link CommandPacket#getResult()} be used to retrieve the result
+   * The default methods {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResultString()} or
+   * {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResult()} be used to retrieve the result
    * irrespective of the result type.
    */
   STRING, /**
-   * The methods {@link CommandPacket#getResultMap} or
-   * {@link CommandPacket#getResultJSONObject} can be used if and only if
+   * The methods {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResultMap} or
+   * {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResultJSONObject} can be used if and only if
    * the result type is {@link #MAP};
    */
   MAP, /**
-   * The methods {@link CommandPacket#getResultList},
-   * {@link CommandPacket#getResultJSONArray} can be used if and only if
+   * The methods {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResultList},
+   * {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResultJSONArray} can be used if and only if
    * the result type is {@link #LIST}
    */
   LIST, /**
-   * The method {@link CommandPacket#getResultBoolean} can be used if and
+   * The method {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResultBoolean} can be used if and
    * only if the result type is {@link #BOOLEAN}.
    */
   BOOLEAN, /**
-   * The method {@link CommandPacket#getResultLong} can be used if and
+   * The method {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResultLong} can be used if and
    * only if the result type is {@link #LONG}.
    */
   LONG, /**
-   * The method {@link CommandPacket#getResultInt} can be used if and only
+   * The method {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResultInt} can be used if and only
    * if the result type is {@link #INTEGER}.
    */
   INTEGER, /**
-   * The method {@link CommandPacket#getResultDouble} can be used if and
+   * The method {@link edu.umass.cs.gnscommon.packets.CommandPacket#getResultDouble} can be used if and
    * only if the result type is {@link #DOUBLE}.
    */
   DOUBLE, /**

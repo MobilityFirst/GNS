@@ -90,7 +90,7 @@ public class GNSCommand extends CommandPacket {
    * Creates a GNS Command from a JSON Object.
    *
    * @param command
-   * @return
+   * @return a GNS command
    */
   public static GNSCommand createGNSCommandFromJSONObject(JSONObject command) {
     // false so the validation doesn't happen for the http server
@@ -368,7 +368,7 @@ public class GNSCommand extends CommandPacket {
   /**
    * Same as {@link #fieldRead(String, String, GuidEntry)} with
    * {@code querierGUID} set to {@code targetGUID}. The result type of the
-   * execution result of this query is {@link GNSCommand.ResultType#MAP}.
+   * execution result of this query is {@link CommandResultType#MAP}.
    *
    * @param targetGUID
    * The guid being queried.
@@ -386,7 +386,7 @@ public class GNSCommand extends CommandPacket {
    * Reads {@code targetGUID}:{@code field} for each field in {@code fields}.
    * {@code querierGUID} must be present in the read ACL of every field in
    * {@code fields}. The result type of the execution result of this query is
-   * {@link GNSCommand.ResultType#LIST}.
+   * {@link CommandResultType#LIST}.
    *
    * @param targetGUID
    * The guid being queried.
@@ -470,7 +470,7 @@ public class GNSCommand extends CommandPacket {
 
   /**
    * Looks up guid metadata for {@code targetGUID}. The result type of the
-   * execution result of this query is {@link GNSCommand.ResultType#MAP}.
+   * execution result of this query is {@link CommandResultType#MAP}.
    *
    * @param targetGUID
    * The guid being queried.
@@ -732,7 +732,7 @@ public class GNSCommand extends CommandPacket {
   /**
    * Looks up the list of GUIDs that are members of {@code groupGUID}. The
    * result type of the execution result of this query is
-   * {@link GNSCommand.ResultType#LIST}.
+   * {@link CommandResultType#LIST}.
    *
    * @param groupGuid
    * The group guid being queried.
@@ -1023,7 +1023,7 @@ public class GNSCommand extends CommandPacket {
    * @param field
    * The field to create the ACL for.
    * @param writerGuid
-   * @return
+   * @return CommandPacket
    * @throws ClientException
    */
   public static final CommandPacket fieldCreateAcl(AclAccessType accessType,
@@ -1045,7 +1045,7 @@ public class GNSCommand extends CommandPacket {
    * @param field
    * The field to create the ACL for.
    * @param writerGuid
-   * @return
+   * @return CommandPacket
    * @throws ClientException
    */
   public static final CommandPacket fieldDeleteAcl(AclAccessType accessType,
@@ -1067,7 +1067,7 @@ public class GNSCommand extends CommandPacket {
    * @param field
    * The field to create the ACL for.
    * @param reader
-   * @return
+   * @return CommandPacket
    * @throws ClientException
    */
   public static final CommandPacket fieldAclExists(AclAccessType accessType,
@@ -1359,7 +1359,7 @@ public class GNSCommand extends CommandPacket {
 
   /**
    * Reads the list field {@code targetGUID}:{@code field}. The result type of
-   * the execution result of this query is {@link GNSCommand.ResultType#LIST}.
+   * the execution result of this query is {@link CommandResultType#LIST}.
    *
    * @param targetGUID
    * The guid being queried.
@@ -1423,14 +1423,14 @@ public class GNSCommand extends CommandPacket {
   /* *********************** SELECT *********************** */
   /**
    * Selects all guid records that match {@code query}. The result type of the
-   * execution result of this query is {@link GNSCommand.ResultType#LIST}.
+   * execution result of this query is {@link CommandResultType#LIST}.
    *
    * The query syntax is described here:
    * https://gns.name/wiki/index.php?title=Query_Syntax
    *
    * There are some predefined field names such as
-   * {@link GNSProtocol.LOCATION_FIELD_NAME.toString()} and
-   * {@link GNSProtocol.IPADDRESS_FIELD_NAME.toString()} that are indexed by
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
    * default.
    *
    * There are links in the wiki page above to find the exact syntax for
@@ -1450,7 +1450,7 @@ public class GNSCommand extends CommandPacket {
    * Set up a context-aware group guid corresponding to the query. Requires
    * {@code accountGuid} and {@code publicKey} that are used to set up the new
    * guid or look it up if it already exists. The result type of the execution
-   * result of this query is {@link GNSCommand.ResultType#LIST}.
+   * result of this query is {@link CommandResultType#LIST}.
    *
    * The query syntax is described here:
    * https://gns.name/wiki/index.php?title=Query_Syntax
@@ -1477,7 +1477,7 @@ public class GNSCommand extends CommandPacket {
    * Looks up the membership of a context-aware group guid created using a
    * query. The results may be stale if the queries that happen more quickly
    * than the refresh interval given during setup. The result type of the
-   * execution result of this query is {@link GNSCommand.ResultType#LIST}.
+   * execution result of this query is {@link CommandResultType#LIST}.
    *
    * @param groupGUID
    * The group guid being queried.
@@ -1509,7 +1509,7 @@ public class GNSCommand extends CommandPacket {
    * that have fields that are within the bounding box specified by
    * {@code value} as nested JSONArrays of paired tuples: [[LONG_UL,
    * LAT_UL],[LONG_BR, LAT_BR]]. The result type of the execution result of
-   * this query is {@link GNSCommand.ResultType#LIST}.
+   * this query is {@link CommandResultType#LIST}.
    *
    * @param field
    * The field key.
@@ -2146,7 +2146,7 @@ public class GNSCommand extends CommandPacket {
    * @param targetGUID
    * @param field
    * @param reader
-   * @return
+   * @return CommandPacket
    * @throws ClientException
    */
   @Deprecated
@@ -2204,7 +2204,7 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * @return The {@link GNSCommand.ResultType} type of the result obtained by
+   * @return The {@link CommandResultType} type of the result obtained by
    * executing this query.
    */
   public CommandResultType getResultType() {

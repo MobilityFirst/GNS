@@ -276,7 +276,7 @@ public class AccountInfo {
    * Returns the time the verification code was created.
    * Can be null.
    * 
-   * @return 
+   * @return the time the verification code was created
    */
   public Date getCodeTime() {
     return codeTime;

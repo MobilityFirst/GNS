@@ -144,7 +144,7 @@ public class CommandUtils {
    *
    * @param field
    * @param response
-   * @return
+   * @return a JSON Array
    * @throws JSONException
    */
   public static JSONArray commandResponseToJSONArray(String field, String response) throws JSONException {
@@ -486,10 +486,12 @@ public class CommandUtils {
   }
 
   /**
-   *
+   * Creates a JSON Object from the given command, keypair and a variable
+   * number of key and value pairs. Includes a NONCE and TIMESTAMP field.
+   * 
    * @param commandType
    * @param keysAndValues
-   * @return
+   * @return a JSONObject
    * @throws ClientException
    * @throws JSONException
    */
@@ -506,6 +508,9 @@ public class CommandUtils {
   }
   
   /**
+   * Creates a JSON Object from the given command, keypair and a variable
+   * number of key and value pairs.
+   * 
    * @param commandType
    * @param privateKey
    * @param publicKey

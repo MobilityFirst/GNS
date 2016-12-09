@@ -83,7 +83,7 @@ public class NSFieldMetaData {
    * @param guid
    * @param key
    * @param database
-   * @return
+   * @return true if the ACL field exists
    * @throws RecordNotFoundException
    * @throws FieldNotFoundException
    * @throws FailedDBOperationException 

@@ -128,7 +128,7 @@ public class FieldMetaData {
    * @param message
    * @param timestamp
    * @param handler
-   * @return
+   * @return true if the field exists
    */
   public static boolean fieldExists(MetaDataTypeName type, String guid,
           String key, String writer, String signature,

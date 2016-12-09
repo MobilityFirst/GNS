@@ -52,7 +52,7 @@ public final class JSONCompareUtil {
      * {@code array} is a JSONObject having that key, and no two values are the same.
    * @param candidate
    * @param array
-   * @return 
+   * @return true if candidate is usable as a unique key
    * @throws org.json.JSONException
      */
     public static boolean isUsableAsUniqueKey(String candidate, JSONArray array) throws JSONException {

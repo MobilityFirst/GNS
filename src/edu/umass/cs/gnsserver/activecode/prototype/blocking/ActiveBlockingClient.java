@@ -204,7 +204,7 @@ public class ActiveBlockingClient implements Client {
 	 * @param ofile
 	 * @param id
 	 * @param workerNumThread
-	 * @return
+	 * @return a Process
 	 * @throws IOException
 	 */
 	private Process startWorker(String ifile, String ofile, int id) throws IOException{
@@ -243,7 +243,7 @@ public class ActiveBlockingClient implements Client {
 	 * 
 	 * @param port1
 	 * @param id
-	 * @return
+	 * @return a Process
 	 * @throws IOException
 	 */
 	private Process startWorker(int port1, int port2, int id) throws IOException{
