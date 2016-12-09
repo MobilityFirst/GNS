@@ -15,10 +15,8 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
  * 
  *         This interface currently only supports simple field read and write
  *         queries. It currently does not support create, delete, select, or
- *         {@link edu.umass.cs.gnscommon.CommandType.Type#OTHER} commands or for
- *         that matter other
- *         {@link edu.umass.cs.gnscommon.CommandType.Type#READ} or
- *         {@link edu.umass.cs.gnscommon.CommandType.Type#UPDATE} queries, but
+ *         CommandCategory#Other commands or for
+ *         that matter other CommandCategory#Read or CommandCategory#Update queries, but
  *         some subset of these other query types may be supported in future
  *         versions.
  * 
@@ -31,7 +29,7 @@ public interface ActiveGNSInterface {
 	 * 
 	 * This method can be used to read the entire GUID record (subject to ACL
 	 * checks) by specifying {@code field} as
-	 * {@link GNSCommandProtocol#ALL_FIELDS}.
+	 * {@link edu.umass.cs.gnscommon.GNSProtocol#ENTIRE_RECORD}.
 	 * 
 	 * @param targetGUID
 	 * @param field

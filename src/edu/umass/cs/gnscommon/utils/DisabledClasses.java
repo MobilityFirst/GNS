@@ -4,10 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author arun
+ * 
  * 
  *         This is a utility class to check and enforce that disabled classes
  *         are no longer usable.
+ * 
+ * @author arun
  */
 @SuppressWarnings("deprecation")
 public class DisabledClasses {

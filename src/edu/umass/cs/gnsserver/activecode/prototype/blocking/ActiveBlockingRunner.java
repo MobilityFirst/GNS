@@ -46,7 +46,7 @@ public class ActiveBlockingRunner implements Runner {
 	private final ScriptObjectMirror JSON;
 		
 	/**
-	 * @param querier
+         * @param channel
 	 */
 	public ActiveBlockingRunner(Channel channel){
 		this.channel = channel; 

@@ -64,7 +64,7 @@ public class SharedGuidUtils {
 
   /**
    * Converts a JSONArray of publicKeys to a JSONArray of guids using
-   * {@link createGuidStringFromPublicKey}.
+   * {@link #createGuidStringFromBase64PublicKey}.
    *
    * @param publicKeys
    * @return JSONArray of guids
@@ -89,7 +89,7 @@ public class SharedGuidUtils {
 
   /**
    * Converts a set of publicKeys to a set of guids using
-   * {@link createGuidStringFromPublicKey}.
+   * {@link #createGuidStringFromBase64PublicKey}.
    *
    * @param publicKeys
    * @return set of guids

@@ -3,11 +3,10 @@ package edu.umass.cs.gnscommon;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 
 /**
+ * An enum class for all the constants used by GNS wireline protocol.
+ * 
  * @author arun
  *
- * An enum class for all the constants used by GNS wireline protocol.
- * Most of the constants in {@link GNSCommandProtocol} will be migrated
- * to this class.
  */
 public enum GNSProtocol {
   //
@@ -483,19 +482,19 @@ public enum GNSProtocol {
    */
   REQUEST_TTL("QTTL"),
   /**
-   * Long client request ID in every {@link CommandPacket}.
+   * Long client request ID in every {@link edu.umass.cs.gnscommon.packets.CommandPacket}.
    */
   REQUEST_ID("QID"),
   /**
-   * String return value carried in every {@link ResponsePacket}.
+   * String return value carried in every {@link edu.umass.cs.gnscommon.packets.ResponsePacket}.
    */
   RETURN_VALUE("RVAL"),
   /**
-   * The query carried in every {@link CommandPacket}.
+   * The query carried in every {@link edu.umass.cs.gnscommon.packets.CommandPacket}.
    */
   COMMAND_QUERY("QVAL"),
   /**
-   * Name or HRN or GUID, whatever is used in {@link Request#getServiceName()}.
+   * Name or HRN or GUID, whatever is used in {@link edu.umass.cs.gigapaxos.interfaces.Request#getServiceName}.
    */
   SERVICE_NAME("NAME"),
   /**
@@ -503,7 +502,7 @@ public enum GNSProtocol {
    */
   UNKNOWN_NAME("unknown"),
   /**
-   * Error code carried in {@link ResponsePacket}.
+   * Error code carried in {@link edu.umass.cs.gnscommon.packets.ResponsePacket}.
    */
   ERROR_CODE("ECODE"),
   /**

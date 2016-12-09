@@ -77,7 +77,6 @@ public class AccountInfo {
    * This class handles the conversion to and from JSON objects as well as
    * conversion to the format which can be store in the database.
    *
-   * @author westy
    * @param name
    * @param password
    * @param guid

@@ -364,7 +364,7 @@ public class GNSClient {
 
   /**
    * Straightforward async client implementation that expects only one packet
-   * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}. Public in scope so
+   * type, {@link edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType#COMMAND_RETURN_VALUE}. Public in scope so
    * that it can be overridden for testing purposes.
    */
   public static class AsyncClient extends
@@ -451,7 +451,7 @@ public class GNSClient {
 
     /**
      * FIXME: This should return a separate packet type meant for
-     * admin commands that is different from {@link Packet.PacketType#COMMAND}
+     * admin commands that is different from {@link edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType#COMMAND}
      * and carries {@link CommandType} types corresponding to admin commands.
      *
      * @return a set of packet types
@@ -502,7 +502,7 @@ public class GNSClient {
    * The result of the execution may be retrieved using
    * {@link GNSCommand#getResult()} or {@link GNSCommand#getResultString()} or
    * other methods with the prefix "getResult" depending on the
-   * {@link GNSCommand.ResultType}.
+   * {@link CommandResultType}.
    *
    * @param command
    * @return GNSCommand after execution containing the result if any.

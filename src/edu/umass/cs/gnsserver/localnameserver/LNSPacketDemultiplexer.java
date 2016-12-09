@@ -47,7 +47,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Implements the <code>BasicPacketDemultiplexer</code> interface for using the {@link edu.umass.cs.nio} package.
+ * Implements the <code>BasicPacketDemultiplexer</code> interface for using the nio package.
  *
  * @param <NodeIDType>
  */

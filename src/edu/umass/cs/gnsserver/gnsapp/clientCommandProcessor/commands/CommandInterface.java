@@ -65,7 +65,7 @@ public interface CommandInterface {
   /**
    *
    * Executes the command. Arguments are passed in the JSONObject.
-   * This is used by Read and Update queries to drag {@link CommandPacket} for longer to use
+   * This is used by Read and Update queries to drag {@link edu.umass.cs.gnscommon.packets.CommandPacket} for longer to use
    * {@link InternalRequestHeader} information inside them.
    *
    * @param internalHeader
