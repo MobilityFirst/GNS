@@ -248,8 +248,11 @@ public class GNSCommand extends CommandPacket {
    */
   protected static final CommandPacket fieldCreateIndex(GuidEntry GUID,
           String field, String index) throws ClientException {
-    return getCommand(CommandType.CreateIndex, GUID, GUID, GUID.getGuid(),
-            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), index, GNSProtocol.WRITER.toString(), GUID.getGuid());
+    return getCommand(CommandType.CreateIndex, GUID, 
+            GNSProtocol.GUID.toString(), GUID.getGuid(),
+            GNSProtocol.FIELD.toString(), field, 
+            GNSProtocol.VALUE.toString(), index, 
+            GNSProtocol.WRITER.toString(), GUID.getGuid());
   }
 
   /**
