@@ -17,17 +17,19 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -40,17 +42,19 @@ import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
- *
+ * The same as RegisterAccount, but doesn't use email verification.
+ * Sent on the mutual auth channel.
+ * Can only be sent from a client that  has the correct ssl keys.
  * @author westy
  */
-public class RemoveAccountWithPassword extends AbstractCommand {
+public class RegisterAccountSecured extends AbstractCommand {
 
   /**
-   * Creates a RemoveAccount instance.
+   * Creates a RegisterAccountSecured instance.
    *
    * @param module
    */
-  public RemoveAccountWithPassword(CommandModule module) {
+  public RegisterAccountSecured(CommandModule module) {
     super(module);
   }
 
@@ -60,33 +64,38 @@ public class RemoveAccountWithPassword extends AbstractCommand {
    */
   @Override
   public CommandType getCommandType() {
-    return CommandType.RemoveAccountWithPassword;
+    return CommandType.RegisterAccountSecured;
   }
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-    // The name of the account we are removing.
     String name = json.getString(GNSProtocol.NAME.toString());
-    // The guid of that wants to remove this account.
+    String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
     String password = json.getString(GNSProtocol.PASSWORD.toString());
-    String guid = AccountAccess.lookupGuidAnywhere(name, handler);
-    if (guid == null) {
-      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + name);
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
+
+    String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
+    if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
+      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
     try {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(name, handler);
-      if (accountInfo == null) {
-        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
-      }
-      if (!password.equals(accountInfo.getPassword())) {
-        return new CommandResponse(ResponseCode.ACCESS_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.ACCESS_DENIED.toString());
+      // Add the account but don't enable email verification
+      CommandResponse result = AccountAccess.addAccount(
+              handler.getHttpServerHostPortString(),
+              name, guid, publicKey,
+              password, false, handler);
+      if (result.getExceptionOrErrorCode().isOKResult()) {
+        // Everything is hunkey dorey so return the new guid
+        return new CommandResponse(ResponseCode.NO_ERROR, guid);
       } else {
-        return AccountAccess.removeAccount(accountInfo, handler);
+        assert (result.getExceptionOrErrorCode() != null);
+        // Otherwise return the error response.
+        return result;
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
-              + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
     }
   }
 

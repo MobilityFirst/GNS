@@ -735,7 +735,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Deletes the account given by name
+   * Deletes the account given by name.
+   * 
    *
    * @param guid
    * @throws Exception
@@ -743,6 +744,18 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public void accountGuidRemove(GuidEntry guid) throws Exception {
     getResponse(CommandType.RemoveAccount, guid, GNSProtocol.GUID.toString(), guid.getGuid(),
             GNSProtocol.NAME.toString(), guid.getEntityName());
+  }
+  
+  /**
+   * Deletes the account given by name.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys.
+   *
+   * @param name
+   * @throws Exception
+   */
+  public void accountGuidRemoveSecure(String name) throws Exception {
+    getResponse(CommandType.RemoveAccountSecured, GNSProtocol.NAME.toString(), name);
   }
 
   /**
@@ -1158,7 +1171,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws Exception
    */
   public void fieldCreateAcl(AclAccessType accessType, GuidEntry guid, String field) throws Exception {
-    GNSClientCommands.this.fieldCreateAcl(accessType, guid, field, guid.getGuid());
+    fieldCreateAcl(accessType, guid, field, guid.getGuid());
   }
 
   /**
@@ -1185,7 +1198,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws Exception
    */
   public void fieldDeleteAcl(AclAccessType accessType, GuidEntry guid, String field) throws Exception {
-    GNSClientCommands.this.fieldDeleteAcl(accessType, guid, field, guid.getGuid());
+    fieldDeleteAcl(accessType, guid, field, guid.getGuid());
   }
 
   /**
@@ -1214,7 +1227,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws Exception
    */
   public boolean fieldAclExists(AclAccessType accessType, GuidEntry guid, String field) throws Exception {
-    return GNSClientCommands.this.fieldAclExists(accessType, guid, field, guid.getGuid());
+    return fieldAclExists(accessType, guid, field, guid.getGuid());
   }
 
   // ALIASES

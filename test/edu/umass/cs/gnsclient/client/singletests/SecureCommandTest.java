@@ -22,6 +22,7 @@ package edu.umass.cs.gnsclient.client.singletests;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
 import org.json.JSONObject;
@@ -35,14 +36,14 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateAccountSecureTest {
-  
+public class SecureCommandTest {
+
   private static GNSClient client;
 
   /**
    *
    */
-  public CreateAccountSecureTest() {
+  public SecureCommandTest() {
   }
 
   /**
@@ -59,6 +60,7 @@ public class CreateAccountSecureTest {
   }
 
   private static String accountAlias;
+
   /**
    *
    */
@@ -66,7 +68,7 @@ public class CreateAccountSecureTest {
   public void test_02_CreateAccount() {
     accountAlias = "ALIAS" + RandomString.randomString(12);
     try {
-      client.execute(GNSCommand.accountGuidCreateSecure(client.getGNSProvider(), 
+      client.execute(GNSCommand.accountGuidCreateSecure(client.getGNSProvider(),
               accountAlias,
               "password"));
     } catch (Exception e) {
@@ -97,8 +99,28 @@ public class CreateAccountSecureTest {
       try {
         Assert.assertTrue(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
       } catch (Exception e) {
-        failWithStackTrace("Exception while getting field from account record: " , e);
+        failWithStackTrace("Exception while getting field from account record: ", e);
       }
+    }
+  }
+
+  @Test
+  public void test_04_RemoveAccount() {
+    try {
+      client.execute(GNSCommand.accountGuidRemoveSecure(accountAlias));
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception while removing account record: ", e);
+    }
+  }
+
+  @Test
+  public void test_05_RemoveAccountCheck() {
+
+    try {
+      client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
+      failWithStackTrace("Should have throw a client "
+              + "exception while looking the guid for " + accountAlias);
+    } catch (ClientException | IOException e) {
     }
   }
 
@@ -108,5 +130,5 @@ public class CreateAccountSecureTest {
     }
     org.junit.Assert.fail(message);
   }
-  
+
 }

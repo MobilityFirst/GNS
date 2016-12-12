@@ -873,7 +873,7 @@ public enum CommandType {
    *
    */
   RegisterAccountSecured(431, CommandCategory.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountSecured.class,
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RegisterAccountSecured.class,
           CommandResultType.NULL, false, false,
           "Creates an account guid associated with the human readable name and the supplied public key. "
           + "Must be signed with the public key. Returns a guid. "
@@ -884,7 +884,7 @@ public enum CommandType {
             GNSProtocol.PASSWORD.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          CommandFlag.MUTUAL_AUTH
+          CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
   ),
   /**
    *
@@ -953,10 +953,21 @@ public enum CommandType {
   /**
    *
    */
-  RemoveAccountWithPassword(445, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccountWithPassword.class,
+  RemoveAccountWithPassword(445, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RemoveAccountWithPassword.class,
           CommandResultType.NULL, false, false,
           "Removes the account guid associated with the human readable name authorized by the account password.",
           new String[]{GNSProtocol.NAME.toString(), GNSProtocol.PASSWORD.toString()}),
+  /**
+   *
+   */
+  RemoveAccountSecured(446, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RemoveAccountSecured.class,
+          CommandResultType.NULL, false, false,
+          "Removes the account guid associated with the human readable name."
+          + "Sent on the mutual auth channel. "
+          + "Can only be sent from a client that has the correct ssl keys.",
+          new String[]{GNSProtocol.NAME.toString()},
+          CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
+  ),
   /**
    *
    */
@@ -1691,6 +1702,8 @@ public enum CommandType {
     AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned, ReadUnsigned); // what else?
     RemoveGuid.setChain(ReadUnsigned);
     RemoveAccount.setChain(ReadUnsigned);
+    RemoveAccountWithPassword.setChain(ReadUnsigned);
+    RemoveAccountSecured.setChain(ReadUnsigned);
     SelectGroupSetupQuery.setChain(ReadUnsigned);
     VerifyAccount.setChain(ReplaceUserJSONUnsigned);
 
@@ -1779,11 +1792,11 @@ public enum CommandType {
   }
 
   /**
-   * 
+   *
    * enum CommandType: Int {
-   *   case tab = "\t"
-   *   case lineFeed = "\n"
-   *   case carriageReturn = "\r"
+   * case tab = "\t"
+   * case lineFeed = "\n"
+   * case carriageReturn = "\r"
    * }
    *
    */
@@ -1800,7 +1813,7 @@ public enum CommandType {
     result.append("}");
     return result.toString();
   }
-  
+
   private static String generateSwiftStructStaticConstants() {
     StringBuilder result = new StringBuilder();
     result.append("extension CommandType {\n");
@@ -1826,7 +1839,7 @@ public enum CommandType {
     result.append("}");
     return result.toString();
   }
-  
+
   /**
    * Append(110, CommandCategory.UPDATE,
    * edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,

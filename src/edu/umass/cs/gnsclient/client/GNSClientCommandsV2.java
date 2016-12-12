@@ -39,15 +39,16 @@ import org.json.JSONException;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
- 
+ * STILL BEING TESTED.
+ * 
  * This class defines a client to communicate with a GNS instance over TCP. This
  * class adds single field list based commands to the {@link GNSClient}
  * 's JSONObject based commands.
- * 
- * This is an improvement over GNSClientCommands that simply executes GNSCommands.
- * Testing is ongoing.
  *
- * This class contains a concise subset of all available server operations.
+ * This is an improvement over GNSClientCommands 
+ * in that it simply executes GNSCommands for the most part.
+ * 
+ *
  *
  * @author westy
  */
@@ -69,6 +70,29 @@ public class GNSClientCommandsV2 extends GNSClient {
   public GNSClientCommandsV2(InetSocketAddress anyReconfigurator)
           throws IOException {
     super(anyReconfigurator);
+  }
+
+  private long readTimeout = 8000;
+
+  /**
+   * Returns the timeout value (milliseconds) used when sending commands to
+   * the server.
+   *
+   * @return value in milliseconds
+   */
+  public long getReadTimeout() {
+    return readTimeout;
+  }
+
+  /**
+   * Sets the timeout value (milliseconds) used when sending commands to the
+   * server.
+   *
+   * @param readTimeout
+   * in milliseconds
+   */
+  public void setReadTimeout(long readTimeout) {
+    this.readTimeout = readTimeout;
   }
 
   // READ AND WRITE COMMANDS
@@ -222,7 +246,13 @@ public class GNSClientCommandsV2 extends GNSClient {
    */
   public boolean fieldExists(String targetGuid, String field, GuidEntry reader)
           throws ClientException, IOException {
-    return execute(GNSCommand.fieldExists(targetGuid, field, reader)).getResultBoolean();
+    try {
+      execute(GNSCommand.fieldExists(targetGuid, field, reader));
+      return true;
+    } catch (ClientException | IOException e) {
+      return false;
+    }
+
 //    try {
 //      if (reader != null) {
 //        getResponse(CommandType.Read, reader,
@@ -694,6 +724,22 @@ public class GNSClientCommandsV2 extends GNSClient {
 //            GNSProtocol.NAME.toString(), guid.getEntityName());
   }
 
+  /**
+   * Deletes the account given by name.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys. Does not send a signature.
+   *
+   * @param name
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public void accountGuidRemoveSecure(String name)
+          throws ClientException, IOException {
+    execute(GNSCommand.accountGuidRemoveSecure(name));
+  }
+  
   /**
    * Deletes the account given by name using the password to authenticate.
    *
@@ -1716,7 +1762,12 @@ public class GNSClientCommandsV2 extends GNSClient {
    */
   public JSONArray getLocation(String targetGuid, GuidEntry readerGuid)
           throws ClientException, IOException {
-    return execute(GNSCommand.getLocation(targetGuid, readerGuid)).getResultJSONArray();
+    try {
+      JSONObject json = execute(GNSCommand.getLocation(targetGuid, readerGuid)).getResultJSONObject();
+      return json.getJSONArray(GNSProtocol.LOCATION_FIELD_NAME.toString());
+    } catch (JSONException e) {
+      throw new ClientException(e);
+    }
     //return fieldReadArray(targetGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), readerGuid);
   }
 
@@ -1731,8 +1782,7 @@ public class GNSClientCommandsV2 extends GNSClient {
    * if a communication error occurs
    */
   public JSONArray getLocation(GuidEntry guid) throws ClientException, IOException {
-    return execute(GNSCommand.getLocation(guid)).getResultJSONArray();
-    //return fieldReadArray(guid.getGuid(), GNSProtocol.LOCATION_FIELD_NAME.toString(), guid);
+    return getLocation(guid.getGuid(), guid);
   }
 
   /**
@@ -2250,7 +2300,8 @@ public class GNSClientCommandsV2 extends GNSClient {
   @Deprecated
   public String fieldReadArrayFirstElement(String guid, String field,
           GuidEntry reader) throws ClientException, IOException {
-    return execute(GNSCommand.fieldReadArrayFirstElement(guid, field, reader)).getResultString();
+    String response = execute(GNSCommand.fieldReadArrayFirstElement(guid, field, reader)).getResultString();
+    return response.startsWith(GNSProtocol.NULL_RESPONSE.toString()) ? null : response;
 //    return getResponse(reader != null ? CommandType.ReadArrayOne
 //            : CommandType.ReadArrayOneUnsigned, reader, GNSProtocol.GUID.toString(), guid, GNSProtocol.FIELD.toString(),
 //            field, GNSProtocol.READER.toString(), reader != null ? reader.getGuid() : null);

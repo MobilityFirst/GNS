@@ -621,6 +621,20 @@ public class GNSCommand extends CommandPacket {
     return getCommand(CommandType.RemoveAccount, accountGUID, GNSProtocol.GUID.toString(),
             accountGUID.getGuid(), GNSProtocol.NAME.toString(), accountGUID.getEntityName());
   }
+  
+  /**
+   * Deletes the account. 
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys. Does not send a signature.
+   *
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket accountGuidRemoveSecure(String name)
+          throws ClientException {
+    return getCommand(CommandType.RemoveAccountSecured, null, 
+            GNSProtocol.NAME.toString(), name);
+  }
 
   /**
    * Deletes the account named {@code name} using the account password to authenticate.
