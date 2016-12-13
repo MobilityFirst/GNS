@@ -45,9 +45,9 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
 /**
- * @author arun
- *
  * A helper class with static methods to help construct GNS commands.
+ *
+ * @author arun
  */
 public class GNSCommand extends CommandPacket {
 
@@ -58,10 +58,12 @@ public class GNSCommand extends CommandPacket {
    */
   protected GNSCommand(JSONObject command) {
     this(
-            /* arun: we just generate a random value here because it is not easy (or
-		 * worth trying) to guarantee non-conflicting IDs here. Conflicts will
-		 * either result in an IOException further down or the query will be
-		 * transformed to carry a different ID if */
+            /**
+             * Generate a random value here because it is not easy (or
+             * worth trying) to guarantee non-conflicting IDs here. Conflicts will
+             * either result in an IOException further down or the query will be
+             * transformed to carry a different ID if
+             */
             randomLong(), command);
   }
 
@@ -1038,7 +1040,7 @@ public class GNSCommand extends CommandPacket {
 
   /**
    * Removes {@code accessorGUID} from the access control list (ACL) of
-   * {@code guid}:{@code field}.  The
+   * {@code guid}:{@code field}. The
    * field can be also be +ALL+ which means the {@code accessorGUID} is being
    * added to the ACLs of all fields of {@code targetGUID}.
    *

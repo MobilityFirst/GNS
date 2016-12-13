@@ -37,7 +37,6 @@ import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
@@ -499,8 +498,9 @@ public class GNSClient {
 
   /* **************** Start of execute methods ****************** */
   /**
+   * Execute the command immediately.
    * The result of the execution may be retrieved using
-   * {@link GNSCommand#getResult()} or {@link GNSCommand#getResultString()} or
+   * {@link CommandPacket#getResult()} or {@link CommandPacket#getResultString()} or
    * other methods with the prefix "getResult" depending on the
    * {@link CommandResultType}.
    *
@@ -509,34 +509,31 @@ public class GNSClient {
    * @throws IOException
    * @throws ClientException
    */
-  public GNSCommand execute(CommandPacket command) throws IOException,
+  public CommandPacket execute(CommandPacket command) throws IOException,
           ClientException {
-    Request returnPacket = this.sendSync(command);
-    // This is a hack to support AdminCommandPacket
-    // There is probably a better way involving restructuring the class
-    // hierarchy.
-    // FIXME: This doesn't work generally because the return values are not in the
-    // returned command.
-    if (returnPacket instanceof AdminCommandPacket) {
-      return new GNSCommand(command.getRequestID(), command.getCommand(), false);
-    } else {
-      return (GNSCommand) returnPacket;
-    }
+    return (CommandPacket) this.sendSync(command);
   }
 
   /**
+   * Execute the command immediately.
+   * The result of the execution may be retrieved using
+   * {@link CommandPacket#getResult()} or {@link CommandPacket#getResultString()} or
+   * other methods with the prefix "getResult" depending on the
+   * {@link CommandResultType}.
+   * 
    * @param command
    * @param timeout
    * @return GNSCommand after execution containing the result if any.
    * @throws IOException
    * @throws ClientException
    */
-  public GNSCommand execute(CommandPacket command, long timeout) throws IOException,
+  public CommandPacket execute(CommandPacket command, long timeout) throws IOException,
           ClientException {
-    return (GNSCommand) this.sendSync(command, timeout);
+    return (CommandPacket) this.sendSync(command, timeout);
   }
 
   /**
+   * Execute the command asychronously.
    * The result of the execution may be retrieved using
    * {@link RequestFuture#get()} on the returned future and then invoking a
    * suitable "getResult" method as in {@link #execute(CommandPacket)} on the
@@ -562,6 +559,7 @@ public class GNSClient {
   }
 
   /**
+   * Execute the command asychronously.
    * Refer {@link #executeAsync(CommandPacket)}.
    *
    * @param commandPacket
