@@ -58,9 +58,9 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
 
 /**
+ * Implementation of a GNS client using gigapaxos' async client.
+ * 
  * @author arun
- *
- * Cleaner implementation of a GNS client using gigapaxos' async client.
  */
 public class GNSClient {
 
@@ -515,6 +515,8 @@ public class GNSClient {
     // This is a hack to support AdminCommandPacket
     // There is probably a better way involving restructuring the class
     // hierarchy.
+    // FIXME: This doesn't work generally because the return values are not in the
+    // returned command.
     if (returnPacket instanceof AdminCommandPacket) {
       return new GNSCommand(command.getRequestID(), command.getCommand(), false);
     } else {

@@ -1026,7 +1026,25 @@ public enum CommandType {
   /**
    *
    */
-  AclAddSelf(511, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAddSelf.class,
+  AclAddSecured(520, CommandCategory.UPDATE, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.AclAddSecured.class,
+          CommandResultType.NULL, true, false,
+          "Updates the access control list of the given GUID's field to include the accesser guid. Accessor guid can "
+          + "be guid or group guid or +ALL+ which means anyone. "
+          + "Field can be also be +ALL+ which means all fields can be read by the accessor. "
+          + "Sent on the mutual auth channel. "
+          + "Can only be sent from a client that has the correct ssl keys.",
+          new String[]{GNSProtocol.GUID.toString(),
+            GNSProtocol.FIELD.toString(),
+            GNSProtocol.ACCESSER.toString(),
+            GNSProtocol.ACL_TYPE.toString()},
+          CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
+  ),
+  /**
+   *
+   */
+  AclAddSelf(511, CommandCategory.UPDATE, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAddSelf.class,
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to include the accesser guid. "
           + "Accessor should a guid or group guid or +ALL+ which means anyone. "
@@ -1040,7 +1058,8 @@ public enum CommandType {
   /**
    *
    */
-  AclRemove(512, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemove.class,
+  AclRemove(512, CommandCategory.UPDATE, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemove.class,
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to remove the accesser guid. "
           + "Accessor should be the guid or group guid to be removed.",
@@ -1054,7 +1073,24 @@ public enum CommandType {
   /**
    *
    */
-  AclRemoveSelf(513, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemoveSelf.class,
+  AclRemoveSecured(522, CommandCategory.UPDATE,
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.AclRemoveSecured.class,
+          CommandResultType.NULL, true, false,
+          "Updates the access control list of the given GUID's field to remove the accesser guid. "
+          + "Accessor should be the guid or group guid to be removed. "
+          + "Sent on the mutual auth channel. "
+          + "Can only be sent from a client that has the correct ssl keys.",
+          new String[]{GNSProtocol.GUID.toString(),
+            GNSProtocol.FIELD.toString(),
+            GNSProtocol.ACCESSER.toString(),
+            GNSProtocol.ACL_TYPE.toString()},
+          CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
+  ),
+  /**
+   *
+   */
+  AclRemoveSelf(513, CommandCategory.UPDATE, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemoveSelf.class,
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to remove the accesser guid. "
           + "Accessor should be the guid or group guid to be removed.",
@@ -1067,7 +1103,8 @@ public enum CommandType {
   /**
    *
    */
-  AclRetrieve(514, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class,
+  AclRetrieve(514, CommandCategory.READ, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class,
           CommandResultType.LIST, true, false,
           "Returns the access control list for a guids's field.",
           new String[]{GNSProtocol.GUID.toString(),
@@ -1079,7 +1116,22 @@ public enum CommandType {
   /**
    *
    */
-  AclRetrieveSelf(515, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieveSelf.class,
+  AclRetrieveSecured(524, CommandCategory.READ,
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.AclRetrieveSecured.class,
+          CommandResultType.LIST, true, false,
+          "Returns the access control list for a guids's field. "
+          + "Sent on the mutual auth channel. "
+          + "Can only be sent from a client that has the correct ssl keys.",
+          new String[]{GNSProtocol.GUID.toString(),
+            GNSProtocol.FIELD.toString(),
+            GNSProtocol.ACL_TYPE.toString()},
+          CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
+  ),
+  /**
+   *
+   */
+  AclRetrieveSelf(515, CommandCategory.UPDATE, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieveSelf.class,
           CommandResultType.LIST, true, false,
           "Returns the access control list for a guids's field.",
           new String[]{GNSProtocol.GUID.toString(),
@@ -1133,7 +1185,8 @@ public enum CommandType {
   /**
    *
    */
-  AddMembersToGroup(610, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup.class,
+  AddMembersToGroup(610, CommandCategory.OTHER, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup.class,
           CommandResultType.NULL, false, false,
           "Adds the member guids to the group specified by guid. "
           + "Writer guid needs to have write access and sign the command.",
@@ -1145,7 +1198,8 @@ public enum CommandType {
   /**
    *
    */
-  AddMembersToGroupSelf(611, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class,
+  AddMembersToGroupSelf(611, CommandCategory.OTHER, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class,
           CommandResultType.NULL, false, false,
           "Adds the member guids to the group specified by guid. "
           + "Writer guid needs to have write access and sign the command.",
@@ -1156,7 +1210,8 @@ public enum CommandType {
   /**
    *
    */
-  AddToGroup(612, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup.class,
+  AddToGroup(612, CommandCategory.OTHER, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup.class,
           CommandResultType.NULL, false, false,
           "Adds the member guid to the group specified by guid. "
           + "Writer guid needs to have write access and sign the command.",
@@ -1168,7 +1223,8 @@ public enum CommandType {
   /**
    *
    */
-  AddToGroupSelf(613, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
+  AddToGroupSelf(613, CommandCategory.OTHER, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
           CommandResultType.NULL, false, false,
           "Adds the member guid to the group specified by guid.",
           new String[]{GNSProtocol.GUID.toString(),
@@ -1375,7 +1431,7 @@ public enum CommandType {
   private CommandType[] invokedCommands;
 
   /**
-   * The command category.
+   * The command category, that is what kind of command it is.
    */
   private enum CommandCategory {
     /**
@@ -1400,6 +1456,9 @@ public enum CommandType {
     OTHER
   }
 
+  /**
+   * Flags that describe additional command properties.
+   */
   private enum CommandFlag {
     /**
      *

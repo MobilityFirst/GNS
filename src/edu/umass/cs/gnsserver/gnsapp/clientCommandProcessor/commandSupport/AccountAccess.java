@@ -497,7 +497,7 @@ public class AccountAccess {
                   + "Unable to send verification email");
         }
       } else {
-        GNSConfig.getLogger().warning(
+        GNSConfig.getLogger().fine(
                 "**** EMAIL VERIFICATION IS OFF! ****");
       }
     }
@@ -612,7 +612,7 @@ public class AccountAccess {
    */
   public static CommandResponse verifyAccount(String guid, String code,
           ClientRequestHandlerInterface handler) {
-    GNSConfig.getLogger().log(Level.WARNING, "*********** VERIFICATION CODE " + code); 
+    GNSConfig.getLogger().log(Level.FINE, "*********** VERIFICATION CODE {0}", code); 
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
       return new CommandResponse(ResponseCode.VERIFICATION_ERROR,

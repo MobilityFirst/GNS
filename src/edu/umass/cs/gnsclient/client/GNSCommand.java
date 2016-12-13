@@ -73,14 +73,13 @@ public class GNSCommand extends CommandPacket {
   protected GNSCommand(long id, JSONObject command) {
     super(id, command);
   }
-  
-   /**
+
+  /**
    *
    * @param id
    * @param command
+   * @param validate
    */
-  // This is a hack to support AdminCommandPacket being returned in GNSClient
-  // execute method.
   protected GNSCommand(long id, JSONObject command, boolean validate) {
     super(id, command, validate);
   }
@@ -248,10 +247,10 @@ public class GNSCommand extends CommandPacket {
    */
   protected static final CommandPacket fieldCreateIndex(GuidEntry GUID,
           String field, String index) throws ClientException {
-    return getCommand(CommandType.CreateIndex, GUID, 
+    return getCommand(CommandType.CreateIndex, GUID,
             GNSProtocol.GUID.toString(), GUID.getGuid(),
-            GNSProtocol.FIELD.toString(), field, 
-            GNSProtocol.VALUE.toString(), index, 
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.VALUE.toString(), index,
             GNSProtocol.WRITER.toString(), GUID.getGuid());
   }
 
@@ -621,9 +620,9 @@ public class GNSCommand extends CommandPacket {
     return getCommand(CommandType.RemoveAccount, accountGUID, GNSProtocol.GUID.toString(),
             accountGUID.getGuid(), GNSProtocol.NAME.toString(), accountGUID.getEntityName());
   }
-  
+
   /**
-   * Deletes the account. 
+   * Deletes the account.
    * Sent on the mutual auth channel. Can only be sent from a client that
    * has the correct ssl keys. Does not send a signature.
    *
@@ -632,7 +631,7 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket accountGuidRemoveSecure(String name)
           throws ClientException {
-    return getCommand(CommandType.RemoveAccountSecured, null, 
+    return getCommand(CommandType.RemoveAccountSecured, null,
             GNSProtocol.NAME.toString(), name);
   }
 
@@ -959,7 +958,9 @@ public class GNSCommand extends CommandPacket {
             toUnauthorizeGUID);
   }
 
-  /* ************* ACL COMMANDS ********************* */
+  //
+  // ACL COMMANDS
+  //
   /**
    * Adds {@code accessorGUID} to the access control list (ACL) of
    * {@code targetGUID}:{@code field}. {@code accessorGUID} can be a guid of a
@@ -968,7 +969,7 @@ public class GNSCommand extends CommandPacket {
    * added to the ACLs of all fields of {@code targetGUID}.
    *
    * @param accessType
-   * a value from GnrsProtocol.AclAccessType
+   * a value from {@link edu.umass.cs.gnscommon.AclAccessType}
    * @param targetGUID
    * The guid being queried (updated).
    * @param field
@@ -986,6 +987,32 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
+   * Adds {@code accessorGUID} to the access control list (ACL) of
+   * {@code guid}:{@code field}. The
+   * field can be also be +ALL+ which means the {@code accessorGUID} is being
+   * added to the ACLs of all fields of {@code targetGUID}.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys.
+   *
+   * @param accessType
+   * a value from {@link edu.umass.cs.gnscommon.AclAccessType}
+   * @param guid
+   * @param field
+   * The field key.
+   * @return CommandPacket
+   * @throws ClientException
+   * if the query is not accepted by the server.
+   */
+  public static final CommandPacket aclAddSecure(AclAccessType accessType,
+          String guid, String field)
+          throws ClientException {
+    return getCommand(CommandType.AclAddSecured, null,
+            GNSProtocol.ACL_TYPE.toString(), accessType.name(),
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field);
+  }
+
+  /**
    * Removes {@code accessorGUID} from the access control list (ACL) of
    * {@code targetGUID}:{@code field}. {@code accessorGUID} can be a guid of a
    * user or a group guid or null that means anyone can access the field. The
@@ -993,6 +1020,7 @@ public class GNSCommand extends CommandPacket {
    * added to the ACLs of all fields of {@code targetGUID}.
    *
    * @param accessType
+   * a value from {@link edu.umass.cs.gnscommon.AclAccessType}
    * @param targetGUID
    * @param field
    * The field key.
@@ -1009,12 +1037,37 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
+   * Removes {@code accessorGUID} from the access control list (ACL) of
+   * {@code guid}:{@code field}.  The
+   * field can be also be +ALL+ which means the {@code accessorGUID} is being
+   * added to the ACLs of all fields of {@code targetGUID}.
+   *
+   * @param accessType
+   * a value from {@link edu.umass.cs.gnscommon.AclAccessType}
+   * @param guid
+   * @param field
+   * The field key.
+   * @return CommandPacket
+   * @throws ClientException
+   * if the query is not accepted by the server.
+   */
+  public static final CommandPacket aclRemoveSecure(AclAccessType accessType,
+          String guid, String field)
+          throws ClientException {
+    return getCommand(CommandType.AclRemoveSecured, null,
+            GNSProtocol.ACL_TYPE.toString(), accessType.name(),
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field);
+  }
+
+  /**
    * Get the access control list of {@code targetGUID}:{@code field}.
    * {@code accesserGUID} can be a user or group guid or null meaning that
    * anyone can access the field. The field can be also be +ALL+ meaning that
    * FIXME: TBD.
    *
    * @param accessType
+   * a value from {@link edu.umass.cs.gnscommon.AclAccessType}
    * @param targetGUID
    * The guid being queried.
    * @param field
@@ -1032,9 +1085,35 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
+   * Get the access control list of {@code guid}:{@code field}.
+   * The field can be also be +ALL+ meaning
+   * retrieve the ACL for the entire record.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys.
+   *
+   * @param accessType
+   * a value from {@link edu.umass.cs.gnscommon.AclAccessType}
+   * @param guid
+   * @param field
+   * The field key.
+   * @return CommandPacket
+   * @throws ClientException
+   * if the query is not accepted by the server.
+   */
+  public static final CommandPacket aclGetSecure(AclAccessType accessType,
+          String guid, String field)
+          throws ClientException {
+    return getCommand(CommandType.AclRetrieveSecured, null,
+            GNSProtocol.ACL_TYPE.toString(), accessType.name(),
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field);
+  }
+
+  /**
    * Create an empty ACL for the field in the guid.
    *
    * @param accessType
+   * a value from {@link edu.umass.cs.gnscommon.AclAccessType}
    * @param guid
    * The guid to create the ACL in.
    * @param field
@@ -1057,6 +1136,7 @@ public class GNSCommand extends CommandPacket {
    * Delete the ACL for the field in the guid.
    *
    * @param accessType
+   * a value from {@link edu.umass.cs.gnscommon.AclAccessType}
    * @param guid
    * The guid to create the ACL in.
    * @param field
@@ -1079,6 +1159,7 @@ public class GNSCommand extends CommandPacket {
    * Delete the ACL for the field in the guid.
    *
    * @param accessType
+   * a value from {@link edu.umass.cs.gnscommon.AclAccessType}
    * @param guid
    * The guid to create the ACL in.
    * @param field

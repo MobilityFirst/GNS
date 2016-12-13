@@ -21,10 +21,16 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -60,6 +66,7 @@ public class SecureCommandTest {
   }
 
   private static String accountAlias;
+  private static String accountGuid = null;
 
   /**
    *
@@ -81,16 +88,15 @@ public class SecureCommandTest {
    */
   @Test
   public void test_03_CheckAccount() {
-    String guidString = null;
     try {
-      guidString = client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
+      accountGuid = client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
     } catch (Exception e) {
       failWithStackTrace("Exception while looking up guid: ", e);
     }
     JSONObject json = null;
-    if (guidString != null) {
+    if (accountGuid != null) {
       try {
-        json = client.execute(GNSCommand.lookupAccountRecord(guidString)).getResultJSONObject();
+        json = client.execute(GNSCommand.lookupAccountRecord(accountGuid)).getResultJSONObject();
       } catch (Exception e) {
         failWithStackTrace("Exception while looking up account record: ", e);
       }
@@ -105,24 +111,42 @@ public class SecureCommandTest {
   }
 
   @Test
-  public void test_04_RemoveAccount() {
+  public void test_06_RetrieveACL() {
     try {
-      client.execute(GNSCommand.accountGuidRemoveSecure(accountAlias));
-    } catch (ClientException | IOException e) {
-      failWithStackTrace("Exception while removing account record: ", e);
+      JSONArray expected
+              = new JSONArray(new ArrayList<>(Arrays.asList(GNSProtocol.EVERYONE.toString())));
+//      JSONArray actual = client.execute(GNSCommand.aclGetSecure(AclAccessType.READ_WHITELIST, accountGuid,
+//              GNSProtocol.ENTIRE_RECORD.toString())).getResultJSONArray();
+       GNSCommand result  = client.execute(GNSCommand.aclGetSecure(AclAccessType.READ_WHITELIST, accountGuid,
+              GNSProtocol.ENTIRE_RECORD.toString()));
+      System.out.println(result.getResultType());
+      //JSONAssert.assertEquals(expected, actual, false);
+    } catch (ClientException | IOException 
+            //| JSONException 
+            e) {
+      failWithStackTrace("Exception while retrieving account record acl: ", e);
     }
   }
 
-  @Test
-  public void test_05_RemoveAccountCheck() {
-
-    try {
-      client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
-      failWithStackTrace("Should have throw a client "
-              + "exception while looking the guid for " + accountAlias);
-    } catch (ClientException | IOException e) {
-    }
-  }
+//  @Test
+//  public void test_10_RemoveAccount() {
+//    try {
+//      client.execute(GNSCommand.accountGuidRemoveSecure(accountAlias));
+//    } catch (ClientException | IOException e) {
+//      failWithStackTrace("Exception while removing account record: ", e);
+//    }
+//  }
+//
+//  @Test
+//  public void test_11_RemoveAccountCheck() {
+//
+//    try {
+//      client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
+//      failWithStackTrace("Should have throw a client "
+//              + "exception while looking the guid for " + accountAlias);
+//    } catch (ClientException | IOException e) {
+//    }
+//  }
 
   private static final void failWithStackTrace(String message, Exception... e) {
     if (e != null && e.length > 0) {

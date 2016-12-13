@@ -29,7 +29,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
-import static edu.umass.cs.gnsclient.client.GNSCommand.createGNSCommandFromJSONObject;
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.io.IOException;
@@ -360,7 +360,7 @@ public class GNSHttpServer {
           JSONObject jsonFormattedArguments) throws ClientException, IOException, JSONException {
     LOGGER.log(Level.FINE, "jsonFormattedCommand =" + jsonFormattedArguments.toString());
 
-    CommandPacket outgoingPacket = createGNSCommandFromJSONObject(jsonFormattedArguments);
+    CommandPacket outgoingPacket = GNSCommand.createGNSCommandFromJSONObject(jsonFormattedArguments);
 
     LOGGER.log(Level.FINE, "outgoingPacket =" + outgoingPacket.toString());
 
