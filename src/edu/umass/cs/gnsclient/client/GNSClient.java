@@ -478,7 +478,7 @@ public class GNSClient {
             throws RequestParseException {
       return GNSApp.getRequestStatic(bytes, header, unstringer);
     }
-  }
+  } // End of AsyncClient
 
   /**
    * @return The socket address of the GNS proxy if any being used.

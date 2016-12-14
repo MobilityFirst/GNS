@@ -117,18 +117,84 @@ public class SecureCommandTest {
               = new JSONArray(new ArrayList<>(Arrays.asList(GNSProtocol.EVERYONE.toString())));
       JSONArray actual = client.execute(GNSCommand.aclGetSecure(AclAccessType.READ_WHITELIST, accountGuid,
               GNSProtocol.ENTIRE_RECORD.toString())).getResultJSONArray();
-//       CommandPacket result  = client.execute(GNSCommand.aclGetSecure(AclAccessType.READ_WHITELIST, accountGuid,
-//              GNSProtocol.ENTIRE_RECORD.toString()));
-//      System.out.println(result.getResult());
       JSONAssert.assertEquals(expected, actual, false);
-    } catch (ClientException | IOException | JSONException 
-            e) {
+    } catch (ClientException | IOException | JSONException e) {
+      failWithStackTrace("Exception while retrieving account record acl: ", e);
+    }
+  }
+
+  private static String secondAccountAlias;
+  private static String secondAccountGuid = null;
+
+  @Test
+  public void test_07_AddSecondGuid() {
+    secondAccountAlias = "SECOND" + RandomString.randomString(12);
+    try {
+      client.execute(GNSCommand.accountGuidCreateSecure(client.getGNSProvider(),
+              secondAccountAlias,
+              "password"));
+    } catch (Exception e) {
+      failWithStackTrace("Exception while creating account: ", e);
+    }
+  }
+
+  @Test
+  public void test_08_GetGuid() {
+    try {
+      secondAccountGuid = client.execute(GNSCommand.lookupGUID(secondAccountAlias)).getResultString();
+    } catch (Exception e) {
+      failWithStackTrace("Exception while looking up guid: ", e);
+    }
+  }
+
+  @Test
+  public void test_09_AddAcl() {
+    try {
+      client.execute(GNSCommand.aclAddSecure(AclAccessType.READ_WHITELIST, accountGuid,
+              GNSProtocol.ENTIRE_RECORD.toString(), secondAccountGuid));
+    } catch (Exception e) {
+      failWithStackTrace("Exception while looking up guid: ", e);
+    }
+  }
+
+  @Test
+  public void test_10_AddAclCheck() {
+    try {
+      JSONArray expected
+              = new JSONArray(new ArrayList<>(Arrays.asList(GNSProtocol.EVERYONE.toString(), secondAccountGuid)));
+      JSONArray actual = client.execute(GNSCommand.aclGetSecure(AclAccessType.READ_WHITELIST, accountGuid,
+              GNSProtocol.ENTIRE_RECORD.toString())).getResultJSONArray();
+      JSONAssert.assertEquals(expected, actual, false);
+    } catch (ClientException | IOException | JSONException e) {
       failWithStackTrace("Exception while retrieving account record acl: ", e);
     }
   }
 
   @Test
-  public void test_10_SecureRemoveAccount() {
+  public void test_11_RemoveAcl() {
+    try {
+      client.execute(GNSCommand.aclRemoveSecure(AclAccessType.READ_WHITELIST, accountGuid,
+              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.EVERYONE.toString()));
+    } catch (Exception e) {
+      failWithStackTrace("Exception while looking up guid: ", e);
+    }
+  }
+
+  @Test
+  public void test_12_RemoveAclCheck() {
+    try {
+      JSONArray expected
+              = new JSONArray(new ArrayList<>(Arrays.asList(secondAccountGuid)));
+      JSONArray actual = client.execute(GNSCommand.aclGetSecure(AclAccessType.READ_WHITELIST, accountGuid,
+              GNSProtocol.ENTIRE_RECORD.toString())).getResultJSONArray();
+      JSONAssert.assertEquals(expected, actual, false);
+    } catch (ClientException | IOException | JSONException e) {
+      failWithStackTrace("Exception while retrieving account record acl: ", e);
+    }
+  }
+
+  @Test
+  public void test_20_SecureRemoveAccount() {
     try {
       client.execute(GNSCommand.accountGuidRemoveSecure(accountAlias));
     } catch (ClientException | IOException e) {
@@ -137,7 +203,7 @@ public class SecureCommandTest {
   }
 
   @Test
-  public void test_11_SecureRemoveAccountCheck() {
+  public void test_21_SecureRemoveAccountCheck() {
 
     try {
       client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();

@@ -1006,12 +1006,13 @@ public class GNSCommand extends CommandPacket {
    * if the query is not accepted by the server.
    */
   public static final CommandPacket aclAddSecure(AclAccessType accessType,
-          String guid, String field)
+          String guid, String field, String accesserGUID)
           throws ClientException {
     return getCommand(CommandType.AclAddSecured, null,
             GNSProtocol.ACL_TYPE.toString(), accessType.name(),
             GNSProtocol.GUID.toString(), guid,
-            GNSProtocol.FIELD.toString(), field);
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.ACCESSER.toString(), accesserGUID);
   }
 
   /**
@@ -1054,12 +1055,13 @@ public class GNSCommand extends CommandPacket {
    * if the query is not accepted by the server.
    */
   public static final CommandPacket aclRemoveSecure(AclAccessType accessType,
-          String guid, String field)
+          String guid, String field, String accesserGUID)
           throws ClientException {
     return getCommand(CommandType.AclRemoveSecured, null,
             GNSProtocol.ACL_TYPE.toString(), accessType.name(),
             GNSProtocol.GUID.toString(), guid,
-            GNSProtocol.FIELD.toString(), field);
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.ACCESSER.toString(), accesserGUID);
   }
 
   /**

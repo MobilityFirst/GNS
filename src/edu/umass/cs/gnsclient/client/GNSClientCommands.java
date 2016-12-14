@@ -674,7 +674,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
     assert returnedGuid.equals(entry.guid);
     return entry;
   }
-  
+
   /**
    * Register a new account guid with the corresponding alias on the GNS
    * server. This generates a new guid and a public / private key pair.
@@ -736,7 +736,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * Deletes the account given by name.
-   * 
+   *
    *
    * @param guid
    * @throws Exception
@@ -745,7 +745,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
     getResponse(CommandType.RemoveAccount, guid, GNSProtocol.GUID.toString(), guid.getGuid(),
             GNSProtocol.NAME.toString(), guid.getEntityName());
   }
-  
+
   /**
    * Deletes the account given by name.
    * Sent on the mutual auth channel. Can only be sent from a client that
@@ -1105,6 +1105,34 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
+   * Adds to an access control list of the given field. The accesser can be a
+   * guid of a user or a group guid or null which means anyone can access the
+   * field. The field can be also be +ALL+ which means all fields can be read
+   * by the reader.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys.
+   *
+   * @param accessType
+   * a value from GnrsProtocol.AclAccessType
+   * @param guid
+   * @param field
+   * field name
+   * if the query is not accepted by the server.
+   * @param accesserGuid
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws java.io.IOException
+   */
+  public void aclAddSecure(AclAccessType accessType,
+          String guid, String field, String accesserGuid)
+          throws ClientException, IOException {
+    getResponse(CommandType.AclAddSecured, null,
+            GNSProtocol.ACL_TYPE.toString(), accessType.name(),
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.ACCESSER.toString(), accesserGuid);
+  }
+
+  /**
    * Removes a guid from an access control list of the given user's field on
    * the GNS server to include the guid specified in the accesser param. The
    * accesser can be a guid of a user or a group guid or null which means
@@ -1123,6 +1151,33 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public void aclRemove(AclAccessType accessType, GuidEntry guid,
           String field, String accesserGuid) throws Exception {
     aclRemove(accessType.name(), guid, field, accesserGuid);
+  }
+
+  /**
+   * Removes a guid from an access control list of the given user's field on
+   * the GNS server to include the guid specified in the accesser param. The
+   * accesser can be a guid of a user or a group guid or null which means
+   * anyone can access the field. The field can be also be +ALL+ which means
+   * all fields can be read by the reader.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys.
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @param accesserGuid
+   * if the query is not accepted by the server.
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws java.io.IOException
+   */
+  public void aclRemoveSecure(AclAccessType accessType,
+          String guid, String field, String accesserGuid)
+          throws ClientException, IOException {
+    getResponse(CommandType.AclRemoveSecured, null,
+            GNSProtocol.ACL_TYPE.toString(), accessType.name(),
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.ACCESSER.toString(), accesserGuid);
   }
 
   /**
@@ -1148,8 +1203,36 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
+   * Get an access control list of the given user's field on the GNS server to
+   * include the guid specified in the accesser param. The accesser can be a
+   * guid of a user or a group guid or null which means anyone can access the
+   * field. The field can be also be +ALL+ which means all fields can be read
+   * by the reader. Sent on the mutual auth channel. 
+   * Can only be sent from a client that has the correct ssl keys.
+   *
+   * @param accessType
+   * @param guid
+   * @param field
+   * @return list of GUIDs for that ACL
+   * if the query is not accepted by the server.
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws java.io.IOException
+   */
+  public JSONArray aclGetSecure(AclAccessType accessType, String guid, String field)
+          throws ClientException, IOException {
+    try {
+      return new JSONArray(getResponse(CommandType.AclRetrieveSecured, null,
+              GNSProtocol.ACL_TYPE.toString(), accessType.name(),
+              GNSProtocol.GUID.toString(), guid,
+              GNSProtocol.FIELD.toString(), field));
+    } catch (JSONException e) {
+      throw new ClientException("Invalid ACL list", e);
+    }
+  }
+
+  /**
    * Create an empty acl for the field.
-   * 
+   *
    * @param accessType
    * @param guid
    * @param field
@@ -1164,7 +1247,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * Create an empty acl for the field.
-   * 
+   *
    * @param accessType
    * @param guid
    * @param field
@@ -1176,7 +1259,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * Delete the acl for the field.
-   * 
+   *
    * @param accessType
    * @param guid
    * @param field
@@ -1191,7 +1274,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * Delete the acl for the field.
-   * 
+   *
    * @param accessType
    * @param guid
    * @param field
@@ -1203,7 +1286,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * Return true if the acl exists for the field.
-   * 
+   *
    * @param accessType
    * @param guid
    * @param field
@@ -1219,7 +1302,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * Return true if the acl exists for the field.
-   * 
+   *
    * @param accessType
    * @param guid
    * @param field
@@ -1299,7 +1382,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   private GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
           String alias) throws NoSuchAlgorithmException, EncryptionException {
-     GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+    GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
     /* arun: Don't recreate pair if one already exists. Otherwise you can
      * not get out of the funk where the account creation timed out but
      * wasn't rolled back fully at the server. Re-using
@@ -1318,7 +1401,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
     }
     return entry;
   }
-  
+
   /**
    * Register a new account guid with the corresponding alias and the given
    * public key on the GNS server. Returns a new guid.
@@ -1334,7 +1417,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws InvalidGuidException
    * if the user already exists
    */
-  private String accountGuidCreateHelper(String alias, String password, 
+  private String accountGuidCreateHelper(String alias, String password,
           CommandType commandType, GuidEntry guidEntry)
           throws UnsupportedEncodingException, IOException, ClientException,
           InvalidGuidException, NoSuchAlgorithmException {
