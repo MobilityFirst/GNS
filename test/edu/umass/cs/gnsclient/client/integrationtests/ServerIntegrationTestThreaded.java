@@ -23,9 +23,28 @@ import org.junit.runners.MethodSorters;
  * Runs each test in ServerIntegrationTest a number of times sequentially, then in parallel.
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+//@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServerIntegrationTestThreaded {
-
+	
+	
+	/**
+	 * This variable and the two methods to set it failTest() and resetTestFailure()
+	 * are used to allow threads to signal a test failure without having to stop running
+	 * JUnit tests.
+	 */
+	private  boolean failedTest = false;
+	private void failTest(){
+		synchronized(this){
+			failedTest = true;
+		}
+	}
+	
+	private void resetTestFailure(){
+		synchronized(this){
+			failedTest = false;
+		}
+	}
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -40,36 +59,7 @@ public class ServerIntegrationTestThreaded {
 	public static void tearDownAfterClass() throws Exception {
 	}
 	
-	//Any test method in ServerIntegrationTest matching one of these strings will only be run once instead of multiple times, and only be run in one thread.
-	private static final String[] runOnlyOnce = {
-			"test_180_DBUpserts",
-			"test_212_GroupRemoveGuid", 				// Double remove would cause an error.
-			"test_223_GroupAndACLTestRemoveGuid",		// Same as above
-			"test_230_AliasAdd",						//Double add causes duplicate exception
-			"test_231_AliasRemove",						// Double remove would cause an error.
-			"test_320_GeoSpatialSelect",                //Double add could cause duplicate exception if random strings collide.
-			"test_410_JSONUpdate",
-			"test_420_NewRead",
-			"test_430_NewUpdate",
-			"test_511_CreateBatch"		
-	};
-	
-	//Any test method in ServerIntegrationTest matching one of these strings will only be run in one thread, but will be run repeatedly sequentially.
-	private static final String[] runOnlySingleThreaded = {
-			"test_020_RemoveGuid", 						// Uses random names and checks state, so collisions would cause failures.
-			"test_030_RemoveGuidSansAccountInfo", 		// Same as above
-			"test_130_ACLALLFields",					// Same as above
-			"test_210_GroupCreate", 					// Same as above
-			"test_211_GroupAdd",						// Depends on test_210_GroupCreate for guidToDelete
-			"test_220_GroupAndACLCreateGuids", 			// Uses random names and checks state, so collisions would cause failures.
-			"test_270_RemoveField", 					// Race condition in test could cause failure
-			"test_280_ListOrderAndSetElement", 			// Collisions in random strings could cause failures since it checks state.
-			"test_400_SetFieldNull", 					// Race condition in test could cause failure
-			"test_410_JSONUpdate",						// Random string collisions would create race conditions that could cause test failure.
-			"test_420_NewRead", 						// Race condition in test could cause failure
-			"test_430_NewUpdate", 						// Same as above
-			"test_440_CreateBytesField"					// Race condition in this test could cause test_441_ReadBytesField() to fail if remembered test value and last written test value differ.
-	};
+
 
 	/**
 	 * Runs each of the ServerIntegrationTest tests numThreads times in parallel for numRuns time sequentially.
@@ -109,44 +99,18 @@ public class ServerIntegrationTestThreaded {
 				continue;
 			}
 			methodTree.put(methodName,method);
-				
-			//Create a list of test methods that will only be run once each.
-			/*for (String exclusion : runOnlyOnce){
-				if (methodName.equals(exclusion)){
-						dontRepeatMethodTree.put(methodName,method);
-				}
-			}
-			//Create a list of test methods to run single threaded only.
-			for (String exclusion : runOnlySingleThreaded){
-				if (methodName.equals(exclusion)){
-					nonparallelMethodTree.put(methodName, method);
-				}
-			}
-			*/
+			
 		}
 		for (Method method : methodTree.values()){	
 			//Create numThreads threads.
 			Thread threads[] = new Thread[numThreads];
-			
-			//Run these tests only once then move on.
-			if (dontRepeatMethodTree.containsKey(method.getName())){
-				System.out.println("Running test: " + method.getName() + " once.");
-				method.invoke(siTest);
-				continue;
-			}
-			
-			//Run these tests single threaded.
-			else if (nonparallelMethodTree.containsKey(method.getName())){
-				System.out.println("Running test: " + method.getName() + " " + numRuns + " times sequentially.");
-				for (int j = 0; j < numRuns; j++){
-					method.invoke(siTest);
-				}
-				continue;
-			}
+
 			
 			//These tests will be run in parallel.
+			resetTestFailure();
 			System.out.println("Running test: " + method.getName() + " in " + numThreads + " threads with " + numRuns + " runs per thread.");
 			for (int i = 0; i < numThreads; i++){
+				final int threadNumber = i;
 				threads[i] = new Thread(){ 
 					public void run(){
 						try {
@@ -154,19 +118,24 @@ public class ServerIntegrationTestThreaded {
 							for (int j = 0; j < numRuns; j++){
 								method.invoke(siTest);
 							}
+							
 						} catch (Exception e) {
 							//Since this is threaded we need to handle any exceptions.  In this case by failing the test.
 							StringWriter printException = new StringWriter();
 							e.printStackTrace(new PrintWriter(printException));
-							fail("A testing thread threw an exception during test "+method.getName()+":\n" + printException.toString());
+							System.err.println(method.getName() + " FAILED: A testing thread threw an exception:\n" + printException.toString());
+							failTest();
 						}
 					}
 				};
-				threads[i].run();
+				threads[i].start();
 			}
 			//Wait for all threads to finish before moving on to the next test.
 			for (Thread thread : threads){
 				thread.join();
+			}
+			if (!failedTest){
+				System.out.println("Test " + method.getName() + " passed.");
 			}
 		}
 		ServerIntegrationTest.tearDownAfterClass();
