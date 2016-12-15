@@ -1185,7 +1185,7 @@ public enum CommandType {
   /**
    *
    */
-  AddMembersToGroup(610, CommandCategory.OTHER, 
+  AddMembersToGroup(610, CommandCategory.UPDATE, 
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup.class,
           CommandResultType.NULL, false, false,
           "Adds the member guids to the group specified by guid. "
@@ -1198,7 +1198,7 @@ public enum CommandType {
   /**
    *
    */
-  AddMembersToGroupSelf(611, CommandCategory.OTHER, 
+  AddMembersToGroupSelf(611, CommandCategory.UPDATE, 
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class,
           CommandResultType.NULL, false, false,
           "Adds the member guids to the group specified by guid. "
@@ -1210,7 +1210,7 @@ public enum CommandType {
   /**
    *
    */
-  AddToGroup(612, CommandCategory.OTHER, 
+  AddToGroup(612, CommandCategory.UPDATE, 
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup.class,
           CommandResultType.NULL, false, false,
           "Adds the member guid to the group specified by guid. "
@@ -1223,7 +1223,7 @@ public enum CommandType {
   /**
    *
    */
-  AddToGroupSelf(613, CommandCategory.OTHER, 
+  AddToGroupSelf(613, CommandCategory.UPDATE, 
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
           CommandResultType.NULL, false, false,
           "Adds the member guid to the group specified by guid.",
@@ -1274,7 +1274,7 @@ public enum CommandType {
   /**
    *
    */
-  RemoveFromGroup(620, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup.class,
+  RemoveFromGroup(620, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup.class,
           CommandResultType.NULL, false, false,
           "Removes the member guid from the group specified by guid. "
           + "Writer guid needs to have write access and sign the command.",
@@ -1286,7 +1286,7 @@ public enum CommandType {
   /**
    *
    */
-  RemoveFromGroupSelf(621, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class,
+  RemoveFromGroupSelf(621, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class,
           CommandResultType.NULL, false, false,
           "Removes the member guid from the group specified by guid.",
           new String[]{GNSProtocol.GUID.toString(),
@@ -1296,7 +1296,7 @@ public enum CommandType {
   /**
    *
    */
-  RemoveMembersFromGroup(622, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup.class,
+  RemoveMembersFromGroup(622, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup.class,
           CommandResultType.NULL, false, false,
           "Removes the member guids from the group specified by guid. "
           + "Writer guid needs to have write access and sign the command.",
@@ -1308,7 +1308,7 @@ public enum CommandType {
   /**
    *
    */
-  RemoveMembersFromGroupSelf(623, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class,
+  RemoveMembersFromGroupSelf(623, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class,
           CommandResultType.NULL, false, false,
           "Removes the member guids from the group specified by guid.",
           new String[]{GNSProtocol.GUID.toString(),

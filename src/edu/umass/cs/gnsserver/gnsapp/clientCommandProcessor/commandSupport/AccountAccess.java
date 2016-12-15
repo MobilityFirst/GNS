@@ -59,12 +59,12 @@ import org.json.JSONObject;
  * Some of the internal records used to maintain account information are as
  * follows:
  * <p>
- * GNSProtocol.GUID.toString(): "ACCOUNT_INFO" -- {account} for primary guid<br>
- * GNSProtocol.GUID.toString(): "GNSProtocol.GUID.toString()" -- GNSProtocol.GUID.toString() (primary) for secondary guid<br>
- * GNSProtocol.GUID.toString(): "GUID_INFO" -- {guid info}<br>
- * HRN: "GNSProtocol.GUID.toString()" -- GNSProtocol.GUID.toString()<br>
+ * GUID: "ACCOUNT_INFO" -- {account} for primary guid<br>
+ * GUID: "GUID" -- GUID (primary) for secondary guid<br>
+ * GUID: "GUID_INFO" -- {guid info}<br>
+ * HRN: "GUID" -- GUID<br>
  * <p>
- * GNSProtocol.GUID.toString() = Globally Unique Identifier<br>
+ * GUID = Globally Unique Identifier<br>
  * HRN = Human Readable Name<br>
  *
  * @author westy, arun
@@ -107,7 +107,7 @@ public class AccountAccess {
 //    }
 //  }
   /**
-   * Obtains the account info record for the given GNSProtocol.GUID.toString() if that GNSProtocol.GUID.toString() was used
+   * Obtains the account info record for the given guid if that guid was used
    * to createField an account. Only looks on the local server.
    *
    * @param guid
@@ -120,7 +120,7 @@ public class AccountAccess {
   }
 
   /**
-   * Obtains the account info record for the given GNSProtocol.GUID.toString() if that GNSProtocol.GUID.toString() was used
+   * Obtains the account info record for the given guid if that guid was used
    * to createField an account. Will do a remote query if needed.
    *
    * @param guid
@@ -133,15 +133,15 @@ public class AccountAccess {
   }
 
   /**
-   * Obtains the account info record for the given GNSProtocol.GUID.toString() if that GNSProtocol.GUID.toString() was used
+   * Obtains the account info record for the given guid if that guid was used
    * to createField an account.
    * <p>
-   * GNSProtocol.GUID.toString(): "ACCOUNT_INFO" -- {account} for primary guid<br>
-   * GNSProtocol.GUID.toString(): "GNSProtocol.GUID.toString()" -- GNSProtocol.GUID.toString() (primary) for secondary guid<br>
-   * GNSProtocol.GUID.toString(): "GUID_INFO" -- {guid info}<br>
-   * HRN: "GNSProtocol.GUID.toString()" -- GNSProtocol.GUID.toString()<br>
+   * GUID: "ACCOUNT_INFO" -- {account} for primary guid<br>
+   * GUID: "GUID" -- guid (primary) for secondary guid<br>
+   * GUID: "GUID_INFO" -- {guid info}<br>
+   * HRN: "GUID" -- GUID<br>
    * <p>
-   * GNSProtocol.GUID.toString() = Globally Unique Identifier<br>
+   * GUID = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
    *
    * @param guid
@@ -194,15 +194,15 @@ public class AccountAccess {
   }
 
   /**
-   * If this is a subguid associated with an account, returns the GNSProtocol.GUID.toString() of that
+   * If this is a subguid associated with an account, returns the guid of that
    * account, otherwise returns null.
    * <p>
-   * GNSProtocol.GUID.toString() = Globally Unique Identifier
+   * guid = Globally Unique Identifier
    *
    * @param guid
    * @param handler
    * @param allowRemoteLookup
-   * @return a GNSProtocol.GUID.toString()
+   * @return a guid
    */
   public static String lookupPrimaryGuid(String guid,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
@@ -241,11 +241,11 @@ public class AccountAccess {
   }
 
   /**
-   * Returns the GNSProtocol.GUID.toString() associated with name which is a HRN or null if one of
+   * Returns the guid associated with name which is a HRN or null if one of
    * that name does not exist. Will use a remote query if necessary.
    *
    * <p>
-   * GNSProtocol.GUID.toString() = Globally Unique Identifier<br>
+   * guid = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
    *
    * @param name
@@ -258,11 +258,11 @@ public class AccountAccess {
   }
 
   /**
-   * Returns the GNSProtocol.GUID.toString() associated with name which is a HRN or null if one of
+   * Returns the guid associated with name which is a HRN or null if one of
    * that name does not exist.
    *
    * <p>
-   * GNSProtocol.GUID.toString() = Globally Unique Identifier<br>
+   * guid = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
    *
    * @param name
@@ -275,10 +275,10 @@ public class AccountAccess {
   }
 
   /**
-   * Returns the GNSProtocol.GUID.toString() associated with name which is a HRN or null if one of
+   * Returns the guid associated with name which is a HRN or null if one of
    * that name does not exist.
    * <p>
-   * GNSProtocol.GUID.toString() = Globally Unique Identifier<br>
+   * guid = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
    *
    * @param name
@@ -321,9 +321,9 @@ public class AccountAccess {
   }
 
   /**
-   * Obtains the guid info record from the database for GNSProtocol.GUID.toString() given.
+   * Obtains the guid info record from the database for guid given.
    * <p>
-   * GNSProtocol.GUID.toString() = Globally Unique Identifier<br>
+   * guid = Globally Unique Identifier<br>
    *
    * @param guid
    * @param handler
@@ -335,10 +335,10 @@ public class AccountAccess {
   }
 
   /**
-   * Obtains the guid info record from the database for GNSProtocol.GUID.toString() given from
+   * Obtains the guid info record from the database for guid given from
    * any server, local or remote.
    * <p>
-   * GNSProtocol.GUID.toString() = Globally Unique Identifier<br>
+   * guid = Globally Unique Identifier<br>
    *
    * @param guid
    * @param handler
@@ -350,9 +350,9 @@ public class AccountAccess {
   }
 
   /**
-   * Obtains the guid info record from the database for GNSProtocol.GUID.toString() given.
+   * Obtains the guid info record from the database for guid given.
    * <p>
-   * GNSProtocol.GUID.toString() = Globally Unique Identifier<br>
+   * guid = Globally Unique Identifier<br>
    *
    * @param guid
    * @param handler
@@ -729,9 +729,9 @@ public class AccountAccess {
    * <p>
    * This adds three records to the GNS for the account:<br>
    * GNSProtocol.NAME.toString(): "_GNS_GUID" -- guid<br>
-   * GNSProtocol.GUID.toString(): "_GNS_ACCOUNT_INFO" -- {account record - an AccountInfo object
+   * GUID: "_GNS_ACCOUNT_INFO" -- {account record - an AccountInfo object
    * stored as JSON}<br>
-   * GNSProtocol.GUID.toString(): "_GNS_GUID_INFO" -- {guid record - a GuidInfo object stored as
+   * GUID: "_GNS_GUID_INFO" -- {guid record - a GuidInfo object stored as
    * JSON}<br>
    *
    * @param name
@@ -755,7 +755,7 @@ public class AccountAccess {
       jsonHRN.put(HRN_GUID, guid);
       if (!(returnCode = handler.getRemoteQuery().createRecord(name,
               jsonHRN)).isExceptionOrError()) {
-        // if that's cool then add the entry that links the GNSProtocol.GUID.toString() to the
+        // if that's cool then add the entry that links the guid to the
         // username and public key
         // this one could fail if someone uses the same public key to
         // register another one... that's a nono
@@ -900,20 +900,20 @@ public class AccountAccess {
   }
 
   /**
-   * Adds a new GNSProtocol.GUID.toString() associated with an existing account.
+   * Adds a new GUID associated with an existing account.
    * <p>
    * These records will be created:<br>
-   * GNSProtocol.GUID.toString(): "_GNS_PRIMARY_GUID" -- GNSProtocol.GUID.toString() (primary) for secondary guid<br>
-   * GNSProtocol.GUID.toString(): "_GNS_GUID_INFO" -- {guid info}<br>
-   * HRN: "_GNS_GUID" -- GNSProtocol.GUID.toString()<br>
+   * GUID: "_GNS_PRIMARY_GUID" -- GUID (primary) for secondary guid<br>
+   * GUID: "_GNS_GUID_INFO" -- {guid info}<br>
+   * HRN: "_GNS_GUID" -- GUID<br>
    *
    * @param accountInfo
-   * - the accountInfo of the account to add the GNSProtocol.GUID.toString() to
+   * - the accountInfo of the account to add the GUID to
    * @param accountGuidInfo
    * @param name
-   * = the human readable name to associate with the GNSProtocol.GUID.toString()
+   * = the human readable name to associate with the GUID
    * @param guid
-   * - the new GNSProtocol.GUID.toString()
+   * - the new GUID
    * @param publicKey
    * - the public key to use with the new account
    * @param handler
@@ -1146,7 +1146,7 @@ public class AccountAccess {
   }
 
   /**
-   * Remove a GNSProtocol.GUID.toString(). Guid should not be an account GNSProtocol.GUID.toString().
+   * Remove a GUID. Guid should not be an account GUID.
    *
    * @param guid
    * @param handler
@@ -1162,7 +1162,7 @@ public class AccountAccess {
   }
 
   /**
-   * Remove a GNSProtocol.GUID.toString() associated with an account.
+   * Remove a GUID associated with an account.
    *
    * @param accountInfo
    * @param guid
@@ -1179,7 +1179,7 @@ public class AccountAccess {
   }
 
   /**
-   * Remove a GNSProtocol.GUID.toString() associated with an account. If ignoreAccountGuid is true
+   * Remove a GUID associated with an account. If ignoreAccountGuid is true
    * we're deleting the account guid as well so we don't have to check or
    * update that info. The accountInfo parameter can be null in which case we
    * look it up using the guid.
@@ -1201,7 +1201,7 @@ public class AccountAccess {
     GNSConfig.getLogger().log(Level.FINE,
             "REMOVE: GUID INFO: {0} ACCOUNT INFO: {1}",
             new Object[]{guidInfo, accountInfo});
-    // First make sure guid is not an account GNSProtocol.GUID.toString()
+    // First make sure guid is not an account GUID
     // (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
       if (lookupAccountInfoFromGuidAnywhere(guidInfo.getGuid(), handler) != null) {
@@ -1281,7 +1281,7 @@ public class AccountAccess {
    * Add a new human readable name (alias) to an account.
    * <p>
    * These records will be added:<br>
-   * HRN: "_GNS_GUID" -- GNSProtocol.GUID.toString()<br>
+   * HRN: "_GNS_GUID" -- GUID<br>
    *
    * @param accountInfo
    * @param alias
@@ -1354,7 +1354,7 @@ public class AccountAccess {
       return new CommandResponse(ResponseCode.BAD_ALIAS_EXCEPTION,
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ALIAS.toString());
     }
-    // remove the GNSProtocol.NAME.toString() -- GNSProtocol.GUID.toString() record
+    // remove the GNSProtocol.NAME.toString() -- GUID record
     ResponseCode responseCode;
     try {
       if ((responseCode = handler.getRemoteQuery().deleteRecord(alias))
@@ -1406,7 +1406,7 @@ public class AccountAccess {
   }
 
   /**
-   * Add a tag to a GNSProtocol.GUID.toString().
+   * Add a tag to a GUID.
    *
    * @param guidInfo
    * @param tag
@@ -1431,7 +1431,7 @@ public class AccountAccess {
   }
 
   /**
-   * Remove a tag from a GNSProtocol.GUID.toString().
+   * Remove a tag from a GUID.
    *
    * @param guidInfo
    * @param tag

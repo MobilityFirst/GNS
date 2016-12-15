@@ -36,7 +36,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
  *
  * @author westy
  */
-public class LookupAccountRecord extends AbstractCommand {
+  public class LookupAccountRecord extends AbstractCommand {
 
   /**
    * Creates a LookupAccountRecord instance.

@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Level;
 
+import java.util.logging.Logger;
 import org.json.JSONException;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
@@ -45,13 +46,12 @@ import org.json.JSONException;
  * @author westy
  */
 public class GroupAccess {
+  
 
   // DONT FORGET TO CHECK THE CommandCategorys of the group commands
   // before you enable the new update methods.
-  private static final boolean USE_OLD_UPDATE = true;
+  //private static final boolean USE_OLD_UPDATE = false;
   
-  
-
   /**
    * Hidden field that stores group members
    */
@@ -60,6 +60,8 @@ public class GroupAccess {
    * Hidden field that stores what groups a GUID is a member of
    */
   public static final String GROUPS = InternalField.makeInternalFieldString("groups");
+  
+  private final static Logger LOGGER = Logger.getLogger(GroupAccess.class.getName());
 
   /**
    * Sends a request to the NS to add a single GUID to a group.
@@ -85,14 +87,14 @@ public class GroupAccess {
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) throws IOException, JSONException, ClientException {
     ResponseCode code;
-    if (USE_OLD_UPDATE) {
-      handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, new ResultValue(Arrays.asList(memberGuid)));
-      code = ResponseCode.NO_ERROR;
-    } else {
+//    if (USE_OLD_UPDATE) {
+//      handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, new ResultValue(Arrays.asList(memberGuid)));
+//      code = ResponseCode.NO_ERROR;
+//    } else {
       code = FieldAccess.update(null, guid, GROUP, new ResultValue(Arrays.asList(memberGuid)), null, -1,
               UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message,
               timestamp, handler);
-    }
+    //}
     if (code.isOKResult()) {
       handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
     }
@@ -124,14 +126,14 @@ public class GroupAccess {
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
 
     ResponseCode code;
-    if (USE_OLD_UPDATE) {
-      handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, members);
-      code = ResponseCode.NO_ERROR;
-    } else {
+//    if (USE_OLD_UPDATE) {
+//      handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, members);
+//      code = ResponseCode.NO_ERROR;
+//    } else {
       code = FieldAccess.update(null, guid, GROUP, members, null, -1,
               UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message,
               timestamp, handler);
-    }
+    //}
     if (code.isOKResult()) {
       for (String memberGuid : members.toStringSet()) {
         handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
@@ -159,14 +161,14 @@ public class GroupAccess {
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
     ResponseCode code;
-    if (USE_OLD_UPDATE) {
-      handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
-      code = ResponseCode.NO_ERROR;
-    } else {
+//    if (USE_OLD_UPDATE) {
+//      handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
+//      code = ResponseCode.NO_ERROR;
+//    } else {
       code = FieldAccess.update(null, guid, GROUP, memberGuid, null, -1,
               UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message,
               timestamp, handler);
-    }
+    //}
     if (code.isOKResult()) {
       handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
     }
@@ -191,14 +193,14 @@ public class GroupAccess {
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
     ResponseCode code;
-    if (USE_OLD_UPDATE) {
-      handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
-      code = ResponseCode.NO_ERROR;
-    } else {
+//    if (USE_OLD_UPDATE) {
+//      handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
+//      code = ResponseCode.NO_ERROR;
+//    } else {
       code = FieldAccess.update(null, guid, GROUP, members, null, -1,
               UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message,
               timestamp, handler);
-    }
+    //}
     if (code.isOKResult()) {
       for (String memberGuid : members.toStringSet()) {
         handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
@@ -288,21 +290,21 @@ public class GroupAccess {
   public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException {
 
-    GNSConfig.getLogger().log(Level.FINE, "DELETE CLEANUP: {0}", guid);
+    LOGGER.log(Level.FINE, "DELETE CLEANUP: {0}", guid);
     try {
       // We're ignoring signatures and authentication
       for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid,
               GNSConfig.getInternalOpSecret(),
               null, null,
               null, handler, true).toStringSet()) {
-        GNSConfig.getLogger().log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
+        LOGGER.log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
         removeFromGroup(groupGuid, guid,
                 GNSConfig.getInternalOpSecret(),
                 null, null, null,
                 handler);
       }
     } catch (FailedDBOperationException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "Unabled to remove guid from groups:{0}", e);
+      LOGGER.log(Level.SEVERE, "Unabled to remove guid from groups:{0}", e);
     }
   }
 

@@ -399,8 +399,7 @@ public class GNSConfig {
 
   private static boolean UNSAFE_TESTING = false;
 
-  private final static Logger LOG = Logger.getLogger(GNSConfig.class
-          .getName());
+  private final static Logger LOGGER = Logger.getLogger(GNSConfig.class.getName());
 
   /**
    * Returns the master GNS logger.
@@ -408,7 +407,7 @@ public class GNSConfig {
    * @return the master GNS logger
    */
   public static Logger getLogger() {
-    return LOG;
+    return LOGGER;
   }
 
   /**
