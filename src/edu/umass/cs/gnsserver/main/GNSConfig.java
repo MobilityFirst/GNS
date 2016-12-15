@@ -72,15 +72,6 @@ public class GNSConfig {
      */
     EXECUTE_NOOP_ENABLED(false),
     /**
-     * Arun: Allowing this option makes no sense when you can test with no
-     * ACLs instead.
-     *
-     * Never set this to false, but if you do you'll disable signature
-     * authentication.
-     *
-     * ENABLE_SIGNATURE_AUTHENTICATION(true),
-     */
-    /**
      * A secret shared between the server and a trusted client in order to
      * circumvent account verification for trusted clients. Must be changed
      * using properties file to a non-default value if email verification is
@@ -91,8 +82,8 @@ public class GNSConfig {
      * A cleaner way to handle such cases is to use an ADMIN_COMMAND for
      * account creation that is sent via MUTUAL_AUTH SSL.
      */
-    @Deprecated
-    ACCOUNT_VERIFICATION_SECRET(EXPOSED_SECRET),
+    //@Deprecated
+    //ACCOUNT_VERIFICATION_SECRET(EXPOSED_SECRET),
     /**
      * Deprecated and replaced by getInternalOpSecret()
      *
@@ -168,9 +159,6 @@ public class GNSConfig {
     /* FIXME: arun: need to determine this timeout systematically, not an ad
 		 * hoc constant. */
     SELECT_REQUEST_TIMEOUT(5000),
-    //
-    // NO SQL BACKING DATABASE
-    //
 
     /**
      *
@@ -215,17 +203,8 @@ public class GNSConfig {
      * simultaneously.
      */
     //FIXME:  - currently only used by the ACS; will be disabled soon
-    @Deprecated // DO NOT USE; will be going away shortly
-    ENABLE_EMAIL_VERIFICATION_SALT(true),
-    /**
-     * Arun: This option is unnecessary.
-     *
-     * Disables the use of the local emailer when sending verification
-     * messages. Needed for hosts where the emailer is badly configured and
-     * eats outgoing email.
-     *
-     * DONT_TRY_LOCAL_EMAIL(false),
-     */
+    //@Deprecated // DO NOT USE; will be going away shortly
+    //ENABLE_EMAIL_VERIFICATION_SALT(true),
     /**
      * The name of the application that is used when sending a verification
      * email.
@@ -327,7 +306,7 @@ public class GNSConfig {
      */
     USE_OLD_ACL_MODEL(false),
     /**
-     * Set this to true to use the old HTTP query handling.  Default is false.
+     * Set this to true to use the old HTTP query handling. Default is false.
      * Older HTTP server didn't support multiple server installations.
      * Temporary - The use of this will go away at some point.
      */

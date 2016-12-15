@@ -506,27 +506,32 @@ public class AccountAccess {
 
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
-  private static final String SECRET = Config.getGlobalString(GNSConfig.GNSC.ACCOUNT_VERIFICATION_SECRET);
+  //private static final String SECRET = Config.getGlobalString(GNSConfig.GNSC.ACCOUNT_VERIFICATION_SECRET);
 
   private static String createVerificationCode(String name) {
-
-    String randomSalt = new String(Util.getRandomAlphanumericBytes(128));
-    String fullSaltedName;
-    if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
-            //FIXME:  - currently only used by the ACS; will be disabled soon
-            && Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)) {
-      fullSaltedName = name + SECRET + randomSalt;
-    } else {
-      //FIXME: replace with ssl key-based admin command.
-      //currently only used by the ACS; will be disabled soon
-      fullSaltedName = name + SECRET;
-    }
-    String code = ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
-            .getInstance().hash(fullSaltedName),
+    // Don't really even need name here, but what the heck.
+    return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
+            .getInstance().hash(new String(name + Util.getRandomAlphanumericBytes(128))),
             VERIFICATION_CODE_LENGTH));
-//    GNSConfig.getLogger().log(Level.WARNING, "*********** " + name + " " + SECRET 
-//            + " VERIFICATION CODE " + code);
-    return code;
+    
+//    String randomSalt = new String(Util.getRandomAlphanumericBytes(128));
+//    String fullSaltedName;
+//    if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
+//            //FIXME:  - currently only used by the ACS; will be disabled soon
+//            //&& Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)
+//            ) {
+//      fullSaltedName = name + SECRET + randomSalt;
+//    } else {
+//      //FIXME: replace with ssl key-based admin command.
+//      //currently only used by the ACS; will be disabled soon
+//      fullSaltedName = name + SECRET;
+//    }
+//    String code = ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
+//            .getInstance().hash(fullSaltedName),
+//            VERIFICATION_CODE_LENGTH));
+////    GNSConfig.getLogger().log(Level.WARNING, "*********** " + name + " " + SECRET 
+////            + " VERIFICATION CODE " + code);
+//    return code;
   }
 
   private static boolean sendEmailAuthentication(String name, String guid, String hostPortString, String verifyCode) {

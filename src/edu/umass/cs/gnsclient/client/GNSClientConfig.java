@@ -71,7 +71,8 @@ public class GNSClientConfig {
      *
      * (2) SERVER_AUTH SSL must be enabled between clients and servers.
      */
-    VERIFICATION_SECRET("EXPOSED_SECRET"),
+    //@Deprecated
+    //VERIFICATION_SECRET("EXPOSED_SECRET"),
     /**
      * Byteification mode for "important" packets like CommandPacket,
      * CommandValueReturnPacket, etc.

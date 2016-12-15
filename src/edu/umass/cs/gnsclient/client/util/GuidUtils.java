@@ -46,14 +46,14 @@ import edu.umass.cs.gnscommon.GNSProtocol;
  */
 public class GuidUtils {
 
-  /* arun: FIXME: replace with ssl key-based admin command.
+  /* Replaced with ssl key-based admin command.
 	 * 
 	 * this is so we can mimic the verification code the server is generating
 	 * AKA we're cheating... if the SECRET changes on the server side you'll
 	 * need to change it here as well */
-  private static final String SECRET
-          = Config.getGlobalString(GNSClientConfig.GNSCC.VERIFICATION_SECRET);
-  private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
+  //private static final String SECRET
+          //= Config.getGlobalString(GNSClientConfig.GNSCC.VERIFICATION_SECRET);
+  //private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
   //
   // The code in here is screaming for an interface.
@@ -187,32 +187,31 @@ public class GuidUtils {
       }
       int attempts = 0;
       // rethrow all but GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString()
-      do {
-        try {
-          client.execute(GNSCommand.accountGuidVerify(guid, createVerificationCode(name)))
-                  .getResultString();
-        } catch (ClientException e) {
-          if (e.getCode() != ResponseCode.ALREADY_VERIFIED_EXCEPTION) {
-            e.printStackTrace();
-            throw e;
-          } else {
-            if (verbose) {
-              System.out
-                      .println("  Caught and ignored \"Account already verified\" error for "
-                              + guid);
-            }
-            GNSClientConfig
-                    .getLogger()
-                    .log(Level.INFO,
-                            "Caught and ignored \"Account already verified\" error for {0}",
-                            new Object[]{guid});
-            break;
-          }
-        }
-      } while (attempts++ < NUM_VERIFICATION_ATTEMPTS);
+//      do {
+//        try {
+//          client.execute(GNSCommand.accountGuidVerify(guid, createVerificationCode(name)))
+//                  .getResultString();
+//        } catch (ClientException e) {
+//          if (e.getCode() != ResponseCode.ALREADY_VERIFIED_EXCEPTION) {
+//            e.printStackTrace();
+//            throw e;
+//          } else {
+//            if (verbose) {
+//              System.out
+//                      .println("  Caught and ignored \"Account already verified\" error for "
+//                              + guid);
+//            }
+//            GNSClientConfig
+//                    .getLogger()
+//                    .log(Level.INFO,
+//                            "Caught and ignored \"Account already verified\" error for {0}",
+//                            new Object[]{guid});
+//            break;
+//          }
+//        }
+//      } while (attempts++ < NUM_VERIFICATION_ATTEMPTS);
       if (verbose) {
-        System.out.println("  Created and verified account GUID "
-                + guid);
+        System.out.println("  Created account GUID " + guid);
       }
       return guid;
     } else {
@@ -236,8 +235,7 @@ public class GuidUtils {
           boolean verbose) throws Exception {
     return lookupOrCreateAccountGuidInternal(client, name, password, false, verbose);
   }
-  
-  
+
   /**
    * @param client
    * @param name
@@ -275,35 +273,40 @@ public class GuidUtils {
         // ignore as it is most likely because of a seemingly failed creation operation that actually succeeded.
         System.out.println("  Account GUID " + guid + " aready exists on the server; " + e.getMessage());
       }
-      if (!secured) {
-        // if we're secured the account is already verified, otherwise verify it
-        // using the secret key
-        int attempts = 0;
-        // Since we're cheating here we're going to catch already verified errors which means
-        // someone on the server probably turned off verification for testing purposes
-        // but we'll rethrow everything else
-        while (true) {
-          try {
-            client.accountGuidVerify(guid, createVerificationCode(name));
-          } catch (ClientException e) {
-            // a bit of a hack here that depends on someone not changing
-            // that error message
-            if (!e.getMessage().contains(GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString())) {
-              if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
-                // do nothing
-              } else {
-                e.printStackTrace();
-                throw e;
-              }
-            } else {
-              System.out.println("  Caught and ignored \"Account already verified\" error for " + guid);
-              break;
-            }
-          }
-        }
-      }
+//      if (!secured) {
+//        // if we're secured the account is already verified, otherwise verify it
+//        // using the secret key
+//        int attempts = 0;
+//        // Since we're cheating here we're going to catch already verified errors which means
+//        // someone on the server probably turned off verification for testing purposes
+//        // but we'll rethrow everything else
+//        while (true) {
+//          try {
+//            client.accountGuidVerify(guid, createVerificationCode(name));
+//          } catch (ClientException e) {
+//            // a bit of a hack here that depends on someone not changing
+//            // that error message
+//            if (!e.getMessage().contains(GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString())) {
+//              if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
+//                // do nothing
+//              } else {
+//                e.printStackTrace();
+//                throw e;
+//              }
+//            } else {
+//              System.out.println("  Caught and ignored \"Account already verified\" error for " + guid);
+//              break;
+//            }
+//          }
+//        }
+//      }
       if (verbose) {
-        System.out.println("  Created and verified account GUID " + guid);
+        if (secured) {
+          System.out.println("  Created and verified account GUID " + guid);
+        } else {
+          System.out.println("  Created account GUID " + guid);
+        }
+
       }
       return guid;
     } else {
@@ -353,33 +356,33 @@ public class GuidUtils {
         // ignore as it is most likely because of a seemingly failed creation operation that actually succeeded.
         System.out.println("  Account GUID " + guid + " aready exists on the server; " + e.getMessage());
       }
-      int attempts = 0;
-      // Since we're cheating here we're going to catch already verified errors which means
-      // someone on the server probably turned off verification for testing purposes
-      // but we'll rethrow everything else
-      while (true) {
-        try {
-          client.accountGuidVerify(guid, createVerificationCode(name));
-        } catch (ClientException e) {
-          // a bit of a hack here that depends on someone not changing
-          // that error message
-          if (!e.getMessage().contains(GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString())) {
-            if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
-              // do nothing
-            } else {
-              e.printStackTrace();
-              throw e;
-            }
-          } else {
-            if (verbose) {
-              System.out.println("  Caught and ignored \"Account already verified\" error for " + guid);
-            }
-            break;
-          }
-        }
-      }
+//      int attempts = 0;
+//      // Since we're cheating here we're going to catch already verified errors which means
+//      // someone on the server probably turned off verification for testing purposes
+//      // but we'll rethrow everything else
+//      while (true) {
+//        try {
+//          client.accountGuidVerify(guid, createVerificationCode(name));
+//        } catch (ClientException e) {
+//          // a bit of a hack here that depends on someone not changing
+//          // that error message
+//          if (!e.getMessage().contains(GNSProtocol.ALREADY_VERIFIED_EXCEPTION.toString())) {
+//            if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
+//              // do nothing
+//            } else {
+//              e.printStackTrace();
+//              throw e;
+//            }
+//          } else {
+//            if (verbose) {
+//              System.out.println("  Caught and ignored \"Account already verified\" error for " + guid);
+//            }
+//            break;
+//          }
+//        }
+//      }
       if (verbose) {
-        System.out.println("  Created and verified account GUID " + guid);
+        System.out.println("  Created account GUID " + guid);
       }
       return guid;
     } else {
@@ -390,13 +393,13 @@ public class GuidUtils {
     }
   }
 
-  private static String createVerificationCode(String name) {
-    String code = ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET),
-            VERIFICATION_CODE_LENGTH));
-//    GNSClientConfig.getLogger().log(Level.WARNING, "*********** " + name + " " + SECRET 
-//            + " VERIFICATION CODE " + code);  
-    return code;
-  }
+//  private static String createVerificationCode(String name) {
+//    String code = ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET),
+//            VERIFICATION_CODE_LENGTH));
+////    GNSClientConfig.getLogger().log(Level.WARNING, "*********** " + name + " " + SECRET 
+////            + " VERIFICATION CODE " + code);  
+//    return code;
+//  }
 
   /**
    * Creates and verifies an account GNSProtocol.GUID.toString().

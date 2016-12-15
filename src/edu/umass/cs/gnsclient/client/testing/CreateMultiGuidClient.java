@@ -165,14 +165,14 @@ public class CreateMultiGuidClient {
     return true;
   }
 
-  private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
-  // this is so we can mimic the verification code the server is generting
-  // AKA we're cheating... if the SECRET changes on the server side 
-  // you'll need to change it here as well
-  private static final String SECRET = Config.getGlobalString(GNSClientConfig.GNSCC.VERIFICATION_SECRET);
-
-  private static String createVerificationCode(String name) {
-    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
-  }
+//  private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
+//  // this is so we can mimic the verification code the server is generting
+//  // AKA we're cheating... if the SECRET changes on the server side 
+//  // you'll need to change it here as well
+//  private static final String SECRET = Config.getGlobalString(GNSClientConfig.GNSCC.VERIFICATION_SECRET);
+//
+//  private static String createVerificationCode(String name) {
+//    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
+//  }
 
 }
