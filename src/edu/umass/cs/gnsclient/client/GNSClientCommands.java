@@ -17,9 +17,7 @@ package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.Arrays;
 
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -260,10 +258,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param index
    * @throws IOException
    * @throws ClientException
-   * @throws JSONException
    */
   public void fieldCreateIndex(GuidEntry guid, String field, String index)
-          throws IOException, ClientException, JSONException {
+          throws IOException, ClientException {
     getResponse(CommandType.CreateIndex, guid, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(),
             field, GNSProtocol.VALUE.toString(), index, GNSProtocol.WRITER.toString(), guid.getGuid());
   }
@@ -452,14 +449,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param field
    * @param writer
    * @throws IOException
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
    * @throws ClientException
    */
   public void fieldRemove(String targetGuid, String field, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException,
-          SignatureException, ClientException {
+          throws IOException, ClientException {
     getResponse(CommandType.RemoveField, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
             field, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
@@ -987,14 +980,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws IOException
    * @throws InvalidGuidException
    * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
    */
   public void groupRemoveGuids(String guid, JSONArray members,
-          GuidEntry writer) throws IOException, InvalidGuidException,
-          ClientException, InvalidKeyException, NoSuchAlgorithmException,
-          SignatureException {
+          GuidEntry writer) throws IOException, ClientException {
     getResponse(CommandType.RemoveMembersFromGroup, writer, GNSProtocol.GUID.toString(), guid,
             GNSProtocol.MEMBERS.toString(), members, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
@@ -1644,14 +1632,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param field
    * @param writer
    * @throws IOException
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
    * @throws ClientException
    */
   public void fieldSetNull(String targetGuid, String field, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException,
-          SignatureException, ClientException {
+          throws IOException, ClientException {
     getResponse(CommandType.SetFieldNull, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
             field, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
@@ -2271,14 +2255,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param guid
    * @param field
    * @throws IOException
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
    * @throws ClientException
    */
-  public void fieldRemove(GuidEntry guid, String field) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException,
-          ClientException {
+  public void fieldRemove(GuidEntry guid, String field) throws IOException, ClientException {
     fieldRemove(guid.getGuid(), field, guid);
   }
 

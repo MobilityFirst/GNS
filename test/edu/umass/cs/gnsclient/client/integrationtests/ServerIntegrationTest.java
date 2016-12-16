@@ -2340,7 +2340,7 @@ public class ServerIntegrationTest extends DefaultTest {
     }
     try {
       client.fieldRemove(westyEntry.getGuid(), fieldToDelete, westyEntry);
-    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | SignatureException | ClientException e) {
+    } catch (IOException | ClientException e) {
       failWithStackTrace("Exception while removing field: ", e);
     }
 
@@ -2562,7 +2562,7 @@ public class ServerIntegrationTest extends DefaultTest {
     }
     try {
       client.fieldSetNull(westyEntry.getGuid(), field, westyEntry);
-    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | SignatureException | ClientException e) {
+    } catch (IOException | ClientException e) {
       failWithStackTrace("Exception while setting field to null field: ", e);
     }
     try {
@@ -2692,8 +2692,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
     try {
       client.fieldRemove(westyEntry.getGuid(), "gibberish", westyEntry);
-    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException 
-            | SignatureException | ClientException e) {
+    } catch (IOException | ClientException e) {
       failWithStackTrace("Exception during remove field \"gibberish\": ", e);
     }
 
@@ -3052,7 +3051,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       client.fieldCreateIndex(masterGuid, createIndexTestField,
               "2dsphere");
-    } catch (IOException | ClientException | JSONException e) {
+    } catch (IOException | ClientException e) {
       failWithStackTrace("Exception while creating index: ", e);
     }
   }
