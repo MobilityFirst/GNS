@@ -9,7 +9,13 @@ import static org.junit.Assert.fail;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -23,27 +29,9 @@ import org.junit.runners.MethodSorters;
  * Runs each test in ServerIntegrationTest a number of times sequentially, then in parallel.
  *
  */
-//@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServerIntegrationTestThreaded {
 	
 	
-	/**
-	 * This variable and the two methods to set it failTest() and resetTestFailure()
-	 * are used to allow threads to signal a test failure without having to stop running
-	 * JUnit tests.
-	 */
-	private  boolean failedTest = false;
-	private void failTest(){
-		synchronized(this){
-			failedTest = true;
-		}
-	}
-	
-	private void resetTestFailure(){
-		synchronized(this){
-			failedTest = false;
-		}
-	}
 	
 	/**
 	 * @throws java.lang.Exception
@@ -68,6 +56,7 @@ public class ServerIntegrationTestThreaded {
 	 */
 	@Test
 	public void test_01_ParallelServerIntegrationTest() throws Exception{
+		boolean failedAnyTest = false;
 		String runsString = System.getProperty("integrationTest.runs");
 		//This style of definition is used to make numRuns effectively final so it can be used in threads.
 		int numRuns;
@@ -82,63 +71,79 @@ public class ServerIntegrationTestThreaded {
 			 if (threadString != null){
 				 numThreads=Integer.parseInt(threadString);
 			 }
+			 
+		String exitOnFailureString = System.getProperty("integrationTest.exitOnFailure");
+				final boolean exitOnFailure;
+				if (exitOnFailureString != null){
+					 exitOnFailure = Boolean.parseBoolean(exitOnFailureString);
+				}
+				else{
+					exitOnFailure = true;
+				}
 		
 		
 		ServerIntegrationTest.setUpBeforeClass();
 		ServerIntegrationTest siTest = new ServerIntegrationTest();
 		Class<?> siClass = siTest.getClass();
 		Method[] allMethods = siClass.getDeclaredMethods();
-		TreeMap<String, Method> methodTree = new TreeMap<String, Method>();
-		TreeMap<String, Method> nonparallelMethodTree = new TreeMap<String, Method>();
-		TreeMap<String, Method> dontRepeatMethodTree = new TreeMap<String, Method>();
+		ExecutorService pool = Executors.newFixedThreadPool(numThreads);
 		for (Method method : allMethods){
-			String methodName = method.getName();
+			boolean failedThisTest = false;
 			Test testAnnotation = method.getAnnotation(Test.class);
-			//Exclude non test methods by not putting them in our list.
+			//Exclude non test methods by skipping over them.
 			if (testAnnotation == null){
 				continue;
 			}
-			methodTree.put(methodName,method);
-			
-		}
-		for (Method method : methodTree.values()){	
-			//Create numThreads threads.
-			Thread threads[] = new Thread[numThreads];
 
 			
-			//These tests will be run in parallel.
-			resetTestFailure();
+			//Run the tests in parallel and record any exceptions thrown.
+			List<Future<Exception>> failures = new ArrayList<Future<Exception>>();
 			System.out.println("Running test: " + method.getName() + " in " + numThreads + " threads with " + numRuns + " runs per thread.");
 			for (int i = 0; i < numThreads; i++){
-				final int threadNumber = i;
-				threads[i] = new Thread(){ 
-					public void run(){
+				Callable<Exception >call = new Callable<Exception>(){ 
+					public Exception call(){
 						try {
 							//Runs the current test numRuns times in this thread.
 							for (int j = 0; j < numRuns; j++){
 								method.invoke(siTest);
 							}
-							
+							//Return no exception since none was thrown.
+							return null;
 						} catch (Exception e) {
-							//Since this is threaded we need to handle any exceptions.  In this case by failing the test.
-							StringWriter printException = new StringWriter();
-							e.printStackTrace(new PrintWriter(printException));
-							System.err.println(method.getName() + " FAILED: A testing thread threw an exception:\n" + printException.toString());
-							failTest();
+							//Return the thrown exception.
+							return e;
 						}
 					}
 				};
-				threads[i].start();
+				//Add this test to our working queue.
+				Future<Exception> future = pool.submit(call);
+				failures.add(future);
 			}
 			//Wait for all threads to finish before moving on to the next test.
-			for (Thread thread : threads){
-				thread.join();
+			for (int i = 0; i < failures.size(); i++){
+				Exception e = failures.get(i).get();
+				if (e != null){
+					failedThisTest = true;
+					StringWriter printException = new StringWriter();
+					e.printStackTrace(new PrintWriter(printException));
+					System.err.println(method.getName() + " FAILED: Testing thread " + Integer.toString(i) 
+														+ " threw an exception:\n" + printException.toString());
+				}
 			}
-			if (!failedTest){
+			if (!failedThisTest){
 				System.out.println("Test " + method.getName() + " passed.");
+			}
+			else{
+				failedAnyTest = true;
+				if (exitOnFailure){
+					fail("Aborting further testing due to failure! Set -DintegrationTest.exitOnFailure=false to disable.");
+				}
 			}
 		}
 		ServerIntegrationTest.tearDownAfterClass();
+		if (failedAnyTest){
+			System.exit(1);
+		}
 	}
 	
 
