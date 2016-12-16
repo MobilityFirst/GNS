@@ -726,15 +726,17 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   public void test_100_ACLTest_All_Fields() throws JSONException, Exception {
     final String TEST_FIELD_NAME = "testField";
+    GuidEntry accountGuid = GuidUtils.lookupOrCreateAccountGuid(client,
+    		RandomString.randomString(6) + "@gns.name", PASSWORD, true);
     String testFieldName = TEST_FIELD_NAME + RandomString.randomString(6);
-    test_101_ACLCreateField(testFieldName);
-    test_110_ACLMaybeAddAllFields();
-    test_111_ACLCheckForAllFieldsPass();
-    test_112_ACLRemoveAllFields();
-    test_113_ACLCheckForAllFieldsMissing();
-    test_114_CheckAllFieldsAcl();
-    test_115_DeleteAllFieldsAcl();
-    test_116_CheckAllFieldsAclGone();
+    test_101_ACLCreateField(accountGuid, testFieldName);
+    test_110_ACLMaybeAddAllFields(accountGuid);
+    test_111_ACLCheckForAllFieldsPass(accountGuid);
+    test_112_ACLRemoveAllFields(accountGuid);
+    test_113_ACLCheckForAllFieldsMissing(accountGuid);
+    test_114_CheckAllFieldsAcl(accountGuid);
+    test_115_DeleteAllFieldsAcl(accountGuid);
+    test_116_CheckAllFieldsAclGone(accountGuid);
   }
 
   /**
@@ -742,7 +744,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws ClientException
    *
    */
-  private void test_101_ACLCreateField(String testFieldName) throws ClientException, IOException {
+  private void test_101_ACLCreateField(GuidEntry masterGuid, String testFieldName) throws ClientException, IOException {
     //CHECKED FOR VALIDITY
     client.fieldCreateOneElementList(masterGuid.getGuid(), testFieldName, "testValue", masterGuid);
   }
@@ -756,7 +758,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws Exception
    * @throws JSONException
    */
-  private void test_110_ACLMaybeAddAllFields() throws JSONException, Exception {
+  private void test_110_ACLMaybeAddAllFields(GuidEntry masterGuid) throws JSONException, Exception {
     //CHECKED FOR VALIDITY
     if (!JSONUtils.JSONArrayToArrayList(client.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
             GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()))
@@ -772,7 +774,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws JSONException
    *
    */
-  private void test_111_ACLCheckForAllFieldsPass() throws JSONException, Exception {
+  private void test_111_ACLCheckForAllFieldsPass(GuidEntry masterGuid) throws JSONException, Exception {
     //CHECKED FOR VALIDITY
     ThreadUtils.sleep(100);
     JSONArray expected = new JSONArray(Arrays.asList(GNSProtocol.ALL_GUIDS.toString()));
@@ -781,14 +783,14 @@ public class ServerIntegrationTest extends DefaultTest {
                     GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()), true);
   }
 
-  private void test_112_ACLRemoveAllFields() throws Exception {
+  private void test_112_ACLRemoveAllFields(GuidEntry masterGuid) throws Exception {
     //CHECKED FOR VALIDITY
     // remove default read access for this test
     client.aclRemove(AclAccessType.READ_WHITELIST, masterGuid,
             GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
   }
 
-  private void test_113_ACLCheckForAllFieldsMissing() throws JSONException, Exception {
+  private void test_113_ACLCheckForAllFieldsMissing(GuidEntry masterGuid) throws JSONException, Exception {
     //CHECKED FOR VALIDITY
     JSONArray expected = new JSONArray();
     JSONAssert.assertEquals(expected,
@@ -796,18 +798,18 @@ public class ServerIntegrationTest extends DefaultTest {
                     GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()), true);
   }
 
-  private void test_114_CheckAllFieldsAcl() throws Exception {
+  private void test_114_CheckAllFieldsAcl(GuidEntry masterGuid) throws Exception {
     //CHECKED FOR VALIDITY
     Assert.assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid,
             GNSProtocol.ENTIRE_RECORD.toString()));
   }
 
-  private void test_115_DeleteAllFieldsAcl() throws Exception {
+  private void test_115_DeleteAllFieldsAcl(GuidEntry masterGuid) throws Exception {
     //CHECKED FOR VALIDITY
     client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString());
   }
 
-  private void test_116_CheckAllFieldsAclGone() throws Exception {
+  private void test_116_CheckAllFieldsAclGone(GuidEntry masterGuid) throws Exception {
     //CHECKED FOR VALIDITY
     Assert.assertFalse(client.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
   }
@@ -822,7 +824,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_117_ACLTest_Single_Field() throws JSONException, Exception {
     final String TEST_FIELD_NAME = "testField";
     String testFieldName = TEST_FIELD_NAME + RandomString.randomString(6);
-    test_101_ACLCreateField(testFieldName);
+    test_101_ACLCreateField(masterGuid, testFieldName);
     test_120_CreateAcl(testFieldName);
     test_121_CheckAcl(testFieldName);
     test_122_DeleteAcl(testFieldName);
