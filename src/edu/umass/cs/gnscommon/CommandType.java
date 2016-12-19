@@ -1379,7 +1379,8 @@ public enum CommandType {
   /**
    *
    */
-  GetCode(812, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class,
+  GetCode(812, CommandCategory.READ, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class,
           CommandResultType.STRING, true, false,
           "Returns the active code for the specified action, ensuring the reader has permission.",
           new String[]{GNSProtocol.GUID.toString(),

@@ -1796,7 +1796,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public String activeCodeGet(String guid, String action, GuidEntry readerGuid)
           throws Exception {
     String code = getResponse(CommandType.GetCode,
-            readerGuid, GNSProtocol.GUID.toString(), guid, GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.READER.toString(),
+            readerGuid, GNSProtocol.GUID.toString(), guid, 
+            GNSProtocol.AC_ACTION.toString(), action, 
+            GNSProtocol.READER.toString(),
             readerGuid.getGuid());
     return code;
   }
