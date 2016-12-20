@@ -225,33 +225,31 @@ public class CommandHandler {
               ResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
     }
 
-    /* Note: It is pointless to try to check whether a previous request in this
-		 * chain was already coordinated and this request is also coordinated
-		 * because if we are here, it is too late. This check must be done at
-		 * the sender side. Indeed most any reasonable check we can do to restrict
-		 * the capabilities of active code at the receiver might as well be
-		 * done at the sender. We can not detect node cycles at the sender
-		 * but it is unclear that we even care to prevent node cycles. 
-		 * 
-		 * It is unclear how to disallow targetGUID cycles unless we carry the
-		 * entire chain information, which seems like too much work given that
-		 * we already have TTLs to limit cycles. */
+    /**
+     * Note: It is pointless to try to check whether a previous request in this
+     * chain was already coordinated and this request is also coordinated
+     * because if we are here, it is too late. This check must be done at
+     * the sender side. Indeed most any reasonable check we can do to restrict
+     * the capabilities of active code at the receiver might as well be
+     * done at the sender. We can not detect node cycles at the sender
+     * but it is unclear that we even care to prevent node cycles.
+     *
+     * It is unclear how to disallow targetGUID cycles unless we carry the
+     * entire chain information, which seems like too much work given that
+     * we already have TTLs to limit cycles.
+     */
     CommandPacket originRequest = handler.getOriginRequest(header);
     // same origin GNSProtocol.GUID.toString() and origin request ID => node cycle
     if (originRequest != commandPacket
-            && header
-            .getOriginatingGUID()
-            .equals(PacketUtils
-                    .getOriginatingGUID(originRequest))) {
-      GNSConfig
-              .getLogger()
-              .log(Level.INFO,
-                      "Node {0} revisited by active request chain {1} at hop {2}",
-                      new Object[]{
-                        handler.getApp(),
-                        header,
-                        InternalRequestHeader.DEFAULT_TTL
-                        - header.getTTL()});
+            && header.getOriginatingGUID().equals(PacketUtils.getOriginatingGUID(originRequest))) {
+      // FIXME: This should either be WARN (if it's important) or FINE (if it's not important).
+      GNSConfig.getLogger().log(Level.INFO,
+              "Node {0} revisited by active request chain {1} at hop {2}",
+              new Object[]{
+                handler.getApp(),
+                header,
+                InternalRequestHeader.DEFAULT_TTL
+                - header.getTTL()});
     }
     // nothing suspicious detected
     return header;
