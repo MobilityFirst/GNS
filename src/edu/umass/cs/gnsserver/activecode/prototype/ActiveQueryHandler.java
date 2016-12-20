@@ -79,7 +79,7 @@ public class ActiveQueryHandler {
 			ActiveMessage response;
 			if(am.type == ActiveMessage.Type.READ_QUERY){
 				try {
-					JSONObject result = app.read(header, am.getTargetGuid(), am.getField());
+					JSONObject result = app.read(header, am.getTargetGuid(), am.getAccessor());
 					if(result != null)
 						response = new ActiveMessage(am.getId(), result.toString(), null);
 					else
@@ -90,7 +90,7 @@ public class ActiveQueryHandler {
 						
 			}else{
 				try {
-					app.write(header, am.getTargetGuid(), am.getField(), new JSONObject(am.getValue()) );
+					app.write(header, am.getTargetGuid(), am.getAccessor(), new JSONObject(am.getValue()) );
 					response = new ActiveMessage(am.getId(), new JSONObject().toString(), null);
 				} catch (InternalRequestException | ClientException | JSONException e) {
 					response = new ActiveMessage(am.getId(), null, "Write failed");
@@ -125,7 +125,7 @@ public class ActiveQueryHandler {
 	public ActiveMessage handleReadQuery(ActiveMessage am, InternalRequestHeader header) {		
 		ActiveMessage resp = null;
 		try {
-			JSONObject value = app.read(header, am.getTargetGuid(), am.getField());
+			JSONObject value = app.read(header, am.getTargetGuid(), am.getAccessor());
 			resp = new ActiveMessage(am.getId(), value.toString(), null);
 		} catch (InternalRequestException | ClientException e) {
 			resp = new ActiveMessage(am.getId(), null, "Read failed");
@@ -145,7 +145,7 @@ public class ActiveQueryHandler {
 	public ActiveMessage handleWriteQuery(ActiveMessage am, InternalRequestHeader header) {
 		ActiveMessage resp;
 		try {
-			app.write(header, am.getTargetGuid(), am.getField(), new JSONObject(am.getValue()));
+			app.write(header, am.getTargetGuid(), am.getAccessor(), new JSONObject(am.getValue()));
 			resp = new ActiveMessage(am.getId(), new JSONObject().toString(), null);
 		} catch (ClientException | InternalRequestException | JSONException e) {
 			resp = new ActiveMessage(am.getId(), null, "Write failed");

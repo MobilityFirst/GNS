@@ -316,17 +316,17 @@ public class ActiveBlockingClient implements Client {
 	 * needs to handle this exception.
 	 * 
 	 * @param guid
-	 * @param field
+	 * @param accessor
 	 * @param code
 	 * @param value
 	 * @param ttl
 	 * @return executed result sent back from worker
 	 */
 	@Override
-	public synchronized JSONObject runCode(InternalRequestHeader header, String guid, String field, 
+	public synchronized JSONObject runCode(InternalRequestHeader header, String guid, String accessor, 
 			String code, JSONObject value, int ttl, long budget) throws ActiveException {
 		
-		ActiveMessage msg = new ActiveMessage(guid, field, code, value.toString(), ttl, budget);
+		ActiveMessage msg = new ActiveMessage(guid, accessor, code, value.toString(), ttl, budget);
 		sendMessage(msg);
 		
 		ActiveMessage response = null;

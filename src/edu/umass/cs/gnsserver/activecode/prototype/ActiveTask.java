@@ -14,15 +14,15 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 public class ActiveTask implements Callable<JSONObject> {
 	Client client;
 	String guid;
-	String field;
+	String accessor;
 	String code;
 	ValuesMap value;
 	int ttl;
 	
-	ActiveTask(Client client, String guid, String field, String code, ValuesMap value, int ttl){
+	ActiveTask(Client client, String guid, String accessor, String code, ValuesMap value, int ttl){
 		this.client = client;
 		this.guid = guid;
-		this.field = field;
+		this.accessor = accessor;
 		this.code = code;
 		this.value = value;
 		this.ttl = ttl;
@@ -30,7 +30,7 @@ public class ActiveTask implements Callable<JSONObject> {
 	
 	@Override
 	public JSONObject call() throws Exception {
-		return client.runCode(null, guid, field, code, value, ttl, 1000);
+		return client.runCode(null, guid, accessor, code, value, ttl, 1000);
 	}
 
 }

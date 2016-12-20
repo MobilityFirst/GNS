@@ -4,7 +4,6 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /** 
  * 
@@ -26,7 +25,7 @@ public interface Client {
 	 * 
 	 * @param header 
 	 * @param guid
-	 * @param field
+	 * @param accessor
 	 * @param code
 	 * @param valuesMap
 	 * @param ttl
@@ -34,7 +33,7 @@ public interface Client {
 	 * @return the executed result as an ValuesMap object
 	 * @throws ActiveException 
 	 */
-	public JSONObject runCode(InternalRequestHeader header, String guid, String field, String code, JSONObject valuesMap, int ttl, long budget) throws ActiveException;
+	public JSONObject runCode(InternalRequestHeader header, String guid, String accessor, String code, JSONObject valuesMap, int ttl, long budget) throws ActiveException;
 	
 	
 	/**

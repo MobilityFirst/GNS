@@ -29,7 +29,7 @@ public class ActiveMessage implements Message{
 	private int ttl;
 	private long budget;
 	private String guid;
-	private String field;
+	private String accessor;
 	private String code;
 	private String value;
 	private String targetGuid;
@@ -64,17 +64,7 @@ public class ActiveMessage implements Message{
 		 * This message is used for worker to send a write query
 		 * to GNS to update a field.
 		 */
-		WRITE_QUERY(3),
-		
-		/**
-		 * This message is used for resolving a domain name
-		 */
-		RESOLVE_QUERY(4),
-		
-		/**
-		 * This message is used for sending a HTTP request
-		 */
-		HTTP_QUERY(5);
+		WRITE_QUERY(3);
 		
 		private final int type;
 		Type(int type){
@@ -94,7 +84,7 @@ public class ActiveMessage implements Message{
 	 * @param type 
 	 * @param id 
 	 * @param guid
-	 * @param field
+	 * @param accessor
 	 * @param code
 	 * @param ttl
 	 * @param budget 
@@ -102,13 +92,13 @@ public class ActiveMessage implements Message{
 	 * @param targetGuid 
 	 * @param error 
 	 */
-	public ActiveMessage(Type type, long id, int ttl, long budget, String guid, String field, String code, String value, String targetGuid, String error){
+	public ActiveMessage(Type type, long id, int ttl, long budget, String guid, String accessor, String code, String value, String targetGuid, String error){
 		this.type = type;
 		this.id = id;
 		this.ttl = ttl;
 		this.budget = budget;
 		this.guid = guid;
-		this.field = field;
+		this.accessor = accessor;
 		this.code = code;		
 		this.value = value;
 		this.targetGuid = targetGuid;
@@ -118,26 +108,26 @@ public class ActiveMessage implements Message{
 	/**
 	 * This is a REQUEST message
 	 * @param guid
-	 * @param field
+	 * @param accessor
 	 * @param code
 	 * @param value
 	 * @param ttl
 	 * @param budget 
 	 */
-	public ActiveMessage(String guid, String field, String code, String value, int ttl, long budget){
-		this(Type.REQUEST, counter.getAndIncrement(), ttl, budget, guid, field, code, value, null, null);
+	public ActiveMessage(String guid, String accessor, String code, String value, int ttl, long budget){
+		this(Type.REQUEST, counter.getAndIncrement(), ttl, budget, guid, accessor, code, value, null, null);
 	}
 	
 	/**
 	 * This is a READ_QUERY message
 	 * @param ttl
 	 * @param guid
-	 * @param field
+	 * @param accessor
 	 * @param targetGuid
 	 * @param id 
 	 */
-	public ActiveMessage(int ttl, String guid, String field, String targetGuid, long id){
-		this(Type.READ_QUERY, id, ttl, 0, guid, field, null, null, targetGuid, null);
+	public ActiveMessage(int ttl, String guid, String accessor, String targetGuid, long id){
+		this(Type.READ_QUERY, id, ttl, 0, guid, accessor, null, null, targetGuid, null);
 	}
 	
 	
@@ -145,13 +135,13 @@ public class ActiveMessage implements Message{
 	 * This is a WRITE_QUERY message
 	 * @param ttl
 	 * @param guid
-	 * @param field
+	 * @param accessor
 	 * @param targetGuid
 	 * @param value
 	 * @param id 
 	 */
-	public ActiveMessage(int ttl, String guid, String field, String targetGuid, String value, long id){
-		this(Type.WRITE_QUERY, id, ttl, 0, guid, field, null, value, targetGuid, null);
+	public ActiveMessage(int ttl, String guid, String accessor, String targetGuid, String value, long id){
+		this(Type.WRITE_QUERY, id, ttl, 0, guid, accessor, null, value, targetGuid, null);
 	}
 	
 	/**
@@ -179,10 +169,10 @@ public class ActiveMessage implements Message{
 	}
 
 	/**
-	 * @return the field to be operated on
+	 * @return the accessor who triggers the active code or the field to be operated on
 	 */
-	public String getField() {
-		return field;
+	public String getAccessor() {
+		return accessor;
 	}
 	
 	/**
@@ -235,10 +225,10 @@ public class ActiveMessage implements Message{
 		int length = 0;
 		switch(type){
 		case REQUEST:
-			length = 6*Integer.BYTES // type, ttl, guid length, field length, code length, valuesMap size 
+			length = 6*Integer.BYTES // type, ttl, guid length, accessor length, code length, valuesMap size 
 			+ 2*Long.BYTES // id, budget
 			+ guid.length() // guid
-			+ (field!=null?field.length():0) // field
+			+ (accessor!=null?accessor.length():0) // accessor
 			+ code.length();
 			break;
 			
@@ -249,18 +239,18 @@ public class ActiveMessage implements Message{
 			break;
 			
 		case READ_QUERY:
-			length = 5*Integer.BYTES // type, ttl, guid length, field length, targetGuid length
+			length = 5*Integer.BYTES // type, ttl, guid length, accessor length, targetGuid length
 			+ Long.BYTES // id
 			+ guid.length()
-			+ field.length()
+			+ accessor.length()
 			+ targetGuid.length();
 			break;
 			
 		case WRITE_QUERY:
-			length = 5*Integer.BYTES // type, ttl, guid length, field length, targetGuid length
+			length = 5*Integer.BYTES // type, ttl, guid length, accessor length, targetGuid length
 			+ Long.BYTES // id
 			+ guid.length()
-			+ field.length()
+			+ accessor.length()
 			+ targetGuid.length();
 			break;
 			
@@ -284,7 +274,7 @@ public class ActiveMessage implements Message{
 		
 		byte[] buffer = new byte[this.getEstimatedLengthExceptWithoutValue()+( (valuesMapString==null)?0:valuesMapString.length() )];
 		ByteBuffer bbuf = ByteBuffer.wrap(buffer);
-		byte[] guidBytes,fieldBytes,codeBytes,valuesMapBytes,targetGuidBytes;
+		byte[] guidBytes,accessorBytes,codeBytes,valuesMapBytes,targetGuidBytes;
 		
 		// put type and request id
 		bbuf.putInt(type.getType());
@@ -308,12 +298,11 @@ public class ActiveMessage implements Message{
 			bbuf.put(guidBytes);
 			exactLength += (Integer.BYTES + guidBytes.length);
 			
-			// put field, can't be null, ~100ns
-			// assert(field != null):"field can't be null for active request";
-			fieldBytes = (field!=null)?field.getBytes(CHARSET):new byte[0];
-			bbuf.putInt((field!=null)?fieldBytes.length:0);
-			bbuf.put(fieldBytes);
-			exactLength += (Integer.BYTES + fieldBytes.length);
+			// put accessor, ~100ns			
+			accessorBytes = (accessor!=null)?accessor.getBytes(CHARSET):new byte[0];
+			bbuf.putInt((accessor!=null)?accessorBytes.length:0);
+			bbuf.put(accessorBytes);
+			exactLength += (Integer.BYTES + accessorBytes.length);
 			
 			// put code, can be null
 			assert(code != null):"code can't be null for active request";
@@ -343,11 +332,11 @@ public class ActiveMessage implements Message{
 			exactLength += (Integer.BYTES + guidBytes.length);
 			
 			// put field, can't be null, ~100ns
-			assert(field != null):"field can't be null for read query";
-			fieldBytes = field.getBytes(CHARSET);
-			bbuf.putInt(fieldBytes.length);
-			bbuf.put(fieldBytes);
-			exactLength += (Integer.BYTES + fieldBytes.length);
+			assert(accessor != null):"field can't be null for read query";
+			accessorBytes = accessor.getBytes(CHARSET);
+			bbuf.putInt(accessorBytes.length);
+			bbuf.put(accessorBytes);
+			exactLength += (Integer.BYTES + accessorBytes.length);
 			
 			// put targetGuid, can't be null, ~100ns
 			assert(targetGuid != null):"targetGuid can't be null for read query";
@@ -370,11 +359,11 @@ public class ActiveMessage implements Message{
 			exactLength += (Integer.BYTES + guidBytes.length);
 			
 			// put field, can't be null, ~100ns
-			assert(field != null):"field can't be null for read query";
-			fieldBytes = field.getBytes(CHARSET);
-			bbuf.putInt(fieldBytes.length);
-			bbuf.put(fieldBytes);
-			exactLength += (Integer.BYTES + fieldBytes.length);
+			assert(accessor != null):"field can't be null for read query";
+			accessorBytes = accessor.getBytes(CHARSET);
+			bbuf.putInt(accessorBytes.length);
+			bbuf.put(accessorBytes);
+			exactLength += (Integer.BYTES + accessorBytes.length);
 			
 			// put targetGuid, can't be null, ~100ns
 			assert(targetGuid != null):"targetGuid can't be null for read query";
@@ -435,7 +424,7 @@ public class ActiveMessage implements Message{
 		this.type = Type.values()[bbuf.getInt()];	
 		this.id = bbuf.getLong();
 		int length = 0;
-		byte[] guidBytes,fieldBytes,codeBytes,targetGuidBytes,valueBytes,errorBytes;
+		byte[] guidBytes,accessorBytes,codeBytes,targetGuidBytes,valueBytes,errorBytes;
 		
 		switch(type){
 		case REQUEST:
@@ -448,12 +437,12 @@ public class ActiveMessage implements Message{
 			bbuf.get(guidBytes);
 			guid = new String(guidBytes, CHARSET);
 			
-			// get field
+			// get accessor
 			length = bbuf.getInt();
 			if(length>0){
-				fieldBytes = new byte[length];
-				bbuf.get(fieldBytes);
-				field = new String(fieldBytes, CHARSET);
+				accessorBytes = new byte[length];
+				bbuf.get(accessorBytes);
+				accessor = new String(accessorBytes, CHARSET);
 			}
 			
 			// get code
@@ -478,9 +467,9 @@ public class ActiveMessage implements Message{
 			
 			// get field
 			length = bbuf.getInt();
-			fieldBytes = new byte[length];
-			bbuf.get(fieldBytes);
-			field = new String(fieldBytes, CHARSET);
+			accessorBytes = new byte[length];
+			bbuf.get(accessorBytes);
+			accessor = new String(accessorBytes, CHARSET);
 			
 			// get targetGuid
 			length = bbuf.getInt();
@@ -499,9 +488,9 @@ public class ActiveMessage implements Message{
 			
 			// get field
 			length = bbuf.getInt();
-			fieldBytes = new byte[length];
-			bbuf.get(fieldBytes);
-			field = new String(fieldBytes, CHARSET);
+			accessorBytes = new byte[length];
+			bbuf.get(accessorBytes);
+			accessor = new String(accessorBytes, CHARSET);
 			
 			// get targetGuid
 			length = bbuf.getInt();
@@ -545,8 +534,9 @@ public class ActiveMessage implements Message{
 		
 		return "[id:"+id
 				+",guid:"+ ((guid != null)?guid:"null")
-				+",tguid:"+((targetGuid != null)?targetGuid:"null")
-				+",field:"+((field!=null)?field:"null")
+				+",tguid:"+((targetGuid != null)?targetGuid:"null")+","
+				+((type == Type.WRITE_QUERY || type == Type.READ_QUERY)?"field:":"accessor:")
+				+((accessor!=null)?accessor:"null")
 				+",value:"+((value!=null)?value:"null")
 				+",error:"+((error!=null)?error:"null")
 				+"]";
