@@ -16,13 +16,7 @@ import org.json.JSONObject;
 import org.junit.Assert;
 
 /**
- * This is an hello world example for ActiveGNS.
- * In this example, it shows you how to create an account, create a field
- * on the account, retrieve the value of the field, and deploy your own
- * code on ActiveGNS.
- *
- * @author gaozy
- *
+ * Active Code Tests
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ActiveCodeTest {
@@ -171,8 +165,7 @@ public class ActiveCodeTest {
     }
     try {
       // set up the code for on read operation
-      client.activeCodeSet(masterGuid.getGuid(), ActiveCode.READ_ACTION, writecode, masterGuid);
-      //client.activeCodeSet(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, writecode, masterGuid);
+      client.activeCodeSet(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, writecode, masterGuid);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Setting active code: " + e);
     }
@@ -186,8 +179,20 @@ public class ActiveCodeTest {
     try {
       // get the value of the field again
       client.update(masterGuid, new JSONObject("{\"test1\":\"value1\"}"));
-      System.out.println(client.read(masterGuid));
-      //Assert.assertEquals("updated value", actual);
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception reading field: " + e);
+    }
+  }
+  
+  /**
+   *
+   */
+  @Test
+  public void test_190_ActiveCodeCheckModifiedWrite() {
+    try {
+      // get the value of the field again
+      String actual = client.fieldRead(masterGuid, "test1");
+      Assert.assertEquals("updated value1", actual);
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
