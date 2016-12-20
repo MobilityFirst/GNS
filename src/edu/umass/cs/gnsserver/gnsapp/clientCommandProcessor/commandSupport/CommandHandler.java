@@ -172,7 +172,7 @@ public class CommandHandler {
   /**
    *
    * Same as
-   * {@link #executeCommand(BasicCommand, JSONObject, ClientRequestHandlerInterface)}
+   * {@link #executeCommand(AbstractCommand, JSONObject, ClientRequestHandlerInterface)}
    * that is needed by the HTTP server, but we need this for pulling {@link CommandPacket}
    * all the way through for {@link InternalRequestHeader} to work correctly.
    *
@@ -260,7 +260,7 @@ public class CommandHandler {
   /**
    * Executes the given command with the parameters supplied in the
    * JSONObject. Same as
-   * {@link #executeCommand(BasicCommand, JSONObject, ClientRequestHandlerInterface)}
+   * {@link #executeCommand(AbstractCommand, JSONObject, ClientRequestHandlerInterface)}
    * but this is used by the HTTP server that doesn't get {@link CommandPacket}.
    *
    * @param command

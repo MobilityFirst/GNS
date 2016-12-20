@@ -187,7 +187,7 @@ public class GroupTest {
    *
    */
   @Test
-  public void test_213_GroupRemoveCheck() {
+  public void test_216_GroupRemoveCheck() {
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));

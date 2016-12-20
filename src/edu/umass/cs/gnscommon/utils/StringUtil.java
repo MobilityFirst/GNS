@@ -34,7 +34,7 @@ public class StringUtil {
    * Used to massage a string for use as a constant in Swift code.
    * 
    * @param str
-   * @return 
+   * @return the converted string
    */
   public static String insertUnderScoresBeforeCapitals(String str) {
     StringBuilder result = new StringBuilder();

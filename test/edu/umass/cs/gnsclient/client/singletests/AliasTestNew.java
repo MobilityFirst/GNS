@@ -58,7 +58,7 @@ public class AliasTestNew {
         client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        failWithStackTrace("Exception creating client: " + e);
+        failWithStackTrace("Exception creating client: ", e);
       }
     }
   }
@@ -71,7 +71,7 @@ public class AliasTestNew {
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating guid: " + e);
+      failWithStackTrace("Exception while creating guid: ", e);
     }
   }
 

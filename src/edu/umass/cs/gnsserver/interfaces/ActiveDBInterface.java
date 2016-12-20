@@ -27,7 +27,7 @@ public interface ActiveDBInterface {
 	 * 
 	 * This method can be used to read the entire GUID record (subject to ACL
 	 * checks) by specifying {@code field} as
-	 * {@link GNSCommandProtocol#ALL_FIELDS}.
+	 * {@link edu.umass.cs.gnscommon.GNSProtocol#ENTIRE_RECORD}.
 	 * 
 	 * The implementer is expected to implement this method and others in this
 	 * class using {@link ActiveGNSClient} and

@@ -56,7 +56,7 @@ public class JSONCompareResult {
 
     /**
      * Get the list of failures on field comparisons
-   * @return 
+   * @return the list of failures
      */
     public List<FieldComparisonFailure> getFieldFailures() {
         return Collections.unmodifiableList(_fieldFailures);
@@ -88,7 +88,7 @@ public class JSONCompareResult {
     
     /**
      * Check if comparison failed on any particular fields
-   * @return 
+   * @return true if comparison failed
      */
     public boolean isFailureOnField() {
         return !_fieldFailures.isEmpty();
@@ -123,7 +123,7 @@ public class JSONCompareResult {
      * @param field Which field failed
      * @param expected Expected result
      * @param actual Actual result
-   * @return 
+   * @return a JSONCompareResult
      */
     public JSONCompareResult fail(String field, Object expected, Object actual) {
         _fieldFailures.add(new FieldComparisonFailure(field, expected, actual));
@@ -138,7 +138,7 @@ public class JSONCompareResult {
      * Identify that the comparison failed
      * @param field Which field failed
      * @param exception exception containing details of match failure
-   * @return 
+   * @return a JSONCompareResult
      */
     public JSONCompareResult fail(String field, ValueMatcherException exception) {
     	fail(field + ": " + exception.getMessage(), exception.getExpected(), exception.getActual());

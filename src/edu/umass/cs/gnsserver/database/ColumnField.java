@@ -41,7 +41,7 @@ public class ColumnField {
   /**
    * Return the name of a column.
    * 
-   * @return 
+   * @return the name of a column
    */
   public String getName() {
     return name;
@@ -50,7 +50,7 @@ public class ColumnField {
   /**
    * Return the type of a column.
    * 
-   * @return 
+   * @return the type of a column
    */
   public ColumnFieldType type() {
     return type;

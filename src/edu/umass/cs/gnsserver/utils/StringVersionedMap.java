@@ -79,7 +79,7 @@ public class StringVersionedMap<KeyType, ValueType> {
   /**
    *
    * @param keyPrefix
-   * @return a {@link ValueType}
+   * @return a ValueType
    */
   public synchronized ValueType match(KeyType keyPrefix) {
     ValueType value = null;
@@ -143,7 +143,7 @@ public class StringVersionedMap<KeyType, ValueType> {
   /**
    *
    * @param key
-   * @return a {@link ValueType}
+   * @return a ValueType
    */
   public synchronized ValueType get(String key) {
     return this.map.get(key);
@@ -160,7 +160,7 @@ public class StringVersionedMap<KeyType, ValueType> {
 
   /**
    *
-   * @return a collection of {@link KeyType}
+   * @return a collection of KeyType
    */
   public synchronized Collection<KeyType> keyPrefixSet() {
     return this.keyVersions.keySet();
@@ -168,7 +168,7 @@ public class StringVersionedMap<KeyType, ValueType> {
 
   /**
    *
-   * @return a collection of {@link KeyType}
+   * @return a collection of KeyType
    */
   public synchronized Collection<ValueType> values() {
     return this.map.values();

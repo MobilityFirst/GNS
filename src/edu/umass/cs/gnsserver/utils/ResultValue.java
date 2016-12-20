@@ -78,7 +78,7 @@ public class ResultValue extends ArrayList<Object> {
   /**
    * Converts this ResultValue to a ResultValueString which insures that they're all strings.
    * 
-   * @return 
+   * @return a ResultValueString
    */
   public ResultValueString toResultValueString() {
     ResultValueString result = new ResultValueString();
@@ -95,7 +95,7 @@ public class ResultValue extends ArrayList<Object> {
   /**
    * Converts this ResultValue to a Set which insures that they're all strings.
    * 
-   * @return 
+   * @return a set of strings
    */
   public Set<String> toStringSet() {
     Set<String> result = new HashSet<>();

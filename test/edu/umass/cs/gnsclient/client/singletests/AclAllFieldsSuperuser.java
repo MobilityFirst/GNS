@@ -54,7 +54,7 @@ public class AclAllFieldsSuperuser {
         client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        failWithStackTrace("Exception creating client: " + e);
+        failWithStackTrace("Exception creating client: ", e);
       }
     }
   }
@@ -66,7 +66,7 @@ public class AclAllFieldsSuperuser {
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating guid: " + e);
+      failWithStackTrace("Exception while creating guid: ", e);
     }
   }
 
@@ -82,16 +82,16 @@ public class AclAllFieldsSuperuser {
         failWithStackTrace(barneyName + " entity should not exist");
       } catch (ClientException e) {
       } catch (IOException e) {
-        failWithStackTrace("Exception looking up Barney: " + e);
+        failWithStackTrace("Exception looking up Barney: ", e);
       }
       barneyEntry = client.guidCreate(masterGuid, barneyName);
       try {
         client.lookupGuid(barneyName);
       } catch (IOException | ClientException e) {
-        failWithStackTrace("Exception looking up Barney: " + e);
+        failWithStackTrace("Exception looking up Barney: ", e);
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: ", e);
     }
   }
 
@@ -102,7 +102,7 @@ public class AclAllFieldsSuperuser {
       client.fieldUpdate(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       client.fieldUpdate(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: ", e);
       e.printStackTrace();
     }
   }
@@ -125,7 +125,7 @@ public class AclAllFieldsSuperuser {
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: ", e);
     }
   }
 
@@ -136,7 +136,7 @@ public class AclAllFieldsSuperuser {
       client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry,
               GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: ", e);
     }
   }
 
@@ -149,7 +149,7 @@ public class AclAllFieldsSuperuser {
               client.fieldRead(barneyEntry.getGuid(), "address", superuserEntry));
 
     } catch (Exception e) {
-      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: ", e);
     }
   }
 

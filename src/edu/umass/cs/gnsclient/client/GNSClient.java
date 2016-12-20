@@ -57,9 +57,9 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
 
 /**
+ * Implementation of a GNS client using gigapaxos' async client.
+ * 
  * @author arun
- *
- * Cleaner implementation of a GNS client using gigapaxos' async client.
  */
 public class GNSClient {
 
@@ -363,8 +363,8 @@ public class GNSClient {
 
   /**
    * Straightforward async client implementation that expects only one packet
-   * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}. Public in scope so
-   * that it can be overrided for testing purposes.
+   * type, {@link edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType#COMMAND_RETURN_VALUE}. Public in scope so
+   * that it can be overridden for testing purposes.
    */
   public static class AsyncClient extends
           ReconfigurableAppClientAsync<CommandPacket> implements
@@ -441,7 +441,7 @@ public class GNSClient {
 
     /**
      *
-     * @return the request types
+     * @return a set of packet types
      */
     @Override
     public Set<IntegerPacketType> getRequestTypes() {
@@ -450,10 +450,10 @@ public class GNSClient {
 
     /**
      * FIXME: This should return a separate packet type meant for
-     * admin commands that is different from {@link Packet.PacketType#COMMAND}
+     * admin commands that is different from {@link edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType#COMMAND}
      * and carries {@link CommandType} types corresponding to admin commands.
      *
-     * @return
+     * @return a set of packet types
      */
     @SuppressWarnings("javadoc")
     @Override
@@ -478,7 +478,7 @@ public class GNSClient {
             throws RequestParseException {
       return GNSApp.getRequestStatic(bytes, header, unstringer);
     }
-  }
+  } // End of AsyncClient
 
   /**
    * @return The socket address of the GNS proxy if any being used.
@@ -498,34 +498,42 @@ public class GNSClient {
 
   /* **************** Start of execute methods ****************** */
   /**
+   * Execute the command immediately.
    * The result of the execution may be retrieved using
-   * {@link GNSCommand#getResult()} or {@link GNSCommand#getResultString()} or
+   * {@link CommandPacket#getResult()} or {@link CommandPacket#getResultString()} or
    * other methods with the prefix "getResult" depending on the
-   * {@link GNSCommand.ResultType}.
+   * {@link CommandResultType}.
    *
    * @param command
    * @return GNSCommand after execution containing the result if any.
    * @throws IOException
    * @throws ClientException
    */
-  public GNSCommand execute(CommandPacket command) throws IOException,
+  public CommandPacket execute(CommandPacket command) throws IOException,
           ClientException {
-    return (GNSCommand) this.sendSync(command);
+    return (CommandPacket) this.sendSync(command);
   }
 
   /**
+   * Execute the command immediately.
+   * The result of the execution may be retrieved using
+   * {@link CommandPacket#getResult()} or {@link CommandPacket#getResultString()} or
+   * other methods with the prefix "getResult" depending on the
+   * {@link CommandResultType}.
+   * 
    * @param command
    * @param timeout
    * @return GNSCommand after execution containing the result if any.
    * @throws IOException
    * @throws ClientException
    */
-  public GNSCommand execute(CommandPacket command, long timeout) throws IOException,
+  public CommandPacket execute(CommandPacket command, long timeout) throws IOException,
           ClientException {
-    return (GNSCommand) this.sendSync(command, timeout);
+    return (CommandPacket) this.sendSync(command, timeout);
   }
 
   /**
+   * Execute the command asychronously.
    * The result of the execution may be retrieved using
    * {@link RequestFuture#get()} on the returned future and then invoking a
    * suitable "getResult" method as in {@link #execute(CommandPacket)} on the
@@ -551,6 +559,7 @@ public class GNSClient {
   }
 
   /**
+   * Execute the command asychronously.
    * Refer {@link #executeAsync(CommandPacket)}.
    *
    * @param commandPacket

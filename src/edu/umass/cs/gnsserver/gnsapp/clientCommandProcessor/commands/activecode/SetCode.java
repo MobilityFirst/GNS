@@ -75,15 +75,22 @@ public class SetCode extends AbstractCommand {
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString())
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
-    ResponseCode response = ActiveCode.setCode(guid, action,
-            code, writer, signature, message, timestamp, handler);
 
-    if (response.isExceptionOrError()) {
-      return new CommandResponse(response, GNSProtocol.BAD_RESPONSE.toString()
-              + " " + response.getProtocolCode());
-    } else {
-      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+    try {
+      ResponseCode response = ActiveCode.setCode(guid, action,
+              code, writer, signature, message, timestamp, handler);
+
+      if (!response.isExceptionOrError()) {
+        return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+      } else {
+        return new CommandResponse(response, GNSProtocol.BAD_RESPONSE.toString()
+                + " " + response.getProtocolCode());
+      }
+    } catch (IllegalArgumentException | JSONException e) {
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString()
+              + " " + ResponseCode.UNSPECIFIED_ERROR.getProtocolCode() + " " + e.getMessage());
     }
+
   }
 
 }

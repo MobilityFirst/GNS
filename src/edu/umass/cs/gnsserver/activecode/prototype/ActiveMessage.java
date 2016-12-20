@@ -219,7 +219,7 @@ public class ActiveMessage implements Message{
 	
 	/**
 	 * 
-	 * @return
+	 * @return an integer estimated length
 	 */
 	private int getEstimatedLengthExceptWithoutValue(){
 		int length = 0;

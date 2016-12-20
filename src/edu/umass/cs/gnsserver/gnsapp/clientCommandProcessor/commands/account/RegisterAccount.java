@@ -40,6 +40,8 @@ import java.security.spec.InvalidKeySpecException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
 
 /**
  *
@@ -83,10 +85,12 @@ public class RegisterAccount extends AbstractCommand {
       }
     }
     try {
-      CommandResponse result = AccountAccess.addAccountWithVerification(
+      CommandResponse result = AccountAccess.addAccount(
               handler.getHttpServerHostPortString(),
               name, guid, publicKey,
-              password, handler);
+              password, 
+              Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION),
+              handler);
       if (result.getExceptionOrErrorCode().isOKResult()) {
         // Everything is hunkey dorey so return the new guid
         return new CommandResponse(ResponseCode.NO_ERROR, guid);

@@ -77,8 +77,8 @@ public class History extends ConsoleCommand
   }
 
   /**
-   * @return 
-   * @see edu.umass.cs.gnsclient.console.commands.continuent.sequoia.console.text.commands.ConsoleCommand#getCommandName()
+   * @return the command name
+   * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandName()
    */
   @Override
   public String getCommandName()
@@ -87,8 +87,8 @@ public class History extends ConsoleCommand
   }
 
   /**
-   * @return 
-   * @see edu.umass.cs.gnsclient.ConsoleCommand#getCommandDescription()
+   * @return the command description
+   * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandDescription()
    */
   @Override
   public String getCommandDescription()
@@ -97,8 +97,8 @@ public class History extends ConsoleCommand
   }
 
   /**
-   * @return 
-   * @see edu.umass.cs.gnsclient.ConsoleCommand#getCommandParameters()
+   * @return the command parameters
+   * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandParameters()
    */
   @Override
   public String getCommandParameters()

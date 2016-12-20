@@ -9,7 +9,13 @@ import static org.junit.Assert.fail;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -23,9 +29,10 @@ import org.junit.runners.MethodSorters;
  * Runs each test in ServerIntegrationTest a number of times sequentially, then in parallel.
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServerIntegrationTestThreaded {
-
+	
+	
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -40,36 +47,7 @@ public class ServerIntegrationTestThreaded {
 	public static void tearDownAfterClass() throws Exception {
 	}
 	
-	//Any test method in ServerIntegrationTest matching one of these strings will only be run once instead of multiple times, and only be run in one thread.
-	private static final String[] runOnlyOnce = {
-			"test_180_DBUpserts",
-			"test_212_GroupRemoveGuid", 				// Double remove would cause an error.
-			"test_223_GroupAndACLTestRemoveGuid",		// Same as above
-			"test_230_AliasAdd",						//Double add causes duplicate exception
-			"test_231_AliasRemove",						// Double remove would cause an error.
-			"test_320_GeoSpatialSelect",                //Double add could cause duplicate exception if random strings collide.
-			"test_410_JSONUpdate",
-			"test_420_NewRead",
-			"test_430_NewUpdate",
-			"test_511_CreateBatch"		
-	};
-	
-	//Any test method in ServerIntegrationTest matching one of these strings will only be run in one thread, but will be run repeatedly sequentially.
-	private static final String[] runOnlySingleThreaded = {
-			"test_020_RemoveGuid", 						// Uses random names and checks state, so collisions would cause failures.
-			"test_030_RemoveGuidSansAccountInfo", 		// Same as above
-			"test_130_ACLALLFields",					// Same as above
-			"test_210_GroupCreate", 					// Same as above
-			"test_211_GroupAdd",						// Depends on test_210_GroupCreate for guidToDelete
-			"test_220_GroupAndACLCreateGuids", 			// Uses random names and checks state, so collisions would cause failures.
-			"test_270_RemoveField", 					// Race condition in test could cause failure
-			"test_280_ListOrderAndSetElement", 			// Collisions in random strings could cause failures since it checks state.
-			"test_400_SetFieldNull", 					// Race condition in test could cause failure
-			"test_410_JSONUpdate",						// Random string collisions would create race conditions that could cause test failure.
-			"test_420_NewRead", 						// Race condition in test could cause failure
-			"test_430_NewUpdate", 						// Same as above
-			"test_440_CreateBytesField"					// Race condition in this test could cause test_441_ReadBytesField() to fail if remembered test value and last written test value differ.
-	};
+
 
 	/**
 	 * Runs each of the ServerIntegrationTest tests numThreads times in parallel for numRuns time sequentially.
@@ -78,6 +56,7 @@ public class ServerIntegrationTestThreaded {
 	 */
 	@Test
 	public void test_01_ParallelServerIntegrationTest() throws Exception{
+		boolean failedAnyTest = false;
 		String runsString = System.getProperty("integrationTest.runs");
 		//This style of definition is used to make numRuns effectively final so it can be used in threads.
 		int numRuns;
@@ -92,82 +71,79 @@ public class ServerIntegrationTestThreaded {
 			 if (threadString != null){
 				 numThreads=Integer.parseInt(threadString);
 			 }
+			 
+		String exitOnFailureString = System.getProperty("integrationTest.exitOnFailure");
+				final boolean exitOnFailure;
+				if (exitOnFailureString != null){
+					 exitOnFailure = Boolean.parseBoolean(exitOnFailureString);
+				}
+				else{
+					exitOnFailure = true;
+				}
 		
 		
 		ServerIntegrationTest.setUpBeforeClass();
 		ServerIntegrationTest siTest = new ServerIntegrationTest();
 		Class<?> siClass = siTest.getClass();
 		Method[] allMethods = siClass.getDeclaredMethods();
-		TreeMap<String, Method> methodTree = new TreeMap<String, Method>();
-		TreeMap<String, Method> nonparallelMethodTree = new TreeMap<String, Method>();
-		TreeMap<String, Method> dontRepeatMethodTree = new TreeMap<String, Method>();
+		ExecutorService pool = Executors.newFixedThreadPool(numThreads);
 		for (Method method : allMethods){
-			String methodName = method.getName();
-			//Exclude non test methods by not putting them in our list.
-			if (!methodName.startsWith("test_")){
+			boolean failedThisTest = false;
+			Test testAnnotation = method.getAnnotation(Test.class);
+			//Exclude non test methods by skipping over them.
+			if (testAnnotation == null){
 				continue;
 			}
-			methodTree.put(methodName,method);
-				
-			//Create a list of test methods that will only be run once each.
-			for (String exclusion : runOnlyOnce){
-				if (methodName.equals(exclusion)){
-						dontRepeatMethodTree.put(methodName,method);
-				}
-			}
-			//Create a list of test methods to run single threaded only.
-			for (String exclusion : runOnlySingleThreaded){
-				if (methodName.equals(exclusion)){
-					nonparallelMethodTree.put(methodName, method);
-				}
-			}
-		}
-		for (Method method : methodTree.values()){	
-			//Create numThreads threads.
-			Thread threads[] = new Thread[numThreads];
+
 			
-			//Run these tests only once then move on.
-			if (dontRepeatMethodTree.containsKey(method.getName())){
-				System.out.println("Running test: " + method.getName() + " once.");
-				method.invoke(siTest);
-				continue;
-			}
-			
-			//Run these tests single threaded.
-			else if (nonparallelMethodTree.containsKey(method.getName())){
-				System.out.println("Running test: " + method.getName() + " " + numRuns + " times sequentially.");
-				for (int j = 0; j < numRuns; j++){
-					method.invoke(siTest);
-				}
-				continue;
-			}
-			
-			//These tests will be run in parallel.
+			//Run the tests in parallel and record any exceptions thrown.
+			List<Future<Exception>> failures = new ArrayList<Future<Exception>>();
 			System.out.println("Running test: " + method.getName() + " in " + numThreads + " threads with " + numRuns + " runs per thread.");
 			for (int i = 0; i < numThreads; i++){
-				threads[i] = new Thread(){ 
-					public void run(){
+				Callable<Exception >call = new Callable<Exception>(){ 
+					public Exception call(){
 						try {
 							//Runs the current test numRuns times in this thread.
 							for (int j = 0; j < numRuns; j++){
 								method.invoke(siTest);
 							}
+							//Return no exception since none was thrown.
+							return null;
 						} catch (Exception e) {
-							//Since this is threaded we need to handle any exceptions.  In this case by failing the test.
-							StringWriter printException = new StringWriter();
-							e.printStackTrace(new PrintWriter(printException));
-							fail("A testing thread threw an exception during test "+method.getName()+":\n" + printException.toString());
+							//Return the thrown exception.
+							return e;
 						}
 					}
 				};
-				threads[i].run();
+				//Add this test to our working queue.
+				Future<Exception> future = pool.submit(call);
+				failures.add(future);
 			}
 			//Wait for all threads to finish before moving on to the next test.
-			for (Thread thread : threads){
-				thread.join();
+			for (int i = 0; i < failures.size(); i++){
+				Exception e = failures.get(i).get();
+				if (e != null){
+					failedThisTest = true;
+					StringWriter printException = new StringWriter();
+					e.printStackTrace(new PrintWriter(printException));
+					System.err.println(method.getName() + " FAILED: Testing thread " + Integer.toString(i) 
+														+ " threw an exception:\n" + printException.toString());
+				}
+			}
+			if (!failedThisTest){
+				System.out.println("Test " + method.getName() + " passed.");
+			}
+			else{
+				failedAnyTest = true;
+				if (exitOnFailure){
+					fail("Aborting further testing due to failure! Set -DintegrationTest.exitOnFailure=false to disable.");
+				}
 			}
 		}
 		ServerIntegrationTest.tearDownAfterClass();
+		if (failedAnyTest){
+			System.exit(1);
+		}
 	}
 	
 

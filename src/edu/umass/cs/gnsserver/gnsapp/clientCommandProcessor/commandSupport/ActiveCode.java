@@ -38,7 +38,7 @@ import org.json.JSONObject;
 public class ActiveCode {
 
   /**
-   * Active code fields, make the ON_ACTION field to internal field so that the user 
+   * Active code fields, make the ON_ACTION field to internal field so that the user
    * can only change them through the active code API on client.
    */
   /**
@@ -55,7 +55,11 @@ public class ActiveCode {
    */
   public static final String READ_ACTION = "read";
   /**
+<<<<<<< HEAD
    * Deploy code on the write operation that needs to trigger the code 
+=======
+   * Deploy code on the write operation that needs to trigger the code
+>>>>>>> upstream/master
    */
   public static final String WRITE_ACTION = "write";
 
@@ -66,14 +70,14 @@ public class ActiveCode {
    * @param action
    * @return a string
    */
-  public static String getCodeField(String action) {
+  public static String getCodeField(String action) throws IllegalArgumentException {
     switch (action) {
       case READ_ACTION:
         return ON_READ;
       case WRITE_ACTION:
         return ON_WRITE;
       default:
-        return null;
+        throw new IllegalArgumentException("action should be one of " + READ_ACTION + " or " + WRITE_ACTION);
     }
   }
 
@@ -89,17 +93,15 @@ public class ActiveCode {
    * @param timestamp
    * @param handler
    * @return a {@link ResponseCode}
+   * @throws org.json.JSONException
    */
   public static ResponseCode setCode(String guid, String action, String code, String writer,
           String signature, String message,
-          Date timestamp, ClientRequestHandlerInterface handler) {
+          Date timestamp, ClientRequestHandlerInterface handler)
+          throws JSONException, IllegalArgumentException {
     JSONObject json;
-    try {
-      json = new JSONObject();
-      json.put(getCodeField(action), code);
-    } catch (JSONException e) {
-      return ResponseCode.JSON_PARSE_ERROR;
-    }
+    json = new JSONObject();
+    json.put(getCodeField(action), code); // getCodeField can throw IllegalArgumentException
     ResponseCode response = FieldAccess.updateUserJSON(null, guid, json,
             writer, signature, message, timestamp, handler);
     return response;
@@ -119,11 +121,11 @@ public class ActiveCode {
    */
   public static ResponseCode clearCode(String guid, String action,
           String writer, String signature, String message,
-          Date timestamp, ClientRequestHandlerInterface handler) {
-    String field = getCodeField(action);
+          Date timestamp, ClientRequestHandlerInterface handler) throws IllegalArgumentException {
+    String field = getCodeField(action); // can throw IllegalArgumentException
 
     ResponseCode response = FieldAccess.update(null, guid, field, "", null, -1,
-            UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, 
+            UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature,
             message, timestamp, handler);
     return response;
   }
@@ -139,22 +141,22 @@ public class ActiveCode {
    * @param timestamp
    * @param handler
    * @return a string
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws org.json.JSONException
    */
   public static String getCode(String guid, String action, String reader,
           String signature, String message, Date timestamp,
-          ClientRequestHandlerInterface handler) {
-    String field = getCodeField(action);
+          ClientRequestHandlerInterface handler)
+          throws IllegalArgumentException, FailedDBOperationException, JSONException {
+
+    String field = getCodeField(action); // can throw IllegalArgumentException
     ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return GNSProtocol.NULL_RESPONSE.toString();
     }
-    try {
-      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid, field,
-              handler.getApp(), false);
-      return result.getString(field);
-    } catch (FailedDBOperationException | JSONException e) {
-      return GNSProtocol.NULL_RESPONSE.toString();
-    }
+    ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid, field,
+            handler.getApp(), false);
+    return result.getString(field);
   }
 }

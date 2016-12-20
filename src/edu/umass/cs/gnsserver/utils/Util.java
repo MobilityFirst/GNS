@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -138,7 +139,7 @@ public class Util {
     JSONObject json = new JSONObject();
     URLQueryStringParser parser = new URLQueryStringParser(query);
     while (parser.next()) {
-      GNSConfig.getLogger().info("PARSE: " + parser.getValue());
+      GNSConfig.getLogger().log(Level.FINE, "PARSE: {0}", parser.getValue());
       json.put(parser.getName(), JSONParseString(parser.getValue()));
     }
     return json;

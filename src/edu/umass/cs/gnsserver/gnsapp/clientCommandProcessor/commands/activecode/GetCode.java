@@ -33,6 +33,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import java.text.ParseException;
 import java.util.Date;
@@ -71,13 +72,16 @@ public class GetCode extends AbstractCommand {
     String action = json.getString(GNSProtocol.AC_ACTION.toString());
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
-    Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString()) 
+    Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString())
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
 
-    return new CommandResponse(ResponseCode.NO_ERROR, ActiveCode.getCode(guid, action,
-            reader, signature, message, timestamp, handler));
+    try {
+      return new CommandResponse(ResponseCode.NO_ERROR, ActiveCode.getCode(guid, action,
+              reader, signature, message, timestamp, handler));
+    } catch (FailedDBOperationException | IllegalArgumentException | JSONException e) {
+      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString()
+              + " " + ResponseCode.UNSPECIFIED_ERROR.getProtocolCode() + " " + e.getMessage());
+    }
   }
-
-  
 
 }

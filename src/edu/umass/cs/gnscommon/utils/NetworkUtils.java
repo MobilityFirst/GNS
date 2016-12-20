@@ -55,7 +55,7 @@ public class NetworkUtils {
    * calling and returning the result of JDK method <code>InetAddress.getLocalHost</code>.
    * <br>
    *
-   * @return 
+   * @return a InetAddress
    * @throws UnknownHostException If the LAN address of the machine cannot be found.
    */
   public static InetAddress getLocalHostLANAddress() throws UnknownHostException {

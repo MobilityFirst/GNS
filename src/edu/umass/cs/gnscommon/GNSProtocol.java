@@ -1,14 +1,12 @@
 package edu.umass.cs.gnscommon;
 
-import edu.umass.cs.gnscommon.utils.StringUtil;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 
 /**
+ * An enum class for all the constants used by GNS wireline protocol.
+ * 
  * @author arun
  *
- * An enum class for all the constants used by GNS wireline protocol.
- * Most of the constants in {@link GNSCommandProtocol} will be migrated
- * to this class.
  */
 public enum GNSProtocol {
   //
@@ -16,13 +14,13 @@ public enum GNSProtocol {
   //
   /**
    * Indicates that a command that does not return a value has completed successfully.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#NO_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#NO_ERROR}.
    *///
   // Response codes
   //
   /**
    * Indicates that a command that does not return a value has completed successfully.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#NO_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#NO_ERROR}.
    */
   OK_RESPONSE("+OK+"),
   /**
@@ -36,42 +34,42 @@ public enum GNSProtocol {
    * Indicates that a command resulted in an error of some no specified type.
    * Should be use sparingly if at all. Uses should replaced with a more specific code
    * if possible.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#UNSPECIFIED_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#UNSPECIFIED_ERROR}.
    */
   UNSPECIFIED_ERROR("+GENERICERROR+"),
   /**
    * Indicates that a the signature supplied with a command did not match the message
    * in the command.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#SIGNATURE_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#SIGNATURE_ERROR}.
    */
   BAD_SIGNATURE("+BAD_SIGNATURE+"),
   /**
    * Indicates that the accessor guid provided with the command does not have access
    * to the field being accessed.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#ACCESS_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#ACCESS_ERROR}.
    */
   ACCESS_DENIED("+ACCESS_DENIED+"),
   /**
    * Indicates that the command is too old to be executed.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#STALE_COMMAND_VALUE}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#STALE_COMMAND_VALUE}.
    */
   STALE_COMMMAND("+STALE_COMMMAND+"),
   /**
    * Indicates that command could not be executed because it had an unknown name
    * or incorrect arguments.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#OPERATION_NOT_SUPPORTED}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#OPERATION_NOT_SUPPORTED}.
    */
   OPERATION_NOT_SUPPORTED("+OPERATIONNOTSUPPORTED+"),
   /**
    * Indicates that command could not be executed due to non-json parsing or
    * other interpretation error.
    * An additional string is usually provided explaining the error.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#QUERY_PROCESSING_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#QUERY_PROCESSING_ERROR}.
    */
   QUERY_PROCESSING_ERROR("+QUERYPROCESSINGERROR+"),
   /**
    * Indicates that command an account verification or password verification error occurred.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#VERIFICATION_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#VERIFICATION_ERROR}.
    */
   VERIFICATION_ERROR("+VERIFICATIONERROR+"),
   /**
@@ -85,84 +83,84 @@ public enum GNSProtocol {
   /**
    * Indicates that a command is trying to access a field using an
    * accessor guid that does not exist.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_ACCESSOR_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#BAD_ACCESSOR_ERROR}.
    */
   BAD_ACCESSOR_GUID("+BADACCESSORGUID+"),
   /**
    * Indicates that a command is trying to use a guid that does not exist.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_GUID_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#BAD_GUID_ERROR}.
    */
   BAD_GUID("+BADGUID+"),
   /**
    * Indicates that a command is trying to use an account guid that does not exist.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_ACCOUNT_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#BAD_ACCOUNT_ERROR}.
    */
   BAD_ACCOUNT("+BADACCOUNT+"),
   /**
    * Indicates that a command is trying to use an alias that does not exist.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_ALIAS_EXCEPTION}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#BAD_ALIAS_EXCEPTION}.
    *
    */
   BAD_ALIAS("+BADALIAS+"),
   /**
    * Indicates that a command is trying to use an ACL type that does not exist.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_ACL_TYPE_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#BAD_ACL_TYPE_ERROR}.
    */
   BAD_ACL_TYPE("+BADACLTYPE+"),
   /**
    * Indicates that a command is trying to access a field that does not exist.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#FIELD_NOT_FOUND_EXCEPTION}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#FIELD_NOT_FOUND_EXCEPTION}.
    */
   FIELD_NOT_FOUND("+FIELDNOTFOUND+"),
   /**
    * Indicates that a command is trying to add a guid that already exists.
-   *  * See {@link edu.umass.cs.gnscommon.GNSResponseCode#DUPLICATE_GUID_EXCEPTION}.
+   *  * See {@link edu.umass.cs.gnscommon.ResponseCode#DUPLICATE_GUID_EXCEPTION}.
    */
   DUPLICATE_GUID("+DUPLICATEGUID+"),
   /**
    * Indicates that a command is trying to add a field that already exists.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#DUPLICATE_FIELD_EXCEPTION}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#DUPLICATE_FIELD_EXCEPTION}.
    */
   DUPLICATE_FIELD("+DUPLICATEFIELD+"),
   /**
    * Indicates that a command is trying to add a HRN that already exists.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#DUPLICATE_NAME_EXCEPTION}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#DUPLICATE_NAME_EXCEPTION}.
    */
   DUPLICATE_NAME("+DUPLICATENAME+"),
   /**
    * Indicates that a command resulted in a error while parsing a JSON string.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#JSON_PARSE_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#JSON_PARSE_ERROR}.
    */
   JSON_PARSE_ERROR("+JSONPARSEERROR+"),
   /**
    * Indicates that a command attempted to create more alias than is allowed.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#TOO_MANY_ALIASES_EXCEPTION}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#TOO_MANY_ALIASES_EXCEPTION}.
    */
   TOO_MANY_ALIASES("+TOMANYALIASES+"),
   /**
    * Indicates that a command attempted to create more guids than is allowed.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#TOO_MANY_GUIDS_EXCEPTION}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#TOO_MANY_GUIDS_EXCEPTION}.
    */
   TOO_MANY_GUIDS("+TOMANYGUIDS+"),
   /**
    * Indicates that a command resulted in an error while updating a record.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#UPDATE_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#UPDATE_ERROR}.
    */
   UPDATE_ERROR("+UPDATEERROR+"),
   /**
    * Indicates that a command resulted in an error while updating a record.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#UPDATE_ERROR}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#UPDATE_ERROR}.
    */
   DATABASE_OPERATION_ERROR("+DATABASEOPERROR+"),
   /**
    * Indicates that a timeout occurred during the execution of a command.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#TIMEOUT}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#TIMEOUT}.
    */
   TIMEOUT("+TIMEOUT+"),
   /**
    * Indicates that a command resulted in an active replica receiving a request
    * for a name that is not replicated there.
-   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#ACTIVE_REPLICA_EXCEPTION}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#ACTIVE_REPLICA_EXCEPTION}.
    */
   ACTIVE_REPLICA_EXCEPTION(ClientReconfigurationPacket.ResponseCodes.ACTIVE_REPLICA_EXCEPTION.toString()),
   //
@@ -484,19 +482,19 @@ public enum GNSProtocol {
    */
   REQUEST_TTL("QTTL"),
   /**
-   * Long client request ID in every {@link CommandPacket}.
+   * Long client request ID in every {@link edu.umass.cs.gnscommon.packets.CommandPacket}.
    */
   REQUEST_ID("QID"),
   /**
-   * String return value carried in every {@link ResponsePacket}.
+   * String return value carried in every {@link edu.umass.cs.gnscommon.packets.ResponsePacket}.
    */
   RETURN_VALUE("RVAL"),
   /**
-   * The query carried in every {@link CommandPacket}.
+   * The query carried in every {@link edu.umass.cs.gnscommon.packets.CommandPacket}.
    */
   COMMAND_QUERY("QVAL"),
   /**
-   * Name or HRN or GUID, whatever is used in {@link Request#getServiceName()}.
+   * Name or HRN or GUID, whatever is used in {@link edu.umass.cs.gigapaxos.interfaces.Request#getServiceName}.
    */
   SERVICE_NAME("NAME"),
   /**
@@ -504,7 +502,7 @@ public enum GNSProtocol {
    */
   UNKNOWN_NAME("unknown"),
   /**
-   * Error code carried in {@link ResponsePacket}.
+   * Error code carried in {@link edu.umass.cs.gnscommon.packets.ResponsePacket}.
    */
   ERROR_CODE("ECODE"),
   /**

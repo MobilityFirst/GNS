@@ -84,7 +84,7 @@ public class ActiveGNSClient extends GNSClient implements ActiveDBInterface {
 	 * request checks that can only be determined with a {@link GNSClient}
 	 * instance, e.g, dynamically force-coordinated read requests.
    * @param commandPacket
-   * @return 
+   * @return the executed command
    * @throws java.io.IOException
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
 	 */

@@ -36,7 +36,6 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
 
@@ -299,7 +298,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
           }
           break;
         case COMMAND:
-            CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
+          CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
           break;
         case ADMIN_COMMAND:
           CommandHandler.handleCommandPacket((AdminCommandPacket) request, doNotReplyToClient, this);
@@ -426,7 +425,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
             || Config.getGlobalString(GNSConfig.GNSC.DNS_SERVER_NODES).contains(nodeID)) {
       startDNS();
     }
-    this.activeCodeHandler = OldHackyConstants.enableActiveCode ? new ActiveCodeHandler(nodeID) : null;
+    this.activeCodeHandler = !Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)
+            ? new ActiveCodeHandler(nodeID) : null;
 
     // context service init
     if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_CNS)) {
@@ -447,7 +447,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   }
 
   // For InterfaceApplication
-
   /**
    *
    * @param string
@@ -456,7 +455,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    */
   @Override
   public Request getRequest(String string) throws RequestParseException {
-    GNSConfig.getLogger().log(Level.FINEST,">>>>>>>>>>>>>>> GET REQUEST: {0}", string);
+    GNSConfig.getLogger().log(Level.FINEST, ">>>>>>>>>>>>>>> GET REQUEST: {0}", string);
     // Special case handling of NoopPacket packets
     if (Request.NO_OP.equals(string)) {
       throw new RuntimeException("Should never be here");//new NoopPacket();
@@ -634,7 +633,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         NameRecord.removeNameRecord(nameRecordDB, name);
       } else // state does not equal null so we either create a new record
       // or update the existing one
-       if (!NameRecord.containsRecord(nameRecordDB, name)) {
+      {
+        if (!NameRecord.containsRecord(nameRecordDB, name)) {
           // create a new record
           try {
             ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
@@ -656,6 +656,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                     "Problem updating state: {0}", e.getMessage());
           }
         }
+      }
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE,
