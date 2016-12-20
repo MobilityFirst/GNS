@@ -91,7 +91,7 @@ public class ActiveBlockingRunner implements Runner {
 	 * there is no need to make this method synchronized any more.
 	 * 
 	 * @param guid the owner of the active code, it is used as the key to cache the code
-	 * @param field
+	 * @param accessor
 	 * @param code
 	 * @param value
 	 * @param ttl
@@ -100,13 +100,13 @@ public class ActiveBlockingRunner implements Runner {
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
 	 */
-	public String runCode(String guid, String field, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {
+	public String runCode(String guid, String accessor, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
 		ActiveBlockingQuerier querier = new ActiveBlockingQuerier(channel, JSON, ttl, guid, id);
 		String valuesMap = null;
 		
-		valuesMap = querier.js2String((ScriptObjectMirror) invocable.invokeFunction("run", querier.string2JS(value), field, querier));
+		valuesMap = querier.js2String((ScriptObjectMirror) invocable.invokeFunction("run", querier.string2JS(value), accessor, querier));
 		
 		return valuesMap;
 	}
@@ -123,7 +123,7 @@ public class ActiveBlockingRunner implements Runner {
 		
 		@Override
 		public String call() throws Exception {
-			return runner.runCode(am.getGuid(), am.getField(), am.getCode(), am.getValue(), am.getTtl(), am.getId());
+			return runner.runCode(am.getGuid(), am.getAccessor(), am.getCode(), am.getValue(), am.getTtl(), am.getId());
 		}
 		
 	}

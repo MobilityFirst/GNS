@@ -49,16 +49,21 @@ public class ActiveCode {
    * ON_WRITE - the string key for the field that stores the write information.
    */
   public static final String ON_WRITE = InternalField.makeInternalFieldString("on_write");
-
+  
   /**
    * Deploy code on the read operation that needs to trigger the code
    */
   public static final String READ_ACTION = "read";
   /**
+<<<<<<< HEAD
+   * Deploy code on the write operation that needs to trigger the code 
+=======
    * Deploy code on the write operation that needs to trigger the code
+>>>>>>> upstream/master
    */
   public static final String WRITE_ACTION = "write";
 
+  
   /**
    * Returns the internal field corresponding to the given action.
    *

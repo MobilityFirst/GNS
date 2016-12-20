@@ -377,7 +377,7 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	 * needs to handle this exception.
 	 * 
 	 * @param guid
-	 * @param field
+	 * @param accessor
 	 * @param code
 	 * @param valuesMap
 	 * @param ttl
@@ -385,10 +385,10 @@ public class ActiveNonBlockingClient implements Runnable,Client {
    * @throws edu.umass.cs.gnsserver.activecode.prototype.ActiveException
 	 */
 	@Override
-	public JSONObject runCode(InternalRequestHeader header, String guid, String field, 
+	public JSONObject runCode(InternalRequestHeader header, String guid, String accessor, 
 			String code, JSONObject valuesMap, int ttl, long budget) throws ActiveException {
 		
-		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap.toString(), ttl, budget);
+		ActiveMessage msg = new ActiveMessage(guid, accessor, code, valuesMap.toString(), ttl, budget);
 		Monitor monitor = new Monitor();
 		tasks.put(msg.getId(), monitor);
 		

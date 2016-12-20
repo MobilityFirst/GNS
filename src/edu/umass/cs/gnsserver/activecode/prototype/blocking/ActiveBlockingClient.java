@@ -204,7 +204,11 @@ public class ActiveBlockingClient implements Client {
 	 * @param ofile
 	 * @param id
 	 * @param workerNumThread
+<<<<<<< HEAD
+	 * @return
+=======
 	 * @return a Process
+>>>>>>> upstream/master
 	 * @throws IOException
 	 */
 	private Process startWorker(String ifile, String ofile, int id) throws IOException{
@@ -243,7 +247,11 @@ public class ActiveBlockingClient implements Client {
 	 * 
 	 * @param port1
 	 * @param id
+<<<<<<< HEAD
+	 * @return
+=======
 	 * @return a Process
+>>>>>>> upstream/master
 	 * @throws IOException
 	 */
 	private Process startWorker(int port1, int port2, int id) throws IOException{
@@ -316,17 +324,21 @@ public class ActiveBlockingClient implements Client {
 	 * needs to handle this exception.
 	 * 
 	 * @param guid
+<<<<<<< HEAD
+	 * @param accessor
+=======
 	 * @param field
+>>>>>>> upstream/master
 	 * @param code
 	 * @param value
 	 * @param ttl
 	 * @return executed result sent back from worker
 	 */
 	@Override
-	public synchronized JSONObject runCode(InternalRequestHeader header, String guid, String field, 
+	public synchronized JSONObject runCode(InternalRequestHeader header, String guid, String accessor, 
 			String code, JSONObject value, int ttl, long budget) throws ActiveException {
 		
-		ActiveMessage msg = new ActiveMessage(guid, field, code, value.toString(), ttl, budget);
+		ActiveMessage msg = new ActiveMessage(guid, accessor, code, value.toString(), ttl, budget);
 		sendMessage(msg);
 		
 		ActiveMessage response = null;

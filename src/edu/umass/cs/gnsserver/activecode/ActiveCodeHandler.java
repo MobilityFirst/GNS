@@ -133,17 +133,17 @@ public class ActiveCodeHandler {
    * @param header
    * @param code
    * @param guid
-   * @param field
+   * @param accessor
    * @param action
    * @param value
    * @param activeCodeTTL current default is 10
    * @return executed result
    * @throws InternalRequestException
    */
-  private static JSONObject runCode(InternalRequestHeader header, String code, String guid, String field, 
+  private static JSONObject runCode(InternalRequestHeader header, String code, String guid, String accessor, 
           String action, JSONObject value, int activeCodeTTL) throws InternalRequestException {
     try {
-      return handler.runCode(header, guid, field, code, value, activeCodeTTL);
+      return handler.runCode(header, guid, accessor, code, value, activeCodeTTL);
     } catch (ActiveException e) {
       ActiveCodeHandler.getLogger().log(Level.INFO, "ActiveGNS request execution failed", e);
       /**

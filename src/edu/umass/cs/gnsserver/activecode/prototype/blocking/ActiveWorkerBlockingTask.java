@@ -26,7 +26,7 @@ public class ActiveWorkerBlockingTask implements Callable<ActiveMessage> {
 		ActiveMessage response = null;
 		try {
 			response = new ActiveMessage(request.getId(), 
-					runner.runCode(request.getGuid(), request.getField(), request.getCode(), request.getValue(), request.getTtl(), request.getId()),
+					runner.runCode(request.getGuid(), request.getAccessor(), request.getCode(), request.getValue(), request.getTtl(), request.getId()),
 					null);
 		} catch (NoSuchMethodException | ScriptException e) {
 			ActiveBlockingWorker.getLogger().log(Level.FINE, 

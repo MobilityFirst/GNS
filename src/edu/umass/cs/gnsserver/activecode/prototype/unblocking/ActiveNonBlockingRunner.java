@@ -102,7 +102,11 @@ public class ActiveNonBlockingRunner implements Runner {
 	 * there is no need to make this method synchronized any more.
 	 * 
 	 * @param guid
+<<<<<<< HEAD
+	 * @param accessor
+=======
 	 * @param field
+>>>>>>> upstream/master
 	 * @param code
 	 * @param value
 	 * @param ttl
@@ -111,7 +115,7 @@ public class ActiveNonBlockingRunner implements Runner {
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
 	 */
-	public String runCode(String guid, String field, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {		
+	public String runCode(String guid, String accessor, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {		
 		ActiveNonBlockingQuerier querier = new ActiveNonBlockingQuerier(channel, dbReader, JSON, ttl, guid, id);
 		map.put(id, querier);
 		
@@ -119,7 +123,7 @@ public class ActiveNonBlockingRunner implements Runner {
 		engine.setContext(contexts.get(guid));
 		
 		String result = querier.js2String((ScriptObjectMirror) invocable.invokeFunction("run", querier.string2JS(value),
-				field, querier));
+				accessor, querier));
 		
 		map.remove(id);
 		return result;
@@ -153,7 +157,7 @@ public class ActiveNonBlockingRunner implements Runner {
 		
 		@Override
 		public String call() throws Exception {
-			return runner.runCode(am.getGuid(), am.getField(), am.getCode(), am.getValue(), am.getTtl(), am.getId());
+			return runner.runCode(am.getGuid(), am.getAccessor(), am.getCode(), am.getValue(), am.getTtl(), am.getId());
 		}
 		
 	}

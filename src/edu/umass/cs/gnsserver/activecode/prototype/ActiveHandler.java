@@ -118,7 +118,7 @@ public class ActiveHandler {
 	/**
 	 * @param header 
 	 * @param guid
-	 * @param field
+	 * @param accessor
 	 * @param code
 	 * @param value
 	 * @param ttl
@@ -126,8 +126,8 @@ public class ActiveHandler {
 	 * @throws ActiveException 
 	 */
 	public JSONObject runCode(InternalRequestHeader header, String guid, 
-			String field, String code, JSONObject value, int ttl) throws ActiveException{
-		return clientPool[counter.getAndIncrement()%numProcess].runCode(header, guid, field, code, value, ttl, 2000);
+			String accessor, String code, JSONObject value, int ttl) throws ActiveException{
+		return clientPool[counter.getAndIncrement()%numProcess].runCode(header, guid, accessor, code, value, ttl, 2000);
 	}
 	
 	/***************** Test methods ****************/	
