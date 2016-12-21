@@ -73,7 +73,8 @@ public abstract class AbstractUpdate extends AbstractCommand {
     String value = json.optString(GNSProtocol.VALUE.toString(), null);
     String oldValue = json.optString(GNSProtocol.OLD_VALUE.toString(), null);
     int index = json.optInt(GNSProtocol.N.toString(), -1);
-    JSONObject userJSON = json.has(GNSProtocol.USER_JSON.toString()) ? new JSONObject(json.getString(GNSProtocol.USER_JSON.toString())) : null;
+    JSONObject userJSON = json.has(GNSProtocol.USER_JSON.toString()) 
+            ? new JSONObject(json.getString(GNSProtocol.USER_JSON.toString())) : null;
     // writer might be unspecified so we use the guid
     String writer = json.optString(GNSProtocol.WRITER.toString(), guid);
     String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);

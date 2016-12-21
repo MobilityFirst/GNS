@@ -73,29 +73,25 @@ public class RegisterAccount extends AbstractCommand {
     String name = json.getString(GNSProtocol.NAME.toString());
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
     String password = json.getString(GNSProtocol.PASSWORD.toString());
-    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
-    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
-    
+    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
+
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
-    // FIXME: this lacking signature check is for temporary backward compatability... remove it.
-    // See RegisterAccountUnsigned
-    if (signature != null && message != null) {
-      if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
-        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
-      }
+    if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
+      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
     try {
       CommandResponse result = AccountAccess.addAccount(
               handler.getHttpServerHostPortString(),
               name, guid, publicKey,
-              password, 
+              password,
               Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION),
               handler);
       if (result.getExceptionOrErrorCode().isOKResult()) {
         // Everything is hunkey dorey so return the new guid
         return new CommandResponse(ResponseCode.NO_ERROR, guid);
       } else {
-    	  assert(result.getExceptionOrErrorCode()!=null);
+        assert (result.getExceptionOrErrorCode() != null);
         // Otherwise return the error response.
         return result;
       }

@@ -29,9 +29,10 @@ import org.json.JSONObject;
 import org.json.JSONString;
 
 /**
- * Generates canonical JSON strings. 
+ * Generates canonical JSON strings.
  * Identical to the standard code to render a JSON object,
  * except it forces the keys for maps to be listed in sorted order.
+ *
  * @author westy
  */
 public class CanonicalJSON {
@@ -124,13 +125,13 @@ public class CanonicalJSON {
           return x.toString();
         }
         if (x instanceof Map) {
-          return renderSimpleCanonicalJSON(new JSONObject((Map<?, ?>) x)).toString();
+          return renderSimpleCanonicalJSON(new JSONObject((Map<?, ?>) x));
         }
         if (x instanceof Collection) {
-          return renderSimpleCanonicalJSON(new JSONArray((Collection<?>) x)).toString();
+          return renderSimpleCanonicalJSON(new JSONArray((Collection<?>) x));
         }
         if (x.getClass().isArray()) {
-          return renderSimpleCanonicalJSON(new JSONArray(x)).toString();
+          return renderSimpleCanonicalJSON(new JSONArray(x));
         }
         return canonicalQuote(x.toString());
       }
@@ -139,14 +140,21 @@ public class CanonicalJSON {
     }
   }
 
-  /*
-   * This is an exact copy of JSONObject.quote() method from the org.json package.
-   * This method was added to fix the Android behavior of escaping forward slashes
-   * always in contrast with the open source org.json that escapes forward slashes
-   * only if the preceding character is an angular bracket ('<'). Also see MOB-886.
+  /**
+   * Produce a string in double quotes with backslash sequences in all the
+   * right places. A backslash will be inserted within &lt;/, allowing JSON
+   * text to be delivered in HTML. In JSON text, a string cannot contain a
+   * control character or an unescaped quote or backslash.
+   * @param string A String
+   * @return A String correctly formatted for insertion in a JSON text.
    */
-
-  public static String canonicalQuote(String string) {
+//   This is an exact copy of JSONObject.quote() method from the org.json package.
+//   This method was added to fix the Android behavior of escaping forward slashes
+//   always in contrast with the open source org.json that escapes forward slashes
+//   only if the preceding character is an angular bracket ('<'). 
+//     
+//   Also see MOB-886.
+  private static String canonicalQuote(String string) {
     if (string == null || string.length() == 0) {
       return "\"\"";
     }
@@ -168,6 +176,7 @@ public class CanonicalJSON {
           sb.append('\\');
           sb.append(c);
           break;
+        // This implements the more conserative behavior 
         case '/':
           if (b == '<') {
             sb.append('\\');
