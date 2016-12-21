@@ -75,7 +75,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
     int alphaResult = getCommandType().toString().compareTo(otherCommand.getCommandType().toString());
     // sort by number of arguments putting the longer ones first because we need to do longest match first.
     if (alphaResult == 0) {
-      int lengthDifference = getCommandParameters().length - otherCommand.getCommandParameters().length;
+      int lengthDifference = getCommandRequiredParameters().length - otherCommand.getCommandRequiredParameters().length;
       if (lengthDifference != 0) {
         // longest should be "less than"
         return -(Integer.signum(lengthDifference));
@@ -94,8 +94,18 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
    * @return argument parameters
    */
   @Override
-  public String[] getCommandParameters() {
-    return getCommandType().getCommandParameters();
+  public String[] getCommandRequiredParameters() {
+    return getCommandType().getCommandRequiredParameters();
+  }
+
+  /**
+   * Returns a string array with names of the argument parameters to the command.
+   *
+   * @return argument parameters
+   */
+  @Override
+  public String[] getCommandOptionalParameters() {
+    return getCommandType().getCommandOptionalParameters();
   }
 
   /**
@@ -107,7 +117,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   public String getCommandDescription() {
     return getCommandType().getCommandDescription();
   }
-  
+
   // FIXME: This is a workaround to the missing execute method described in MOB-918
   // I'm not sure what effect a null InternalRequestHeader will have going out.
   // This is currently only used by the HTTP server
@@ -160,7 +170,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
       case TCP:
         return getTCPForm() + GNSProtocol.NEWLINE.toString() + getCommandDescription();
       case TCP_Wiki:
-        return getTCPWikiForm() + "||" + getCommandDescription();
+        return getTCPWikiForm() + " ||" + getCommandDescription();
       default:
         return "Unknown command description format!";
     }
@@ -175,7 +185,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
     StringBuilder result = new StringBuilder();
     // write out lower case because we except any case
     result.append(getCommandType().toString().toLowerCase());
-    String[] parameters = getCommandParameters();
+    String[] parameters = getCommandRequiredParameters();
     String prefix = QUERYPREFIX;
     for (int i = 0; i < parameters.length; i++) {
       // special case to remove GNSProtocol.SIGNATUREFULLMESSAGE.toString() which isn't for HTML form
@@ -185,6 +195,22 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
         result.append(VALSEP);
         result.append("<" + parameters[i] + ">");
         prefix = KEYSEP;
+      }
+    }
+
+    String[] optionalParameters = getCommandOptionalParameters();
+    if (optionalParameters.length > 0) {
+      result.append(" additional optional parameters: ");
+      prefix = "";
+      for (int i = 0; i < optionalParameters.length; i++) {
+        // special case to remove GNSProtocol.SIGNATUREFULLMESSAGE.toString() which isn't for HTML form
+        if (!GNSProtocol.SIGNATUREFULLMESSAGE.toString().equals(optionalParameters[i])) {
+          result.append(prefix);
+          result.append(optionalParameters[i]);
+          result.append(VALSEP);
+          result.append("<" + optionalParameters[i] + ">");
+          prefix = KEYSEP;
+        }
       }
     }
     return result.toString();
@@ -199,14 +225,26 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
     StringBuilder result = new StringBuilder();
     result.append("Command: ");
     result.append(getCommandType().toString());
-    String[] parameters = getCommandParameters();
-    result.append(" Parameters: ");
+    String[] parameters = getCommandRequiredParameters();
+    result.append(" Required Parameters: ");
     String prefix = "";
-    for (int i = 0; i < parameters.length; i++) {
-      if (!GNSProtocol.SIGNATUREFULLMESSAGE.toString().equals(parameters[i])) {
+    for (String parameter : parameters) {
+      if (!GNSProtocol.SIGNATUREFULLMESSAGE.toString().equals(parameter)) {
         result.append(prefix);
-        result.append(parameters[i]);
+        result.append(parameter);
         prefix = ", ";
+      }
+    }
+    String[] optionalParameters = getCommandOptionalParameters();
+    if (optionalParameters.length > 0) {
+      result.append(" Optional Parameters: ");
+      prefix = "";
+      for (String parameter : optionalParameters) {
+        if (!GNSProtocol.SIGNATUREFULLMESSAGE.toString().equals(parameter)) {
+          result.append(prefix);
+          result.append(parameter);
+          prefix = ", ";
+        }
       }
     }
     return result.toString();
@@ -223,13 +261,23 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
     result.append(GNSProtocol.NEWLINE.toString());
     result.append("|");
     result.append(getCommandType().toString());
-    String[] parameters = getCommandParameters();
+    String[] parameters = getCommandRequiredParameters();
     result.append(" || ");
     String prefix = "";
     for (int i = 0; i < parameters.length; i++) {
       if (!GNSProtocol.SIGNATUREFULLMESSAGE.toString().equals(parameters[i])) {
         result.append(prefix);
         result.append(parameters[i]);
+        prefix = ", ";
+      }
+    }
+    String[] optionalParamaters = getCommandOptionalParameters();
+    result.append(" || ");
+    prefix = "";
+    for (int i = 0; i < optionalParamaters.length; i++) {
+      if (!GNSProtocol.SIGNATUREFULLMESSAGE.toString().equals(optionalParamaters[i])) {
+        result.append(prefix);
+        result.append(optionalParamaters[i]);
         prefix = ", ";
       }
     }
@@ -243,7 +291,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
    */
   public String getCommandParametersString() {
     StringBuilder result = new StringBuilder();
-    String[] parameters = getCommandParameters();
+    String[] parameters = getCommandRequiredParameters();
     String prefix = "";
     for (int i = 0; i < parameters.length; i++) {
       result.append(prefix);

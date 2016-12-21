@@ -9,6 +9,8 @@
 # Then run
 # > ant dist
 # to make a binary distribution
+# The run this file with
+# > ./release.sh "some text for a description"
 #
 # You'll also need a github auth token: https://help.github.com/articles/creating-an-access-token-for-command-line-use/
 # This script requires curl be installed in order to send the release to github.

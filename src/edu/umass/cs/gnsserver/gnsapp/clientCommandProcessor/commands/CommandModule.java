@@ -204,10 +204,10 @@ public class CommandModule {
                   new Object[]{commandName, command.getCommandType().toString()});
           command = null;
         }
-        if (command != null && !JSONContains(json, command.getCommandParameters())) {
+        if (command != null && !JSONContains(json, command.getCommandRequiredParameters())) {
           ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
-                  "For command {0} missing parameter {1}",
-                  new Object[]{command.getCommandType(), JSONMissing(json, command.getCommandParameters())});
+                  "For command {0} missing required parameter {1}",
+                  new Object[]{command.getCommandType(), JSONMissing(json, command.getCommandRequiredParameters())});
           command = null;
         }
       } catch (JSONException e) {
@@ -259,7 +259,8 @@ public class CommandModule {
   public static final String WIKI_PREAMBLE = "{| class=\"wikitable\"\n"
           + "|+ Commands in %s\n"
           + "! scope=\"col\" | Command Name\n"
-          + "! scope=\"col\" | Parameters\n"
+          + "! scope=\"col\" | Required Parameters\n"
+          + "! scope=\"col\" | Optional Parameters\n"
           + "! scope=\"col\" | Description";
 
   /**

@@ -36,7 +36,13 @@ public interface CommandInterface {
    *
    * @return the command parameters
    */
-  public String[] getCommandParameters();
+  public String[] getCommandRequiredParameters();
+  
+  /**
+   *
+   * @return the command parameters
+   */
+  public String[] getCommandOptionalParameters();
 
   /**
    *

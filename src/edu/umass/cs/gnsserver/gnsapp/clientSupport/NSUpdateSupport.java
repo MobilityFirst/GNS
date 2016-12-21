@@ -173,7 +173,7 @@ public class NSUpdateSupport {
     }
     // Apply updateEntireValuesMap to record in the database
     nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
-     // This is for MOB-893 - logging updates
+    // This is for MOB-893 - logging updates
     writeUpdateLog(guid, field, updateValue, newValue, operation);
   }
 
@@ -181,27 +181,35 @@ public class NSUpdateSupport {
   private static void writeUpdateLog(String guid, String field,
           ResultValue updateValue, ValuesMap userJSON,
           UpdateOperation operation) {
+    try {
+      if (field == null) {
 
-    if (field == null) {
-      try {
         for (String singleField : userJSON.getKeys()) {
           if (!InternalField.isInternalField(singleField)) {
             writeFieldLogEntry(guid, singleField, userJSON.get(singleField), operation);
           }
         }
-      } catch (JSONException e) {
+      } else if (!InternalField.isInternalField(field)) {
+        writeFieldLogEntry(guid, field, updateValue, operation);
       }
-    } else if (!InternalField.isInternalField(field)) {
-      writeFieldLogEntry(guid, field, updateValue, operation);
+    } catch (JSONException e) {
+      ClientSupportConfig.getLogger().log(Level.WARNING, "Unable to log update: {0}", e);
     }
   }
 
   // This is for MOB-893 - logging updates
   private static void writeFieldLogEntry(String guid, String field, Object value,
-          UpdateOperation operation) {
-    ClientSupportConfig.getLogger().log(Level.INFO,
-            "Field update: '{'guid : {0}, field: {1}, value: {2}, operation: {3}'}'",
-            new Object[]{guid, field, value, operation});
+          UpdateOperation operation) throws JSONException {
+    // write it out as json
+    JSONObject json = new JSONObject();
+    json.put("guid", guid);
+    json.put("field", field);
+    json.put("value", value);
+    json.put("operation", operation.name());
+    ClientSupportConfig.getLogger().log(Level.INFO, "Field update: {0}", json.toString());
+//    ClientSupportConfig.getLogger().log(Level.INFO,
+//            "Field update: '{'guid : {0}, field: {1}, value: {2}, operation: {3}'}'",
+//            new Object[]{guid, field, value, operation});
   }
 
 }
