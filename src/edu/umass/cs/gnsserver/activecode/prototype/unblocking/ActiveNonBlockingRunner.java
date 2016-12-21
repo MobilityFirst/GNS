@@ -20,7 +20,6 @@ import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.maxmind.geoip2.DatabaseReader;
 
@@ -102,11 +101,7 @@ public class ActiveNonBlockingRunner implements Runner {
 	 * there is no need to make this method synchronized any more.
 	 * 
 	 * @param guid
-<<<<<<< HEAD
 	 * @param accessor
-=======
-	 * @param field
->>>>>>> upstream/master
 	 * @param code
 	 * @param value
 	 * @param ttl
@@ -115,6 +110,7 @@ public class ActiveNonBlockingRunner implements Runner {
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
 	 */
+        @Override
 	public String runCode(String guid, String accessor, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {		
 		ActiveNonBlockingQuerier querier = new ActiveNonBlockingQuerier(channel, dbReader, JSON, ttl, guid, id);
 		map.put(id, querier);

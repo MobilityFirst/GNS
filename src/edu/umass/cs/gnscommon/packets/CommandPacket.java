@@ -267,12 +267,12 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    *
    * @return Refer {@link Byteable#toBytes()}
    */
+  @Override
   public final byte[] toBytes() {
     try {
       switch (byteMode) {
         /* There is little point in using JSON just for this.command instead
->>>>>>> 1a70f0e3c9f5685a37f51cdc7c44879293ead6aa
-			 * of the default toJSONObject() method, so we just do that. */
+	 * of the default toJSONObject() method, so we just do that. */
         case ORG_JSON:
           return this.toJSONObject().toString()
                   .getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);

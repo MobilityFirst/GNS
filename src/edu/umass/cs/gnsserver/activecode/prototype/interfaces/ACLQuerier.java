@@ -15,12 +15,8 @@ public interface ACLQuerier {
 	 * to the field, i.e., access control
 	 * 
 	 * @param guid
-<<<<<<< HEAD
-	 * @return a JSONObject object that contains the targetGuid's public key with the key {@ActiveCode.PUBLICKEY_FIELD}.
-=======
 	 * @return a JSONObject object that contains the targetGuid's public key 
          * with the key ActiveCode.PUBLICKEY_FIELD.
->>>>>>> upstream/master
 	 * @throws ActiveException throws an ActiveException if the targetGuid does not exist.
 	 */
 	public JSONObject lookupUsernameForGuid(String guid) throws ActiveException;
