@@ -158,7 +158,8 @@ public class NSUpdateSupport {
 
   private static void updateNameRecord(InternalRequestHeader header, NameRecord nameRecord, String guid, String field,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
-          ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException, InternalRequestException {
+          ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) 
+          throws FailedDBOperationException, FieldNotFoundException, InternalRequestException {
     ValuesMap newValue = userJSON;
     if (activeCodeHandler != null) {
       JSONObject result = ActiveCodeHandler.handleActiveCode(header, guid, field, ActiveCode.WRITE_ACTION, userJSON, db);

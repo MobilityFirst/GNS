@@ -172,7 +172,8 @@ public class ActiveCodeHandler {
    * @throws InternalRequestException
    */
   public static JSONObject handleActiveCode(InternalRequestHeader header,
-          String guid, String field, String action, JSONObject value, BasicRecordMap db) throws InternalRequestException {
+          String guid, String field, String action, JSONObject value, BasicRecordMap db) 
+          throws InternalRequestException {
 
     if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
       return value;
@@ -199,6 +200,8 @@ public class ActiveCodeHandler {
     }
     JSONObject newResult = value;
     if (field == null || !InternalField.isInternalField(field)) {
+      //FIXME: Seems like this field lookup all could be replaced by something 
+      // like NSFieldAccess.lookupJSONFieldLocalNoAuth
       NameRecord activeCodeNameRecord = null;
       try {
         activeCodeNameRecord = NameRecord.getNameRecordMultiUserFields(db, guid,

@@ -156,7 +156,7 @@ public class ActiveCode {
       return GNSProtocol.NULL_RESPONSE.toString();
     }
     ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid, field,
-            handler.getApp(), false);
+            handler.getApp(), false); // the false disables active code handling which we obviously don't want here
     return result.getString(field);
   }
 }

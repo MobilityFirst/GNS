@@ -455,7 +455,8 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 			throw new ActiveException("Worker crashes!");
 		}
 		if(response.getError() != null){
-			throw new ActiveException(msg.toString());
+			throw new ActiveException("Message: " + msg.toString() +
+                                " Response: " + response.toString());
 		}
 		counter.getAndIncrement();
 		tasks.remove(response.getId());
