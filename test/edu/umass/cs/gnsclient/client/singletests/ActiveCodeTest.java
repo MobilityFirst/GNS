@@ -241,7 +241,7 @@ public class ActiveCodeTest {
    *
    */
   @Test
-  public void test_130_ActiveCodeUpdate() {
+  public void test_130_ActiveCodeUpdateAgain() {
     try {
       // get the value of the field again
       client.update(masterGuid, new JSONObject("{\"test2\":\"value2\"}"));
@@ -259,57 +259,9 @@ public class ActiveCodeTest {
       // get the value of the field again
       System.out.println(client.read(masterGuid));
       String actual = client.fieldRead(masterGuid, "test1");
-      Assert.assertEquals("newTest1Value", actual);
+      Assert.assertEquals("original value", actual);
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
   }
-  //
-  //
-  // Another active code write test
-  //
-  /**
-   * 
-   */
-  @Test
-  public void test_150_ActiveCodeSetWriteCode() {
-    String writecode = null;
-    try {
-      // read in the code as a string
-      writecode = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/writeGuidTest.js")));
-    } catch (IOException e) {
-      Utils.failWithStackTrace("Exception reading code file: " + e);
-    }
-    try {
-      client.activeCodeSet(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, writecode, masterGuid);
-    } catch (ClientException | IOException e) {
-      Utils.failWithStackTrace("Setting active code: " + e);
-    }
-  }
-
-  /**
-   *
-   */
-  @Test
-  public void test_160_ActiveCodeUpdate() {
-    try {
-      client.update(masterGuid, new JSONObject("{\"test2\":\"value2\"}"));
-    } catch (Exception e) {
-      Utils.failWithStackTrace("Exception reading field: " + e);
-    }
-  }
-
-  /**
-   *
-   */
-  @Test
-  public void test_170_ActiveCodeCheckModifiedWrite() {
-    try {
-      String actual = client.fieldRead(masterGuid, "anotherField");
-      Assert.assertEquals("anotherValue", actual);
-    } catch (Exception e) {
-      Utils.failWithStackTrace("Exception reading field: " + e);
-    }
-  }
-
 }
