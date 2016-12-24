@@ -430,7 +430,7 @@ public class ServerIntegrationTest extends DefaultTest {
   /* Brendan: setting this to nonzero so it can be used for SELECT tests since
    * SELECTS don't consistently read UPDATES.
    */
-  private static final int COORDINATION_WAIT = 10000;
+  private static final long COORDINATION_WAIT = 10000;
 
   /**
    * arun: Coordinated operations generally need some settling time before
@@ -447,15 +447,18 @@ public class ServerIntegrationTest extends DefaultTest {
    * its cache, re-query, and pick randomly upon an active replica error; and
    * pick the replica closest by distance and load otherwise.
    */
-  private static void waitSettle() {
-    try {
-      if (COORDINATION_WAIT > 0) {
-        Thread.sleep(COORDINATION_WAIT);
-      }
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-  }
+	private static void waitSettle(long wait) {
+		try {
+			if (wait > 0)
+				Thread.sleep(wait);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void waitSettle() {
+		waitSettle(COORDINATION_WAIT);
+	}
 
   /* TODO:
    * Brendan: I've begun checking tests to make sure that logically
@@ -2422,6 +2425,9 @@ public class ServerIntegrationTest extends DefaultTest {
   // fail("Exception when we were not expecting it: " , e);
   // }
   // }
+  
+  // for use in SELECT test below.
+  private static final long SELECT_WAIT = 500;
   /**
    * Tests that selectNear and selectWithin work.
    */
@@ -2441,7 +2447,7 @@ public class ServerIntegrationTest extends DefaultTest {
                 + RandomString.randomString(12));
         client.setLocation(testEntry, 0.0, 0.0);
 
-        waitSettle(); //See comment under the method header.
+        waitSettle(SELECT_WAIT); //See comment under the method header.
 
         // arun: added this but unclear why we should need this at all
         JSONArray location = client.getLocation(testEntry.getGuid(),
@@ -2504,7 +2510,7 @@ public class ServerIntegrationTest extends DefaultTest {
     }
 
     try {
-      waitSettle(); //See comment under the method header for test_320_GeoSpatialSelect
+      waitSettle(SELECT_WAIT); //See comment under the method header for test_320_GeoSpatialSelect
       String query = "~" + fieldName + " : ($gt: 0)";
       JSONArray result = client.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
