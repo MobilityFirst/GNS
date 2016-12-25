@@ -80,7 +80,7 @@ public class GNSClient {
   // local name server
   private InetSocketAddress GNSProxy = null;
 
-  private static final java.util.logging.Logger LOG = GNSConfig.getLogger();
+  private static final java.util.logging.Logger LOG = GNSClientConfig.getLogger();
 
   /**
    * The default constructor that expects a gigapaxos properties file that is
@@ -455,7 +455,6 @@ public class GNSClient {
      *
      * @return a set of packet types
      */
-    @SuppressWarnings("javadoc")
     @Override
     public Set<IntegerPacketType> getMutualAuthRequestTypes() {
       Set<IntegerPacketType> types = new HashSet<IntegerPacketType>(

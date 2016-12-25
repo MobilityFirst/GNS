@@ -742,10 +742,11 @@ public class AccountAccess {
    * @param verifyCode
    * @param handler
    * @return status result
+ * @throws IOException 
    */
   public static CommandResponse addAccountInternal(String name, String guid,
           String publicKey, String password, boolean emailVerify,
-          String verifyCode, ClientRequestHandlerInterface handler) {
+          String verifyCode, ClientRequestHandlerInterface handler) throws IOException {
     try {
 
       ResponseCode returnCode;
@@ -753,8 +754,8 @@ public class AccountAccess {
       // already registered
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
-      if (!(returnCode = handler.getRemoteQuery().createRecord(name,
-              jsonHRN)).isExceptionOrError()) {
+      returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN);
+      if (!returnCode.isExceptionOrError() || HRNmatchingGUIDExists(handler, returnCode, name, guid)) {
         // if that's cool then add the entry that links the guid to the
         // username and public key
         // this one could fail if someone uses the same public key to
@@ -781,47 +782,28 @@ public class AccountAccess {
         json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
         // set up the default read access
 
-        returnCode = null;
-        try {
-          returnCode = handler.getRemoteQuery().createRecord(guid,
-                  json);
-        } catch (ClientException ce1) {
-          (returnCode = ce1.getCode()).setMessage(ce1.getMessage());
-        }
-        if (returnCode != null && !returnCode.isExceptionOrError()) {
-          return new CommandResponse(ResponseCode.NO_ERROR,
-                  GNSProtocol.OK_RESPONSE.toString());
-        } else {
-          // delete the record we added above
-          // might be nice to have a notion of a transaction that we
-          // could roll back
-          ResponseCode rollbackCode = handler.getRemoteQuery()
-                  .deleteRecordSuppressExceptions(name);
-          return new CommandResponse(
-                  returnCode,
-                  GNSProtocol.BAD_RESPONSE.toString()
-                  + " "
-                  + returnCode.getProtocolCode()
-                  + " "
-                  + guid
-                  + " "
-                  + returnCode.getMessage()
-                  + " "
-                  + (rollbackCode == null
-                  || !rollbackCode.isOKResult() ? "; failed to roll back "
-                          + name
-                          + " creation: "
-                          + rollbackCode
-                          + ":"
-                          + rollbackCode.getMessage()
-                          : "; rolled back " + name
-                          + " creation"));
-        }
-      } else {
-        return new CommandResponse(returnCode, GNSProtocol.BAD_RESPONSE.toString() + " "
-                + returnCode.getProtocolCode() + " " + name + "("
-                + guid + ") " + returnCode.getMessage());
-      }
+        returnCode = createGUID(handler, guid, json);
+        assert(returnCode != null);
+        if (!returnCode.isExceptionOrError()
+        		|| GUIDmatchingHRNExists(handler, returnCode, name,
+        				guid))
+        	return new CommandResponse(ResponseCode.NO_ERROR,
+        			GNSProtocol.OK_RESPONSE.toString());
+        else if (returnCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
+        	// try to delete the record we added above
+        	return rollback(
+        			handler,
+        			ResponseCode.CONFLICTING_GUID_EXCEPTION
+        			.setMessage("GUID "
+        					+ guid
+        					+ " exists and can not be associated with the HRN "
+        					+ name), name, guid);
+      } 
+      
+      // else
+      return new CommandResponse(returnCode, GNSProtocol.BAD_RESPONSE.toString() + " "
+    		  + returnCode.getProtocolCode() + " " + name + "("
+    		  + guid + ") " + returnCode.getMessage());
     } catch (JSONException e) {
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.JSON_PARSE_ERROR.toString() + " "
@@ -830,9 +812,84 @@ public class AccountAccess {
       return new CommandResponse(ce.getCode(), GNSProtocol.BAD_RESPONSE.toString() + " "
               + ce.getCode() + " " + name + " " + ce.getMessage() + " ("
               + name + " may have gotten created despite this exception)");
-
     }
   }
+  
+	private static ResponseCode createGUID(
+			ClientRequestHandlerInterface handler, String guid, JSONObject json) {
+		ResponseCode returnCode = null;
+		try {
+			returnCode = handler.getRemoteQuery().createRecord(guid, json);
+		} catch (ClientException ce1) {
+			(returnCode = ce1.getCode()).setMessage(ce1.getMessage());
+		}
+		return returnCode;
+	}
+
+	private enum Status {
+		NO_GUID_EXISTS,
+		MATCHING_GUID_EXISTS,
+		CONFLICTING_GUID_EXISTS,
+	}
+	
+	private static boolean HRNmatchingGUIDExists(ClientRequestHandlerInterface handler,
+			ResponseCode code, String name, String guid)
+			throws ClientException, JSONException {
+		try {
+			if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
+				if (guid.equals(handler.getRemoteQuery().fieldRead(name,
+						GNSProtocol.GUID.toString())))
+					return true;
+		} catch (IOException ioe) {
+			throw new ClientException(ResponseCode.UNSPECIFIED_ERROR,
+					ioe.getMessage(), ioe);
+		}
+		return false;
+	}
+
+	private static boolean GUIDmatchingHRNExists(ClientRequestHandlerInterface handler,
+			ResponseCode code, String name, String guid)
+			throws ClientException, JSONException {
+		try {
+		if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
+			if (name.equals(handler.getRemoteQuery().fieldRead(guid,
+					GNSProtocol.NAME.toString())))
+				return true;
+		} catch (IOException ioe) {
+			throw new ClientException(ResponseCode.UNSPECIFIED_ERROR,
+					ioe.getMessage(), ioe);
+		}
+		return false;
+	}
+	
+	/* This method is currently not used because roll backs when invoked seem as likely
+	 * to cause new problems as they are to fix limbo create operations. The clean
+	 * way to fix them is to have support for transactions.
+	 */
+	private static CommandResponse rollback(
+			ClientRequestHandlerInterface handler, ResponseCode returnCode,
+			String name, String guid) throws ClientException {
+		ResponseCode rollbackCode = handler.getRemoteQuery()
+				.deleteRecordSuppressExceptions(name);
+		return new CommandResponse(
+				returnCode,
+				GNSProtocol.BAD_RESPONSE.toString()
+						+ " "
+						+ returnCode.getProtocolCode()
+						+ " "
+						+ guid
+						+ " "
+						+ returnCode.getMessage()
+						+ " "
+						+ (rollbackCode == null || !rollbackCode.isOKResult() ? "; failed to roll back "
+								+ name
+								+ " creation: "
+								+ rollbackCode
+								+ ":"
+								+ rollbackCode.getMessage()
+								: "; rolled back " + name + " creation"));
+
+	}
 
   /**
    * Removes a GNS user account.
@@ -922,6 +979,13 @@ public class AccountAccess {
   public static CommandResponse addGuid(AccountInfo accountInfo,
           GuidInfo accountGuidInfo, String name, String guid,
           String publicKey, ClientRequestHandlerInterface handler) {
+	  /* arun: The commented out code below checking for duplicates is incorrect.
+	   * What we need to do is to check for conflicts in HRN-GUID bindings. If
+	   * an HRN being created already exists, but the corresponding GUID does 
+	   * not exist, we should create it. Otherwise, the caller will interpret
+	   * the duplicate name exception incorrectly as a successful creation.
+	   */
+	  /*
     if ((AccountAccess.lookupGuidAnywhere(name, handler)) != null) {
       return new CommandResponse(
               ResponseCode.DUPLICATE_NAME_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString()
@@ -932,18 +996,48 @@ public class AccountAccess {
               ResponseCode.DUPLICATE_GUID_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString()
               + " " + GNSProtocol.DUPLICATE_GUID.toString() + " " + name);
     }
+    */
+	  
     boolean createdName = false, createdGUID = false;
     try {
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
       ResponseCode code = handler.getRemoteQuery().createRecord(name, jsonHRN);
-      // Return the error if we could not createField the HRN (alias) record.
+      /* arun: Return the error if we could not createField the HRN (alias) record
+       * and the error indicates that it is not a duplicate ID exception because
+       * of a limbo create operation from a previous unsuccessful attempt.
+       */
       if (code.isExceptionOrError()) {
-        return new CommandResponse(code, GNSProtocol.BAD_RESPONSE.toString() + " "
-                + code.getProtocolCode() + " " + name + "(" + guid
-                + ")" + " " + code.getMessage());
+    	  if (HRNmatchingGUIDExists(handler, code, name, guid)) {
+    		  return new CommandResponse(
+    				  ResponseCode.DUPLICATE_ID_EXCEPTION,
+    				  GNSProtocol.OK_RESPONSE.toString()
+    				  + " "
+    				  + ResponseCode.DUPLICATE_ID_EXCEPTION
+    				  .getProtocolCode() + " " + name
+    				  + "(" + guid + ")" + " "
+    				  + code.getMessage());
+    	  } else if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
+    		  return new CommandResponse(
+    				  ResponseCode.CONFLICTING_GUID_EXCEPTION,
+    				  GNSProtocol.BAD_RESPONSE.toString()
+    				  + " "
+    				  + ResponseCode.CONFLICTING_GUID_EXCEPTION
+    				  .getProtocolCode() + " " + name
+    				  + "(" + guid + ")" + " "
+    				  + code.getMessage());
+    	  else
+    		  return new CommandResponse(
+    				  code,
+    				  GNSProtocol.BAD_RESPONSE.toString()
+    				  + " "
+    				  + code
+    				  .getProtocolCode() + " " + name
+    				  + "(" + guid + ")" + " "
+    				  + code.getMessage());
       }
-      createdName = true;
+
+			createdName = true;
       // else name created
       GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
       JSONObject jsonGuid = new JSONObject();
@@ -967,28 +1061,26 @@ public class AccountAccess {
       } catch (ClientException ce1) {
         (guidCode = ce1.getCode()).setMessage(ce1.getMessage());
       }
-      if (guidCode == null || guidCode.isExceptionOrError()) {
-        // rollback name creation
-        ResponseCode rollbackCode = handler.getRemoteQuery().deleteRecordSuppressExceptions(name);
-        return new CommandResponse(
-                guidCode,
-                GNSProtocol.BAD_RESPONSE.toString()
-                + " "
-                + guidCode.getProtocolCode()
-                + " "
-                + guid
-                + " "
-                + guidCode.getMessage()
-                + " "
-                + (rollbackCode == null
-                || !rollbackCode.isOKResult() ? "; failed to roll back "
-                        + name
-                        + " creation: "
-                        + rollbackCode
-                        + ":" + rollbackCode.getMessage()
-                        : "; rolled back " + name + " creation"));
-      }
+      assert (guidCode != null);
+      if (guidCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
+    		  && !GUIDmatchingHRNExists(handler, guidCode, name, guid))
+    	  // rollback name creation
+    	  return rollback(
+    			  handler,
+    			  ResponseCode.CONFLICTING_GUID_EXCEPTION
+    			  .setMessage("GUID "
+    					  + guid
+    					  + "exists and can not be associated with the HRN "
+    					  + name), name, guid);
+      if (guidCode.isExceptionOrError())
+    	  return new CommandResponse(guidCode,
+    			  GNSProtocol.BAD_RESPONSE.toString() + " "
+    					  + guidCode.getProtocolCode() + " "
+    					  + guidCode.getMessage());
+      // else all good, continue
+
       createdGUID = true;
+            
       // else both name and guid created
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();

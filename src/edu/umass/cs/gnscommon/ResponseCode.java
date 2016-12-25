@@ -116,6 +116,7 @@ public enum ResponseCode implements Serializable {
   DUPLICATE_ID_EXCEPTION(14,
           ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
           .toString(), ResponseCodeType.EXCEPTION),
+          
   /**
    * Duplicate field in a record.
    */
@@ -165,11 +166,11 @@ public enum ResponseCode implements Serializable {
   /**
    * The guid is a duplicate of an already existing guid.
    */
-  DUPLICATE_GUID_EXCEPTION(21, GNSProtocol.DUPLICATE_GUID.toString(), ResponseCodeType.EXCEPTION),
+//  DUPLICATE_GUID_EXCEPTION(21, GNSProtocol.DUPLICATE_GUID.toString(), ResponseCodeType.EXCEPTION),
   /**
    * The HRN already exists.
    */
-  DUPLICATE_NAME_EXCEPTION(22, GNSProtocol.DUPLICATE_NAME.toString(), ResponseCodeType.EXCEPTION),
+//  DUPLICATE_NAME_EXCEPTION(22, GNSProtocol.DUPLICATE_NAME.toString(), ResponseCodeType.EXCEPTION),
   /**
    * A JSON parsing error occurred.
    */
@@ -190,6 +191,17 @@ public enum ResponseCode implements Serializable {
    * Something went wrong while we were reading from or writing to the database.
    */
   DATABASE_OPERATION_ERROR(27, GNSProtocol.DATABASE_OPERATION_ERROR.toString(), ResponseCodeType.ERROR),
+  
+  /**
+   * The GUID attempted to be created exists and is associated with a different HRN.
+   */
+  CONFLICTING_GUID_EXCEPTION(28, "Conflicting GUID", ResponseCodeType.ERROR),
+
+  /**
+   * The HRN attempted to be created exists and is associated with a different GUID.
+   */
+  CONFLICTING_HRN_EXCEPTION(29, "Conflicting HRN", ResponseCodeType.ERROR),
+
   /**
    * An error occurred during the processing of a command query.
    */

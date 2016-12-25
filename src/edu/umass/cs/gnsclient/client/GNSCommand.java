@@ -627,6 +627,8 @@ public class GNSCommand extends CommandPacket {
    * Deletes the account.
    * Sent on the mutual auth channel. Can only be sent from a client that
    * has the correct ssl keys. Does not send a signature.
+   * 
+   *  @param name 
    *
    * @return CommandPacket
    * @throws ClientException
@@ -1001,6 +1003,7 @@ public class GNSCommand extends CommandPacket {
    * @param guid
    * @param field
    * The field key.
+   * @param accesserGUID 
    * @return CommandPacket
    * @throws ClientException
    * if the query is not accepted by the server.
@@ -1050,6 +1053,7 @@ public class GNSCommand extends CommandPacket {
    * @param guid
    * @param field
    * The field key.
+   * @param accesserGUID 
    * @return CommandPacket
    * @throws ClientException
    * if the query is not accepted by the server.

@@ -458,8 +458,8 @@ public class CommandUtils {
       case ALREADY_VERIFIED_EXCEPTION:
         throw new VerificationException(code, errorSummary);
       case DUPLICATE_ID_EXCEPTION:
-      case DUPLICATE_GUID_EXCEPTION:
-      case DUPLICATE_NAME_EXCEPTION:
+      //case DUPLICATE_GUID_EXCEPTION:
+      //case DUPLICATE_NAME_EXCEPTION:
         throw new DuplicateNameException(code, errorSummary);
       case DUPLICATE_FIELD_EXCEPTION:
         throw new InvalidFieldException(code, errorSummary);
