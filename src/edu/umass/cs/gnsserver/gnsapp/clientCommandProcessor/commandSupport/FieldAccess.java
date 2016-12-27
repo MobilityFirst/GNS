@@ -792,8 +792,8 @@ public class FieldAccess {
                 signature, message, MetaDataTypeName.READ_WHITELIST, app);
       } else {
     	  LOGGER.log(Level.FINE,
-  	            "reader does not equal to internal secret reader: {0}, header: {1}",
-  	            new Object[]{reader, header});
+  	            "reader {0}; internal_op_secret={1}, field={2}; fields={3}",
+  	            new Object[]{reader, GNSConfig.getInternalOpSecret(), field, fields});
     	  if(header != null){
 	    	  if(field != null){
 	      			errorCode = NSAuthentication.aclCheck(guid, field, 

@@ -221,9 +221,13 @@ public class ServerIntegrationTest extends DefaultTest {
       WAIT_TILL_ALL_SERVERS_READY = Integer.parseInt(waitString);
     }
 
+	Properties logProps = new Properties();
+	logProps.load(new FileInputStream(System.getProperty(DefaultProps.LOGGING_PROPERTIES.key)));
+	String logFiles = logProps.getProperty("java.util.logging.FileHandler.pattern").replaceAll("%.*", "").trim() + "*";
+
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
-
+        
       // clear explicitly if gigapaxos
       if (useGPScript()) {
         RunServer
@@ -252,16 +256,19 @@ public class ServerIntegrationTest extends DefaultTest {
         options = SCRIPTS_OPTIONS;
       }
 
-      String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
-      ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
-      String logFiles = output.get(0) + "*";
+      // fragile code
+//      String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
+//      ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
+//      String logFiles = output.get(0) + "*";
+      
+      System.out.println("Trying to delete log files "+ logFiles);
       RunServer.command("rm -f " + logFiles, ".", false);
 
       System.out.println(System
               .getProperty(DefaultProps.SERVER_COMMAND.key)
               + " "
               + options);
-      output = RunServer.command(
+      ArrayList<String> output = RunServer.command(
               System.getProperty(DefaultProps.SERVER_COMMAND.key) + " "
               + options, ".");
       if (output != null) {
@@ -276,26 +283,32 @@ public class ServerIntegrationTest extends DefaultTest {
     String gpConfFile = System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key);
     String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
 
-    Properties logProps = new Properties();
-    logProps.load(new FileInputStream(logFile));
-    String logFiles = logProps.getProperty("java.util.logging.FileHandler.pattern").replaceAll("%.*", "").trim() + "*";
+    // fragile code
+//    Properties logProps = new Properties();
+//    logProps.load(new FileInputStream(logFile));
+//    String logFiles = logProps.getProperty("java.util.logging.FileHandler.pattern").replaceAll("%.*", "").trim() + "*";
 
     int numServers = PaxosConfig.getActives().size() + ReconfigurationConfig.getReconfigurators().size();
 
-    ArrayList<String> output = RunServer.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
-    String temp = output.get(0);
-    temp = temp.replaceAll("\\s", "");
-    int numServersUp = Integer.parseInt(temp);
-    System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
-    while (numServersUp < numServers) {
-      Thread.sleep(2000);
-      output = RunServer.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
-      temp = output.get(0);
-      temp = temp.replaceAll("\\s", "");
-      numServersUp = Integer.parseInt(temp);
-      System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
+    ArrayList<String> output;
+	int numServersUp=0;
+	// sleeping ensures that there is time for at least one log file to get created
+	Thread.sleep(1000);
+    do {
+    	output = RunServer.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
+    	String temp = output.get(0);
+    	temp = temp.replaceAll("\\s", "");
+    	try {
+    		numServersUp = Integer.parseInt(temp);
+    	} catch(NumberFormatException e) {
+    		// can happen if no files have yet gotten created
+    		System.out.println(e);
+    	}
+    	System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
+    	Thread.sleep(2000);
+    } while (numServersUp < numServers);
 
-    }
+    System.out.println("Starting client");
 
     System.out.println("Starting client");
 
