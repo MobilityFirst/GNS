@@ -114,7 +114,7 @@ public enum GNSProtocol {
   FIELD_NOT_FOUND("+FIELDNOTFOUND+"),
   /**
    * Indicates that a command is trying to add a guid that already exists.
-   *  * See {@link edu.umass.cs.gnscommon.ResponseCode#DUPLICATE_GUID_EXCEPTION}.
+   *  * See {@link edu.umass.cs.gnscommon.ResponseCode#CONFLICTING_GUID_EXCEPTION}.
    */
   DUPLICATE_GUID("+DUPLICATEGUID+"),
   /**
@@ -124,7 +124,7 @@ public enum GNSProtocol {
   DUPLICATE_FIELD("+DUPLICATEFIELD+"),
   /**
    * Indicates that a command is trying to add a HRN that already exists.
-   * See {@link edu.umass.cs.gnscommon.ResponseCode#DUPLICATE_NAME_EXCEPTION}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#CONFLICTING_HRN_EXCEPTION}.
    */
   DUPLICATE_NAME("+DUPLICATENAME+"),
   /**

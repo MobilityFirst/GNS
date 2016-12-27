@@ -479,14 +479,14 @@ public class Select {
     }
   }
 
-  /**
-   * Returns true if new local select code should be used.
-   * Or obsolete remote local select should not be used.
-   *
-   * @return the USE_LOCAL_SELECT
-   */
-  public static boolean useLocalSelect() {
-    return useLocalSelect;
-  }
+//  /**
+//   * Returns true if new local select code should be used.
+//   * Or obsolete remote local select should not be used.
+//   *
+//   * @return the USE_LOCAL_SELECT
+//   */
+//  public static boolean useLocalSelect() {
+//    return useLocalSelect;
+//  }
 
 }
