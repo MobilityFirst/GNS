@@ -166,7 +166,6 @@ public class AccountAccess {
       // Do nothing as this is a normal result when the record doesn't
       // exist.
     }
-    GNSConfig.getLogger().log(Level.FINE, "ACCOUNT_INFO NOT FOUND for {0}", guid);
 
     GNSConfig.getLogger().log(Level.FINE, "ACCOUNT_INFO NOT FOUND for {0}", guid);
 

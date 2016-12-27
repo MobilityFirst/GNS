@@ -481,8 +481,8 @@ public class GNSConfig {
 
   private static final String getPrivateKeyAsString() {
     try {
-      return Util.truncate(String.format("%040x", new BigInteger(1, getPrivateKey()
-              .getEncoded())), 32).toString();
+      return String.format("%040x", new BigInteger(1, getPrivateKey()
+              .getEncoded())).substring(0, 32);
     } catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
       e.printStackTrace();
     }
