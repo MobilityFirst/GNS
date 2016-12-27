@@ -21,7 +21,7 @@ public class RunServer {
 
 	private static final Timer timer = new Timer(true);
 	private static final int MAX_LINES = 1024;
-	private static final long PROCESS_WAIT_TIMEOUT = 10;
+	private static final long PROCESS_WAIT_TIMEOUT = 30;
 
 	/**
 	 * @param cmdline
