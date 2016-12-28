@@ -312,6 +312,10 @@ public class ServerIntegrationTest_test010OnlyTest extends DefaultTest {
     System.out.println("Starting client");
 
     client = new GNSClientCommands();
+
+    // comment this line to disable retransmission
+    client.setNumRetriesUponTimeout(1);
+    
     //client = new GNSClientCommandsV2();
     // Make all the reads be coordinated
     client.setForceCoordinatedReads(true);

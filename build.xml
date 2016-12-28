@@ -46,7 +46,7 @@
 
   <!-- pretty much everything depends on this -->
   <target name="compile" depends="init, buildnumber" description="compile java files">
-    <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source"
+    <javac srcdir="${src.dir}:${test.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source"
            includeantruntime="false">
       <compilerarg value="-Xlint:unchecked"/>
       <compilerarg value="-Xlint:rawtypes"/>

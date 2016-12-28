@@ -313,6 +313,7 @@ public class ServerIntegrationTest extends DefaultTest {
     System.out.println("Starting client");
 
     client = new GNSClientCommands();
+    client.setNumRetriesUponTimeout(1);
     //client = new GNSClientCommandsV2();
     // Make all the reads be coordinated
     client.setForceCoordinatedReads(true);
