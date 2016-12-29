@@ -133,7 +133,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
     return record(// just instrumentation
             commandType,
             CommandUtils.checkResponse(this
-                    .getCommandValueReturnPacket(commandPacket = getCommand(commandType,
+                    .getResponsePacket(commandPacket = getCommand(commandType,
                             querier, keysAndValues), this.getReadTimeout()), commandPacket));
   }
 

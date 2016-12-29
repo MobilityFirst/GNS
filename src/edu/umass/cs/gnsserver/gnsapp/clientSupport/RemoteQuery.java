@@ -226,9 +226,15 @@ public class RemoteQuery extends ClientAsynchBase {
         if (timeout != 0
                 && System.currentTimeMillis() - monitorStartTime >= timeout) {
           // TODO: arun
-          ClientException e = new ClientException(
-                  this + ": Timed out on active replica response after waiting for "
-                  + timeout + "ms for response packet for response for " + (callback != null && callback.getRequest() != null ? callback.getRequest().getSummary() : id));
+        	ClientException e = new ClientException(
+        			ResponseCode.TIMEOUT,
+        			this
+        			+ ": Timed out on active replica response after waiting for "
+        			+ timeout
+        			+ "ms for response packet for response for "
+        			+ (callback != null
+        			&& callback.getRequest() != null ? callback
+        					.getRequest().getSummary() : id));
           LOGGER.log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;

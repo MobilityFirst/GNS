@@ -992,37 +992,25 @@ public class AccountAccess {
        * and the error indicates that it is not a duplicate ID exception because
        * of a limbo create operation from a previous unsuccessful attempt.
        */
-      if (code.isExceptionOrError()) {
-        if (HRNmatchingGUIDExists(handler, code, name, guid)) {
-          return new CommandResponse(
-                  ResponseCode.DUPLICATE_ID_EXCEPTION,
-                  GNSProtocol.OK_RESPONSE.toString()
-                  + " "
-                  + ResponseCode.DUPLICATE_ID_EXCEPTION
-                  .getProtocolCode() + " " + name
-                  + "(" + guid + ")" + " "
-                  + code.getMessage());
-        } else if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
-          return new CommandResponse(
-                  ResponseCode.CONFLICTING_GUID_EXCEPTION,
-                  GNSProtocol.BAD_RESPONSE.toString()
-                  + " "
-                  + ResponseCode.CONFLICTING_GUID_EXCEPTION
-                  .getProtocolCode() + " " + name
-                  + "(" + guid + ")" + " "
-                  + code.getMessage());
-        } else {
-          return new CommandResponse(
-                  code,
-                  GNSProtocol.BAD_RESPONSE.toString()
-                  + " "
-                  + code
-                  .getProtocolCode() + " " + name
-                  + "(" + guid + ")" + " "
-                  + code.getMessage());
-        }
-      }
+      boolean HRNMatches = false;
+      if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
+    		  && !(HRNMatches = HRNmatchingGUIDExists(handler, code, name, guid)))
+    	  return new CommandResponse(
+    			  ResponseCode.CONFLICTING_GUID_EXCEPTION,
+    			  GNSProtocol.BAD_RESPONSE.toString()
+    			  + " "
+    			  + ResponseCode.CONFLICTING_GUID_EXCEPTION
+    			  .getProtocolCode() + " " + name + "("
+    			  + guid + ")" + " " + code.getMessage());
 
+      if (code.isExceptionOrError())
+    	  return new CommandResponse(code,
+    			  GNSProtocol.BAD_RESPONSE.toString() + " "
+    					  + code.getProtocolCode() + " " + name + "("
+    					  + guid + ")" + " " + code.getMessage());
+
+      assert(!code.isExceptionOrError() || HRNMatches);
+      
       createdName = true;
       // else name created
       GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
@@ -1048,24 +1036,24 @@ public class AccountAccess {
         (guidCode = ce1.getCode()).setMessage(ce1.getMessage());
       }
       assert (guidCode != null);
+      boolean GUIDMatches = false;
       if (guidCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
-              && !GUIDmatchingHRNExists(handler, guidCode, name, guid)) {
-        // rollback name creation
-        return rollback(
-                handler,
-                ResponseCode.CONFLICTING_GUID_EXCEPTION
-                .setMessage("GUID "
-                        + guid
-                        + "exists and can not be associated with the HRN "
-                        + name), name, guid);
-      }
-      if (guidCode.isExceptionOrError()) {
-        return new CommandResponse(guidCode,
-                GNSProtocol.BAD_RESPONSE.toString() + " "
-                + guidCode.getProtocolCode() + " "
-                + guidCode.getMessage());
-        // else all good, continue
-      }
+    		  && !(GUIDMatches = GUIDmatchingHRNExists(handler, guidCode, name, guid)))
+    	  // rollback name creation
+    	  return rollback(
+    			  handler,
+    			  ResponseCode.CONFLICTING_GUID_EXCEPTION
+    			  .setMessage("GUID "
+    					  + guid
+    					  + "exists and can not be associated with the HRN "
+    					  + name), name, guid);
+      if (guidCode.isExceptionOrError())
+    	  return new CommandResponse(guidCode,
+    			  GNSProtocol.BAD_RESPONSE.toString() + " "
+    					  + guidCode.getProtocolCode() + " "
+    					  + guidCode.getMessage());
+      // else all good, continue
+      assert(!code.isExceptionOrError() || GUIDMatches);
 
       createdGUID = true;
 
