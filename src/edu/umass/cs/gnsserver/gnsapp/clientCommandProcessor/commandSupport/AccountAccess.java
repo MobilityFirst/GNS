@@ -465,6 +465,7 @@ public class AccountAccess {
    * @param guid
    * @param publicKey
    * @param password
+   * @param useEmailVerification
    * @param handler
    * @return the command response
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
@@ -510,36 +511,14 @@ public class AccountAccess {
 
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
-  //private static final String SECRET = Config.getGlobalString(GNSConfig.GNSC.ACCOUNT_VERIFICATION_SECRET);
-
   private static String createVerificationCode(String name) {
     // Don't really even need name here, but what the heck.
     return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
-            .getInstance().hash(new String(name + Util.getRandomAlphanumericBytes(128))),
+            .getInstance().hash(name + new String(Util.getRandomAlphanumericBytes(128))),
             VERIFICATION_CODE_LENGTH));
-    
-//    String randomSalt = new String(Util.getRandomAlphanumericBytes(128));
-//    String fullSaltedName;
-//    if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
-//            //FIXME:  - currently only used by the ACS; will be disabled soon
-//            //&& Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION_SALT)
-//            ) {
-//      fullSaltedName = name + SECRET + randomSalt;
-//    } else {
-//      //FIXME: replace with ssl key-based admin command.
-//      //currently only used by the ACS; will be disabled soon
-//      fullSaltedName = name + SECRET;
-//    }
-//    String code = ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
-//            .getInstance().hash(fullSaltedName),
-//            VERIFICATION_CODE_LENGTH));
-////    GNSConfig.getLogger().log(Level.WARNING, "*********** " + name + " " + SECRET 
-////            + " VERIFICATION CODE " + code);
-//    return code;
   }
 
   private static boolean sendEmailAuthentication(String name, String guid, String hostPortString, String verifyCode) {
-    //if (GNSConfig.enableEmailAccountVerification) {
     // Send out the confirmation email with a verification code
     String emailBody = String.format(EMAIL_BODY,
             Config.getGlobalString(GNSConfig.GNSC.APPLICATION_NAME), //1$
@@ -621,7 +600,7 @@ public class AccountAccess {
    */
   public static CommandResponse verifyAccount(String guid, String code,
           ClientRequestHandlerInterface handler) {
-    GNSConfig.getLogger().log(Level.FINE, "*********** VERIFICATION CODE {0}", code); 
+    GNSConfig.getLogger().log(Level.FINE, "*********** VERIFICATION CODE {0}", code);
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
       return new CommandResponse(ResponseCode.VERIFICATION_ERROR,
@@ -746,7 +725,7 @@ public class AccountAccess {
    * @param verifyCode
    * @param handler
    * @return status result
- * @throws IOException 
+   * @throws IOException
    */
   public static CommandResponse addAccountInternal(String name, String guid,
           String publicKey, String password, boolean emailVerify,
@@ -791,27 +770,28 @@ public class AccountAccess {
         // set up the default read access
 
         returnCode = createGUID(handler, guid, json);
-        assert(returnCode != null);
+        assert (returnCode != null);
         if (!returnCode.isExceptionOrError()
-        		|| GUIDmatchingHRNExists(handler, returnCode, name,
-        				guid))
-        	return new CommandResponse(ResponseCode.NO_ERROR,
-        			GNSProtocol.OK_RESPONSE.toString());
-        else if (returnCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
-        	// try to delete the record we added above
-        	return rollback(
-        			handler,
-        			ResponseCode.CONFLICTING_GUID_EXCEPTION
-        			.setMessage("GUID "
-        					+ guid
-        					+ " exists and can not be associated with the HRN "
-        					+ name), name, guid);
-      } 
-      
+                || GUIDmatchingHRNExists(handler, returnCode, name,
+                        guid)) {
+          return new CommandResponse(ResponseCode.NO_ERROR,
+                  GNSProtocol.OK_RESPONSE.toString());
+        } else if (returnCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
+          // try to delete the record we added above
+          return rollback(
+                  handler,
+                  ResponseCode.CONFLICTING_GUID_EXCEPTION
+                  .setMessage("GUID "
+                          + guid
+                          + " exists and can not be associated with the HRN "
+                          + name), name, guid);
+        }
+      }
+
       // else
       return new CommandResponse(returnCode, GNSProtocol.BAD_RESPONSE.toString() + " "
-    		  + returnCode.getProtocolCode() + " " + name + "("
-    		  + guid + ") " + returnCode.getMessage());
+              + returnCode.getProtocolCode() + " " + name + "("
+              + guid + ") " + returnCode.getMessage());
     } catch (JSONException e) {
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.JSON_PARSE_ERROR.toString() + " "
@@ -984,13 +964,13 @@ public class AccountAccess {
   public static CommandResponse addGuid(InternalRequestHeader header, AccountInfo accountInfo,
           GuidInfo accountGuidInfo, String name, String guid,
           String publicKey, ClientRequestHandlerInterface handler) {
-	  /* arun: The commented out code below checking for duplicates is incorrect.
+    /* arun: The commented out code below checking for duplicates is incorrect.
 	   * What we need to do is to check for conflicts in HRN-GUID bindings. If
 	   * an HRN being created already exists, but the corresponding GUID does 
 	   * not exist, we should create it. Otherwise, the caller will interpret
 	   * the duplicate name exception incorrectly as a successful creation.
-	   */
-	  /*
+     */
+ /*
     if ((AccountAccess.lookupGuidAnywhere(name, handler)) != null) {
       return new CommandResponse(
               ResponseCode.DUPLICATE_NAME_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString()
@@ -1001,8 +981,8 @@ public class AccountAccess {
               ResponseCode.DUPLICATE_GUID_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString()
               + " " + GNSProtocol.DUPLICATE_GUID.toString() + " " + name);
     }
-    */
-	  
+     */
+
     boolean createdName = false, createdGUID = false;
     try {
       JSONObject jsonHRN = new JSONObject();
@@ -1057,7 +1037,7 @@ public class AccountAccess {
       /* arun: You were not checking the response code below at all, which
 			 * was a bug. The addGuid needs to be rolled back if the second step
 			 * fails. */
-      ResponseCode guidCode = null;
+      ResponseCode guidCode;
       try {
 //        guidCode = handler.getRemoteQuery().createRecord(guid, jsonGuid);
     	  guidCode = handler.getInternalClient().sendRequest(new CreateServiceName(guid, jsonGuid.toString()));
@@ -1089,7 +1069,7 @@ public class AccountAccess {
       assert(!code.isExceptionOrError() || GUIDMatches);
 
       createdGUID = true;
-            
+
       // else both name and guid created
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
@@ -1223,7 +1203,7 @@ public class AccountAccess {
 
   /**
    * Used by the batch test methods to createField multiple guids. This creates
-   * bunch of randomly names guids.
+   * bunch of randomly named guids.
    *
    * @param accountInfo
    * @param accountGuidInfo

@@ -76,7 +76,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
   public static final int INVALID_PORT = -1;
 
   private long version = 0l;
-  private final String hostsFile;
+  //private final String hostsFile;
 
   /**
    * Contains information about each name server. <Key = HostID, Value =
@@ -102,7 +102,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
                       : OldHackyConstants.DEFAULT_STARTING_PORT);
     }
     GNSConfig.getLogger().log(Level.INFO, "LNS mapping = {0}", this.hostInfoMapping);
-    this.hostsFile = null;
+    //this.hostsFile = null;
   }
 
   /**
@@ -302,32 +302,32 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
    * @param nameServerID
    * @throws NumberFormatException
    */
-  @SuppressWarnings("unchecked")
-  private void readHostsFile(String hostsFile) throws IOException {
-    List<HostSpec> hosts = null;
-    try {
-      hosts = HostFileLoader.loadHostFile(hostsFile);
-      version = HostFileLoader.getFileVersion();
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new IOException("Problem loading hosts file: " + e);
-    }
-    // save the old one... maybe we'll need it again?
-    ConcurrentMap<Object, LNSNodeInfo> previousHostInfoMapping = hostInfoMapping;
-    // Create a new one so we don't hose the old one if the new file is
-    // bogus
-    ConcurrentMap<Object, LNSNodeInfo> newHostInfoMapping = new ConcurrentHashMap<>(
-            16, 0.75f, 8);
-    for (HostSpec spec : hosts) {
-      addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(),
-              spec.getExternalIP(),
-              spec.getStartPort() != null ? spec.getStartPort()
-                      : OldHackyConstants.DEFAULT_STARTING_PORT);
-    }
-    // ok.. things are cool... actually update
-    hostInfoMapping = newHostInfoMapping;
-    // ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, getNodeIDs());
-  }
+//  @SuppressWarnings("unchecked")
+//  private void readHostsFile(String hostsFile) throws IOException {
+//    List<HostSpec> hosts = null;
+//    try {
+//      hosts = HostFileLoader.loadHostFile(hostsFile);
+//      version = HostFileLoader.getFileVersion();
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//      throw new IOException("Problem loading hosts file: " + e);
+//    }
+//    // save the old one... maybe we'll need it again?
+//    ConcurrentMap<Object, LNSNodeInfo> previousHostInfoMapping = hostInfoMapping;
+//    // Create a new one so we don't hose the old one if the new file is
+//    // bogus
+//    ConcurrentMap<Object, LNSNodeInfo> newHostInfoMapping = new ConcurrentHashMap<>(
+//            16, 0.75f, 8);
+//    for (HostSpec spec : hosts) {
+//      addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(),
+//              spec.getExternalIP(),
+//              spec.getStartPort() != null ? spec.getStartPort()
+//                      : OldHackyConstants.DEFAULT_STARTING_PORT);
+//    }
+//    // ok.. things are cool... actually update
+//    hostInfoMapping = newHostInfoMapping;
+//    // ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, getNodeIDs());
+//  }
 
   /**
    * Adds a LNSNodeInfo object to the list maintained by this config instance.
@@ -370,36 +370,36 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
             0, 0, 0);
   }
 
-  private static final long UPDATE_CHECK_PERIOD = 60000; // 60 seconds
+  //private static final long UPDATE_CHECK_PERIOD = 60000; // 60 seconds
 
-  private TimerTask timerTask = null;
+  //private TimerTask timerTask = null;
 
-  private void startCheckingForUpdates() {
-    Timer t = new Timer();
-    t.scheduleAtFixedRate(timerTask = new TimerTask() {
-      @Override
-      public void run() {
-        checkForUpdates();
-      }
-    }, UPDATE_CHECK_PERIOD, // run first occurrence later
-            UPDATE_CHECK_PERIOD);
-    GNSConfig.getLogger().log(Level.INFO,
-            "Checking for hosts updates every {0} seconds", UPDATE_CHECK_PERIOD / 1000);
-  }
+//  private void startCheckingForUpdates() {
+//    Timer t = new Timer();
+//    t.scheduleAtFixedRate(timerTask = new TimerTask() {
+//      @Override
+//      public void run() {
+//        checkForUpdates();
+//      }
+//    }, UPDATE_CHECK_PERIOD, // run first occurrence later
+//            UPDATE_CHECK_PERIOD);
+//    GNSConfig.getLogger().log(Level.INFO,
+//            "Checking for hosts updates every {0} seconds", UPDATE_CHECK_PERIOD / 1000);
+//  }
 
-  private void checkForUpdates() {
-    try {
-      GNSConfig.getLogger().fine("Checking for hosts update");
-      if (HostFileLoader.isChangedFileVersion(hostsFile)) {
-        GNSConfig.getLogger().info("Reading updated hosts file");
-        readHostsFile(hostsFile);
-      }
-    } catch (IOException e) {
-      GNSConfig.getLogger().log(Level.SEVERE,
-              "Problem reading hosts file:{0}", e);
-    }
-
-  }
+//  private void checkForUpdates() {
+//    try {
+//      GNSConfig.getLogger().fine("Checking for hosts update");
+//      if (HostFileLoader.isChangedFileVersion(hostsFile)) {
+//        GNSConfig.getLogger().info("Reading updated hosts file");
+//        readHostsFile(hostsFile);
+//      }
+//    } catch (IOException e) {
+//      GNSConfig.getLogger().log(Level.SEVERE,
+//              "Problem reading hosts file:{0}", e);
+//    }
+//
+//  }
 
   /**
    * Returns true if the file is the old style (has lots of fields).
@@ -430,9 +430,9 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
    */
   @Override
   public void shutdown() {
-    if (timerTask != null) {
-      timerTask.cancel();
-    }
+//    if (timerTask != null) {
+//      timerTask.cancel();
+//    }
   }
 
   @Override

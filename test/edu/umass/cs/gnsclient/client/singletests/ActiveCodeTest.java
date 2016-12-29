@@ -83,6 +83,10 @@ public class ActiveCodeTest {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
+  
+  //
+  // Active code read test - see also the script mentioned below
+  //
 
   /**
    *
@@ -150,7 +154,7 @@ public class ActiveCodeTest {
 
   //
   //
-  // Another active code write test
+  // Another active code write test - see also the script mentioned below
   //
   /**
    *
@@ -215,7 +219,7 @@ public class ActiveCodeTest {
 
   //
   //
-  // Another active code write test
+  // Another active code write test - see also the script mentioned below
   //
   /**
    * 

@@ -568,15 +568,16 @@ public class FieldAccess {
   public static CommandResponse select(String key, Object value, ClientRequestHandlerInterface handler) {
     JSONArray result;
     try {
-      if (Select.useLocalSelect()) {
+      //if (Select.useLocalSelect()) {
         result = executeSelect(SelectOperation.EQUALS, key, value, null, handler.getApp());
-      } else {
-        result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
-      }
+//      } else {
+//        result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
+//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
+    } catch (IOException | JSONException | FailedDBOperationException e) {
+    //} catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -593,15 +594,16 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
     JSONArray result;
     try {
-      if (Select.useLocalSelect()) {
+      //if (Select.useLocalSelect()) {
         result = executeSelect(SelectOperation.WITHIN, key, value, null, handler.getApp());
-      } else {
-        result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
-      }
+//      } else {
+//        result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
+//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
+    } catch (IOException | JSONException | FailedDBOperationException e) {
+    //} catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
 
@@ -620,15 +622,16 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
     JSONArray result;
     try {
-      if (Select.useLocalSelect()) {
+      //if (Select.useLocalSelect()) {
         result = executeSelect(SelectOperation.NEAR, key, value, maxDistance, handler.getApp());
-      } else {
-        result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
-      }
+//      } else {
+//        result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
+//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
+    } catch (IOException | JSONException | FailedDBOperationException e) {
+    //} catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -643,16 +646,17 @@ public class FieldAccess {
   public static CommandResponse selectQuery(String query, ClientRequestHandlerInterface handler) {
     JSONArray result;
     try {
-      if (Select.useLocalSelect()) {
+      //if (Select.useLocalSelect()) {
         SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
         result = executeSelectHelper(packet, handler.getApp());
-      } else {
-        result = handler.getRemoteQuery().sendSelectQuery(query);
-      }
+//      } else {
+//        result = handler.getRemoteQuery().sendSelectQuery(query);
+//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
+    } catch (IOException | JSONException | FailedDBOperationException e) {
+    //} catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -706,17 +710,18 @@ public class FieldAccess {
     JSONArray result;
 
     try {
-      if (Select.useLocalSelect()) {
+      //if (Select.useLocalSelect()) {
         SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
                 query, guid, interval);
         result = executeSelectHelper(packet, handler.getApp());
-      } else {
-        result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
-      }
+//      } else {
+//        result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
+//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
+    } catch (IOException | JSONException | FailedDBOperationException e) {
+    //} catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -731,16 +736,17 @@ public class FieldAccess {
   public static CommandResponse selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
     JSONArray result;
     try {
-      if (Select.useLocalSelect()) {
+      //if (Select.useLocalSelect()) {
         SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
         result = executeSelectHelper(packet, handler.getApp());
-      } else {
-        result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
-      }
+//      } else {
+//        result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
+//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
+    } catch (IOException | JSONException | FailedDBOperationException e) {
+    //} catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }

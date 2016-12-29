@@ -284,18 +284,18 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
       switch (packetType) {
         case SELECT_REQUEST:
-          if (Select.useLocalSelect()) {
+          //if (Select.useLocalSelect()) {
             Select.handleSelectRequest((SelectRequestPacket<String>) request, this);
-          } else {
-            SelectOld.handleSelectRequest((SelectRequestPacket<String>) request, this);
-          }
+//          } else {
+//            SelectOld.handleSelectRequest((SelectRequestPacket<String>) request, this);
+//          }
           break;
         case SELECT_RESPONSE:
-          if (Select.useLocalSelect()) {
+          //if (Select.useLocalSelect()) {
             Select.handleSelectResponse((SelectResponsePacket<String>) request, this);
-          } else {
-            SelectOld.handleSelectResponse((SelectResponsePacket<String>) request, this);
-          }
+//          } else {
+//            SelectOld.handleSelectResponse((SelectResponsePacket<String>) request, this);
+//          }
           break;
         case COMMAND:
           CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
