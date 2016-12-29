@@ -79,7 +79,12 @@ public class GNSCommandInternal extends InternalCommandPacket {
             .put(GNSProtocol.ORIGINATING_QID.toString(),
                     header.getOriginatingRequestID())
             .put(GNSProtocol.REQUEST_TTL.toString(),
-                    header.getTTL()))), header);
+                    header.getTTL()))), header);                   
+//                    :
+//                    	new GNSCommandInternal(header, CommandUtils.createCommand(type,
+//                    			type.isRead() ? GNSProtocol.READER.toString()
+//                    					: GNSProtocol.WRITER.toString(), GNSConfig
+//                    					.getInternalOpSecret(), keysAndValues));
   }
 
   private static GNSCommandInternal enforceChecks(
@@ -164,7 +169,8 @@ public class GNSCommandInternal extends InternalCommandPacket {
           JSONObject value, InternalRequestHeader header)
           throws JSONException, InternalRequestException {
     return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
-            GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.USER_JSON.toString(),
-            value);
-  }
+				GNSProtocol.GUID.toString(), targetGUID,
+				GNSProtocol.USER_JSON.toString(),
+				new JSONObject().put(field, value));
+	}
 }

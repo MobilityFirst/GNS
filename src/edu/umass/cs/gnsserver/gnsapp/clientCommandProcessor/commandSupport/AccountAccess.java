@@ -15,19 +15,24 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.ServerRuntimeException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.utils.Email;
+import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -466,7 +471,7 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse addAccount(
+  public static CommandResponse addAccount(InternalRequestHeader header,
           final String hostPortString, final String name, final String guid,
           String publicKey, String password, boolean useEmailVerification,
           ClientRequestHandlerInterface handler) throws ClientException,
@@ -488,7 +493,7 @@ public class AccountAccess {
           // if we can't send the confirmation back out of the account creation
           AccountInfo accountInfo = lookupAccountInfoFromGuidAnywhere(guid, handler);
           if (accountInfo != null) {
-            removeAccount(accountInfo, handler);
+            removeAccount(header, accountInfo, handler);
           }
           return new CommandResponse(
                   ResponseCode.VERIFICATION_ERROR, GNSProtocol.BAD_RESPONSE.toString()
@@ -753,7 +758,11 @@ public class AccountAccess {
       // already registered
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
-      returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN);
+      
+      // arun: RemoteQuery -> GNSClientInternal
+//      returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN);
+      returnCode = handler.getInternalClient().sendRequest(new CreateServiceName(name, jsonHRN.toString()));
+
       if (!returnCode.isExceptionOrError() || HRNmatchingGUIDExists(handler, returnCode, name, guid)) {
         // if that's cool then add the entry that links the guid to the
         // username and public key
@@ -815,20 +824,16 @@ public class AccountAccess {
   }
   
 	private static ResponseCode createGUID(
-			ClientRequestHandlerInterface handler, String guid, JSONObject json) {
+			ClientRequestHandlerInterface handler, String guid, JSONObject json) throws IOException {
 		ResponseCode returnCode = null;
 		try {
-			returnCode = handler.getRemoteQuery().createRecord(guid, json);
+			returnCode = 
+//					handler.getRemoteQuery().createRecord(guid, json);
+					handler.getInternalClient().sendRequest(new CreateServiceName(guid, json.toString()));
 		} catch (ClientException ce1) {
 			(returnCode = ce1.getCode()).setMessage(ce1.getMessage());
 		}
 		return returnCode;
-	}
-
-	private enum Status {
-		NO_GUID_EXISTS,
-		MATCHING_GUID_EXISTS,
-		CONFLICTING_GUID_EXISTS,
 	}
 	
 	private static boolean HRNmatchingGUIDExists(ClientRequestHandlerInterface handler,
@@ -900,7 +905,7 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse removeAccount(AccountInfo accountInfo,
+  public static CommandResponse removeAccount(InternalRequestHeader header, AccountInfo accountInfo,
           ClientRequestHandlerInterface handler) throws ClientException,
           IOException, JSONException {
     boolean removedGroupLinks = false, deletedGUID = false, deletedName = false, deletedAliases = false;
@@ -925,7 +930,7 @@ public class AccountAccess {
         for (String subguid : accountInfo.getGuids()) {
           GuidInfo subGuidInfo = lookupGuidInfoAnywhere(subguid, handler);
           if (subGuidInfo != null) { // should not be null, ignore if it is
-            removeGuid(subGuidInfo, accountInfo, true, handler);
+            removeGuid(header, subGuidInfo, accountInfo, true, handler);
           }
         }
 
@@ -962,6 +967,7 @@ public class AccountAccess {
    * GUID: "_GNS_PRIMARY_GUID" -- GUID (primary) for secondary guid<br>
    * GUID: "_GNS_GUID_INFO" -- {guid info}<br>
    * HRN: "_GNS_GUID" -- GUID<br>
+ * @param header 
    *
    * @param accountInfo
    * - the accountInfo of the account to add the GUID to
@@ -975,7 +981,7 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse addGuid(AccountInfo accountInfo,
+  public static CommandResponse addGuid(InternalRequestHeader header, AccountInfo accountInfo,
           GuidInfo accountGuidInfo, String name, String guid,
           String publicKey, ClientRequestHandlerInterface handler) {
 	  /* arun: The commented out code below checking for duplicates is incorrect.
@@ -1001,7 +1007,15 @@ public class AccountAccess {
     try {
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
-      ResponseCode code = handler.getRemoteQuery().createRecord(name, jsonHRN);
+      ResponseCode code=null;
+      try {
+    	  code = // handler.getRemoteQuery().createRecord(name, jsonHRN);
+    			  handler.getInternalClient().sendRequest(
+    					  new CreateServiceName(name, jsonHRN.toString()));
+      } catch (IOException e) {
+    	  return new CommandResponse(ResponseCode.REMOTE_QUERY_EXCEPTION,
+    			  GNSProtocol.BAD_RESPONSE.toString() + " " + e);
+      }
       /* arun: Return the error if we could not createField the HRN (alias) record
        * and the error indicates that it is not a duplicate ID exception because
        * of a limbo create operation from a previous unsuccessful attempt.
@@ -1045,10 +1059,15 @@ public class AccountAccess {
 			 * fails. */
       ResponseCode guidCode = null;
       try {
-        guidCode = handler.getRemoteQuery().createRecord(guid, jsonGuid);
+//        guidCode = handler.getRemoteQuery().createRecord(guid, jsonGuid);
+    	  guidCode = handler.getInternalClient().sendRequest(new CreateServiceName(guid, jsonGuid.toString()));
       } catch (ClientException ce1) {
         (guidCode = ce1.getCode()).setMessage(ce1.getMessage());
-      }
+      } catch (IOException e) {
+       	  return new CommandResponse(ResponseCode.REMOTE_QUERY_EXCEPTION,
+    			  GNSProtocol.BAD_RESPONSE.toString() + " " + e);
+	} 
+      
       assert (guidCode != null);
       boolean GUIDMatches = false;
       if (guidCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
@@ -1074,7 +1093,7 @@ public class AccountAccess {
       // else both name and guid created
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
-      updateAccountInfoNoAuthentication(accountInfo, handler, true);
+      updateAccountInfoNoAuthentication(header, accountInfo, handler, true);
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString()
               + " " + " [created " + name + " and " + guid
               + " and updated account info successfully]");
@@ -1082,7 +1101,7 @@ public class AccountAccess {
       return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.JSON_PARSE_ERROR.toString() + " "
               + e.getMessage());
-    } catch (ServerRuntimeException e) {
+    } catch (ServerRuntimeException  e) {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " "
               + e.getMessage());
@@ -1112,7 +1131,7 @@ public class AccountAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse addMultipleGuids(List<String> names,
+  public static CommandResponse addMultipleGuids(InternalRequestHeader header, List<String> names,
           List<String> publicKeys, AccountInfo accountInfo,
           GuidInfo accountGuidInfo, ClientRequestHandlerInterface handler) {
     try {
@@ -1159,7 +1178,7 @@ public class AccountAccess {
               new HashSet<>(names), hrnMap, handler))
               .isExceptionOrError()) {
         // now we update the account info
-        if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
+        if (updateAccountInfoNoAuthentication(header, accountInfo, handler, true)) {
           handler.getRemoteQuery().createRecordBatch(guids,
                   guidInfoMap, handler);
           GNSConfig.getLogger().info(DelayProfiler.getStats());
@@ -1190,7 +1209,7 @@ public class AccountAccess {
    * @param handler
    * @return a CommandResponse
    */
-  public static CommandResponse addMultipleGuidsFaster(List<String> names,
+  public static CommandResponse addMultipleGuidsFaster(InternalRequestHeader header, List<String> names,
           AccountInfo accountInfo, GuidInfo accountGuidInfo,
           ClientRequestHandlerInterface handler) {
     List<String> publicKeys = new ArrayList<>();
@@ -1198,7 +1217,7 @@ public class AccountAccess {
       String publicKey = "P" + name;
       publicKeys.add(publicKey);
     }
-    return addMultipleGuids(names, publicKeys, accountInfo,
+    return addMultipleGuids(header, names, publicKeys, accountInfo,
             accountGuidInfo, handler);
   }
 
@@ -1212,7 +1231,7 @@ public class AccountAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse addMultipleGuidsFasterAllRandom(int count,
+  public static CommandResponse addMultipleGuidsFasterAllRandom(InternalRequestHeader header, int count,
           AccountInfo accountInfo, GuidInfo accountGuidInfo,
           ClientRequestHandlerInterface handler) {
     List<String> names = new ArrayList<>();
@@ -1223,12 +1242,13 @@ public class AccountAccess {
       String publicKey = "P" + name;
       publicKeys.add(publicKey);
     }
-    return addMultipleGuids(names, publicKeys, accountInfo,
+    return addMultipleGuids(header, names, publicKeys, accountInfo,
             accountGuidInfo, handler);
   }
 
   /**
    * Remove a GUID. Guid should not be an account GUID.
+ * @param header 
    *
    * @param guid
    * @param handler
@@ -1237,10 +1257,10 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse removeGuid(GuidInfo guid,
+  public static CommandResponse removeGuid(InternalRequestHeader header, GuidInfo guid,
           ClientRequestHandlerInterface handler) throws ClientException,
           IOException, JSONException {
-    return removeGuid(guid, null, false, handler);
+    return removeGuid(header, guid, null, false, handler);
   }
 
   /**
@@ -1254,10 +1274,10 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse removeGuid(GuidInfo guid,
+  public static CommandResponse removeGuid(InternalRequestHeader header, GuidInfo guid,
           AccountInfo accountInfo, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException {
-    return removeGuid(guid, accountInfo, false, handler);
+    return removeGuid(header, guid, accountInfo, false, handler);
   }
 
   /**
@@ -1276,7 +1296,7 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse removeGuid(GuidInfo guidInfo,
+  public static CommandResponse removeGuid(InternalRequestHeader header, GuidInfo guidInfo,
           AccountInfo accountInfo, boolean ignoreAccountGuid,
           ClientRequestHandlerInterface handler) throws ClientException,
           IOException, JSONException {
@@ -1334,7 +1354,7 @@ public class AccountAccess {
           // update the account guid to know that we deleted the guid
           accountInfo.removeGuid(guidInfo.getGuid());
           accountInfo.noteUpdate();
-          if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
+          if (updateAccountInfoNoAuthentication(header, accountInfo, handler, true)) {
             return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
           } else {
             return new CommandResponse(
@@ -1374,7 +1394,7 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse addAlias(AccountInfo accountInfo,
+  public static CommandResponse addAlias(InternalRequestHeader header, AccountInfo accountInfo,
           String alias, String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     // insure that that name does not already exist
@@ -1392,7 +1412,7 @@ public class AccountAccess {
       }
       accountInfo.addAlias(alias);
       accountInfo.noteUpdate();
-      if (updateAccountInfo(accountInfo.getGuid(), accountInfo,
+      if (updateAccountInfo(header, accountInfo.getGuid(), accountInfo,
               writer, signature, message, timestamp, handler, true)
               .isExceptionOrError()) {
         // back out if we got an error
@@ -1426,7 +1446,7 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse removeAlias(AccountInfo accountInfo,
+  public static CommandResponse removeAlias(InternalRequestHeader header, AccountInfo accountInfo,
           String alias, String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
 
@@ -1452,7 +1472,7 @@ public class AccountAccess {
     // Now updated the account record
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
-    if ((responseCode = updateAccountInfo(accountInfo.getGuid(),
+    if ((responseCode = updateAccountInfo(header, accountInfo.getGuid(),
             accountInfo, writer, signature, message, timestamp, handler,
             true)).isExceptionOrError()) {
       return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " "
@@ -1473,12 +1493,12 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse setPassword(AccountInfo accountInfo,
+  public static CommandResponse setPassword(InternalRequestHeader header, AccountInfo accountInfo,
           String password, String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo.getGuid(), accountInfo,
+    if (updateAccountInfo(header, accountInfo.getGuid(), accountInfo,
             writer, signature, message, timestamp, handler, false)
             .isExceptionOrError()) {
       return new CommandResponse(ResponseCode.UPDATE_ERROR,
@@ -1537,7 +1557,7 @@ public class AccountAccess {
     return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
   }
 
-  private static ResponseCode updateAccountInfo(String guid,
+  private static ResponseCode updateAccountInfo(InternalRequestHeader header, String guid,
           AccountInfo accountInfo, String writer, String signature,
           String message, Date timestamp,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
@@ -1546,23 +1566,25 @@ public class AccountAccess {
       if (sendToReplica) {
         // We potentially need to send the update to different replica.
         try {
-          handler.getRemoteQuery().fieldUpdate(guid, ACCOUNT_INFO,
-                  accountInfo.toJSONObject().toString());
+//          handler.getRemoteQuery().fieldUpdate(guid, ACCOUNT_INFO,
+//                  accountInfo.toJSONObject().toString());
+        	handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject(), header));
           response = ResponseCode.NO_ERROR;
         } catch (JSONException e) {
           GNSConfig.getLogger().log(Level.SEVERE,
                   "JSON parse error with remote query:{0}", e);
           response = ResponseCode.JSON_PARSE_ERROR;
-        } catch (ClientException | IOException e) {
+        } catch (ClientException | IOException |InternalRequestException e) {
           GNSConfig.getLogger().log(Level.SEVERE,
                   "Problem with remote query:{0}", e);
           response = ResponseCode.UNSPECIFIED_ERROR;
-        }
+        } 
       } else {
+    	  GNSConfig.getLogger().log(Level.FINE, "Updating locally for GUID {0}:{1}<-{1}", new Object[]{guid, ACCOUNT_INFO,accountInfo});
         // Do the update locally.
         JSONObject json = new JSONObject();
         json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-        response = FieldAccess.updateUserJSON(null, guid, json, writer,
+        response = FieldAccess.updateUserJSON(header, guid, json, writer,
                 signature, message, timestamp, handler);
       }
       return response;
@@ -1575,13 +1597,13 @@ public class AccountAccess {
 
   private static boolean updateAccountInfoLocallyNoAuthentication(
           AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
-    return updateAccountInfoNoAuthentication(accountInfo, handler, false);
+    return updateAccountInfoNoAuthentication(null, accountInfo, handler, false);
   }
 
-  private static boolean updateAccountInfoNoAuthentication(
+  private static boolean updateAccountInfoNoAuthentication(InternalRequestHeader header,
           AccountInfo accountInfo, ClientRequestHandlerInterface handler,
           boolean remoteUpdate) {
-    return !updateAccountInfo(accountInfo.getGuid(), accountInfo,
+    return !updateAccountInfo(header, accountInfo.getGuid(), accountInfo,
             GNSConfig.getInternalOpSecret(),
             null, null,
             null, handler, remoteUpdate)

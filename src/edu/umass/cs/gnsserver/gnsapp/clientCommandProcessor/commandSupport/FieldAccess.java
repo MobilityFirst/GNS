@@ -667,7 +667,7 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse selectGroupSetupQuery(String accountGuid, String query, String publicKey,
+  public static CommandResponse selectGroupSetupQuery(InternalRequestHeader header, String accountGuid, String query, String publicKey,
           int interval,
           ClientRequestHandlerInterface handler) {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
@@ -695,7 +695,7 @@ public class FieldAccess {
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
         String name = Base64.encodeToString(ShaOneHashFunction.getInstance().hash(query), false);
-        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo,
+        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(header, accountInfo, accountGuidInfo,
                 name, guid, publicKey, handler);
         // If there was a problem adding return that error response.
         if (!groupGuidCreateresult.getExceptionOrErrorCode().isOKResult()) {

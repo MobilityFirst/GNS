@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 
 /**
  * @author arun A utility class for methods relating to {@link Packet}.
@@ -97,6 +98,14 @@ public class PacketUtils {
 						} catch (JSONException e) {
 							return commandPacket.needsCoordination();
 						}
+					}
+					
+					private String proof = null;
+					public void internalize() {
+						this.proof = GNSConfig.getInternalOpSecret();
+					}
+					public boolean verifyInternal() {
+						return GNSConfig.getInternalOpSecret().equals(this.proof);
 					}
 				}
 					;

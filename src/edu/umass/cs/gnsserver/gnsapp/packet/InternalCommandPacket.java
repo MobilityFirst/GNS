@@ -11,6 +11,7 @@ import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
@@ -87,8 +88,8 @@ public class InternalCommandPacket extends CommandPacket implements
 	 * @param command
 	 * @throws JSONException
 	 */
-	InternalCommandPacket(Integer ttl, String oGUID, long oqid,
-			JSONObject command) throws JSONException {
+	InternalCommandPacket(Integer ttl, String oGUID, long oqid, String qguid,
+			boolean internal, JSONObject command) throws JSONException {
 		super(
 		// this' requestID, different from originatingRequestID
 				(long) (Math.random() * Long.MAX_VALUE),
@@ -104,6 +105,12 @@ public class InternalCommandPacket extends CommandPacket implements
 
 						.put(GNSProtocol.ORIGINATING_QID.toString(), oqid)
 
+						.putOpt(GNSProtocol.QUERIER_GUID.toString(), qguid)
+
+						.putOpt(GNSProtocol.INTERNAL_PROOF.toString(),
+								internal ? GNSConfig.getInternalOpSecret()
+										: null)
+
 				: command);
 		this.setType(SEPARATE_INTERNAL_TYPE ? Packet.PacketType.INTERNAL_COMMAND
 				: Packet.PacketType.COMMAND);
@@ -113,16 +120,17 @@ public class InternalCommandPacket extends CommandPacket implements
 		// hasBeenCoordinatedOnce already initialized
 	}
 
-  /**
-   *
-   * @param header
-   * @param command
-   * @throws JSONException
-   */
-  protected InternalCommandPacket(InternalRequestHeader header,
+	/**
+	 *
+	 * @param header
+	 * @param command
+	 * @throws JSONException
+	 */
+	protected InternalCommandPacket(InternalRequestHeader header,
 			JSONObject command) throws JSONException {
 		this(header.getTTL(), header.getOriginatingGUID(), header
-				.getOriginatingRequestID(), command);
+				.getOriginatingRequestID(), header.getQueryingGUID(), header
+				.verifyInternal(), command);
 	}
 
 	public JSONObject toJSONObject() throws JSONException {
@@ -132,7 +140,8 @@ public class InternalCommandPacket extends CommandPacket implements
 				// decrement TTL, rest is all set
 				json.getJSONObject(GNSProtocol.COMMAND_QUERY.toString())
 						.put(GNSProtocol.REQUEST_TTL.toString(),
-								json.getJSONObject(GNSProtocol.COMMAND_QUERY.toString())
+								json.getJSONObject(
+										GNSProtocol.COMMAND_QUERY.toString())
 										.getInt(GNSProtocol.REQUEST_TTL
 												.toString()) - 1) != null ? json
 
@@ -172,7 +181,8 @@ public class InternalCommandPacket extends CommandPacket implements
 	private static final Object getInOrOutside(String key, JSONObject outerJSON)
 			throws JSONException {
 		return STORE_INSIDE ? outerJSON.getJSONObject(
-				GNSProtocol.COMMAND_QUERY.toString()).get(key) : outerJSON.get(key);
+				GNSProtocol.COMMAND_QUERY.toString()).get(key) : outerJSON
+				.get(key);
 	}
 
 	@Override
@@ -229,10 +239,11 @@ public class InternalCommandPacket extends CommandPacket implements
 
 		/**
 		 * @throws JSONException
-		 * @throws InternalRequestException 
+		 * @throws InternalRequestException
 		 */
 		@Test
-		public void test_01_serialization() throws JSONException, InternalRequestException {
+		public void test_01_serialization() throws JSONException,
+				InternalRequestException {
 			Util.assertAssertionsEnabled();
 			decrementTTL = false;
 			InternalCommandPacket icmd = GNSCommandInternal.fieldRead("hello",

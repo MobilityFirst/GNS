@@ -481,6 +481,20 @@ public enum GNSProtocol {
    * expires.
    */
   REQUEST_TTL("QTTL"),
+  
+  /**
+   * The GUID inducing this query. For active request chains, this is the
+   * most recently queried GUID that becomes the querying GUID for the
+   * next request in the chain.
+   */
+  QUERIER_GUID ("QGUID"),
+
+  
+  /**
+   * Proof that this request is internal. 
+   */
+  INTERNAL_PROOF ("IPROOF"),
+
   /**
    * Long client request ID in every {@link edu.umass.cs.gnscommon.packets.CommandPacket}.
    */

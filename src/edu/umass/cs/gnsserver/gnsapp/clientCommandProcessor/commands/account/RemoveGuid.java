@@ -31,6 +31,7 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -41,6 +42,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
@@ -68,7 +70,7 @@ public class RemoveGuid extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
     String guidToRemove = json.getString(GNSProtocol.GUID.toString());
     String accountGuid = json.optString(GNSProtocol.ACCOUNT_GUID.toString(), null);
@@ -94,7 +96,7 @@ public class RemoveGuid extends AbstractCommand {
             return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + accountGuid);
           }
         }
-        return AccountAccess.removeGuid(guidInfoToRemove, accountInfo, handler);
+        return AccountAccess.removeGuid(header, guidInfoToRemove, accountInfo, handler);
       } else {
         return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
       }

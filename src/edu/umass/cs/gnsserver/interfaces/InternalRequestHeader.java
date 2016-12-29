@@ -49,7 +49,31 @@ public interface InternalRequestHeader {
 	 * necessary) to avoid these problems, so it is a design choice favoring
 	 * simplicity over flexibility.
 	 * 
-	 * @return True if any request in this chain was coordinated, false otherwise.
+	 * @return True if any request in this chain was coordinated, false
+	 *         otherwise.
 	 */
 	public boolean hasBeenCoordinatedOnce();
+
+	/**
+	 * @return The GUID that is inducing this query. In general, this GUID may
+	 *         be different from the originating GUID because in active request
+	 *         chains, it is the most recently queried GUID that becomes the
+	 *         querier for the next queried GUID.
+	 */
+	default String getQueryingGUID() {
+		return getOriginatingGUID();
+	}
+	
+	/**
+	 */
+	default void internalize() {
+		// do nothing
+	}
+	
+	/**
+	 * @return True if this request has been verified as internal.
+	 */
+	default boolean verifyInternal() {
+		return false;
+	}
 }

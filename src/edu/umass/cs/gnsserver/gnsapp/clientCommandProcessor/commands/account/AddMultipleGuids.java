@@ -29,10 +29,11 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCom
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
-
 import edu.umass.cs.utils.Config;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -42,6 +43,7 @@ import java.security.spec.InvalidKeySpecException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
@@ -70,7 +72,7 @@ public class AddMultipleGuids extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
 
     String guid = json.getString(GNSProtocol.GUID.toString());
@@ -95,17 +97,17 @@ public class AddMultipleGuids extends AbstractCommand {
         return new CommandResponse(ResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_GUIDS.toString());
       } else if (names != null && publicKeys != null) {
         GNSConfig.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
-        return AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
+        return AccountAccess.addMultipleGuids(header, JSONUtils.JSONArrayToArrayListString(names),
                 JSONUtils.JSONArrayToArrayListString(publicKeys),
                 accountInfo, accountGuidInfo, handler);
       } else if (names != null) {
         //GNS.getLogger().info("ADD FASTER" + names + " / " + publicKeys);
-        return AccountAccess.addMultipleGuidsFaster(JSONUtils.JSONArrayToArrayListString(names),
+        return AccountAccess.addMultipleGuidsFaster(header, JSONUtils.JSONArrayToArrayListString(names),
                 accountInfo, accountGuidInfo, handler);
       } else if (guidCntString != null) {
         //GNS.getLogger().info("ADD RANDOM" + names + " / " + publicKeys);
         int guidCnt = Integer.parseInt(guidCntString);
-        return AccountAccess.addMultipleGuidsFasterAllRandom(guidCnt, accountInfo, accountGuidInfo, handler);
+        return AccountAccess.addMultipleGuidsFasterAllRandom(header, guidCnt, accountInfo, accountGuidInfo, handler);
       } else {
         return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString()
                 + " bad arguments: need " + GNSProtocol.NAMES.toString() + " or " + GNSProtocol.NAMES.toString() + " and " + GNSProtocol.PUBLIC_KEYS.toString() + " or " + GNSProtocol.GUIDCNT.toString());

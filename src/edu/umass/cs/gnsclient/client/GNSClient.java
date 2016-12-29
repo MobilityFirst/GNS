@@ -108,7 +108,7 @@ public class GNSClient {
 	 * but this constant and for that matter even the contents of client
 	 * properties file may not.
 	 */
-	private static Set<InetSocketAddress> getStaticReconfigurators() {
+	protected static Set<InetSocketAddress> getStaticReconfigurators() {
 		try {
 			return ReconfigurationConfig.getReconfiguratorAddresses();
 		} catch (Exception e) {
@@ -281,7 +281,7 @@ public class GNSClient {
 	 */
 	private ResponsePacket sendSyncInternal(CommandPacket packet,
 			final long timeout, int retries) throws IOException {
-		Request response = null;
+		ResponsePacket response = null;
 		int count = 0;
 		do {
 			// if timeout is 0, the retries are pointless
@@ -290,9 +290,11 @@ public class GNSClient {
 				LOG.log(Level.INFO,
 						"{0} attempting retransmission upon timeout #{1}",
 						new Object[] { this, count });
-			response = this.sendSyncInternal(packet, timeout);
-		} while (response == null && count++ < this.numRetriesUponTimeout);
-		return defaultHandleResponse(response);
+			response = defaultHandleResponse(this.sendSyncInternal(packet,
+					timeout));
+		} while ((response == null || response.getErrorCode() == ResponseCode.TIMEOUT)
+				&& count++ < this.numRetriesUponTimeout);
+		return (response);
 	}
 
 	private ResponsePacket sendSyncInternal(CommandPacket packet,
@@ -399,10 +401,9 @@ public class GNSClient {
 
 		private static Stringifiable<String> unstringer = new StringifiableDefault<>(
 				"");
-
-		static final Set<IntegerPacketType> clientPacketTypes = new HashSet<>(
+		
+		private static final Set<IntegerPacketType> clientPacketTypes=new HashSet<>(
 				Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
-
 		/**
 		 *
 		 * @param reconfigurators
@@ -414,9 +415,10 @@ public class GNSClient {
 		public AsyncClient(Set<InetSocketAddress> reconfigurators,
 				SSL_MODES sslMode, int clientPortOffset,
 				boolean checkConnectivity) throws IOException {
-			super(reconfigurators, sslMode, clientPortOffset);
+			super(reconfigurators, sslMode, clientPortOffset, checkConnectivity);
 			this.enableJSONPackets();
 		}
+
 
 		/**
 		 *

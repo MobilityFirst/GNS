@@ -203,6 +203,11 @@ public enum ResponseCode implements Serializable {
   CONFLICTING_HRN_EXCEPTION(29, "Conflicting HRN", ResponseCodeType.ERROR),
 
   /**
+   * Generic reconfiguration exception.
+   */
+  RECONFIGURATION_EXCEPTION(30, "Reconfiguration exeption", ResponseCodeType.EXCEPTION),
+
+  /**
    * An error occurred during the processing of a command query.
    */
   QUERY_PROCESSING_ERROR(405, GNSProtocol.QUERY_PROCESSING_ERROR.toString(), ResponseCodeType.ERROR),
