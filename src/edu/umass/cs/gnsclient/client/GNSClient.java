@@ -213,9 +213,11 @@ public class GNSClient {
 	 * Sets the value of forcing read operations to be coordinated.
 	 *
 	 * @param forceCoordinatedReads
+	 * @return {@code this}
 	 */
-	public void setForceCoordinatedReads(boolean forceCoordinatedReads) {
+	public GNSClient setForceCoordinatedReads(boolean forceCoordinatedReads) {
 		this.forceCoordinatedReads = forceCoordinatedReads;
+		return this;
 	}
 
 	/**

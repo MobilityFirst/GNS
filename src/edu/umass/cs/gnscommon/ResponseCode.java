@@ -19,6 +19,7 @@ package edu.umass.cs.gnscommon;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -224,7 +225,15 @@ public enum ResponseCode implements Serializable {
    * or it was attempting to cause a cycle.
    */
   INTERNAL_REQUEST_EXCEPTION(411, GNSProtocol.INTERNAL_REQUEST_EXCEPTION
-          .toString(), ResponseCodeType.EXCEPTION),;
+          .toString(), ResponseCodeType.EXCEPTION),
+
+          /**
+           * IO exception incurred either by the client or by an induced remote query.
+           */
+          IO_EXCEPTION(412, IOException.class.getSimpleName(),
+        		  ResponseCodeType.EXCEPTION)
+
+        ;
 
   // stash the codes in a lookup table
   private static final Map<Integer, ResponseCode> responseCodes = new HashMap<>();

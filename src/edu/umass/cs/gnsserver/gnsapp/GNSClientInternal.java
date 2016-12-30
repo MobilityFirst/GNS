@@ -9,6 +9,7 @@ import java.util.Set;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -52,9 +53,25 @@ public class GNSClientInternal extends GNSClient {
 		this.myID = myID;
 	}
 
-	private static final long RC_TIMEOUT = 4000;
+	/* Note that GNSClient itself doesn't have any fixed timeouts because it is
+	 * meant to be used with asynchronous callbacks or with variable timeouts.
+	 * GNSClientInternal however always uses blocking calls and must timeout,
+	 * otherwise it can limit NIO throughput or or even cause deadlocks. */
+
+	private static final long DEFAULT_TIMEOUT = 4000;
+
+	private static final long RC_TIMEOUT = DEFAULT_TIMEOUT;
 	// plus 1 second for every 20 names
 	private static final double BATCH_TIMEOUT_FACTOR = 1000 / 20;
+
+	private static final long LOCAL_TIMEOUT = DEFAULT_TIMEOUT / 2;
+	private static final long COORDINATION_TIMEOUT = DEFAULT_TIMEOUT;
+
+	private static final long getTimeout(CommandPacket command) {
+		if (command.needsCoordination())
+			return COORDINATION_TIMEOUT;
+		return LOCAL_TIMEOUT;
+	}
 
 	private static final long getTimeout(ClientReconfigurationPacket crp) {
 		long timeout = RC_TIMEOUT;
@@ -76,30 +93,54 @@ public class GNSClientInternal extends GNSClient {
 	 * @param crp
 	 *            Create or delete name request.
 	 * @return Response code
-	 * @throws IOException
 	 * @throws ClientException
 	 */
 	public ResponseCode sendRequest(ClientReconfigurationPacket crp)
-			throws IOException, ClientException {
+			throws ClientException {
 		assert (crp instanceof CreateServiceName || crp instanceof DeleteServiceName);
 		ClientReconfigurationPacket response = null;
 		try {
 			response = (ClientReconfigurationPacket) this.asyncClient
 					.sendRequest(crp, getTimeout(crp));
-			if (response != null)
-				if (!response.isFailed())
-					return ResponseCode.NO_ERROR;
-				else if (response instanceof CreateServiceName
-						&& response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR)
-					return ResponseCode.DUPLICATE_ID_EXCEPTION;
-		} catch (ReconfigurationException e) {
-			throw new ClientException(ResponseCode.RECONFIGURATION_EXCEPTION,
-					e.getCode() + ":" + e.getMessage());
+			/* arun: Async client now only returns successful or null (upon a
+			 * timeout) responses and throws an exception upon a failure of a
+			 * create/delete/request_actives ClientReconfigurationPacket. */
+			assert (response == null || !response.isFailed());
+		} catch (ReconfigurationException | IOException e) {
+			throw new ClientException(e);
 		}
 		if (response == null)
 			throw new ClientException(ResponseCode.TIMEOUT, this
 					+ " timed out on " + crp.getSummary());
-		// can't get here
-		return ResponseCode.UNSPECIFIED_ERROR;
+		return ResponseCode.NO_ERROR;
+	}
+
+	/**
+	 * A convenience method to suppress a creation exception if the name already
+	 * exists and return {@link ResponseCode#DUPLICATE_ID_EXCEPTION} instead. It
+	 * is the caller's responsibility to check whether the pre-existing name's
+	 * state is consistent with the state in {@code create}.
+	 * 
+	 * @param create
+	 * @return Response code
+	 * @throws ClientException
+	 */
+	public ResponseCode createOrExists(CreateServiceName create)
+			throws ClientException {
+		try {
+			return this.sendRequest(create);
+		} catch (ClientException e) {
+			if (e.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
+				return e.getCode();
+			throw e;
+		}
+	}
+
+	/**
+	 * Overrides corresponding {@link GNSClient} method with a finite timeout.
+	 */
+	public CommandPacket execute(CommandPacket command) throws IOException,
+			ClientException {
+		return (CommandPacket) this.sendSync(command, getTimeout(command));
 	}
 }

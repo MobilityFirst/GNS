@@ -15,8 +15,13 @@
  * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
 
+import java.io.IOException;
+
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.GNSException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync.ReconfigurationException;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket.ResponseCodes;
 
 /**
  * This class defines a GnrsException
@@ -48,7 +53,7 @@ public class ClientException extends GNSException {
 	 * @param cause
 	 */
 	public ClientException(String message, Throwable cause) {
-		super(message, cause);
+		super(getCode(cause), message, cause);
 	}
 
 	/**
@@ -64,7 +69,22 @@ public class ClientException extends GNSException {
 	 * @param throwable
 	 */
 	public ClientException(Throwable throwable) {
-		super(throwable);
+		super(getCode(throwable), throwable);
+	}
+
+	private static ResponseCode getCode(Throwable e) {
+		if (e instanceof IOException)
+			return ResponseCode.IO_EXCEPTION;
+		if (e instanceof InternalRequestException)
+			return ResponseCode.INTERNAL_REQUEST_EXCEPTION;
+		if (e instanceof ReconfigurationException)
+			return ((ReconfigurationException) e).getCode() == ResponseCodes.DUPLICATE_ERROR ? ResponseCode.DUPLICATE_ID_EXCEPTION
+
+					: ((ReconfigurationException) e).getCode() == ResponseCodes.NONEXISTENT_NAME_ERROR ? ResponseCode.NONEXISTENT_NAME_EXCEPTION
+
+							: ResponseCode.RECONFIGURATION_EXCEPTION;
+		
+		return ResponseCode.UPDATE_ERROR;
 	}
 
 	/**
