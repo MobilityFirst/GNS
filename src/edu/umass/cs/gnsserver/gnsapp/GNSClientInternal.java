@@ -42,15 +42,15 @@ public class GNSClientInternal extends GNSClient {
 	 * @throws IOException
 	 */
 	public GNSClientInternal(String myID) throws IOException {
-		this.asyncClient = new GNSClient.AsyncClient(
-				GNSClient.getStaticReconfigurators(),
-				ReconfigurationConfig.getClientSSLMode(),
-				ReconfigurationConfig.getClientPortOffset(), false) {
-			public Set<IntegerPacketType> getRequestTypes() {
-				return INTERNAL_CLIENT_TYPES;
-			}
-		};
 		this.myID = myID;
+	}
+	
+	protected Set<IntegerPacketType> getRequestTypes() {
+		return INTERNAL_CLIENT_TYPES;
+	}
+
+	protected String getLabel() {
+		return GNSClientInternal.class.getSimpleName();
 	}
 
 	/* Note that GNSClient itself doesn't have any fixed timeouts because it is

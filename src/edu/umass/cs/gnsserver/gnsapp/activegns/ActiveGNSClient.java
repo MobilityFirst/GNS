@@ -42,6 +42,10 @@ public class ActiveGNSClient extends GNSClient implements ActiveDBInterface {
 	public ActiveGNSClient() throws IOException {
 		super();
 	}
+	
+	public String getLabel() {
+		return ActiveGNSClient.class.getSimpleName();
+	}
 
 	@Override
 	public void write(InternalRequestHeader header, String targetGUID,

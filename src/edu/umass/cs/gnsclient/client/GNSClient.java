@@ -80,6 +80,10 @@ public class GNSClient {
 	protected AsyncClient asyncClient;
 	// local name server
 	private InetSocketAddress GNSProxy = null;
+	
+	protected String getLabel() {
+		return GNSClient.class.getSimpleName();
+	}
 
 	private static final java.util.logging.Logger LOG = GNSClientConfig
 			.getLogger();
@@ -139,7 +143,20 @@ public class GNSClient {
 			throws IOException {
 		this.asyncClient = new AsyncClient(reconfigurators,
 				ReconfigurationConfig.getClientSSLMode(),
-				ReconfigurationConfig.getClientPortOffset(), true);
+				ReconfigurationConfig.getClientPortOffset(), true) {
+			@Override
+			protected String getLabel() {
+				return GNSClient.this.getLabel(); 
+			}
+			@Override 
+			public Set<IntegerPacketType> getRequestTypes() {
+				return GNSClient.this.getRequestTypes();
+			}
+		};
+	}
+
+	protected Set<IntegerPacketType> getRequestTypes() {
+		return clientPacketTypes;
 	}
 
 	/**
@@ -391,6 +408,9 @@ public class GNSClient {
 		return this.getResponsePacket(packet, 0);
 	}
 
+	private static final Set<IntegerPacketType> clientPacketTypes=new HashSet<>(
+			Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
+
 	/**
 	 * Straightforward async client implementation that expects only one packet
 	 * type,
@@ -404,8 +424,7 @@ public class GNSClient {
 		private static Stringifiable<String> unstringer = new StringifiableDefault<>(
 				"");
 		
-		private static final Set<IntegerPacketType> clientPacketTypes=new HashSet<>(
-				Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
+		
 		/**
 		 *
 		 * @param reconfigurators
@@ -527,7 +546,7 @@ public class GNSClient {
 	public void setGNSProxy(InetSocketAddress LNS) {
 		this.GNSProxy = LNS;
 	}
-
+	
 	/* **************** Start of execute methods ****************** */
 	/**
 	 * Execute the command immediately. The result of the execution may be

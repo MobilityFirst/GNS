@@ -103,7 +103,11 @@ public class GNSHttpServer {
     this.requestHandler = requestHandler;
     if (!Config.getGlobalBoolean(GNSC.DISABLE_MULTI_SERVER_HTTP)) {
       try {
-        this.client = new GNSClient();
+        this.client = new GNSClient() {
+        	public String getLabel() {
+        		return GNSHttpServer.class.getSimpleName();
+        	}
+        };
       } catch (IOException e) {
         LOGGER.log(Level.SEVERE, "Unable to start GNS client:" + e);
       }
@@ -125,6 +129,7 @@ public class GNSHttpServer {
         port = startingPort + cnt;
         break;
       }
+      edu.umass.cs.utils.Util.suicide(GNSConfig.getLogger(), "Unable to start GNS HTTP server; exiting");
     } while (cnt++ < 100);
   }
 
