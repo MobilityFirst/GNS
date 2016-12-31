@@ -508,6 +508,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.createtest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.createtest.properties"/>
     <property name="waitTillAllServersReady" value="5000"/>
+    <property name="reps" value="1"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest_test010OnlyTest"/>
       <formatter type="plain" usefile="false"/>
@@ -519,6 +520,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
       <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
       <jvmarg value="-DwaitTillAllServersReady=${waitTillAllServersReady}"/>
+      <jvmarg value="-Dreps=${reps}"/>
       <jvmarg value="-Dserver.command=bin/gpServer.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>

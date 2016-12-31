@@ -481,16 +481,20 @@ public class ServerIntegrationTest_test010OnlyTest extends DefaultTest {
    */
   @Test
   public void test_010_CreateEntity() {
+	  int reps = Integer.parseInt(System.getProperty("reps"));
     //CHECKED FOR VALIDITY
-    String alias = "testGUID" + RandomString.randomString(12);
+    String alias=null;
     GuidEntry guidEntry = null;
+    int i=0;
     try {
-      guidEntry = client.guidCreate(masterGuid, alias);
+    	for(i=0; i<reps; i++ )
+    		guidEntry = client.guidCreate(masterGuid, alias=("testGUID" + RandomString.randomString(12)));
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating guid: ", e);
+      failWithStackTrace("Exception while creating guid in rep " + i + ": ", e);
     }
     Assert.assertNotNull(guidEntry);
     Assert.assertEquals(alias, guidEntry.getEntityName());
+    System.out.print("with " + reps + " reps");
   }
 
   /**
