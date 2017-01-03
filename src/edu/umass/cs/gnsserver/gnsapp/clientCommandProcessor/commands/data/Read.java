@@ -68,6 +68,8 @@ public class Read extends AbstractCommand {
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
     String guid = json.getString(GNSProtocol.GUID.toString());
 
+    assert(internalHeader != null);
+    
     // the opt hair below is for the subclasses... cute, huh?
     String field = json.optString(GNSProtocol.FIELD.toString(), null);
     ArrayList<String> fields = json.has(GNSProtocol.FIELDS.toString())

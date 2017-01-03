@@ -149,12 +149,10 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
    * @throws ParseException
    */
   @Override
-  public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
+  abstract public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-          SignatureException, UnsupportedEncodingException, ParseException {
-    return execute(command, handler);
-  }
+          SignatureException, UnsupportedEncodingException, ParseException;
 
   /**
    * Get the usage of the command.

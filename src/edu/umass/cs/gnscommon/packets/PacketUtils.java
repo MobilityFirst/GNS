@@ -1,5 +1,6 @@
 package edu.umass.cs.gnscommon.packets;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,7 +37,7 @@ public class PacketUtils {
 	 * @return The originatingGUID for {@code CommandPacket}.
 	 */
 	public static String getOriginatingGUID(CommandPacket commandPacket) {
-			return commandPacket!=null ? commandPacket.getServiceName() : null;
+		return commandPacket != null ? commandPacket.getServiceName() : null;
 	}
 
 	/**
@@ -53,9 +54,11 @@ public class PacketUtils {
 				 * GUID. This is especially important for active requests where
 				 * the request chain is computed dynamically and is not known a
 				 * priori. */
-				:  
-						
-						new InternalRequestHeader() {
+				:
+
+				new InternalRequestHeader() {
+
+					String mostRecentQueried = null;
 
 					@Override
 					public long getOriginatingRequestID() {
@@ -73,16 +76,34 @@ public class PacketUtils {
 
 					@Override
 					public String getOriginatingGUID() {
-						return PacketUtils.getOriginatingGUID(commandPacket);
+						try {
+							return commandPacket
+									.getCommand().has(
+											GNSProtocol.ORIGINATING_GUID
+													.toString()) ? commandPacket
+									.getCommand().getString(
+											GNSProtocol.ORIGINATING_GUID
+													.toString()) : (this.mostRecentQueried =PacketUtils
+									.getOriginatingGUID(commandPacket));
+						} catch (JSONException e) {
+							return PacketUtils
+									.getOriginatingGUID(commandPacket);
+						}
+					}
+
+					@Override
+					public String getQueryingGUID() {
+						return this.mostRecentQueried=PacketUtils
+								.getOriginatingGUID(commandPacket);
 					}
 
 					@Override
 					public int getTTL() {
 						try {
-							return commandPacket.getCommand().has(GNSProtocol.REQUEST_TTL.toString())
-									? 
-											commandPacket.getCommand().getInt(
-									GNSProtocol.REQUEST_TTL.toString())
+							return commandPacket.getCommand().has(
+									GNSProtocol.REQUEST_TTL.toString()) ? commandPacket
+									.getCommand().getInt(
+											GNSProtocol.REQUEST_TTL.toString())
 									: InternalRequestHeader.DEFAULT_TTL;
 						} catch (JSONException e) {
 							return InternalRequestHeader.DEFAULT_TTL;
@@ -92,22 +113,56 @@ public class PacketUtils {
 					@Override
 					public boolean hasBeenCoordinatedOnce() {
 						try {
-							return commandPacket.getCommand().has(GNSProtocol.COORD1.toString())
-									? commandPacket.getCommand().getBoolean(GNSProtocol.COORD1.toString())
-											: commandPacket.needsCoordination();
+							return commandPacket.getCommand().has(
+									GNSProtocol.COORD1.toString()) ? commandPacket
+									.getCommand().getBoolean(
+											GNSProtocol.COORD1.toString())
+									: commandPacket.needsCoordination();
 						} catch (JSONException e) {
 							return commandPacket.needsCoordination();
 						}
 					}
-					
-					private String proof = null;
-					public void internalize() {
-						this.proof = GNSConfig.getInternalOpSecret();
-					}
+
 					public boolean verifyInternal() {
-						return GNSConfig.getInternalOpSecret().equals(this.proof);
+						String proof=null;
+						try {
+							proof = commandPacket.getCommand().has(
+									GNSProtocol.INTERNAL_PROOF.toString()) ? commandPacket
+									.getCommand().getString(
+											GNSProtocol.INTERNAL_PROOF.toString())
+									: null;
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+						return GNSConfig.getInternalOpSecret().equals(proof);
 					}
-				}
-					;
+				};
+	}
+
+	/**
+	 * @param command
+	 * @return A utility method to estimate the string length of a JSONObject or
+	 *         JSONArray.
+	 */
+	public static int getLengthEstimate(Object command) {
+		int length = 8;
+		try {
+			if (command instanceof JSONObject) {
+				JSONObject o = ((JSONObject) command);
+				for (String key : JSONObject.getNames(o))
+					length += key.length() + getLengthEstimate(o.get(key));
+			} else if (command instanceof JSONArray) {
+				JSONArray a = ((JSONArray) command);
+				for (int i = 0; i < a.length(); i++)
+					length += getLengthEstimate(a.get(i)) + 8;
+			} else if (command instanceof String)
+				length += command.toString().length();
+			else
+				length += 8;
+		} catch (JSONException je) {
+			je.printStackTrace();
+		}
+
+		return length;
 	}
 }

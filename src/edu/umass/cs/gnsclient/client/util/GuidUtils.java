@@ -171,7 +171,7 @@ public class GuidUtils {
         }
       }
       try {
-        client.execute(GNSCommand.accountGuidCreate(client.getGNSProvider(), name,
+        client.execute(GNSCommand.createAccount(name,
                 password));
       } catch (DuplicateNameException e) {
         /* Ignore duplicate name exception as it is most likely because we 
@@ -460,7 +460,7 @@ public class GuidUtils {
           System.out.println("Old guid for " + name + " is invalid. Creating a new one.");
         }
       }
-      client.execute(GNSCommand.createGUID(client.getGNSProvider(), accountGuid, name));
+      client.execute(GNSCommand.createGUID( accountGuid, name));
       guid = lookupGuidEntryFromDatabase(client, name);
       return guid;
     } else {
@@ -481,6 +481,15 @@ public class GuidUtils {
   public static GuidEntry lookupGuidEntryFromDatabase(GNSClientCommands client, String name) {
     return GuidUtils.lookupGuidEntryFromDatabase(client.getGNSProvider(), name);
   }
+
+	/**
+	 * @param name
+	 * @return GuidEntry retrieved from local database.
+	 */
+	public static GuidEntry getGUIDKeys(String name) {
+		return GuidUtils.lookupGuidEntryFromDatabase(
+				GNSClient.getGNSProvider(), name);
+	}
 
   /**
    * @param gnsInstance

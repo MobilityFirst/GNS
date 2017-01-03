@@ -25,10 +25,11 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandDescriptionFormat;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+
 import org.json.JSONObject;
 
 /**
@@ -61,7 +62,7 @@ public class Help extends AbstractCommand {
 //    return HELP;
 //  }
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) {
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) {
     if (json.has("tcp")) {
       return new CommandResponse(ResponseCode.NO_ERROR, "Commands are sent as TCP packets." + GNSProtocol.NEWLINE.toString() + GNSProtocol.NEWLINE.toString()
               + "Note: We use the terms field and key interchangably below." + GNSProtocol.NEWLINE.toString() + GNSProtocol.NEWLINE.toString()

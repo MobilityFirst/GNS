@@ -77,28 +77,6 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   *
-   * @param id
-   * @param command
-   * @param validate
-   */
-  protected GNSCommand(long id, JSONObject command, boolean validate) {
-    super(id, command, validate);
-  }
-
-  // Need this for the HTTP server. Since we can't make the methods above public.
-  /**
-   * Creates a GNS Command from a JSON Object.
-   *
-   * @param command
-   * @return a GNS command
-   */
-  public static GNSCommand createGNSCommandFromJSONObject(JSONObject command) {
-    // false so the validation doesn't happen for the http server
-    return new GNSCommand(randomLong(), command, false);
-  }
-
-  /**
    * Constructs a command of type {@code type} issued by the {@code querier}
    * using the variable length array {@code keysAndValues}. If {@code querier}
    * is non-null, the returned command will be signed by the querier's private
@@ -534,8 +512,6 @@ public class GNSCommand extends CommandPacket {
    * information if the client loses the private key corresponding to the
    * account guid.
    *
-   * @param gnsInstance
-   *
    * @param alias
    * Human readable alias for the account guid being created, e.g.,
    * an email address
@@ -545,11 +521,31 @@ public class GNSCommand extends CommandPacket {
    * @throws java.io.IOException
    * @throws java.security.NoSuchAlgorithmException
    */
-  public static final CommandPacket accountGuidCreate(String gnsInstance,
+  public static final CommandPacket createAccount(
           String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
-    GuidEntry guidEntry = lookupOrCreateGuidEntry(gnsInstance, alias);
+    @SuppressWarnings("deprecation") // FIXME
+	GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
     return accountGuidCreateInternal(alias, password, CommandType.RegisterAccount, guidEntry);
   }
+
+	/**
+	 * Same as {@link #createAccount(String, String)} but with no
+	 * password.
+	 * 
+	 * @param alias
+	 * @return CommandPacket
+	 * @throws ClientException
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static final CommandPacket createAccount(
+			String alias) throws ClientException, IOException,
+			NoSuchAlgorithmException {
+		@SuppressWarnings("deprecation") // FIXME
+		GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
+		return accountGuidCreateInternal(alias, null,
+				CommandType.RegisterAccount, guidEntry);
+	}
 
   /**
    * Register a new account guid with the name {@code alias} and a password
@@ -560,8 +556,6 @@ public class GNSCommand extends CommandPacket {
    * Sent on the mutual auth channel. Can only be sent from a client that
    * has the correct ssl keys.
    *
-   * @param gnsInstance
-   *
    * @param alias
    * Human readable alias for the account guid being created, e.g.,
    * an email address
@@ -571,9 +565,10 @@ public class GNSCommand extends CommandPacket {
    * @throws java.io.IOException
    * @throws java.security.NoSuchAlgorithmException
    */
-  public static final CommandPacket accountGuidCreateSecure(String gnsInstance,
+  public static final CommandPacket createAccountSecure(
           String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
-    GuidEntry guidEntry = lookupOrCreateGuidEntry(gnsInstance, alias);
+    @SuppressWarnings("deprecation")
+	GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
     return accountGuidCreateInternal(alias, password, CommandType.RegisterAccountSecured, guidEntry);
   }
 
@@ -662,7 +657,6 @@ public class GNSCommand extends CommandPacket {
   /**
    * Creates an new guid associated with an account on the GNS server.
    *
-   * @param gnsInstance
    * The name of the GNS service instance.
    *
    * @param accountGUID
@@ -672,11 +666,12 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket createGUID(String gnsInstance,
+  @SuppressWarnings("deprecation") // FIXME:
+public static final CommandPacket createGUID(
           GuidEntry accountGUID, String alias) throws ClientException {
     try {
       return guidCreateHelper(accountGUID, alias, GuidUtils
-              .createAndSaveGuidEntry(alias, gnsInstance).getPublicKey());
+              .createAndSaveGuidEntry(alias, GNSClient.getGNSProvider()).getPublicKey());
     } catch (NoSuchAlgorithmException e) {
       throw new ClientException(e);
     }
@@ -686,7 +681,6 @@ public class GNSCommand extends CommandPacket {
    * Creates a batch of GUIDs listed in {@code aliases} using gigapaxos' batch
    * creation mechanism.
    *
-   * @param gnsInstance
    * The name of the GNS service instance.
    *
    * @param accountGUID
@@ -695,7 +689,8 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket batchCreateGUIDs(String gnsInstance,
+  @SuppressWarnings("deprecation") // FIXME
+public static final CommandPacket batchCreateGUIDs(
           GuidEntry accountGUID, Set<String> aliases) throws ClientException {
 
     List<String> aliasList = new ArrayList<>(aliases);
@@ -704,7 +699,7 @@ public class GNSCommand extends CommandPacket {
     for (String alias : aliasList) {
       GuidEntry entry;
       try {
-        entry = GuidUtils.createAndSaveGuidEntry(alias, gnsInstance);
+        entry = GuidUtils.createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
       } catch (NoSuchAlgorithmException e) {
         // FIXME: Do we need to roll back created keys?
         throw new ClientException(e);

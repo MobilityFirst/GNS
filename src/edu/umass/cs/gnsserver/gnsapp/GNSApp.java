@@ -128,6 +128,14 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     public void callbackGC(Object key, Object value) {
     }
   }, DEFAULT_REQUEST_TIMEOUT);
+  
+  /* It's silly to enqueue requests when all GNS calls are blocking anyway. We
+   * now use a simpler and more sensible sendToClient method that tracks the
+   * original CommandPacket explicitly throughout the execution chain.
+   */
+  private static final boolean enqueueCommand() {
+	  return false;
+  }
   /**
    * Active code handler
    */
@@ -201,7 +209,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
   private static PacketType[] types = {PacketType.COMMAND,
     PacketType.SELECT_REQUEST, PacketType.SELECT_RESPONSE,
-    PacketType.ADMIN_REQUEST, PacketType.INTERNAL_COMMAND};
+    PacketType.INTERNAL_COMMAND};
 
   private static PacketType[] mutualAuthTypes = {PacketType.ADMIN_COMMAND};
 
@@ -274,6 +282,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       Request prev = null;
       // arun: enqueue request, dequeue before returning
       if (request instanceof RequestIdentifier) {
+    	  if(enqueueCommand())
         prev = this.outstanding.putIfAbsent(
                 ((RequestIdentifier) request).getRequestID(), request);
       } else {
@@ -284,18 +293,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
       switch (packetType) {
         case SELECT_REQUEST:
-          //if (Select.useLocalSelect()) {
             Select.handleSelectRequest((SelectRequestPacket<String>) request, this);
-//          } else {
-//            SelectOld.handleSelectRequest((SelectRequestPacket<String>) request, this);
-//          }
           break;
         case SELECT_RESPONSE:
-          //if (Select.useLocalSelect()) {
             Select.handleSelectResponse((SelectResponsePacket<String>) request, this);
-//          } else {
-//            SelectOld.handleSelectResponse((SelectResponsePacket<String>) request, this);
-//          }
           break;
         case COMMAND:
           CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
@@ -369,6 +370,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     if (httpsServer != null) {
       httpsServer.stop();
     }
+    if(this.requestHandler.getInternalClient()!=null)
+    	this.requestHandler.getInternalClient().close();
+    if(this.requestHandler.getRemoteQuery()!=null)
+    	this.requestHandler.getRemoteQuery().close();
   }
 
   /**
@@ -789,6 +794,41 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     } // else
   }
 
+  /**
+   * @param originalRequest
+   * @param response
+   * @param responseJSON
+   * @throws IOException
+   */
+  public void sendToClient(CommandPacket originalRequest, Request response, JSONObject responseJSON)
+		  throws IOException {
+
+	  if (DELEGATE_CLIENT_MESSAGING) {
+		  if (enqueueCommand())
+			  this.outstanding.remove(((RequestIdentifier) response)
+					  .getRequestID());
+
+		  assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) : ((ClientRequest) response)
+		  .getSummary();
+
+		  ((BasicPacketWithClientAddress) originalRequest)
+		  .setResponse((ClientRequest) response);
+		  incrResponseCount((ClientRequest) response);
+
+		  GNSConfig
+		  .getLogger()
+		  .log(Level.FINE,
+				  "{0} set response {1} for requesting client {2} for request {3}",
+				  new Object[] {
+				  this,
+				  response.getSummary(),
+				  ((BasicPacketWithClientAddress) originalRequest)
+				  .getClientAddress(),
+				  originalRequest.getSummary() });
+		  return;
+	  } // else
+  }
+
   @Override
   public String toString() {
     return this.getClass().getSimpleName() + ":" + this.nodeID;
@@ -858,16 +898,4 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     }
   }
 
-  /**
-   * @param header
-   * @return Gets the originating request corresponding to {@code header}.
-   */
-  public CommandPacket getOriginRequest(InternalRequestHeader header) {
-    Request request = this.outstanding
-            .get(header.getOriginatingRequestID());
-    if (request instanceof CommandPacket) {
-      return (CommandPacket) request;
-    }
-    return null;
-  }
 }

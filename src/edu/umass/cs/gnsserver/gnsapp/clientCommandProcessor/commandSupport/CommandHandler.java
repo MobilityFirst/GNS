@@ -126,7 +126,7 @@ public class CommandHandler {
                 "{0} handling command reply: {1}",
                 new Object[]{handler.getApp(), returnPacket});
         // Possibly send the return value back to the client
-        handleCommandReturnValuePacketForApp(returnPacket,
+        handleCommandReturnValuePacketForApp(commandPacket, returnPacket,
                 doNotReplyToClient, app);
       } catch (IOException e) {
         ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
@@ -238,19 +238,7 @@ public class CommandHandler {
      * entire chain information, which seems like too much work given that
      * we already have TTLs to limit cycles.
      */
-    CommandPacket originRequest = handler.getOriginRequest(header);
-    // same origin GNSProtocol.GUID.toString() and origin request ID => node cycle
-    if (originRequest != commandPacket
-            && header.getOriginatingGUID().equals(PacketUtils.getOriginatingGUID(originRequest))) {
-      // FIXME: This should either be WARN (if it's important) or FINE (if it's not important).
-      GNSConfig.getLogger().log(Level.INFO,
-              "Node {0} revisited by active request chain {1} at hop {2}",
-              new Object[]{
-                handler.getApp(),
-                header,
-                InternalRequestHeader.DEFAULT_TTL
-                - header.getTTL()});
-    }
+
     // nothing suspicious detected
     return header;
   }
@@ -290,6 +278,7 @@ public class CommandHandler {
 
   /**
    * Called when a command return value packet is received by the app.
+ * @param command 
    *
    * @param returnPacket
    * @param doNotReplyToClient
@@ -298,11 +287,11 @@ public class CommandHandler {
    * @throws JSONException
    * @throws IOException
    */
-  public static void handleCommandReturnValuePacketForApp(
+  public static void handleCommandReturnValuePacketForApp(CommandPacket command, 
           ResponsePacket returnPacket, boolean doNotReplyToClient,
           GNSApp app) throws JSONException, IOException {
     if (!doNotReplyToClient) {
-      app.sendToClient(returnPacket, returnPacket.toJSONObject());
+      app.sendToClient(command, returnPacket, returnPacket.toJSONObject());
     }
 
     // shows us stats every 100 commands, but not more than once every 5

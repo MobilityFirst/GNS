@@ -630,7 +630,7 @@ public class GNSClientCommandsV2 extends GNSClient {
    */
   public GuidEntry accountGuidCreate(String alias, String password) throws ClientException, IOException {
     try {
-      execute(GNSCommand.accountGuidCreate(getGNSProvider(), alias, password));
+      execute(GNSCommand.createAccount(alias, password));
     } catch (NoSuchAlgorithmException e) {
       throw new ClientException(e);
     }
@@ -772,7 +772,7 @@ public class GNSClientCommandsV2 extends GNSClient {
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias)
           throws ClientException, IOException {
 
-    execute(GNSCommand.createGUID(getGNSProvider(), accountGuid, alias));
+    execute(GNSCommand.createGUID( accountGuid, alias));
     GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
     // If something went wrong an exception should be thrown above, but we're checking
     // here anyway just to be safe.
@@ -813,7 +813,7 @@ public class GNSClientCommandsV2 extends GNSClient {
   public void guidBatchCreate(GuidEntry accountGuid, Set<String> aliases)
           throws ClientException, IOException {
 
-    execute(GNSCommand.batchCreateGUIDs(getGNSProvider(), accountGuid, aliases));
+    execute(GNSCommand.batchCreateGUIDs(accountGuid, aliases));
 //    List<String> aliasList = new ArrayList<>(aliases);
 //    List<String> publicKeys = null;
 //    long publicKeyStartTime = System.currentTimeMillis();

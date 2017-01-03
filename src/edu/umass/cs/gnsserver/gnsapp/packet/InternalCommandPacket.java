@@ -62,6 +62,10 @@ public class InternalCommandPacket extends CommandPacket implements
 	 */
 	private boolean hasBeenCoordinatedOnce = false;
 
+	private String queryingGUID = null;
+
+	private String proof = null;
+
 	// not sure whether to store inside or outside, maybe doesn't matter
 	private static final boolean STORE_INSIDE = true;
 
@@ -155,7 +159,10 @@ public class InternalCommandPacket extends CommandPacket implements
 						.put(GNSProtocol.ORIGINATING_QID.toString(),
 								this.originatingRequestID)
 						.put(GNSProtocol.COORD1.toString(),
-								this.hasBeenCoordinatedOnce);
+								this.hasBeenCoordinatedOnce)
+						.put(GNSProtocol.QUERIER_GUID.toString(),
+								this.queryingGUID)
+						.put(GNSProtocol.INTERNAL_PROOF.toString(), this.proof);
 	}
 
 	/**
@@ -176,13 +183,24 @@ public class InternalCommandPacket extends CommandPacket implements
 				.longValue() : ((Long) id).longValue();
 		this.hasBeenCoordinatedOnce = (Boolean) getInOrOutside(
 				GNSProtocol.COORD1.toString(), json);
+		/* Proof that this request is internal. Both internal and active request
+		 * chain requests are internal requests. */
+		this.proof = (String) getInOrOutside(
+				GNSProtocol.INTERNAL_PROOF.toString(), json);
+		this.queryingGUID = (String) getInOrOutside(
+				GNSProtocol.QUERIER_GUID.toString(), json);
+
 	}
 
 	private static final Object getInOrOutside(String key, JSONObject outerJSON)
 			throws JSONException {
-		return STORE_INSIDE ? outerJSON.getJSONObject(
-				GNSProtocol.COMMAND_QUERY.toString()).get(key) : outerJSON
-				.get(key);
+		return STORE_INSIDE ?
+
+		outerJSON.getJSONObject(GNSProtocol.COMMAND_QUERY.toString()).opt(key)
+
+		:
+
+		outerJSON.opt(key);
 	}
 
 	@Override
@@ -203,6 +221,51 @@ public class InternalCommandPacket extends CommandPacket implements
 	@Override
 	public boolean hasBeenCoordinatedOnce() {
 		return false;
+	}
+
+	@Override
+	public boolean verifyInternal() {
+		return this.proof != null
+				&& GNSConfig.getInternalOpSecret().equals(proof);
+	}
+
+	public String getQueryingGUID() {
+		return this.queryingGUID;
+	}
+
+	/**
+	 * Set the querier to {@link GNSProtocol#INTERNAL_QUERIER} if {@code active}
+	 * is false, and to {@link InternalRequestHeader#getQueryingGUID()}
+	 * otherwise. Provided that such queries carry verifiable proof of being
+	 * internal, the querier information helps distinguish between internal
+	 * queries that need no checks whatsoever and internal active request chain
+	 * queries that do need ACL checks (but no signature checks).
+	 * 
+	 * @param active
+	 * 
+	 * @return {@code this}
+	 * @throws JSONException
+	 */
+	public InternalCommandPacket makeInternal(boolean active)
+			throws JSONException {
+		JSONObject command = this.getCommand();
+		String querier = active ? this.getQueryingGUID()
+				: GNSProtocol.INTERNAL_QUERIER.toString();
+		if (command.has(GNSProtocol.READER.toString()))
+			command.put(GNSProtocol.READER.toString(), querier);
+		else if (command.has(GNSProtocol.WRITER.toString()))
+			command.put(GNSProtocol.WRITER.toString(), querier);
+		return this;
+	}
+
+	/**
+	 * Same as {@link #makeInternal(boolean)} invoked with {@code false}.
+	 * 
+	 * @return {@code this}
+	 * @throws JSONException
+	 */
+	public InternalCommandPacket makeActive() throws JSONException {
+		return this.makeInternal(false);
 	}
 
 	private static InternalRequestHeader getTestHeader(int ttl, String GUID,

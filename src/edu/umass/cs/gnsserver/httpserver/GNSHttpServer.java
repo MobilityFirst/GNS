@@ -32,6 +32,7 @@ import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -41,6 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
+
 import edu.umass.cs.gnscommon.ResponseCode;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -58,13 +60,17 @@ import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
+
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
+
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -365,7 +371,8 @@ public class GNSHttpServer {
           JSONObject jsonFormattedArguments) throws ClientException, IOException, JSONException {
     LOGGER.log(Level.FINE, "jsonFormattedCommand =" + jsonFormattedArguments.toString());
 
-    CommandPacket outgoingPacket = GNSCommand.createGNSCommandFromJSONObject(jsonFormattedArguments);
+    CommandPacket outgoingPacket = new CommandPacket((long)(Math.random()*Long.MAX_VALUE), jsonFormattedArguments, false);
+    //GNSCommand.createGNSCommandFromJSONObject(jsonFormattedArguments);
 
     LOGGER.log(Level.FINE, "outgoingPacket =" + outgoingPacket.toString());
 

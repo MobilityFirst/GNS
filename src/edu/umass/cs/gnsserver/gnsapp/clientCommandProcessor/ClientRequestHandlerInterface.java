@@ -140,9 +140,4 @@ public interface ClientRequestHandlerInterface {
    */
   public String getHttpsServerHostPortString() throws UnknownHostException;
 
-  /**
-   * @param header
-   * @return The originating request corresponding to {@code header}.
-   */
-  public CommandPacket getOriginRequest(InternalRequestHeader header);
 }

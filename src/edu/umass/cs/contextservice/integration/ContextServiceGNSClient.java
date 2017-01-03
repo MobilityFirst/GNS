@@ -65,7 +65,8 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
       String message = jsonFormattedCommand.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
 
       if (writer.equals(
-    		  GNSConfig.getInternalOpSecret()
+    		  GNSProtocol.INTERNAL_QUERIER.toString()
+    		  //GNSConfig.getInternalOpSecret()
     		  //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
     		  )) {
         writer = null;

@@ -7,9 +7,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -44,7 +46,7 @@ public class GNSClientInternal extends GNSClient {
 	public GNSClientInternal(String myID) throws IOException {
 		this.myID = myID;
 	}
-	
+
 	protected Set<IntegerPacketType> getRequestTypes() {
 		return INTERNAL_CLIENT_TYPES;
 	}
@@ -56,20 +58,30 @@ public class GNSClientInternal extends GNSClient {
 	/* Note that GNSClient itself doesn't have any fixed timeouts because it is
 	 * meant to be used with asynchronous callbacks or with variable timeouts.
 	 * GNSClientInternal however always uses blocking calls and must timeout,
-	 * otherwise it can limit NIO throughput or or even cause deadlocks. */
+	 * otherwise it can limit NIO throughput or or even cause deadlocks under
+	 * very high load. */
 
 	private static final long DEFAULT_TIMEOUT = 4000;
 
 	private static final long RC_TIMEOUT = DEFAULT_TIMEOUT;
-	// plus 1 second for every 20 names
+	// plus 1 second for every 20 names in batch creates
 	private static final double BATCH_TIMEOUT_FACTOR = 1000 / 20;
 
+	// plus 1 second for every 16KB in updates
+	private static final double SIZE_TIMEOUT_FACTOR = 1000 / 16384;
+
+	/**
+	 * Local internal requests should be quick unlike uncoordinated end-to-end
+	 * commands like AddGuid or isSelect() commands that can take much longer.
+	 */
 	private static final long LOCAL_TIMEOUT = DEFAULT_TIMEOUT / 2;
 	private static final long COORDINATION_TIMEOUT = DEFAULT_TIMEOUT;
 
 	private static final long getTimeout(CommandPacket command) {
 		if (command.needsCoordination())
-			return COORDINATION_TIMEOUT;
+			return (COORDINATION_TIMEOUT + (long) (PacketUtils
+					.getLengthEstimate(command) * SIZE_TIMEOUT_FACTOR));
+
 		return LOCAL_TIMEOUT;
 	}
 
@@ -130,7 +142,7 @@ public class GNSClientInternal extends GNSClient {
 		try {
 			return this.sendRequest(create);
 		} catch (ClientException e) {
-			if (e.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
+			if (e.getCode().equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
 				return e.getCode();
 			throw e;
 		}
@@ -141,6 +153,6 @@ public class GNSClientInternal extends GNSClient {
 	 */
 	public CommandPacket execute(CommandPacket command) throws IOException,
 			ClientException {
-		return (CommandPacket) this.sendSync(command, getTimeout(command));
+		return (CommandPacket) this.execute(command, getTimeout(command));
 	}
 }

@@ -205,6 +205,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    */
   private long sendCommandAsynch(JSONObject command, RequestCallback callback) throws IOException, JSONException {
     long id = generateNextRequestID();
+    // put proof explicitly instead of abusing READER/WRITER fields
+    command.put(GNSProtocol.INTERNAL_PROOF.toString(), GNSConfig.getInternalOpSecret());
     CommandPacket packet = CommandPacket.getJSONCommandType(command).isMutualAuth() ? 
     		new AdminCommandPacket(id, command) : new CommandPacket(id, command);
     LOGGER.log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});

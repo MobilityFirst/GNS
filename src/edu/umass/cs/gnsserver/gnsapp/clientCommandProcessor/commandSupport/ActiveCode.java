@@ -24,6 +24,7 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 import java.util.Date;
@@ -119,12 +120,12 @@ public class ActiveCode {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode clearCode(String guid, String action,
+  public static ResponseCode clearCode(InternalRequestHeader header, String guid, String action,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) throws IllegalArgumentException {
     String field = getCodeField(action); // can throw IllegalArgumentException
 
-    ResponseCode response = FieldAccess.update(null, guid, field, "", null, -1,
+    ResponseCode response = FieldAccess.update(header, guid, field, "", null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature,
             message, timestamp, handler);
     return response;
@@ -144,13 +145,13 @@ public class ActiveCode {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws org.json.JSONException
    */
-  public static String getCode(String guid, String action, String reader,
+  public static String getCode(InternalRequestHeader header, String guid, String action, String reader,
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler)
           throws IllegalArgumentException, FailedDBOperationException, JSONException {
 
     String field = getCodeField(action); // can throw IllegalArgumentException
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return GNSProtocol.NULL_RESPONSE.toString();

@@ -59,6 +59,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import org.json.JSONException;
+
 import static edu.umass.cs.gnsclient.client.CommandUtils.commandResponseToJSONArray;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
@@ -770,10 +771,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param alias
    * the alias
    * @return the newly created guid entry
-   * @throws Exception
+ * @throws NoSuchAlgorithmException 
+ * @throws IOException 
+ * @throws ClientException 
    */
-  public GuidEntry guidCreate(GuidEntry accountGuid, String alias)
-          throws Exception {
+  public GuidEntry guidCreate(GuidEntry accountGuid, String alias) throws NoSuchAlgorithmException, ClientException, IOException
+           {
 
     long startTime = System.currentTimeMillis();
     GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
@@ -833,9 +836,11 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    *
    * @param guid
    * the guid to remove
+ * @throws IOException 
+ * @throws ClientException 
    * @throws Exception
    */
-  public void guidRemove(GuidEntry guid) throws Exception {
+  public void guidRemove(GuidEntry guid) throws ClientException, IOException  {
     getResponse(CommandType.RemoveGuidNoAccount, guid, GNSProtocol.GUID.toString(), guid.getGuid());
   }
 
@@ -844,10 +849,11 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    *
    * @param accountGuid
    * @param guidToRemove
-   * @throws Exception
+ * @throws IOException 
+ * @throws ClientException 
    */
-  public void guidRemove(GuidEntry accountGuid, String guidToRemove)
-          throws Exception {
+  public void guidRemove(GuidEntry accountGuid, String guidToRemove) throws ClientException, IOException
+           {
     getResponse(CommandType.RemoveGuid, accountGuid, GNSProtocol.ACCOUNT_GUID.toString(),
             accountGuid.getGuid(), GNSProtocol.GUID.toString(), guidToRemove);
   }
@@ -1083,12 +1089,13 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * field name
    * @param accesserGuid
    * guid to add to the ACL
+ * @throws IOException 
    * @throws Exception
    * @throws ClientException
    * if the query is not accepted by the server.
    */
   public void aclAdd(AclAccessType accessType, GuidEntry targetGuid,
-          String field, String accesserGuid) throws Exception {
+          String field, String accesserGuid) throws ClientException, IOException   {
     aclAdd(accessType.name(), targetGuid, field, accesserGuid);
   }
 
@@ -1137,7 +1144,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * if the query is not accepted by the server.
    */
   public void aclRemove(AclAccessType accessType, GuidEntry guid,
-          String field, String accesserGuid) throws Exception {
+          String field, String accesserGuid) throws Exception  {
     aclRemove(accessType.name(), guid, field, accesserGuid);
   }
 
@@ -1181,12 +1188,13 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param field
    * @param readerGuid
    * @return list of GUIDs for that ACL
+ * @throws IOException 
    * @throws Exception
    * @throws ClientException
    * if the query is not accepted by the server.
    */
   public JSONArray aclGet(AclAccessType accessType, GuidEntry guid,
-          String field, String readerGuid) throws Exception {
+          String field, String readerGuid) throws ClientException, IOException  {
     return aclGet(accessType.name(), guid, field, readerGuid);
   }
 
@@ -1355,10 +1363,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param name
    * @param publicKey
    * @return the guid string
+ * @throws IOException 
+ * @throws ClientException 
    * @throws Exception
    */
   private String guidCreateHelper(GuidEntry accountGuid, String name,
-          PublicKey publicKey) throws Exception {
+          PublicKey publicKey) throws ClientException, IOException  {
     long startTime = System.currentTimeMillis();
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
@@ -1421,7 +1431,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   private void aclAdd(String accessType, GuidEntry guid, String field,
-          String accesserGuid) throws Exception {
+          String accesserGuid) throws ClientException, IOException  {
     getResponse(CommandType.AclAddSelf, guid, GNSProtocol.ACL_TYPE.toString(), accessType, GNSProtocol.GUID.toString(),
             guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.ACCESSER.toString(),
             accesserGuid == null ? GNSProtocol.ALL_GUIDS.toString() : accesserGuid);
@@ -1435,7 +1445,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   private JSONArray aclGet(String accessType, GuidEntry guid, String field,
-          String readerGuid) throws Exception {
+          String readerGuid) throws ClientException, IOException  {
     try {
       return new JSONArray(getResponse(CommandType.AclRetrieve, guid,
               GNSProtocol.ACL_TYPE.toString(), accessType, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field,

@@ -75,7 +75,7 @@ public class SecureCommandTest {
   public void test_02_SecureCreateAccount() {
     accountAlias = "ALIAS" + RandomString.randomString(12);
     try {
-      client.execute(GNSCommand.accountGuidCreateSecure(client.getGNSProvider(),
+      client.execute(GNSCommand.createAccountSecure(
               accountAlias,
               "password"));
     } catch (Exception e) {
@@ -130,7 +130,7 @@ public class SecureCommandTest {
   public void test_07_AddSecondGuid() {
     secondAccountAlias = "SECOND" + RandomString.randomString(12);
     try {
-      client.execute(GNSCommand.accountGuidCreateSecure(client.getGNSProvider(),
+      client.execute(GNSCommand.createAccountSecure(
               secondAccountAlias,
               "password"));
     } catch (Exception e) {

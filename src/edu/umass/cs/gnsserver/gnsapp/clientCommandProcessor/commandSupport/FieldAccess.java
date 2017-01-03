@@ -117,9 +117,7 @@ public class FieldAccess {
     try {
       valuesMap = NSFieldAccess.lookupJSONFieldLocally(header, guid, field, handler.getApp());
       // note: reader can also be null here
-      if (!GNSConfig.getInternalOpSecret()
-              //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
-              .equals(reader)) {
+      if (!header.verifyInternal()) {
         // don't strip internal fields when doing a read for other servers
         valuesMap = valuesMap.removeInternalFields();
       }
@@ -132,7 +130,7 @@ public class FieldAccess {
         if (valuesMap.isNull(field)) {
           return new CommandResponse(ResponseCode.FIELD_NOT_FOUND_EXCEPTION,
                   GNSProtocol.BAD_RESPONSE.toString() + " "
-                  + GNSProtocol.FIELD_NOT_FOUND.toString() + " ");
+                  + GNSProtocol.FIELD_NOT_FOUND.toString() + " " + guid +":" + field + " ");
         } else {
           // arun: added support for SINGLE_FIELD_VALUE_ONLY flag
           return new CommandResponse(ResponseCode.NO_ERROR,
@@ -182,9 +180,7 @@ public class FieldAccess {
     try {
       valuesMap = NSFieldAccess.lookupFieldsLocalNoAuth(header, guid, fields, ColumnFieldType.USER_JSON, handler);
       // note: reader can also be null here
-      if (!GNSConfig.getInternalOpSecret()
-              //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
-              .equals(reader)) {
+      if (!header.verifyInternal()) {
         // don't strip internal fields when doing a read for other servers
         valuesMap = valuesMap.removeInternalFields();
       }
@@ -212,11 +208,11 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse lookupJSONArray(String guid,
+  public static CommandResponse lookupJSONArray(InternalRequestHeader header, String guid,
           String field, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    ResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
+    ResponseCode errorCode = signatureAndACLCheckForRead(header, guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSProtocol.BAD_RESPONSE.toString() + " " + errorCode.getProtocolCode());
@@ -289,11 +285,11 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse lookupOne(String guid, String field,
+  public static CommandResponse lookupOne(InternalRequestHeader header, String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    ResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
+    ResponseCode errorCode = signatureAndACLCheckForRead(header, guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new CommandResponse(errorCode, GNSProtocol.BAD_RESPONSE.toString() + " " + errorCode.getProtocolCode());
@@ -325,11 +321,11 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse lookupOneMultipleValues(String guid, String reader,
+  public static CommandResponse lookupOneMultipleValues(InternalRequestHeader header, String guid, String reader,
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid,
             GNSProtocol.ENTIRE_RECORD.toString(), null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -768,6 +764,8 @@ public class FieldAccess {
           String reader, String signature, String message,
           Date timestamp,
           GNSApplicationInterface<String> app) {
+	  // should never come here anymore
+	  assert(false);
 	  return signatureAndACLCheckForRead(null, guid, field, fields, reader, signature, message, timestamp, app);
   }
   
@@ -781,32 +779,41 @@ public class FieldAccess {
             "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2}",
             new Object[]{guid, field, reader});
     try {
+    	assert(header!=null);
+    	
       // if reader is the internal secret this means that this is an internal
       // request that doesn't need to be authenticated
       // note: reader can also be null here
-      if (!GNSConfig.getInternalOpSecret()
-              //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
-              .equals(reader)
+      if (!header.verifyInternal()
               && (field != null || fields != null)) {
         errorCode = NSAuthentication.signatureAndACLCheck(guid, field, fields, reader,
                 signature, message, MetaDataTypeName.READ_WHITELIST, app);
       } else {
     	  LOGGER.log(Level.FINE,
-  	            "reader {0}; internal_op_secret={1}, field={2}; fields={3}",
-  	            new Object[]{reader, GNSConfig.getInternalOpSecret(), field, fields});
-    	  if(header != null){
-	    	  if(field != null){
-	      			errorCode = NSAuthentication.aclCheck(guid, field, 
-	      				header.getOriginatingGUID(), MetaDataTypeName.READ_WHITELIST, app).getResponseCode();
-	      	  } else if (fields != null){
-	  			for (String aField : fields) {
-	      	        AclCheckResult aclResult = NSAuthentication.aclCheck(guid, aField, 
-	      	        		header.getOriginatingGUID(), MetaDataTypeName.READ_WHITELIST, app);
-	      	        if (aclResult.getResponseCode().isExceptionOrError()) {
-	      	          errorCode = aclResult.getResponseCode();
-	  	        }
-	      	  }
-	      	}
+  	            "reader={0}; internal={1} field={2}; fields={3};",
+  	            new Object[]{reader, header.verifyInternal(), field, fields});
+    	  
+    	  // internal commands don't need even ACL checks
+    	  if (header.verifyInternal() && (GNSProtocol.INTERNAL_QUERIER.toString().equals(reader)))
+    		  return ResponseCode.NO_ERROR;
+          
+    	  if (field != null) {
+    		  errorCode = NSAuthentication.aclCheck(guid, field,
+    				  header.getQueryingGUID(),
+    				  MetaDataTypeName.READ_WHITELIST, app)
+    				  .getResponseCode();
+    	  } else if (fields != null) {
+    		  for (String aField : fields) {
+    			  AclCheckResult aclResult = NSAuthentication
+    					  .aclCheck(guid, aField,
+    							  header.getQueryingGUID(),
+    							  MetaDataTypeName.READ_WHITELIST,
+    							  app);
+    			  if (aclResult.getResponseCode()
+    					  .isExceptionOrError()) {
+    				  errorCode = aclResult.getResponseCode();
+    			  }
+    		  }
     	  }
       }
       // Check for stale commands.

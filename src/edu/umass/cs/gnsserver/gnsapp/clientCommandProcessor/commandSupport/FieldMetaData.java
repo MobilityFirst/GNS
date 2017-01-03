@@ -26,10 +26,11 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldMetaData;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-
 import edu.umass.cs.utils.Config;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -66,10 +67,10 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode add(MetaDataTypeName type, String guid,
+  public static ResponseCode add(InternalRequestHeader header, MetaDataTypeName type, String guid,
           String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(null, guid, makeFieldMetaDataKey(type, key), value, null, -1,
+    return FieldAccess.update(header, guid, makeFieldMetaDataKey(type, key), value, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message,
             timestamp, handler);
   }
@@ -87,10 +88,10 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode createField(MetaDataTypeName type, String guid,
+  public static ResponseCode createField(InternalRequestHeader header, MetaDataTypeName type, String guid,
           String key, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.createField(null, guid, makeFieldMetaDataKey(type, key),
+    return FieldAccess.createField(header, guid, makeFieldMetaDataKey(type, key),
             new ResultValue(),
             writer, signature, message,
             timestamp, handler);
@@ -109,10 +110,10 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode deleteField(MetaDataTypeName type, String guid,
+  public static ResponseCode deleteField(InternalRequestHeader header, MetaDataTypeName type, String guid,
           String key, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.deleteField(null, guid, makeFieldMetaDataKey(type, key),
+    return FieldAccess.deleteField(header, guid, makeFieldMetaDataKey(type, key),
             writer, signature, message,
             timestamp, handler);
   }
@@ -141,24 +142,6 @@ public class FieldMetaData {
   }
 
   /**
-   *
-   * @param type
-   * @param guid
-   * @param key
-   * @param value
-   * @param timestamp
-   * @param handler
-   */
-  @Deprecated // because we're not sure who uses this
-  public static void add(MetaDataTypeName type, String guid,
-          String key, String value, Date timestamp, ClientRequestHandlerInterface handler) {
-    add(type, guid, key, value,
-            GNSConfig.getInternalOpSecret(),
-            null, null,
-            timestamp, handler);
-  }
-
-  /**
    * Grabs the metadata indexed by type from the field from the guid.
    *
    * @param type
@@ -171,12 +154,12 @@ public class FieldMetaData {
    * @param handler
    * @return a set of strings
    */
-  public static Set<String> lookup(MetaDataTypeName type, String guid, String key,
+  public static Set<String> lookup(InternalRequestHeader header, MetaDataTypeName type, String guid, String key,
           String reader, String signature,
           String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     String field = makeFieldMetaDataKey(type, key);
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new HashSet<>();
@@ -199,9 +182,9 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode removeValue(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
+  public static ResponseCode removeValue(InternalRequestHeader header, MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(null, guid, makeFieldMetaDataKey(type, key), value, null, -1,
+    return FieldAccess.update(header, guid, makeFieldMetaDataKey(type, key), value, null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, timestamp, handler);
   }
 

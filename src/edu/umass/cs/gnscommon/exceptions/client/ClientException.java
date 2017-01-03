@@ -84,7 +84,7 @@ public class ClientException extends GNSException {
 
 							: ResponseCode.RECONFIGURATION_EXCEPTION;
 		
-		return ResponseCode.UPDATE_ERROR;
+		return ResponseCode.UNSPECIFIED_ERROR;
 	}
 
 	/**

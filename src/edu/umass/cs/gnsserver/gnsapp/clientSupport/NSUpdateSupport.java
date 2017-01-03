@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
@@ -25,8 +26,8 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-
 import edu.umass.cs.utils.Config;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -82,8 +83,11 @@ public class NSUpdateSupport {
           SignatureException, JSONException, IOException, FailedDBOperationException,
           RecordNotFoundException, FieldNotFoundException, InternalRequestException {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
+    assert(header!=null);
     // writer will be the INTERNAL_OP_SECRET for super secret internal system accesses
-    if (!GNSConfig.getInternalOpSecret().equals(writer)) {
+    if (!header.verifyInternal()
+    		//!GNSConfig.getInternalOpSecret().equals(writer)
+    		) {
       if (field != null) {
         errorCode = NSAuthentication.signatureAndACLCheck(guid, field, null,
                 writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
@@ -95,14 +99,16 @@ public class NSUpdateSupport {
                 "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
         return ResponseCode.ACCESS_ERROR;
       }
-    } else if (header != null) {
+    } else if (header != null && !writer.equals(GNSProtocol.INTERNAL_QUERIER.toString())) {
+    	// Must be internal request if here
       // This ACL check will be only used for active code remote query
       if (field != null) {
-        errorCode = NSAuthentication.aclCheck(guid, field, header.getOriginatingGUID(), MetaDataTypeName.WRITE_WHITELIST, app).getResponseCode();
+    	  assert(header.getQueryingGUID()!=null) : guid+":"+field+":"+writer+"::"+header.getOriginatingGUID();
+        errorCode = NSAuthentication.aclCheck(guid, field, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app).getResponseCode();
       } else if (userJSON != null) {
         List<String> fields = userJSON.getKeys();
         for (String aField : fields) {
-          AclCheckResult aclResult = NSAuthentication.aclCheck(guid, aField, header.getOriginatingGUID(), MetaDataTypeName.WRITE_WHITELIST, app);
+          AclCheckResult aclResult = NSAuthentication.aclCheck(guid, aField, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app);
           if (aclResult.getResponseCode().isExceptionOrError()) {
             errorCode = aclResult.getResponseCode();
           }

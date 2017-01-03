@@ -24,11 +24,13 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.BasicGuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
@@ -112,7 +114,6 @@ public class ServerIntegrationTest_test010OnlyTest extends DefaultTest {
   private static final String GNS_HOME = HOME + "/" + GNS_DIR + "/";
 
   private static final int DEFAULT_READ_TIMEOUT = 10 * 1000; //Default read timeout in ms.
-  private static final int LONG_READ_TIMEOUT = 30 * 1000; //Read timeout for tests that require more time.
 
   private static final String getPath(String filename) {
     if (new File(filename).exists()) {
@@ -226,6 +227,9 @@ public class ServerIntegrationTest_test010OnlyTest extends DefaultTest {
 	logProps.load(new FileInputStream(System.getProperty(DefaultProps.LOGGING_PROPERTIES.key)));
 	String logFiles = logProps.getProperty("java.util.logging.FileHandler.pattern").replaceAll("%.*", "").trim() + "*";
 
+    System.out.println("Trying to delete log files "+ logFiles);
+    RunServer.command("rm -f " + logFiles, ".", false);
+
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
         
@@ -257,13 +261,6 @@ public class ServerIntegrationTest_test010OnlyTest extends DefaultTest {
         options = SCRIPTS_OPTIONS;
       }
 
-      // fragile code
-//      String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
-//      ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
-//      String logFiles = output.get(0) + "*";
-      
-      System.out.println("Trying to delete log files "+ logFiles);
-      RunServer.command("rm -f " + logFiles, ".", false);
 
       System.out.println(System
               .getProperty(DefaultProps.SERVER_COMMAND.key)
@@ -331,7 +328,6 @@ public class ServerIntegrationTest_test010OnlyTest extends DefaultTest {
     int tries = 5;
     boolean accountCreated = false;
 
-    long t = System.currentTimeMillis();
     Thread.sleep(WAIT_TILL_ALL_SERVERS_READY);
 
     do {
@@ -427,13 +423,7 @@ public class ServerIntegrationTest_test010OnlyTest extends DefaultTest {
 
   }
 
-  private static final int RETRANSMISSION_INTERVAL = 100;
-
   // arun: this should be zero
-  /* Brendan: setting this to nonzero so it can be used for SELECT tests since
-   * SELECTS don't consistently read UPDATES.
-   */
-  private static final long COORDINATION_WAIT = 10000;
 
   /**
    * arun: Coordinated operations generally need some settling time before
@@ -459,9 +449,6 @@ public class ServerIntegrationTest_test010OnlyTest extends DefaultTest {
 		}
 	}
 
-	private static void waitSettle() {
-		waitSettle(COORDINATION_WAIT);
-	}
 
   /* TODO:
    * Brendan: I've begun checking tests to make sure that logically
@@ -478,24 +465,32 @@ public class ServerIntegrationTest_test010OnlyTest extends DefaultTest {
    */
   /**
    * Creates a guid.
+ * @throws ClientException 
+ * @throws IOException 
    */
-  @Test
-  public void test_010_CreateEntity() {
-	  int reps = Integer.parseInt(System.getProperty("reps"));
-    //CHECKED FOR VALIDITY
-    String alias=null;
-    GuidEntry guidEntry = null;
-    int i=0;
-    try {
-    	for(i=0; i<reps; i++ )
-    		guidEntry = client.guidCreate(masterGuid, alias=("testGUID" + RandomString.randomString(12)));
-    } catch (Exception e) {
-      failWithStackTrace("Exception while creating guid in rep " + i + ": ", e);
-    }
-    Assert.assertNotNull(guidEntry);
-    Assert.assertEquals(alias, guidEntry.getEntityName());
-    System.out.print("with " + reps + " reps");
-  }
+	@Test
+	public void test_010_CreateEntity() throws ClientException, IOException {
+		int reps = Integer.parseInt(System.getProperty("reps"));
+		// CHECKED FOR VALIDITY
+
+		int i = 0;
+		try {
+			for (i = 0; i < reps; i++) {
+				String alias = "testGUID" + RandomString.randomString(12);
+				String createdGUID = client.execute(
+						GNSCommand.createGUID(masterGuid, alias))
+						.getResultString();
+				Assert.assertEquals(alias, GuidUtils.getGUIDKeys(alias).entityName);
+				Assert.assertEquals(createdGUID,
+						GuidUtils.getGUIDKeys(alias).guid);
+				System.out.print(i + " ");
+			}
+		} catch (Exception e) {
+			failWithStackTrace("Exception while creating guid in rep " + i
+					+ ": ", e);
+		}
+		System.out.print("with " + reps + " reps");
+	}
 
   /**
    * Removes a guid.

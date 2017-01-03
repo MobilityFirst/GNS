@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
@@ -574,10 +575,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   }
 
   // internal utility method
-  private String getRespStr() {
+  private String getRespStr() throws ClientException {
     this.finish();
     if (this.result != null) {
-      return ((ResponsePacket) this.result).getReturnValue();
+      return CommandUtils.checkResponse((ResponsePacket) this.result, this).getReturnValue();
     } else {
       return null;
     }
@@ -607,19 +608,24 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return this;
   }
 
-  /**
-   * arun: The getResult methods below must satisfy the following invariants:
-   * (1) A successful (without exceptions) invocation of the method can return
-   * a non-null value at most once. This invariant implies that this.result
-   * should be set to null upon a successful invocation.
-   *
-   * (2) The method is atomic (all-or-none), i.e., exceptions because of the
-   * caller expecting the wrong result type, e.g., invoking getResultList when
-   * the response is a Map, should not change any state and still allow the
-   * caller to still call other getResult methods until one is successful.
-   * This invariant implies that this.result should be reset to null only for
-   * successful calls.
-   */
+	/**
+	 * arun: The getResult methods below must satisfy the following invariants:
+	 * (1) A successful (without exceptions) invocation of the method can return
+	 * a non-null value at most once. This invariant implies that this.result
+	 * should be set to null upon a successful invocation.
+	 *
+	 * (2) The method is atomic (all-or-none), i.e., exceptions because of the
+	 * caller expecting the wrong result type, e.g., invoking getResultList when
+	 * the response is a Map, should not change any state and still allow the
+	 * caller to still call other getResult methods until one is successful.
+	 * This invariant implies that @code{this.result} should be reset to null
+	 * only for successful calls.
+	 * 
+	 * The above invariants are not implemented here. JDBC implementations discourage
+	 * repeat calls for performance reasons, but we don't currently have this concern
+	 * because we fetch and store the entire result.
+	 */
+  
   /**
    * @return The result of executing this command.
    * @throws ClientException

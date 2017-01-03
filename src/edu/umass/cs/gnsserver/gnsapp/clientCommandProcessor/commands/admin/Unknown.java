@@ -23,8 +23,9 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -60,7 +61,7 @@ public class Unknown extends AbstractCommand {
   }
   
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler)
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler)
           throws InvalidKeyException, InvalidKeySpecException, JSONException,
           NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException, ParseException {
     throw new UnsupportedOperationException("No implementation.");

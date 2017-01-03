@@ -494,6 +494,13 @@ public enum GNSProtocol {
    * Proof that this request is internal. 
    */
   INTERNAL_PROOF ("IPROOF"),
+  
+  /**
+   * Special reader or writer to indicate that the querier is internal.
+   * The proof that this request is internal is *NOT* in the secrecy of
+   * this string.
+   */
+  INTERNAL_QUERIER("IQUERIER"),
 
   /**
    * Long client request ID in every {@link edu.umass.cs.gnscommon.packets.CommandPacket}.

@@ -65,8 +65,9 @@ public interface InternalRequestHeader {
 	}
 	
 	/**
+	 * @param internal 
 	 */
-	default void internalize() {
+	default void markInternal(boolean internal) {
 		// do nothing
 	}
 	
@@ -75,5 +76,5 @@ public interface InternalRequestHeader {
 	 */
 	default boolean verifyInternal() {
 		return false;
-	}
+	}	
 }

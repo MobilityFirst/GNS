@@ -165,11 +165,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   @Override
-  public CommandPacket getOriginRequest(InternalRequestHeader header) {
-    return this.app.getOriginRequest(header);
-  }
-
-  @Override
   public GNSClientInternal getInternalClient() {
 	  return this.internalClient;
   }

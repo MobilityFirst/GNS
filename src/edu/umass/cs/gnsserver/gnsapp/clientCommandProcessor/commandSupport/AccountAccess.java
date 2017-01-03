@@ -689,7 +689,7 @@ public class AccountAccess {
 	 * @param handler
 	 * @return the command response
 	 */
-	public static CommandResponse resetPublicKey(String guid, String password,
+	public static CommandResponse resetPublicKey(InternalRequestHeader header, String guid, String password,
 			String publicKey, ClientRequestHandlerInterface handler) {
 		AccountInfo accountInfo;
 		if ((accountInfo = lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
@@ -718,7 +718,7 @@ public class AccountAccess {
 		} else {
 			guidInfo.setPublicKey(publicKey);
 			guidInfo.noteUpdate();
-			if (updateGuidInfoNoAuthentication(guidInfo, handler)) {
+			if (updateGuidInfoNoAuthentication(header, guidInfo, handler)) {
 				return new CommandResponse(ResponseCode.NO_ERROR,
 						GNSProtocol.OK_RESPONSE.toString() + " "
 								+ "Public key has been updated.");
@@ -816,8 +816,7 @@ public class AccountAccess {
 						|| GUIDmatchingHRNExists(header, handler, returnCode,
 								name, guid))
 					// all good if here
-					return new CommandResponse(ResponseCode.NO_ERROR,
-							GNSProtocol.OK_RESPONSE.toString());
+					return CommandResponse.noError();
 
 				if (returnCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
 					// try to delete the record we added above
@@ -859,14 +858,16 @@ public class AccountAccess {
 		try {
 			if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
 				if (guid.equals(
-				// handler.getRemoteQuery().fieldRead(name,GNSProtocol.GUID.toString())
+//				 handler.getRemoteQuery().fieldRead(name,GNSProtocol.GUID.toString())
 				handler.getInternalClient()
 						.execute(
 								GNSCommandInternal.fieldRead(name,
-										GNSProtocol.GUID.toString(), header))
-						.getResultString()))
+										InternalField.makeInternalFieldString(GNSProtocol.GUID.toString()), header))
+						.getResultString()
+				 ))
 					return true;
-		} catch (IOException | InternalRequestException e) {
+		} catch (IOException | InternalRequestException 
+				e) {
 			throw new ClientException(ResponseCode.UNSPECIFIED_ERROR,
 					e.getMessage(), e);
 		}
@@ -882,8 +883,8 @@ public class AccountAccess {
 				// handler.getRemoteQuery().fieldRead(guid,GNSProtocol.NAME.toString())
 				handler.getInternalClient()
 						.execute(
-								GNSCommandInternal.fieldRead(name,
-										GNSProtocol.NAME.toString(), header))
+								GNSCommandInternal.fieldRead(guid,
+										InternalField.makeInternalFieldString(GNSProtocol.NAME.toString()), header))
 						.getResultString()))
 					return true;
 		} catch (IOException | InternalRequestException e) {
@@ -939,7 +940,7 @@ public class AccountAccess {
 		boolean removedGroupLinks = false, deletedGUID = false, deletedName = false, deletedAliases = false;
 		try {
 			// First remove any group links
-			GroupAccess.cleanupGroupsForDelete(accountInfo.getGuid(), handler);
+			GroupAccess.cleanupGroupsForDelete(header, accountInfo.getGuid(), handler);
 			removedGroupLinks = true;
 			// Then remove the HRN link
 			if (!handler.getRemoteQuery()
@@ -1026,13 +1027,14 @@ public class AccountAccess {
 		 * bindings. If an HRN being created already exists, but the
 		 * corresponding GUID does not exist, we should create it. Otherwise,
 		 * the caller will interpret the duplicate name exception incorrectly as
-		 * a successful creation. */
-
-		/* if ((AccountAccess.lookupGuidAnywhere(name, handler)) != null) {
+		 * a successful creation. 
+		 * 
+ 		 * if ((AccountAccess.lookupGuidAnywhere(name, handler)) != null) {
 		 * return new CommandResponse( ResponseCode.DUPLICATE_NAME_EXCEPTION,
 		 * GNSProtocol.BAD_RESPONSE.toString() + " " +
-		 * GNSProtocol.DUPLICATE_NAME.toString() + " " + name); } if
-		 * ((AccountAccess.lookupGuidInfoAnywhere(guid, handler)) != null) {
+		 * GNSProtocol.DUPLICATE_NAME.toString() + " " + name); }
+		 * 
+		 * if ((AccountAccess.lookupGuidInfoAnywhere(guid, handler)) != null) {
 		 * return new CommandResponse( ResponseCode.DUPLICATE_GUID_EXCEPTION,
 		 * GNSProtocol.BAD_RESPONSE.toString() + " " +
 		 * GNSProtocol.DUPLICATE_GUID.toString() + " " + name); } */
@@ -1390,7 +1392,7 @@ public class AccountAccess {
 		boolean removedGroupLinks = false, deletedGUID = false, deletedName = false;
 		try {
 			// First remove any group links
-			GroupAccess.cleanupGroupsForDelete(guidInfo.getGuid(), handler);
+			GroupAccess.cleanupGroupsForDelete(header, guidInfo.getGuid(), handler);
 			removedGroupLinks = true;
 			// Then remove the guid record
 			if (!handler.getRemoteQuery()
@@ -1591,59 +1593,7 @@ public class AccountAccess {
 				GNSProtocol.OK_RESPONSE.toString());
 	}
 
-	/**
-	 * Add a tag to a GUID.
-	 *
-	 * @param guidInfo
-	 * @param tag
-	 * @param writer
-	 * @param signature
-	 * @param message
-	 * @param timestamp
-	 * @param handler
-	 * @return status result
-	 */
-	public static CommandResponse addTag(GuidInfo guidInfo, String tag,
-			String writer, String signature, String message, Date timestamp,
-			ClientRequestHandlerInterface handler) {
-		guidInfo.addTag(tag);
-		guidInfo.noteUpdate();
-		if (updateGuidInfo(guidInfo, writer, signature, message, timestamp,
-				handler).isExceptionOrError()) {
-			return new CommandResponse(ResponseCode.UPDATE_ERROR,
-					GNSProtocol.BAD_RESPONSE.toString() + " "
-							+ GNSProtocol.UPDATE_ERROR.toString());
-		}
-		return new CommandResponse(ResponseCode.NO_ERROR,
-				GNSProtocol.OK_RESPONSE.toString());
-	}
 
-	/**
-	 * Remove a tag from a GUID.
-	 *
-	 * @param guidInfo
-	 * @param tag
-	 * @param writer
-	 * @param signature
-	 * @param message
-	 * @param timestamp
-	 * @param handler
-	 * @return status result
-	 */
-	public static CommandResponse removeTag(GuidInfo guidInfo, String tag,
-			String writer, String signature, String message, Date timestamp,
-			ClientRequestHandlerInterface handler) {
-		guidInfo.removeTag(tag);
-		guidInfo.noteUpdate();
-		if (updateGuidInfo(guidInfo, writer, signature, message, timestamp,
-				handler).isExceptionOrError()) {
-			return new CommandResponse(ResponseCode.UPDATE_ERROR,
-					GNSProtocol.BAD_RESPONSE.toString() + " "
-							+ GNSProtocol.UPDATE_ERROR.toString());
-		}
-		return new CommandResponse(ResponseCode.NO_ERROR,
-				GNSProtocol.OK_RESPONSE.toString());
-	}
 
 	private static ResponseCode updateAccountInfo(InternalRequestHeader header,
 			String guid, AccountInfo accountInfo, String writer,
@@ -1698,17 +1648,19 @@ public class AccountAccess {
 			InternalRequestHeader header, AccountInfo accountInfo,
 			ClientRequestHandlerInterface handler, boolean remoteUpdate) {
 		return !updateAccountInfo(header, accountInfo.getGuid(), accountInfo,
-				GNSConfig.getInternalOpSecret(), null, null, null, handler,
+				GNSProtocol.INTERNAL_QUERIER.toString(), 
+//				GNSConfig.getInternalOpSecret(),
+				null, null, null, handler,
 				remoteUpdate).isExceptionOrError();
 	}
 
-	private static ResponseCode updateGuidInfo(GuidInfo guidInfo,
+	private static ResponseCode updateGuidInfo(InternalRequestHeader header, GuidInfo guidInfo,
 			String writer, String signature, String message, Date timestamp,
 			ClientRequestHandlerInterface handler) {
 		try {
 			JSONObject json = new JSONObject();
 			json.put(GUID_INFO, guidInfo.toJSONObject());
-			ResponseCode response = FieldAccess.updateUserJSON(null,
+			ResponseCode response = FieldAccess.updateUserJSON(header,
 					guidInfo.getGuid(), json, writer, signature, message,
 					timestamp, handler);
 			return response;
@@ -1719,10 +1671,12 @@ public class AccountAccess {
 		}
 	}
 
-	private static boolean updateGuidInfoNoAuthentication(GuidInfo guidInfo,
+	private static boolean updateGuidInfoNoAuthentication(InternalRequestHeader header, GuidInfo guidInfo,
 			ClientRequestHandlerInterface handler) {
 
-		return !updateGuidInfo(guidInfo, GNSConfig.getInternalOpSecret(),
+		return !updateGuidInfo(header, guidInfo,
+				GNSProtocol.INTERNAL_QUERIER.toString(),
+				//GNSConfig.getInternalOpSecret(),
 		// Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET),
 				null, null, null, handler).isExceptionOrError();
 	}

@@ -96,4 +96,12 @@ public class CommandResponse {
 						+ e.getMessage());
 
 	}
+	
+	/**
+	 * @return Default no error response.
+	 */
+	public static CommandResponse noError() {
+		return new CommandResponse(ResponseCode.NO_ERROR,
+				GNSProtocol.OK_RESPONSE.toString());		
+	}
 }
