@@ -1,11 +1,9 @@
 package edu.umass.cs.gnsserver.gnsapp;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -13,15 +11,11 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
-import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
-import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync.ReconfigurationException;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
 /**
  * @author arun
@@ -46,11 +40,13 @@ public class GNSClientInternal extends GNSClient {
 	public GNSClientInternal(String myID) throws IOException {
 		this.myID = myID;
 	}
-
+	
+        @Override
 	protected Set<IntegerPacketType> getRequestTypes() {
 		return INTERNAL_CLIENT_TYPES;
 	}
 
+        @Override
 	protected String getLabel() {
 		return GNSClientInternal.class.getSimpleName();
 	}
@@ -81,11 +77,10 @@ public class GNSClientInternal extends GNSClient {
 		if (command.needsCoordination())
 			return (COORDINATION_TIMEOUT + (long) (PacketUtils
 					.getLengthEstimate(command) * SIZE_TIMEOUT_FACTOR));
-
 		return LOCAL_TIMEOUT;
 	}
 
-	private static final long getTimeout(ClientReconfigurationPacket crp) {
+	private static long getTimeout(ClientReconfigurationPacket crp) {
 		long timeout = RC_TIMEOUT;
 		switch (crp.getType()) {
 		case CREATE_SERVICE_NAME:
@@ -97,6 +92,7 @@ public class GNSClientInternal extends GNSClient {
 		return timeout;
 	}
 
+        @Override
 	public String toString() {
 		return super.toString() + ":" + this.myID;
 	}
@@ -112,8 +108,8 @@ public class GNSClientInternal extends GNSClient {
 		assert (crp instanceof CreateServiceName || crp instanceof DeleteServiceName);
 		ClientReconfigurationPacket response = null;
 		try {
-			response = (ClientReconfigurationPacket) this.asyncClient
-					.sendRequest(crp, getTimeout(crp));
+			response = this.asyncClient
+                                .sendRequest(crp, getTimeout(crp));
 			/* arun: Async client now only returns successful or null (upon a
 			 * timeout) responses and throws an exception upon a failure of a
 			 * create/delete/request_actives ClientReconfigurationPacket. */
@@ -121,9 +117,10 @@ public class GNSClientInternal extends GNSClient {
 		} catch (ReconfigurationException | IOException e) {
 			throw new ClientException(e);
 		}
-		if (response == null)
-			throw new ClientException(ResponseCode.TIMEOUT, this
-					+ " timed out on " + crp.getSummary());
+		if (response == null) {
+                  throw new ClientException(ResponseCode.TIMEOUT, this
+                          + " timed out on " + crp.getSummary());
+                }
 		return ResponseCode.NO_ERROR;
 	}
 
@@ -144,13 +141,20 @@ public class GNSClientInternal extends GNSClient {
 		} catch (ClientException e) {
 			if (e.getCode().equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
 				return e.getCode();
+			if (e.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
+                          return e.getCode();
+                        }
 			throw e;
 		}
 	}
 
 	/**
 	 * Overrides corresponding {@link GNSClient} method with a finite timeout.
+         * @return a command packet
+         * @throws java.io.IOException
+         * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
 	 */
+        @Override
 	public CommandPacket execute(CommandPacket command) throws IOException,
 			ClientException {
 		return (CommandPacket) this.execute(command, getTimeout(command));

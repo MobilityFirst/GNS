@@ -108,6 +108,8 @@ public class GNSClient {
 	 * reinforce the fact that the set of reconfigurators may change dynamically
 	 * but this constant and for that matter even the contents of client
 	 * properties file may not.
+	 * 
+	 * @return the static reconfigurators
 	 */
 	protected static Set<InetSocketAddress> getStaticReconfigurators() {
 		try {
@@ -117,8 +119,7 @@ public class GNSClient {
 					+ GNSClient.class.getSimpleName()
 					+ " unable to find any reconfigurators; falling back to "
 					+ ((DEFAULT_LOCAL_RECONFIGURATOR)) + "]");
-			return new HashSet<InetSocketAddress>(
-					Arrays.asList(DEFAULT_LOCAL_RECONFIGURATOR));
+			return new HashSet<>(Arrays.asList(DEFAULT_LOCAL_RECONFIGURATOR));
 		}
 	}
 
@@ -154,7 +155,7 @@ public class GNSClient {
 	}
 
 	protected Set<IntegerPacketType> getRequestTypes() {
-		return clientPacketTypes;
+		return CLIENT_PACKET_TYPES;
 	}
 
 	/**
@@ -286,6 +287,7 @@ public class GNSClient {
 	 * 
 	 * @param packet
 	 * @param timeout
+	 * @param retries
 	 * @return the request
 	 * @throws IOException
 	 * @throws ClientException
@@ -317,9 +319,11 @@ public class GNSClient {
 		int count = 0;
 		do {
 			if (count > 0)
-				GNSClientConfig.getLogger().log(Level.INFO,
-						"{0} attempting retransmission {1} upon timeout of {2}",
-						new Object[] { this, count, packet });
+				GNSClientConfig
+						.getLogger()
+						.log(Level.INFO,
+								"{0} attempting retransmission {1} upon timeout of {2}",
+								new Object[] { this, count, packet });
 
 			response = defaultHandleResponse(this.sendSyncInternal(packet,
 					timeout));
@@ -444,7 +448,20 @@ public class GNSClient {
 						+ commandPacket.getSummary());
 	}
 
-	private static final Set<IntegerPacketType> clientPacketTypes = new HashSet<>(
+	/**
+	 * @param packet
+	 * @return Same as {@link #getResponsePacket(CommandPacket, long)} but with
+	 *         an infinite timeout.
+	 *
+	 * @throws IOException
+	 * @throws ClientException 
+	 */
+	protected ResponsePacket getCommandValueReturnPacket(CommandPacket packet)
+			throws IOException, ClientException {
+		return this.getResponsePacket(packet, 0);
+	}
+
+	private static final Set<IntegerPacketType> CLIENT_PACKET_TYPES = new HashSet<>(
 			Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
 
 	/**
@@ -511,7 +528,8 @@ public class GNSClient {
 					GNSClientConfig.getLogger().log(Level.FINER,
 							"{0} retrieving packet from received json {1}",
 							new Object[] { this, json });
-					if (clientPacketTypes.contains(Packet.getPacketType(json))) {
+					if (CLIENT_PACKET_TYPES
+							.contains(Packet.getPacketType(json))) {
 						response = (Request) Packet.createInstance(json,
 								unstringer);
 					}
@@ -531,7 +549,7 @@ public class GNSClient {
 		 */
 		@Override
 		public Set<IntegerPacketType> getRequestTypes() {
-			return clientPacketTypes;
+			return CLIENT_PACKET_TYPES;
 		}
 
 		/**
@@ -616,7 +634,7 @@ public class GNSClient {
 	 */
 	public CommandPacket execute(CommandPacket command) throws IOException,
 			ClientException {
-		return (CommandPacket) this.sendSync(command);
+		return this.sendSync(command);
 	}
 
 	/**
@@ -640,7 +658,7 @@ public class GNSClient {
 	 */
 	public CommandPacket execute(CommandPacket command, long timeout)
 			throws IOException, ClientException {
-		return (CommandPacket) this.sendSync(command, timeout);
+		return this.sendSync(command, timeout);
 	}
 
 	/**
