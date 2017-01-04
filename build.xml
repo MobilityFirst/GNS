@@ -512,7 +512,9 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     <property name="waitTillAllServersReady" value="5000"/>
     <property name="reps" value="1"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
-      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest_test010OnlyTest"/>
+      <test
+name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"
+methods="test_010_CreateEntity"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>

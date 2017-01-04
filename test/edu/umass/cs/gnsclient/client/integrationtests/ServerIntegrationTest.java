@@ -59,6 +59,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -72,6 +73,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Repeat;
+import edu.umass.cs.utils.RepeatRule;
 import edu.umass.cs.utils.Util;
 
 import java.awt.geom.Point2D;
@@ -485,14 +487,19 @@ public class ServerIntegrationTest extends DefaultTest {
    * TODO: Increase the timeout for these test commands so that they almost never fail due to timeout.
    * 
    */
-
+	 /**
+	 * To repeat a test a given number of times.
+	 */
+	@Rule
+	 public RepeatRule repeatRule = new RepeatRule();
+	 
 	/**
 	 * Creates a guid.
 	 * 
 	 * @throws Exception
 	 */
 	@Test
-	@Repeat(times=10)
+	@Repeat( times = 10 )
 	public void test_010_CreateEntity() throws Exception {
 		// CHECKED FOR VALIDITY
 		String alias = "testGUID" + RandomString.randomString(12);
@@ -500,7 +507,6 @@ public class ServerIntegrationTest extends DefaultTest {
 						.getResultString();
 		Assert.assertEquals(alias, GuidUtils.getGUIDKeys(alias).entityName);
 		Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
-
 		// deprecated client test
 		// GuidEntry guidEntry = clientCommands.guidCreate(masterGuid, alias);
 		// Assert.assertNotNull(guidEntry);
