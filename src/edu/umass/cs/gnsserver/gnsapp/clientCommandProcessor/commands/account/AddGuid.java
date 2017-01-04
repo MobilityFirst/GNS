@@ -84,11 +84,11 @@ public class AddGuid extends AbstractCommand {
 //    byte[] publicKeyBytes = Base64.decode(publicKey);
 //    String newGuid = SharedGuidUtils.createGuidStringFromPublicKey(publicKeyBytes);
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accountGuid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + accountGuid);
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(accountGuid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(header, accountGuid, handler);
       if (accountInfo == null) {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + accountGuid);
       }

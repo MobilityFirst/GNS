@@ -23,7 +23,9 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -84,21 +86,26 @@ public class GroupAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+ * @throws InternalRequestException 
    */
   public static ResponseCode addToGroup(InternalRequestHeader header, String guid, String memberGuid, String writer,
           String signature, String message, Date timestamp,
-          ClientRequestHandlerInterface handler) throws IOException, JSONException, ClientException {
+          ClientRequestHandlerInterface handler) throws IOException, JSONException, ClientException, InternalRequestException {
     ResponseCode code;
-//    if (USE_OLD_UPDATE) {
-//      handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, new ResultValue(Arrays.asList(memberGuid)));
-//      code = ResponseCode.NO_ERROR;
-//    } else {
       code = FieldAccess.update(header, guid, GROUP, new ResultValue(Arrays.asList(memberGuid)), null, -1,
               UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message,
               timestamp, handler);
     //}
     if (code.isOKResult()) {
       handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
+      /* arun: The code below will fail by design because we can not follow a coordinated request with another
+       * coordinated request. We need to refactor the implementation of addToGuid so that the update and append
+       * are issued by an outer uncoordinated task.
+       */
+//    	handler.getInternalClient().execute(
+//				GNSCommandInternal.fieldAppendToArray(memberGuid,
+//						GROUPS, new ResultValue(Arrays.asList(guid)),
+//						header));
     }
     return code;
   }
@@ -122,10 +129,11 @@ public class GroupAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
+ * @throws InternalRequestException 
    */
   public static ResponseCode addToGroup(InternalRequestHeader header, String guid, ResultValue members, String writer,
           String signature, String message, Date timestamp,
-          ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
+          ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException, InternalRequestException {
 
     ResponseCode code;
 //    if (USE_OLD_UPDATE) {
@@ -138,7 +146,11 @@ public class GroupAccess {
     //}
     if (code.isOKResult()) {
       for (String memberGuid : members.toStringSet()) {
-        handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
+//        handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
+				handler.getInternalClient().execute(
+						GNSCommandInternal.fieldAppendToArray(memberGuid,
+								GROUPS, new ResultValue(Arrays.asList(guid)),
+								header));
       }
     }
     return code;

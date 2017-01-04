@@ -673,15 +673,15 @@ public class FieldAccess {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     //String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so createField it...
-    if (AccountAccess.lookupGuidInfoAnywhere(guid, handler) == null) {
+    if (AccountAccess.lookupGuidInfoAnywhere(header, guid, handler) == null) {
       // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
-      if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
+      if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accountGuid, handler)) == null) {
         return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString()
                 + " " + GNSProtocol.BAD_GUID.toString() + " " + accountGuid);
       }
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(accountGuid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(header, accountGuid, handler);
       if (accountInfo == null) {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString()
                 + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + accountGuid);

@@ -115,9 +115,9 @@ public class AccountAccess {
 	 * @param handler
 	 * @return the account info
 	 */
-	public static AccountInfo lookupAccountInfoFromGuidLocally(String guid,
+	public static AccountInfo lookupAccountInfoFromGuidLocally(InternalRequestHeader header, String guid,
 			ClientRequestHandlerInterface handler) {
-		return lookupAccountInfoFromGuid(guid, handler, false);
+		return lookupAccountInfoFromGuid(header, guid, handler, false);
 	}
 
 	/**
@@ -128,9 +128,9 @@ public class AccountAccess {
 	 * @param handler
 	 * @return the account info
 	 */
-	public static AccountInfo lookupAccountInfoFromGuidAnywhere(String guid,
+	public static AccountInfo lookupAccountInfoFromGuidAnywhere(InternalRequestHeader header, String guid,
 			ClientRequestHandlerInterface handler) {
-		return lookupAccountInfoFromGuid(guid, handler, true);
+		return lookupAccountInfoFromGuid(header, guid, handler, true);
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class AccountAccess {
 	 * @param allowRemoteLookup
 	 * @return the account info record or null if it could not be found
 	 */
-	private static AccountInfo lookupAccountInfoFromGuid(String guid,
+	private static AccountInfo lookupAccountInfoFromGuid(InternalRequestHeader header, String guid,
 			ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
 		try {
 			ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null,
@@ -177,10 +177,13 @@ public class AccountAccess {
 					"LOOKING REMOTELY for ACCOUNT_INFO for {0}", guid);
 			String value = null;
 			try {
-				value = handler.getRemoteQuery().fieldRead(guid, ACCOUNT_INFO);
+				//value = handler.getRemoteQuery().fieldRead(guid, ACCOUNT_INFO);
+				value = handler.getInternalClient().execute(GNSCommandInternal.fieldRead(guid, ACCOUNT_INFO, header)).getResultString();
 			} catch (IOException | JSONException | ClientException e) {
 				// Do nothing as this is a normal result when the record doesn't
 				// exist.
+			} catch (InternalRequestException e) {
+				e.printStackTrace();
 			}
 			if (value != null) {
 				try {
@@ -256,9 +259,9 @@ public class AccountAccess {
 	 * @param handler
 	 * @return a guid or null if the corresponding guid does not exist
 	 */
-	public static String lookupGuidAnywhere(String name,
+	public static String lookupGuidAnywhere(InternalRequestHeader header, String name,
 			ClientRequestHandlerInterface handler) {
-		return lookupGuid(name, handler, true);
+		return lookupGuid(header, name, handler, true);
 	}
 
 	/**
@@ -273,9 +276,9 @@ public class AccountAccess {
 	 * @param handler
 	 * @return a guid or null if the corresponding guid does not exist
 	 */
-	public static String lookupGuidLocally(String name,
+	public static String lookupGuidLocally(InternalRequestHeader header, String name,
 			ClientRequestHandlerInterface handler) {
-		return lookupGuid(name, handler, false);
+		return lookupGuid(header, name, handler, false);
 	}
 
 	/**
@@ -290,7 +293,7 @@ public class AccountAccess {
 	 * @param allowRemoteLookup
 	 * @return a guid or null if the corresponding guid does not exist
 	 */
-	private static String lookupGuid(String name,
+	private static String lookupGuid(InternalRequestHeader header, String name,
 			ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
 		try {
 			ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null,
@@ -314,14 +317,15 @@ public class AccountAccess {
 			GNSConfig.getLogger().log(Level.FINE,
 					"LOOKING REMOTELY for HRN_GUID for {0}", name);
 			try {
-				value = handler.getRemoteQuery().fieldRead(name, HRN_GUID);
+				//value = handler.getRemoteQuery().fieldRead(name, HRN_GUID);
+				value = handler.getInternalClient().execute(GNSCommandInternal.fieldRead(name, HRN_GUID, header)).getResultString();
 				if (!FieldAccess.SINGLE_FIELD_VALUE_ONLY && value != null) {
 					GNSConfig.getLogger().log(Level.FINE,
 							"Found HRN_GUID for {0}:{1}",
 							new Object[] { name, value });
 					value = new JSONObject(value).getString(HRN_GUID);
 				}
-			} catch (IOException | JSONException | ClientException e) {
+			} catch (IOException | JSONException | ClientException | InternalRequestException e) {
 				GNSConfig
 						.getLogger()
 						.log(Level.SEVERE,
@@ -341,9 +345,9 @@ public class AccountAccess {
 	 * @param handler
 	 * @return an {@link GuidInfo} instance
 	 */
-	public static GuidInfo lookupGuidInfoLocally(String guid,
+	public static GuidInfo lookupGuidInfoLocally(InternalRequestHeader header, String guid,
 			ClientRequestHandlerInterface handler) {
-		return lookupGuidInfo(guid, handler, false);
+		return lookupGuidInfo(header, guid, handler, false);
 	}
 
 	/**
@@ -356,9 +360,9 @@ public class AccountAccess {
 	 * @param handler
 	 * @return an {@link GuidInfo} instance
 	 */
-	public static GuidInfo lookupGuidInfoAnywhere(String guid,
+	public static GuidInfo lookupGuidInfoAnywhere(InternalRequestHeader header, String guid,
 			ClientRequestHandlerInterface handler) {
-		return lookupGuidInfo(guid, handler, true);
+		return lookupGuidInfo(header, guid, handler, true);
 	}
 
 	/**
@@ -371,7 +375,7 @@ public class AccountAccess {
 	 * @param allowRemoteLookup
 	 * @return an {@link GuidInfo} instance
 	 */
-	private static GuidInfo lookupGuidInfo(String guid,
+	private static GuidInfo lookupGuidInfo(InternalRequestHeader header, String guid,
 			ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
 		GNSConfig.getLogger().log(Level.FINE, "allowRemoteLookup is {0}",
 				allowRemoteLookup);
@@ -399,8 +403,9 @@ public class AccountAccess {
 					"LOOKING REMOTELY for GUID_INFO for {0}", guid);
 			String value = null;
 			try {
-				value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
-			} catch (IOException | JSONException | ClientException e) {
+				//value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
+				value = handler.getInternalClient().execute(GNSCommandInternal.fieldRead(guid, GUID_INFO, header)).getResultString();
+			} catch (IOException | JSONException | ClientException | InternalRequestException e) {
 				GNSConfig
 						.getLogger()
 						.log(Level.SEVERE,
@@ -432,11 +437,11 @@ public class AccountAccess {
 	 * @param handler
 	 * @return an {@link AccountInfo} instance
 	 */
-	public static AccountInfo lookupAccountInfoFromNameAnywhere(String name,
+	public static AccountInfo lookupAccountInfoFromNameAnywhere(InternalRequestHeader header, String name,
 			ClientRequestHandlerInterface handler) {
-		String guid = lookupGuidAnywhere(name, handler);
+		String guid = lookupGuidAnywhere(header, name, handler);
 		if (guid != null) {
-			return lookupAccountInfoFromGuidAnywhere(guid, handler);
+			return lookupAccountInfoFromGuidAnywhere(header, guid, handler);
 		}
 		return null;
 	}
@@ -504,7 +509,7 @@ public class AccountAccess {
 				} else {
 					// if we can't send the confirmation back out of the account
 					// creation
-					AccountInfo accountInfo = lookupAccountInfoFromGuidAnywhere(
+					AccountInfo accountInfo = lookupAccountInfoFromGuidAnywhere(header, 
 							guid, handler);
 					if (accountInfo != null) {
 						removeAccount(header, accountInfo, handler);
@@ -622,12 +627,12 @@ public class AccountAccess {
 	 * @param handler
 	 * @return the command response
 	 */
-	public static CommandResponse verifyAccount(String guid, String code,
+	public static CommandResponse verifyAccount(InternalRequestHeader header, String guid, String code,
 			ClientRequestHandlerInterface handler) {
 		GNSConfig.getLogger().log(Level.FINE,
 				"*********** VERIFICATION CODE {0}", code);
 		AccountInfo accountInfo;
-		if ((accountInfo = lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
+		if ((accountInfo = lookupAccountInfoFromGuidLocally(header, guid, handler)) == null) {
 			return new CommandResponse(ResponseCode.VERIFICATION_ERROR,
 					GNSProtocol.BAD_RESPONSE.toString() + " "
 							+ GNSProtocol.VERIFICATION_ERROR.toString() + " "
@@ -692,7 +697,7 @@ public class AccountAccess {
 	public static CommandResponse resetPublicKey(InternalRequestHeader header, String guid, String password,
 			String publicKey, ClientRequestHandlerInterface handler) {
 		AccountInfo accountInfo;
-		if ((accountInfo = lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
+		if ((accountInfo = lookupAccountInfoFromGuidLocally(header, guid, handler)) == null) {
 			return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
 					GNSProtocol.BAD_RESPONSE.toString() + " "
 							+ GNSProtocol.BAD_ACCOUNT.toString() + " "
@@ -710,7 +715,7 @@ public class AccountAccess {
 							+ "Password mismatch");
 		}
 		GuidInfo guidInfo;
-		if ((guidInfo = lookupGuidInfoLocally(guid, handler)) == null) {
+		if ((guidInfo = lookupGuidInfoLocally(header, guid, handler)) == null) {
 			return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
 					GNSProtocol.BAD_RESPONSE.toString() + " "
 							+ GNSProtocol.BAD_ACCOUNT.toString() + " "
@@ -958,7 +963,7 @@ public class AccountAccess {
 				deletedAliases = true;
 				// get rid of all subguids
 				for (String subguid : accountInfo.getGuids()) {
-					GuidInfo subGuidInfo = lookupGuidInfoAnywhere(subguid,
+					GuidInfo subGuidInfo = lookupGuidInfoAnywhere(header, subguid,
 							handler);
 					if (subGuidInfo != null) { // should not be null, ignore if
 												// it is
@@ -1360,7 +1365,7 @@ public class AccountAccess {
 		// First make sure guid is not an account GUID
 		// (unless we're sure it's not because we're deleting an account guid)
 		if (!ignoreAccountGuid) {
-			if (lookupAccountInfoFromGuidAnywhere(guidInfo.getGuid(), handler) != null) {
+			if (lookupAccountInfoFromGuidAnywhere(header, guidInfo.getGuid(), handler) != null) {
 				return new CommandResponse(ResponseCode.BAD_GUID_ERROR,
 						GNSProtocol.BAD_RESPONSE.toString() + " "
 								+ GNSProtocol.BAD_GUID.toString() + " "
@@ -1379,7 +1384,7 @@ public class AccountAccess {
 								+ guidInfo.getGuid()
 								+ " does not have a primary account guid");
 			}
-			if ((accountInfo = lookupAccountInfoFromGuidAnywhere(accountGuid,
+			if ((accountInfo = lookupAccountInfoFromGuidAnywhere(header, accountGuid,
 					handler)) == null) {
 				return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
 						GNSProtocol.BAD_RESPONSE.toString() + " "

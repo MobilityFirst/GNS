@@ -83,11 +83,11 @@ public class AddMultipleGuids extends AbstractCommand {
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
 
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(guid, handler)) == null) {
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header,guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(guid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(header, guid, handler);
       if (accountInfo == null) {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
       }

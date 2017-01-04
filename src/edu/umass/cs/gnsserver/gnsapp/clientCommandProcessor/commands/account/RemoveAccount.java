@@ -79,13 +79,13 @@ public class RemoveAccount extends AbstractCommand {
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     GuidInfo guidInfo;
     // Fixme: verify that we might need to look remotely for this.
-    if ((guidInfo = AccountAccess.lookupGuidInfoAnywhere(guid, handler)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfoAnywhere(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     try {
       if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
         // Fixme: verify that we might need to look remotely for this.
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(name, handler);
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
         if (accountInfo != null) {
           return AccountAccess.removeAccount(header, accountInfo, handler);
         } else {

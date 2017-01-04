@@ -75,14 +75,14 @@ public class ResendAuthenticationEmail extends AbstractCommand {
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     if (!NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
       return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
     AccountInfo accountInfo;
-    if ((accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
+    if ((accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
     } else {
       try {

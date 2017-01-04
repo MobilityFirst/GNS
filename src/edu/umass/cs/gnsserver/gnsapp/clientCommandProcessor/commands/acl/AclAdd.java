@@ -92,7 +92,7 @@ public class AclAdd extends AbstractCommand {
       accessorPublicKey = GNSProtocol.EVERYONE.toString();
     } else {
       GuidInfo accessorGuidInfo;
-      if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accesser, handler)) == null) {
+      if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accesser, handler)) == null) {
         return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + accesser);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();

@@ -62,7 +62,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GNSProtocol.GUID.toString());
     AccountInfo acccountInfo;
-    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
+    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
     }
     if (acccountInfo != null) {

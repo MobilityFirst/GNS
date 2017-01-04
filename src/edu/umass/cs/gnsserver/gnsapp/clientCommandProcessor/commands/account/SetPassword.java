@@ -72,7 +72,7 @@ public class SetPassword extends AbstractCommand {
     String password = json.getString(GNSProtocol.PASSWORD.toString());
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
-    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler);
+    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(header, guid, handler);
     Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString())
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
     if (accountInfo == null) {

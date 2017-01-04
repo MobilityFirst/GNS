@@ -61,7 +61,7 @@ public class LookupGuid extends AbstractCommand {
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String name = json.getString(GNSProtocol.NAME.toString());
     // look for an account guid
-    String result = AccountAccess.lookupGuidLocally(name, handler);
+    String result = AccountAccess.lookupGuidLocally(header, name, handler);
     if (result != null) {
       return new CommandResponse(ResponseCode.NO_ERROR, result);
     } else {

@@ -68,7 +68,7 @@ public class LookupRandomGuids extends AbstractCommand {
     String guid = json.getString(GNSProtocol.GUID.toString());
     int count = json.getInt(GNSProtocol.GUIDCNT.toString());
     AccountInfo acccountInfo;
-    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
+    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
     }
     if (acccountInfo != null) {

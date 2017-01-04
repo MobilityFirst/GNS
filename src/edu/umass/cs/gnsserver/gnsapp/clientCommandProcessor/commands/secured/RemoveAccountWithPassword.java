@@ -73,12 +73,12 @@ public class RemoveAccountWithPassword extends AbstractCommand {
     String name = json.getString(GNSProtocol.NAME.toString());
     // The guid of this account.
     String password = json.getString(GNSProtocol.PASSWORD.toString());
-    String guid = AccountAccess.lookupGuidAnywhere(name, handler);
+    String guid = AccountAccess.lookupGuidAnywhere(header, name, handler);
     if (guid == null) {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + name);
     }
     try {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(name, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
       if (accountInfo == null) {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
       }

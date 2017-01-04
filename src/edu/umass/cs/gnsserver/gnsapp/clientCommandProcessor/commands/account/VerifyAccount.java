@@ -65,7 +65,7 @@ public class VerifyAccount extends AbstractCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GNSProtocol.GUID.toString());
     String code = json.getString(GNSProtocol.CODE.toString());
-    return AccountAccess.verifyAccount(guid, code, handler);
+    return AccountAccess.verifyAccount(header, guid, code, handler);
   }
 
   

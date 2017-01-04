@@ -12,9 +12,11 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.ResultValue;
 
 /**
  * @author arun
@@ -187,5 +189,23 @@ public class GNSCommandInternal extends InternalCommandPacket {
 				GNSProtocol.GUID.toString(), targetGUID,
 				GNSProtocol.USER_JSON.toString(),
 				new JSONObject().put(field, value));
+	}
+
+	/**
+	 * @param memberGuid
+	 * @param groups
+	 * @param resultValue
+	 * @param header
+	 * @return InternalCommandPacket
+	 * @throws InternalRequestException
+	 * @throws JSONException
+	 */
+	public static InternalCommandPacket fieldAppendToArray(String memberGuid,
+			String groups, ResultValue resultValue, InternalRequestHeader header)
+			throws InternalRequestException, JSONException {
+		return getCommand(CommandType.AppendListUnsigned, header,
+				GNSProtocol.GUID.toString(), memberGuid,
+				GNSProtocol.FIELD.toString(), groups,
+				GNSProtocol.VALUE.toString(), resultValue.toString());
 	}
 }

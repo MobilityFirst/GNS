@@ -62,7 +62,7 @@ public class LookupGuidRecord extends AbstractCommand {
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GNSProtocol.GUID.toString());
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     if (guidInfo != null) {
