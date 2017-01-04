@@ -101,7 +101,7 @@ public class SecureCommandTest {
         failWithStackTrace("Exception while looking up account record: ", e);
       }
     }
-    if (json == null) {
+    if (json != null) {
       try {
         Assert.assertTrue(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
       } catch (Exception e) {

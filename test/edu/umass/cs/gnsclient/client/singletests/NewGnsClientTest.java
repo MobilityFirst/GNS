@@ -92,7 +92,7 @@ public class NewGnsClientTest {
         fail("Exception while looking up account record: " + e);
       }
     }
-    if (json == null) {
+    if (json != null) {
       try {
         assertFalse(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
       } catch (Exception e) {
