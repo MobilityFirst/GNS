@@ -322,11 +322,17 @@ public class GNSClient {
 				GNSClientConfig
 						.getLogger()
 						.log(Level.INFO,
-								"{0} attempting retransmission {1} upon timeout of {2}",
-								new Object[] { this, count, packet });
+								"{0} attempting retransmission {1} upon timeout of {2}; {3}",
+								new Object[] { this, count, packet, response==null? "[null response]" : "" });
 
-			response = defaultHandleResponse(this.sendSyncInternal(packet,
-					timeout));
+			try {
+				response = defaultHandleResponse(this.sendSyncInternal(packet,
+						timeout));
+			} catch (ClientException ce) {
+				if (ce.getCode() == ResponseCode.TIMEOUT)
+					// do nothing
+					;
+			}
 		} while ((count++ < this.numRetriesUponTimeout && (response == null || response
 				.getErrorCode() == ResponseCode.TIMEOUT)));
 		return (response);
@@ -349,6 +355,11 @@ public class GNSClient {
 		Callback<Request, CommandPacket> future = new Callback<Request, CommandPacket>() {
 			@Override
 			public CommandPacket processResponse(Request response) {
+				GNSClientConfig.getLogger().log(
+						Level.FINE,
+						"{0} received response {1} for request {2}",
+						new Object[] { GNSClient.this, packet.getSummary(),
+								response.getSummary() });
 				processed[0] = defaultHandleResponse(response);
 				return packet;
 			}

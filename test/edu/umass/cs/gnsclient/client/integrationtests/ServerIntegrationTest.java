@@ -71,6 +71,7 @@ import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
+import edu.umass.cs.utils.Repeat;
 import edu.umass.cs.utils.Util;
 
 import java.awt.geom.Point2D;
@@ -491,6 +492,7 @@ public class ServerIntegrationTest extends DefaultTest {
 	 * @throws Exception
 	 */
 	@Test
+	@Repeat(times=10)
 	public void test_010_CreateEntity() throws Exception {
 		// CHECKED FOR VALIDITY
 		String alias = "testGUID" + RandomString.randomString(12);
@@ -739,7 +741,6 @@ public class ServerIntegrationTest extends DefaultTest {
     final String TEST_FIELD_NAME = "testField";
     GuidEntry accountGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
     		RandomString.randomString(6) + "@gns.name", PASSWORD, true);
-    p("created account GUID;");
     String testFieldName = TEST_FIELD_NAME + RandomString.randomString(6);
     test_101_ACLCreateField(accountGuid, testFieldName);
     test_110_ACLMaybeAddAllFields(accountGuid);

@@ -40,13 +40,13 @@ public class GNSClientInternal extends GNSClient {
 	public GNSClientInternal(String myID) throws IOException {
 		this.myID = myID;
 	}
-	
-        @Override
+
+	@Override
 	protected Set<IntegerPacketType> getRequestTypes() {
 		return INTERNAL_CLIENT_TYPES;
 	}
 
-        @Override
+	@Override
 	protected String getLabel() {
 		return GNSClientInternal.class.getSimpleName();
 	}
@@ -92,7 +92,7 @@ public class GNSClientInternal extends GNSClient {
 		return timeout;
 	}
 
-        @Override
+	@Override
 	public String toString() {
 		return super.toString() + ":" + this.myID;
 	}
@@ -108,8 +108,7 @@ public class GNSClientInternal extends GNSClient {
 		assert (crp instanceof CreateServiceName || crp instanceof DeleteServiceName);
 		ClientReconfigurationPacket response = null;
 		try {
-			response = this.asyncClient
-                                .sendRequest(crp, getTimeout(crp));
+			response = this.asyncClient.sendRequest(crp, getTimeout(crp));
 			/* arun: Async client now only returns successful or null (upon a
 			 * timeout) responses and throws an exception upon a failure of a
 			 * create/delete/request_actives ClientReconfigurationPacket. */
@@ -118,9 +117,9 @@ public class GNSClientInternal extends GNSClient {
 			throw new ClientException(e);
 		}
 		if (response == null) {
-                  throw new ClientException(ResponseCode.TIMEOUT, this
-                          + " timed out on " + crp.getSummary());
-                }
+			throw new ClientException(ResponseCode.TIMEOUT, this
+					+ " timed out on " + crp.getSummary());
+		}
 		return ResponseCode.NO_ERROR;
 	}
 
@@ -141,20 +140,18 @@ public class GNSClientInternal extends GNSClient {
 		} catch (ClientException e) {
 			if (e.getCode().equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
 				return e.getCode();
-			if (e.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
-                          return e.getCode();
-                        }
 			throw e;
 		}
 	}
 
 	/**
 	 * Overrides corresponding {@link GNSClient} method with a finite timeout.
-         * @return a command packet
-         * @throws java.io.IOException
-         * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+	 * 
+	 * @return a command packet
+	 * @throws java.io.IOException
+	 * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
 	 */
-        @Override
+	@Override
 	public CommandPacket execute(CommandPacket command) throws IOException,
 			ClientException {
 		return (CommandPacket) this.execute(command, getTimeout(command));
