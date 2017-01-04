@@ -536,16 +536,16 @@ public class FieldAccess {
             timestamp, handler);
   }
 
-  private static JSONArray executeSelect(SelectOperation operation, String key, Object value, Object otherValue, GNSApp app)
-          throws FailedDBOperationException, JSONException, UnknownHostException {
+  private static JSONArray executeSelect(InternalRequestHeader header, SelectOperation operation, String key, Object value, Object otherValue, GNSApp app)
+          throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
     SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, operation,
             SelectGroupBehavior.NONE, key, value, otherValue);
-    return executeSelectHelper(packet, app);
+    return executeSelectHelper(header, packet, app);
   }
 
-  private static JSONArray executeSelectHelper(SelectRequestPacket<String> packet, GNSApp app)
-          throws FailedDBOperationException, JSONException, UnknownHostException {
-    SelectResponsePacket<String> responsePacket = Select.handleSelectRequestFromClient(packet, app);
+  private static JSONArray executeSelectHelper(InternalRequestHeader header, SelectRequestPacket<String> packet, GNSApp app)
+          throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
+    SelectResponsePacket<String> responsePacket = Select.handleSelectRequestFromClient(header, packet, app);
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
@@ -560,12 +560,13 @@ public class FieldAccess {
    * @param value - the value to match
    * @param handler
    * @return a command response
+ * @throws InternalRequestException 
    */
-  public static CommandResponse select(String key, Object value, ClientRequestHandlerInterface handler) {
+  public static CommandResponse select(InternalRequestHeader header, String key, Object value, ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
       //if (Select.useLocalSelect()) {
-        result = executeSelect(SelectOperation.EQUALS, key, value, null, handler.getApp());
+        result = executeSelect(header, SelectOperation.EQUALS, key, value, null, handler.getApp());
 //      } else {
 //        result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
 //      }
@@ -585,13 +586,14 @@ public class FieldAccess {
    * @param value - a bounding box
    * @param handler
    * @return a command response
+ * @throws InternalRequestException 
    */
-  public static CommandResponse selectWithin(String key, String value,
-          ClientRequestHandlerInterface handler) {
+  public static CommandResponse selectWithin(InternalRequestHeader header, String key, String value,
+          ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
       //if (Select.useLocalSelect()) {
-        result = executeSelect(SelectOperation.WITHIN, key, value, null, handler.getApp());
+        result = executeSelect(header, SelectOperation.WITHIN, key, value, null, handler.getApp());
 //      } else {
 //        result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
 //      }
@@ -613,13 +615,14 @@ public class FieldAccess {
    * @param maxDistance - the maximum distance from position
    * @param handler
    * @return a command response
+ * @throws InternalRequestException 
    */
-  public static CommandResponse selectNear(String key, String value, String maxDistance,
-          ClientRequestHandlerInterface handler) {
+  public static CommandResponse selectNear(InternalRequestHeader header, String key, String value, String maxDistance,
+          ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
       //if (Select.useLocalSelect()) {
-        result = executeSelect(SelectOperation.NEAR, key, value, maxDistance, handler.getApp());
+        result = executeSelect(header, SelectOperation.NEAR, key, value, maxDistance, handler.getApp());
 //      } else {
 //        result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
 //      }
@@ -638,13 +641,14 @@ public class FieldAccess {
    * @param query
    * @param handler
    * @return a command response
+ * @throws InternalRequestException 
    */
-  public static CommandResponse selectQuery(String query, ClientRequestHandlerInterface handler) {
+  public static CommandResponse selectQuery(InternalRequestHeader header, String query, ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
       //if (Select.useLocalSelect()) {
         SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
-        result = executeSelectHelper(packet, handler.getApp());
+        result = executeSelectHelper(header, packet, handler.getApp());
 //      } else {
 //        result = handler.getRemoteQuery().sendSelectQuery(query);
 //      }
@@ -666,10 +670,11 @@ public class FieldAccess {
    * @param interval - the refresh interval (queries made more quickly than this will get a cached value)
    * @param handler
    * @return a command response
+ * @throws InternalRequestException 
    */
   public static CommandResponse selectGroupSetupQuery(InternalRequestHeader header, String accountGuid, String query, String publicKey,
           int interval,
-          ClientRequestHandlerInterface handler) {
+          ClientRequestHandlerInterface handler) throws InternalRequestException {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     //String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so createField it...
@@ -709,7 +714,7 @@ public class FieldAccess {
       //if (Select.useLocalSelect()) {
         SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
                 query, guid, interval);
-        result = executeSelectHelper(packet, handler.getApp());
+        result = executeSelectHelper(header, packet, handler.getApp());
 //      } else {
 //        result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
 //      }
@@ -728,13 +733,14 @@ public class FieldAccess {
    * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
    * @param handler
    * @return a command response
+ * @throws InternalRequestException 
    */
-  public static CommandResponse selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
+  public static CommandResponse selectGroupLookupQuery(InternalRequestHeader header, String guid, ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
       //if (Select.useLocalSelect()) {
         SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
-        result = executeSelectHelper(packet, handler.getApp());
+        result = executeSelectHelper(header, packet, handler.getApp());
 //      } else {
 //        result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
 //      }
@@ -786,7 +792,7 @@ public class FieldAccess {
       // note: reader can also be null here
       if (!header.verifyInternal()
               && (field != null || fields != null)) {
-        errorCode = NSAuthentication.signatureAndACLCheck(guid, field, fields, reader,
+        errorCode = NSAuthentication.signatureAndACLCheck(header, guid, field, fields, reader,
                 signature, message, MetaDataTypeName.READ_WHITELIST, app);
       } else {
     	  LOGGER.log(Level.FINE,
@@ -798,14 +804,14 @@ public class FieldAccess {
     		  return ResponseCode.NO_ERROR;
           
     	  if (field != null) {
-    		  errorCode = NSAuthentication.aclCheck(guid, field,
+    		  errorCode = NSAuthentication.aclCheck(header, guid, field,
     				  header.getQueryingGUID(),
     				  MetaDataTypeName.READ_WHITELIST, app)
     				  .getResponseCode();
     	  } else if (fields != null) {
     		  for (String aField : fields) {
     			  AclCheckResult aclResult = NSAuthentication
-    					  .aclCheck(guid, aField,
+    					  .aclCheck(header, guid, aField,
     							  header.getQueryingGUID(),
     							  MetaDataTypeName.READ_WHITELIST,
     							  app);

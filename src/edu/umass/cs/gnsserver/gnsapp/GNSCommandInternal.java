@@ -1,6 +1,7 @@
 package edu.umass.cs.gnsserver.gnsapp;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -183,29 +184,48 @@ public class GNSCommandInternal extends InternalCommandPacket {
 	 * @throws InternalRequestException
 	 */
 	public static InternalCommandPacket fieldUpdate(String targetGUID,
-			String field, JSONObject value, InternalRequestHeader header)
+			String field, Object value, InternalRequestHeader header)
 			throws JSONException, InternalRequestException {
-		return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
-				GNSProtocol.GUID.toString(), targetGUID,
-				GNSProtocol.USER_JSON.toString(),
+		return fieldUpdate(CommandType.ReplaceUserJSONUnsigned, targetGUID,
+				field, value, header);
+	}
+
+	/**
+	 * Generalized update with configurable {@code CommandType} argument.
+	 * 
+	 * @param type
+	 * @param targetGUID
+	 * @param field
+	 * @param value
+	 * @param header
+	 * @return InternalCommandPacket
+	 * @throws JSONException
+	 * @throws InternalRequestException
+	 */
+	public static InternalCommandPacket fieldUpdate(CommandType type,
+			String targetGUID, String field, Object value,
+			InternalRequestHeader header) throws JSONException,
+			InternalRequestException {
+		return getCommand(type, header, GNSProtocol.GUID.toString(),
+				targetGUID, GNSProtocol.USER_JSON.toString(),
 				new JSONObject().put(field, value));
 	}
 
 	/**
 	 * @param memberGuid
 	 * @param groups
-	 * @param resultValue
+	 * @param guid
 	 * @param header
 	 * @return InternalCommandPacket
-	 * @throws InternalRequestException
 	 * @throws JSONException
+	 * @throws InternalRequestException
 	 */
-	public static InternalCommandPacket fieldAppendToArray(String memberGuid,
-			String groups, ResultValue resultValue, InternalRequestHeader header)
+	public static InternalCommandPacket fieldRemove(String memberGuid,
+			String groups, String guid, InternalRequestHeader header)
 			throws InternalRequestException, JSONException {
-		return getCommand(CommandType.AppendListUnsigned, header,
-				GNSProtocol.GUID.toString(), memberGuid,
+		return getCommand(CommandType.RemoveUnsigned, header,
+				GNSProtocol.GUID.toString(), guid,
 				GNSProtocol.FIELD.toString(), groups,
-				GNSProtocol.VALUE.toString(), resultValue.toString());
+				GNSProtocol.VALUE.toString(), guid.toString());
 	}
 }

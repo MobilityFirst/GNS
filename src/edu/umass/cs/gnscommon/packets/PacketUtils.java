@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
@@ -40,6 +41,35 @@ public class PacketUtils {
 		return commandPacket != null ? commandPacket.getServiceName() : null;
 	}
 
+	/**
+	 * @param selectResponse
+	 * @return InternalRequestHeader
+	 */
+	public static InternalRequestHeader getInternalRequestHeader(
+			SelectResponsePacket selectResponse) {
+		return new InternalRequestHeader() {
+
+			@Override
+			public long getOriginatingRequestID() {
+				return selectResponse.getRequestID();
+			}
+
+			@Override
+			public String getOriginatingGUID() {
+				return selectResponse.getServiceName();
+			}
+
+			@Override
+			public int getTTL() {
+				return 1;
+			}
+
+			@Override
+			public boolean hasBeenCoordinatedOnce() {
+				return false;
+			}
+		};
+	}
 	/**
 	 * @param commandPacket
 	 * @return {@link InternalRequestHeader} if {@code commandPacket} is an

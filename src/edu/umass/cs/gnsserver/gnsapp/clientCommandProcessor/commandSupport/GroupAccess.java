@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -148,7 +149,8 @@ public class GroupAccess {
       for (String memberGuid : members.toStringSet()) {
 //        handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
 				handler.getInternalClient().execute(
-						GNSCommandInternal.fieldAppendToArray(memberGuid,
+						GNSCommandInternal.fieldUpdate(CommandType.AppendListUnsigned, 
+								memberGuid,
 								GROUPS, new ResultValue(Arrays.asList(guid)),
 								header));
       }
@@ -202,10 +204,11 @@ public class GroupAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
+ * @throws InternalRequestException 
    */
   public static ResponseCode removeFromGroup(InternalRequestHeader header, String guid, ResultValue members, String writer,
           String signature, String message, Date timestamp,
-          ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
+          ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException, InternalRequestException {
     ResponseCode code;
 //    if (USE_OLD_UPDATE) {
 //      handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
@@ -218,6 +221,7 @@ public class GroupAccess {
     if (code.isOKResult()) {
       for (String memberGuid : members.toStringSet()) {
         handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
+    	  handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid, GroupAccess.GROUPS, guid, header));
       }
     }
     return code;
@@ -269,7 +273,7 @@ public class GroupAccess {
     if (errorCode.isExceptionOrError()) {
       return new ResultValue();
     }
-    return NSFieldAccess.lookupListFieldAnywhere(guid, GROUPS, true, handler);
+    return NSFieldAccess.lookupListFieldAnywhere(header, guid, GROUPS, true, handler);
   }
 
   /**

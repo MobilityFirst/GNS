@@ -33,6 +33,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -208,7 +209,7 @@ public class AccountAccess {
 	 * @param allowRemoteLookup
 	 * @return a guid
 	 */
-	public static String lookupPrimaryGuid(String guid,
+	public static String lookupPrimaryGuid(InternalRequestHeader header, String guid,
 			ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
 		try {
 			ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null,
@@ -232,11 +233,12 @@ public class AccountAccess {
 			GNSConfig.getLogger().log(Level.FINE,
 					"LOOKING REMOTELY for PRIMARY_GUID for {0}", guid);
 			try {
-				value = handler.getRemoteQuery().fieldRead(guid, PRIMARY_GUID);
+				//value = handler.getRemoteQuery().fieldRead(guid, PRIMARY_GUID);
+				value = handler.getInternalClient().execute(GNSCommandInternal.fieldRead(guid, PRIMARY_GUID, header)).getResultString();
 				if (!FieldAccess.SINGLE_FIELD_VALUE_ONLY && value != null) {
 					value = new JSONObject(value).getString(PRIMARY_GUID);
 				}
-			} catch (IOException | JSONException | ClientException e) {
+			} catch (IOException | JSONException | ClientException | InternalRequestException e) {
 				GNSConfig
 						.getLogger()
 						.log(Level.SEVERE,
@@ -905,8 +907,9 @@ public class AccountAccess {
 	private static CommandResponse rollback(
 			ClientRequestHandlerInterface handler, ResponseCode returnCode,
 			String name, String guid) throws ClientException {
-		ResponseCode rollbackCode = handler.getRemoteQuery()
-				.deleteRecordSuppressExceptions(name);
+//		ResponseCode rollbackCode = handler.getRemoteQuery()
+//				.deleteRecordSuppressExceptions(name);
+		ResponseCode rollbackCode = handler.getInternalClient().sendRequest(new DeleteServiceName(name));
 		return new CommandResponse(
 				returnCode,
 				GNSProtocol.BAD_RESPONSE.toString()
@@ -1170,11 +1173,12 @@ public class AccountAccess {
 	 * @param accountGuidInfo
 	 * @param handler
 	 * @return a command response
+	 * @throws ClientException 
 	 */
 	public static CommandResponse addMultipleGuids(
 			InternalRequestHeader header, List<String> names,
 			List<String> publicKeys, AccountInfo accountInfo,
-			GuidInfo accountGuidInfo, ClientRequestHandlerInterface handler) {
+			GuidInfo accountGuidInfo, ClientRequestHandlerInterface handler)  {
 		try {
 			long startTime = System.currentTimeMillis();
 			Set<String> guids = new HashSet<>();
@@ -1218,14 +1222,21 @@ public class AccountAccess {
 			// First try to createField the HRNS to insure that that name does
 			// not
 			// already exist
-			if (!(returnCode = handler.getRemoteQuery().createRecordBatch(
-					new HashSet<>(names), hrnMap, handler))
+			Map<String,String> nameStates = new HashMap<String,String>();
+			for(String key : hrnMap.keySet()) nameStates.put(key, hrnMap.get(key).toString());
+			if (!(returnCode = 
+//					handler.getRemoteQuery().createRecordBatch(new HashSet<>(names), hrnMap, handler))
+					handler.getInternalClient().createOrExists(new CreateServiceName(null, nameStates)))
 					.isExceptionOrError()) {
 				// now we update the account info
 				if (updateAccountInfoNoAuthentication(header, accountInfo,
 						handler, true)) {
-					handler.getRemoteQuery().createRecordBatch(guids,
-							guidInfoMap, handler);
+//					handler.getRemoteQuery().createRecordBatch(guids,guidInfoMap, handler);
+					
+					HashMap<String,String> guidInfoNameStates = new HashMap<String,String>();
+					for(String key : guidInfoMap.keySet()) guidInfoNameStates.put(key, guidInfoMap.get(key).toString());
+					handler.getInternalClient().createOrExists(new CreateServiceName(null, guidInfoNameStates));
+
 					GNSConfig.getLogger().info(DelayProfiler.getStats());
 					return new CommandResponse(ResponseCode.NO_ERROR,
 							GNSProtocol.OK_RESPONSE.toString());
@@ -1239,12 +1250,12 @@ public class AccountAccess {
 					GNSProtocol.BAD_RESPONSE.toString() + " "
 							+ GNSProtocol.JSON_PARSE_ERROR.toString() + " "
 							+ e.getMessage());
-		} catch (ServerRuntimeException e) {
+		} catch (ServerRuntimeException | ClientException e) {
 			return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
 					GNSProtocol.BAD_RESPONSE.toString() + " "
 							+ GNSProtocol.UNSPECIFIED_ERROR.toString() + " "
 							+ e.getMessage());
-		}
+		} 
 	}
 
 	/**
@@ -1262,7 +1273,7 @@ public class AccountAccess {
 	public static CommandResponse addMultipleGuidsFaster(
 			InternalRequestHeader header, List<String> names,
 			AccountInfo accountInfo, GuidInfo accountGuidInfo,
-			ClientRequestHandlerInterface handler) {
+			ClientRequestHandlerInterface handler)  {
 		List<String> publicKeys = new ArrayList<>();
 		for (String name : names) {
 			String publicKey = "P" + name;
@@ -1374,7 +1385,7 @@ public class AccountAccess {
 		}
 		// Fill in a missing account info
 		if (accountInfo == null) {
-			String accountGuid = AccountAccess.lookupPrimaryGuid(
+			String accountGuid = AccountAccess.lookupPrimaryGuid(header, 
 					guidInfo.getGuid(), handler, true);
 			// should not happen unless records got messed up in GNS
 			if (accountGuid == null) {
@@ -1476,8 +1487,10 @@ public class AccountAccess {
 			ResponseCode returnCode;
 			JSONObject jsonHRN = new JSONObject();
 			jsonHRN.put(HRN_GUID, accountInfo.getGuid());
-			if ((returnCode = handler.getRemoteQuery().createRecord(alias,
-					jsonHRN)).isExceptionOrError()) {
+			if ((returnCode = 
+					//handler.getRemoteQuery().createRecord(alias,jsonHRN))
+					handler.getInternalClient().createOrExists(new CreateServiceName(alias, jsonHRN.toString()))
+					).isExceptionOrError()) {
 				// roll this back
 				accountInfo.removeAlias(alias);
 				return new CommandResponse(returnCode,
@@ -1491,7 +1504,8 @@ public class AccountAccess {
 					writer, signature, message, timestamp, handler, true)
 					.isExceptionOrError()) {
 				// back out if we got an error
-				handler.getRemoteQuery().deleteRecord(alias);
+				//handler.getRemoteQuery().deleteRecord(alias);
+				handler.getInternalClient().sendRequest(new DeleteServiceName(alias));
 				return new CommandResponse(ResponseCode.UPDATE_ERROR,
 						GNSProtocol.BAD_RESPONSE.toString() + " "
 								+ GNSProtocol.UPDATE_ERROR.toString());

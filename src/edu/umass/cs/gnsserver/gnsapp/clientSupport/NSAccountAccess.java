@@ -24,13 +24,14 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 import org.json.JSONException;
 
 import java.text.ParseException;
-
 import java.util.logging.Level;
+
 import org.json.JSONObject;
 
 /**
@@ -75,9 +76,9 @@ public class NSAccountAccess {
    * @return an {@link edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo} instance
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static GuidInfo lookupGuidInfoAnywhere(String guid, GNSApplicationInterface<String> gnsApp) 
+  public static GuidInfo lookupGuidInfoAnywhere(InternalRequestHeader header, String guid, GNSApplicationInterface<String> gnsApp) 
           throws FailedDBOperationException {
-    ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, 
+    ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(header, guid, 
             AccountAccess.GUID_INFO, gnsApp);
     if (valuesMap.has(AccountAccess.GUID_INFO)) {
       try {

@@ -27,6 +27,7 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import edu.umass.cs.gnscommon.utils.Base64;
+
 import java.nio.ByteBuffer;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -34,15 +35,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.SessionKeys;
 import edu.umass.cs.utils.Util;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -51,11 +55,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
@@ -304,16 +310,16 @@ public class NSAccessSupport {
   // FIXME: This is only used for checking the case where an accessorGuid is in a group guid
   // that is in the acl. For this purpose it is overkill and should be fixed.
   @Deprecated
-  public static boolean verifyAccess(MetaDataTypeName accessType, String guid, String field,
+  public static boolean verifyAccess(InternalRequestHeader header, MetaDataTypeName accessType, String guid, String field,
           String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     ClientSupportConfig.getLogger().log(Level.FINE,
             "User: {0} Reader: {1} Field: {2}",
             new Object[]{guid, accessorGuid, field});
     if (guid.equals(accessorGuid)) {
       return true; // can always read your own stuff
-    } else if (hierarchicalAccessCheck(accessType, guid, field, accessorGuid, activeReplica)) {
+    } else if (hierarchicalAccessCheck(header, accessType, guid, field, accessorGuid, activeReplica)) {
       return true; // accessor can see this field
-    } else if (checkForAccess(accessType, guid, GNSProtocol.ENTIRE_RECORD.toString(), accessorGuid, activeReplica)) {
+    } else if (checkForAccess(header, accessType, guid, GNSProtocol.ENTIRE_RECORD.toString(), accessorGuid, activeReplica)) {
       return true; // accessor can see all fields
     } else {
       ClientSupportConfig.getLogger().log(Level.FINE,
@@ -336,16 +342,16 @@ public class NSAccessSupport {
    * @throws FailedDBOperationException
    */
   @Deprecated
-  private static boolean hierarchicalAccessCheck(MetaDataTypeName accessType, String guid,
+  private static boolean hierarchicalAccessCheck(InternalRequestHeader header, MetaDataTypeName accessType, String guid,
           String field, String accessorGuid,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", field);
-    if (checkForAccess(accessType, guid, field, accessorGuid, activeReplica)) {
+    if (checkForAccess(header, accessType, guid, field, accessorGuid, activeReplica)) {
       return true;
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
-      return hierarchicalAccessCheck(accessType, guid, field.substring(0, field.lastIndexOf(".")),
+      return hierarchicalAccessCheck(header, accessType, guid, field.substring(0, field.lastIndexOf(".")),
               accessorGuid, activeReplica);
     } else {
       // check all the way up and there is no access
@@ -366,7 +372,7 @@ public class NSAccessSupport {
    * @throws FailedDBOperationException
    */
   @Deprecated
-  private static boolean checkForAccess(MetaDataTypeName accessType, String guid, String field, String accessorGuid,
+  private static boolean checkForAccess(InternalRequestHeader header, MetaDataTypeName accessType, String guid, String field, String accessorGuid,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
       // FIXME: Tidy this mess up.
@@ -374,7 +380,7 @@ public class NSAccessSupport {
       Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(accessType,
               guid, field, activeReplica.getDB());
       ClientSupportConfig.getLogger().log(Level.FINE, "{0} allowed users of {1} : {2}", new Object[]{guid, field, allowedusers});
-      if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica)) {
+      if (checkAllowedUsers(header, accessorGuid, allowedusers, activeReplica)) {
         ClientSupportConfig.getLogger().log(Level.FINE, "User {0} allowed to access {1}",
                 new Object[]{accessorGuid,
                   field != GNSProtocol.ENTIRE_RECORD.toString() ? ("user " + guid + "'s " + field + " field")
@@ -405,7 +411,7 @@ public class NSAccessSupport {
    * @throws FailedDBOperationException
    */
   @Deprecated
-  private static boolean checkAllowedUsers(String accessorGuid,
+  private static boolean checkAllowedUsers(InternalRequestHeader header, String accessorGuid,
           Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (SharedGuidUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
       return true;
@@ -418,7 +424,7 @@ public class NSAccessSupport {
               "Looking up groups for {0} and check against {1}",
               new Object[]{accessorGuid, SharedGuidUtils.convertPublicKeysToGuids(allowedUsers)});
       return !Sets.intersection(SharedGuidUtils.convertPublicKeysToGuids(allowedUsers),
-              NSGroupAccess.lookupGroups(accessorGuid, activeReplica.getRequestHandler())).isEmpty();
+              NSGroupAccess.lookupGroups(header, accessorGuid, activeReplica.getRequestHandler())).isEmpty();
     }
   }
 

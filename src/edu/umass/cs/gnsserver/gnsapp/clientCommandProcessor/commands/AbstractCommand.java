@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gigapaxos.interfaces.Summarizable;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -27,6 +28,7 @@ import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -36,6 +38,7 @@ import java.text.ParseException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
@@ -125,7 +128,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler)
           throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException,
-          UnsupportedEncodingException, ParseException {
+          UnsupportedEncodingException, ParseException, InternalRequestException {
     return execute(null, json, handler);
   }
 
@@ -152,7 +155,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   abstract public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-          SignatureException, UnsupportedEncodingException, ParseException;
+          SignatureException, UnsupportedEncodingException, ParseException, InternalRequestException;
 
   /**
    * Get the usage of the command.

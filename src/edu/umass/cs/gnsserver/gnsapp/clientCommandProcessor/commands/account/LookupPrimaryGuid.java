@@ -59,7 +59,7 @@ public class LookupPrimaryGuid extends AbstractCommand {
   @Override
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GNSProtocol.GUID.toString());
-    String result = AccountAccess.lookupPrimaryGuid(guid, handler, false);
+    String result = AccountAccess.lookupPrimaryGuid(header, guid, handler, false);
     if (result != null) {
       return new CommandResponse(ResponseCode.NO_ERROR, result);
     } else {

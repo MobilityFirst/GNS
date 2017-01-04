@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,9 +56,9 @@ public class SelectGroupLookupQuery extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, InternalRequestException {
     String guid = json.getString(GNSProtocol.GUID.toString());
-    return FieldAccess.selectGroupLookupQuery(guid, handler);
+    return FieldAccess.selectGroupLookupQuery(header, guid, handler);
   }
 
   

@@ -27,6 +27,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
@@ -292,7 +293,7 @@ public class NSFieldAccess {
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ResultValue lookupListFieldAnywhere(String guid, String field,
+  public static ResultValue lookupListFieldAnywhere(InternalRequestHeader header, String guid, String field,
           boolean allowRemoteQuery, ClientRequestHandlerInterface handler) throws FailedDBOperationException {
     ResultValue result = lookupListFieldLocallySafe(guid, field, handler.getApp().getDB());
     // if values wasn't found and the guid doesn't exist on this server 
@@ -300,7 +301,8 @@ public class NSFieldAccess {
     if (result.isEmpty() && !handler.getApp().getDB().containsName(guid) && allowRemoteQuery) {
       try {
         //ClientSupportConfig.getLogger().info("RQ: ");
-        String stringResult = handler.getRemoteQuery().fieldReadArray(guid, field);
+        //String stringResult = handler.getRemoteQuery().fieldReadArray(guid, field);
+        String stringResult = handler.getInternalClient().execute(GNSCommandInternal.fieldRead(guid, field, header)).getResultString();
         result = new ResultValue(stringResult);
       } catch (Exception e) {
         ClientSupportConfig.getLogger().log(Level.SEVERE,
@@ -329,18 +331,19 @@ public class NSFieldAccess {
    * @return ValuesMap containing the value of the field or null if field cannot be found
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ValuesMap lookupJSONFieldAnywhere(String guid, String field,
+  public static ValuesMap lookupJSONFieldAnywhere(InternalRequestHeader header, String guid, String field,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
     ValuesMap result = lookupJSONFieldLocally(null, guid, field, gnsApp);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !gnsApp.getDB().containsName(guid)) {
       try {
-        String stringResult = gnsApp.getRequestHandler().getRemoteQuery().fieldRead(guid, field);
+        //String stringResult = gnsApp.getRequestHandler().getRemoteQuery().fieldRead(guid, field);
+    	  String stringResult = gnsApp.getRequestHandler().getInternalClient().execute(GNSCommandInternal.fieldRead(guid, field, header)).getResultString();
         if (stringResult != null) {
           result = new ValuesMap();
           result.put(field, stringResult);
         }
-      } catch (IOException | JSONException | ClientException e) {
+      } catch (IOException | JSONException | ClientException | InternalRequestException e) {
         ClientSupportConfig.getLogger().log(Level.SEVERE,
                 "Problem getting record from remote server: {0}", e);
       }

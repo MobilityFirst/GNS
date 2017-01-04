@@ -8,15 +8,18 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,10 +66,11 @@ public interface CommandInterface {
    * @throws SignatureException
    * @throws java.io.UnsupportedEncodingException
    * @throws java.text.ParseException
+ * @throws InternalRequestException 
    */
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException,
-          UnsupportedEncodingException, ParseException;
+          UnsupportedEncodingException, ParseException, InternalRequestException;
 
   /**
    *
@@ -86,10 +90,11 @@ public interface CommandInterface {
    * @throws SignatureException
    * @throws UnsupportedEncodingException
    * @throws ParseException
+ * @throws InternalRequestException 
    */
   public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-          SignatureException, UnsupportedEncodingException, ParseException;
+          SignatureException, UnsupportedEncodingException, ParseException, InternalRequestException;
 
 }

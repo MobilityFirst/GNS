@@ -253,9 +253,10 @@ public class CommandHandler {
    * @param json
    * @param handler
    * @return a command response
+ * @throws InternalRequestException 
    */
   public static CommandResponse executeCommand(AbstractCommand command,
-          JSONObject json, ClientRequestHandlerInterface handler) {
+          JSONObject json, ClientRequestHandlerInterface handler) throws InternalRequestException {
     assert command != null;
     try {
       ClientCommandProcessorConfig.getLogger().log(Level.FINE,

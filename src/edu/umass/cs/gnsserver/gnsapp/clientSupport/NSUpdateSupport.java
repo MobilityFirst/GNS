@@ -89,10 +89,10 @@ public class NSUpdateSupport {
     		//!GNSConfig.getInternalOpSecret().equals(writer)
     		) {
       if (field != null) {
-        errorCode = NSAuthentication.signatureAndACLCheck(guid, field, null,
+        errorCode = NSAuthentication.signatureAndACLCheck(header, guid, field, null,
                 writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
       } else if (userJSON != null) {
-        errorCode = NSAuthentication.signatureAndACLCheck(guid, null, userJSON.getKeys(),
+        errorCode = NSAuthentication.signatureAndACLCheck(header, guid, null, userJSON.getKeys(),
                 writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
       } else {
         ClientSupportConfig.getLogger().log(Level.FINE,
@@ -104,11 +104,11 @@ public class NSUpdateSupport {
       // This ACL check will be only used for active code remote query
       if (field != null) {
     	  assert(header.getQueryingGUID()!=null) : guid+":"+field+":"+writer+"::"+header.getOriginatingGUID();
-        errorCode = NSAuthentication.aclCheck(guid, field, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app).getResponseCode();
+        errorCode = NSAuthentication.aclCheck(header, guid, field, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app).getResponseCode();
       } else if (userJSON != null) {
         List<String> fields = userJSON.getKeys();
         for (String aField : fields) {
-          AclCheckResult aclResult = NSAuthentication.aclCheck(guid, aField, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app);
+          AclCheckResult aclResult = NSAuthentication.aclCheck(header, guid, aField, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app);
           if (aclResult.getResponseCode().isExceptionOrError()) {
             errorCode = aclResult.getResponseCode();
           }

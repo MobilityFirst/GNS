@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.MongoRecords;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
@@ -342,7 +343,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       GNSConfig.getLogger().log(Level.SEVERE,
               "Error handling request: {0}", request.toString());
       e.printStackTrace();
-    }
+    } catch (InternalRequestException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
 
     return executed;
   }
