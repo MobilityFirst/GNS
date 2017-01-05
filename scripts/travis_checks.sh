@@ -15,9 +15,9 @@ cd $(dirname $0)
 script_dir=`pwd`
 
 
-# Run ant test 20 times
+# Run ant test 10 times
 # A single failure will flag a Travis build failure
-test_repeat=5
+test_repeat=10
 
 # Path to warning_counts file from root
 wcount_file="warning_counts"
