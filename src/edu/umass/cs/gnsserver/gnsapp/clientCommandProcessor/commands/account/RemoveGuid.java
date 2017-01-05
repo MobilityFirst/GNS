@@ -44,6 +44,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 
 /**
@@ -71,9 +72,10 @@ public class RemoveGuid extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException,
           InternalRequestException {
+    JSONObject json = commandPacket.getCommand();
     String guidToRemove = json.getString(GNSProtocol.GUID.toString());
     String accountGuid = json.optString(GNSProtocol.ACCOUNT_GUID.toString(), null);
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());

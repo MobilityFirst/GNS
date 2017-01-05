@@ -111,9 +111,9 @@ public class GNSHttpServer {
     if (!Config.getGlobalBoolean(GNSC.DISABLE_MULTI_SERVER_HTTP)) {
       try {
         this.client = new GNSClient() {
-        	public String getLabel() {
-        		return GNSHttpServer.class.getSimpleName();
-        	}
+          public String getLabel() {
+            return GNSHttpServer.class.getSimpleName();
+          }
         };
       } catch (IOException e) {
         LOGGER.log(Level.SEVERE, "Unable to start GNS client:" + e);
@@ -239,7 +239,8 @@ public class GNSHttpServer {
    * Process queries for the http service. Converts the URI of e the HTTP query into
    * the JSON Object format that is used by the CommandModeule class, then finds
    * executes the matching command.
- * @throws InternalRequestException 
+   *
+   * @throws InternalRequestException
    */
   private CommandResponse processQuery(String host, String commandName, String queryString) throws InternalRequestException {
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
@@ -285,7 +286,9 @@ public class GNSHttpServer {
           // other side of the if) already does this.
           processSignature(jsonCommand);
           if (command != null) {
-            return CommandHandler.executeCommand(command, jsonCommand, requestHandler);
+            return CommandHandler.executeCommand(command,
+                    new CommandPacket((long) (Math.random() * Long.MAX_VALUE), jsonCommand, false),
+                    requestHandler);
           }
           LOGGER.log(Level.FINE, "lookupCommand returned null for {0}", commandName);
         } catch (IllegalArgumentException e) {
@@ -369,11 +372,11 @@ public class GNSHttpServer {
     return response;
   }
 
-    private CommandPacket getResponseUsingGNSClient(GNSClient client,
+  private CommandPacket getResponseUsingGNSClient(GNSClient client,
           JSONObject jsonFormattedArguments) throws ClientException, IOException, JSONException {
     LOGGER.log(Level.FINE, "jsonFormattedCommand =" + jsonFormattedArguments.toString());
 
-    CommandPacket outgoingPacket = new CommandPacket((long)(Math.random()*Long.MAX_VALUE), jsonFormattedArguments, false);
+    CommandPacket outgoingPacket = new CommandPacket((long) (Math.random() * Long.MAX_VALUE), jsonFormattedArguments, false);
     //GNSCommand.createGNSCommandFromJSONObject(jsonFormattedArguments);
 
     LOGGER.log(Level.FINE, "outgoingPacket =" + outgoingPacket.toString());

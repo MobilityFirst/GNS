@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.Format;
@@ -66,8 +67,9 @@ public abstract class AbstractUpdate extends AbstractCommand {
   public abstract UpdateOperation getUpdateOperation();
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.optString(GNSProtocol.FIELD.toString(), null);
     String value = json.optString(GNSProtocol.VALUE.toString(), null);

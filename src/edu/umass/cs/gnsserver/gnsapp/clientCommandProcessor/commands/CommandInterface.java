@@ -9,6 +9,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -56,7 +57,7 @@ public interface CommandInterface {
   /**
    * Executes the command. Arguments are passed in the JSONObject.
    *
-   * @param json
+   * @param commandPacket
    * @param handler
    * @return the command response of the commands
    * @throws InvalidKeyException
@@ -68,7 +69,7 @@ public interface CommandInterface {
    * @throws java.text.ParseException
  * @throws InternalRequestException 
    */
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException,
           UnsupportedEncodingException, ParseException, InternalRequestException;
 
@@ -79,8 +80,7 @@ public interface CommandInterface {
    * {@link InternalRequestHeader} information inside them.
    *
    * @param internalHeader
-   * @param command
-   *
+   * @param commandPacket
    * @param handler
    * @return Result of executing {@code commandPacket}
    * @throws InvalidKeyException
@@ -92,7 +92,7 @@ public interface CommandInterface {
    * @throws ParseException
  * @throws InternalRequestException 
    */
-  public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
+  public CommandResponse execute(InternalRequestHeader internalHeader, CommandPacket commandPacket,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, UnsupportedEncodingException, ParseException, InternalRequestException;

@@ -39,6 +39,7 @@ import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  *
@@ -64,12 +65,14 @@ public class Read extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader internalHeader, CommandPacket commandPacket,
+          ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
 
-    assert(internalHeader != null);
-    
+    assert (internalHeader != null);
+
     // the opt hair below is for the subclasses... cute, huh?
     String field = json.optString(GNSProtocol.FIELD.toString(), null);
     ArrayList<String> fields = json.has(GNSProtocol.FIELDS.toString())
@@ -102,5 +105,5 @@ public class Read extends AbstractCommand {
               message, timestamp, handler);
     }
   }
- 
+
 }
