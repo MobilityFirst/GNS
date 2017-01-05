@@ -273,6 +273,7 @@ public class AccountAccess {
 	 * <p>
 	 * guid = Globally Unique Identifier<br>
 	 * HRN = Human Readable Name<br>
+	 * @param header 
 	 *
 	 * @param name
 	 * @param handler
@@ -342,6 +343,7 @@ public class AccountAccess {
 	 * Obtains the guid info record from the database for guid given.
 	 * <p>
 	 * guid = Globally Unique Identifier<br>
+	 * @param header 
 	 *
 	 * @param guid
 	 * @param handler
@@ -357,6 +359,7 @@ public class AccountAccess {
 	 * server, local or remote.
 	 * <p>
 	 * guid = Globally Unique Identifier<br>
+	 * @param header 
 	 *
 	 * @param guid
 	 * @param handler

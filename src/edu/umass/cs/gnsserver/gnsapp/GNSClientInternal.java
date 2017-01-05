@@ -38,6 +38,7 @@ public class GNSClientInternal extends GNSClient {
 	 * @throws IOException
 	 */
 	public GNSClientInternal(String myID) throws IOException {
+		super(false);
 		this.myID = myID;
 	}
 
