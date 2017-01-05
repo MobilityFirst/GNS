@@ -663,7 +663,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public JSONObject getResultJSONObject() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      JSONObject json = new JSONObject(responseStr);
+      JSONObject json = responseStr!=null ? new JSONObject(responseStr) : new JSONObject();
       return json;
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
@@ -679,7 +679,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public Map<String, ?> getResultMap() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      Map<String, ?> map = Util.JSONObjectToMap(new JSONObject(responseStr));
+      Map<String, ?> map = Util.JSONObjectToMap(responseStr!= null ? new JSONObject(responseStr) : new JSONObject());
       return map;
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
@@ -694,7 +694,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public List<?> getResultList() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      List<?> list = Util.JSONArrayToList(new JSONArray(responseStr));
+      List<?> list = Util.JSONArrayToList(responseStr!=null ? new JSONArray(responseStr) : new JSONArray());
       return list;
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
@@ -709,7 +709,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public JSONArray getResultJSONArray() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      return new JSONArray(responseStr);
+      return responseStr!=null ? new JSONArray(responseStr) : new JSONArray();
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
               e.getMessage());

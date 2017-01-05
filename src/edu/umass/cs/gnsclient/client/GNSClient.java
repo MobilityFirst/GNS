@@ -334,7 +334,7 @@ public class GNSClient {
 						.getLogger()
 						.log(Level.INFO,
 								"{0} attempting retransmission {1} upon timeout of {2}; {3}",
-								new Object[] { this, count, packet, response==null? "[null response]" : "" });
+								new Object[] { this, count, packet.getSummary(), response==null? "[null response]" : "" });
 
 			try {
 				response = defaultHandleResponse(this.sendSyncInternal(packet,
