@@ -273,6 +273,7 @@ public class AccountAccess {
 	 * <p>
 	 * guid = Globally Unique Identifier<br>
 	 * HRN = Human Readable Name<br>
+	 * @param header 
 	 *
 	 * @param name
 	 * @param handler
@@ -342,6 +343,7 @@ public class AccountAccess {
 	 * Obtains the guid info record from the database for guid given.
 	 * <p>
 	 * guid = Globally Unique Identifier<br>
+	 * @param header 
 	 *
 	 * @param guid
 	 * @param handler
@@ -357,6 +359,7 @@ public class AccountAccess {
 	 * server, local or remote.
 	 * <p>
 	 * guid = Globally Unique Identifier<br>
+	 * @param header 
 	 *
 	 * @param guid
 	 * @param handler
@@ -782,9 +785,10 @@ public class AccountAccess {
 			returnCode = handler.getInternalClient().createOrExists(
 					new CreateServiceName(name, jsonHRN.toString()));
 
+			String boundGUID=null;
 			if (!returnCode.isExceptionOrError()
-					|| HRNmatchingGUIDExists(header, handler, returnCode, name,
-							guid)) {
+					|| (guid.equals(boundGUID=HRNMatchingGUIDExists(header, handler, returnCode, name,
+							guid)))) {
 				// if that's cool then add the entry that links the guid to the
 				// username and public key
 				// this one could fail if someone uses the same public key to
@@ -835,6 +839,24 @@ public class AccountAccess {
 											+ " exists and can not be associated with the HRN "
 											+ name), name, guid);
 			}
+			else if(returnCode.equals(ResponseCode.DUPLICATE_FIELD_EXCEPTION) && !guid.equals(boundGUID)) 
+				return new CommandResponse(
+						ResponseCode.CONFLICTING_GUID_EXCEPTION,
+						GNSProtocol.BAD_RESPONSE.toString()
+								+ " "
+								+ ResponseCode.CONFLICTING_GUID_EXCEPTION
+										.getProtocolCode()
+								+ " "
+								+ name
+								+ "("
+								+ guid
+								+ ")"
+								+ " "
+								+ (returnCode.getMessage() != null ? returnCode
+										.getMessage() + " " : "") + "; HRN "
+								+ name + " is already bound to GUID "
+								+ boundGUID + " != " + guid);
+	
 
 			// else the first HRN creation likely failed
 			return new CommandResponse(returnCode,
@@ -859,26 +881,30 @@ public class AccountAccess {
 		}
 	}
 
-	private static boolean HRNmatchingGUIDExists(InternalRequestHeader header,
+	private static String HRNMatchingGUIDExists(InternalRequestHeader header,
 			ClientRequestHandlerInterface handler, ResponseCode code,
 			String name, String guid) throws ClientException, JSONException {
+		String remoteRead = null;
 		try {
 			if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
-				if (guid.equals(
-//				 handler.getRemoteQuery().fieldRead(name,GNSProtocol.GUID.toString())
+				if (guid.equals(remoteRead =
+				// handler.getRemoteQuery().fieldRead(name,GNSProtocol.GUID.toString())
 				handler.getInternalClient()
 						.execute(
-								GNSCommandInternal.fieldRead(name,
-										InternalField.makeInternalFieldString(GNSProtocol.GUID.toString()), header))
-						.getResultString()
-				 ))
-					return true;
+								GNSCommandInternal.fieldRead(
+										name,
+										InternalField
+												.makeInternalFieldString(GNSProtocol.GUID
+														.toString()), header))
+														// if HRN exists, returned map can not be null
+						.getResultMap().values().iterator().next().toString()))
+					return remoteRead;
 		} catch (IOException | InternalRequestException 
 				e) {
 			throw new ClientException(ResponseCode.UNSPECIFIED_ERROR,
 					e.getMessage(), e);
 		}
-		return false;
+		return remoteRead;
 	}
 
 	private static boolean GUIDmatchingHRNExists(InternalRequestHeader header,
@@ -892,7 +918,7 @@ public class AccountAccess {
 						.execute(
 								GNSCommandInternal.fieldRead(guid,
 										InternalField.makeInternalFieldString(GNSProtocol.NAME.toString()), header))
-						.getResultString()))
+						.getResultMap().values().iterator().next()))
 					return true;
 		} catch (IOException | InternalRequestException e) {
 			throw new ClientException(ResponseCode.UNSPECIFIED_ERROR,
@@ -1061,17 +1087,26 @@ public class AccountAccess {
 			 * (alias) record and the error indicates that it is not a duplicate
 			 * ID exception because of a limbo create operation from a previous
 			 * unsuccessful attempt. */
-			boolean HRNMatches = false;
+			String boundGUID = null;
 			if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
-					&& !(HRNMatches = HRNmatchingGUIDExists(header, handler,
-							code, name, guid)))
+					&& !(guid.equals(boundGUID=HRNMatchingGUIDExists(header, handler,
+							code, name, guid))))
 				return new CommandResponse(
 						ResponseCode.CONFLICTING_GUID_EXCEPTION,
 						GNSProtocol.BAD_RESPONSE.toString()
 								+ " "
 								+ ResponseCode.CONFLICTING_GUID_EXCEPTION
-										.getProtocolCode() + " " + name + "("
-								+ guid + ")" + " " + code.getMessage());
+										.getProtocolCode()
+								+ " "
+								+ name
+								+ "("
+								+ guid
+								+ ")"
+								+ " "
+								+ (code.getMessage() != null ? code
+										.getMessage() + " " : "") + "; HRN "
+								+ name + " is already bound to GUID "
+								+ boundGUID + " != " + guid);
 
 			if (code.isExceptionOrError()
 					&& !code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION))
@@ -1080,7 +1115,7 @@ public class AccountAccess {
 								+ code.getProtocolCode() + " " + name + "("
 								+ guid + ")" + " " + code.getMessage());
 
-			assert (!code.isExceptionOrError() || HRNMatches);
+			assert (!code.isExceptionOrError() || guid.equals(boundGUID));
 
 			createdName = true;
 			// else name created

@@ -102,6 +102,42 @@ public class GNSClient {
 	public GNSClient() throws IOException {
 		this(getStaticReconfigurators());
 	}
+	
+	/**
+	 * Bootstrap with a single, arbitrarily chosen valid reconfigurator address.
+	 * The client can enquire and know of other reconfigurator addresses from
+	 * this reconfigurator. If the supplied argument is null, the behavior will
+	 * be identical to {@link #GNSClient()}.
+	 *
+	 * @param anyReconfigurator
+	 * @throws IOException
+	 */
+	public GNSClient(InetSocketAddress anyReconfigurator) throws IOException {
+		this(anyReconfigurator != null ? new HashSet<InetSocketAddress>(
+				Arrays.asList(anyReconfigurator)) : getStaticReconfigurators());
+	}
+	
+	/**
+	 * Same as {@link #GNSClient(InetSocketAddress)} but with the service name
+	 * {@code anyReconfiguratorHostName} and implicitly the default
+	 * reconfigurator port {@link GNSConfig#DEFAULT_RECONFIGURATOR_PORT}. If the
+	 * supplied argument is null, the behavior will be identical to
+	 * {@link #GNSClient()}. The supplied {@code anyReconfiguratorHostName}
+	 * service name must resolve to one or more valid reconfigurator addresses.
+	 *
+	 * @param anyReconfiguratorHostName
+	 * @throws IOException
+	 */
+	public GNSClient(String anyReconfiguratorHostName) throws IOException {
+		this(new InetSocketAddress(anyReconfiguratorHostName,
+				GNSConfig.DEFAULT_RECONFIGURATOR_PORT));
+	}
+	
+	// non-public constructors below
+	
+	protected GNSClient(boolean checkConnectivity) throws IOException {
+		this(getStaticReconfigurators(), checkConnectivity);
+	}
 
 	/**
 	 * Initialized from properties file. This constant is called static to
@@ -123,25 +159,16 @@ public class GNSClient {
 		}
 	}
 
-	/**
-	 * Bootstrap with a single, arbitrarily chosen valid reconfigurator address.
-	 * The client can enquire and know of other reconfigurator addresses from
-	 * this reconfigurator. If the supplied argument is null, the behavior will
-	 * be identical to {@link #GNSClient()}.
-	 *
-	 * @param anyReconfigurator
-	 * @throws IOException
-	 */
-	public GNSClient(InetSocketAddress anyReconfigurator) throws IOException {
-		this(anyReconfigurator != null ? new HashSet<InetSocketAddress>(
-				Arrays.asList(anyReconfigurator)) : getStaticReconfigurators());
-	}
-
 	private GNSClient(Set<InetSocketAddress> reconfigurators)
+			throws IOException {
+		this(reconfigurators, false);
+	}
+	
+	private GNSClient(Set<InetSocketAddress> reconfigurators, boolean checkConnectivity)
 			throws IOException {
 		this.asyncClient = new AsyncClient(reconfigurators,
 				ReconfigurationConfig.getClientSSLMode(),
-				ReconfigurationConfig.getClientPortOffset(), true) {
+				ReconfigurationConfig.getClientPortOffset(), checkConnectivity) {
 			@Override
 			protected String getLabel() {
 				return GNSClient.this.getLabel();
@@ -156,22 +183,6 @@ public class GNSClient {
 
 	protected Set<IntegerPacketType> getRequestTypes() {
 		return CLIENT_PACKET_TYPES;
-	}
-
-	/**
-	 * Same as {@link #GNSClient(InetSocketAddress)} but with the service name
-	 * {@code anyReconfiguratorHostName} and implicitly the default
-	 * reconfigurator port {@link GNSConfig#DEFAULT_RECONFIGURATOR_PORT}. If the
-	 * supplied argument is null, the behavior will be identical to
-	 * {@link #GNSClient()}. The supplied {@code anyReconfiguratorHostName}
-	 * service name must resolve to one or more valid reconfigurator addresses.
-	 *
-	 * @param anyReconfiguratorHostName
-	 * @throws IOException
-	 */
-	public GNSClient(String anyReconfiguratorHostName) throws IOException {
-		this(new InetSocketAddress(anyReconfiguratorHostName,
-				GNSConfig.DEFAULT_RECONFIGURATOR_PORT));
 	}
 
 	@Override
@@ -323,7 +334,7 @@ public class GNSClient {
 						.getLogger()
 						.log(Level.INFO,
 								"{0} attempting retransmission {1} upon timeout of {2}; {3}",
-								new Object[] { this, count, packet, response==null? "[null response]" : "" });
+								new Object[] { this, count, packet.getSummary(), response==null? "[null response]" : "" });
 
 			try {
 				response = defaultHandleResponse(this.sendSyncInternal(packet,
