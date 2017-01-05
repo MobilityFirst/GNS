@@ -19,7 +19,7 @@ script_dir=`pwd`
 # A single failure will flag a Travis build failure
 test_repeat=10
 
-# Path to warning_counts file from root
+# The warning_counts file keeps track of previous warning counts
 wcount_file="warning_counts"
 
 # Run with --update to update warning counts
