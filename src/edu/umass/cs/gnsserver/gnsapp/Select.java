@@ -30,6 +30,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -397,7 +398,9 @@ public class Select {
     if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP) || info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
       String guid = info.getGuid();
       getLogger().log(Level.FINE, "NS{0} updating group members", replica.getNodeID());
-      NSGroupAccess.updateMembers(header, guid, guids, replica.getRequestHandler(), packet.getReturnAddress());
+      GroupAccess.addToGroup(header, guid, new ResultValue(guids), null, null, null, null, 
+              replica.getRequestHandler());
+      //NSGroupAccess.updateMembers(header, guid, guids, replica.getRequestHandler());
       //NSGroupAccess.updateRecords(guid, processResponsesIntoJSONArray(info.getResponsesAsMap()), replica); 
       NSGroupAccess.updateLastUpdate(header, guid, new Date(), replica.getRequestHandler());
     }

@@ -1222,7 +1222,7 @@ public enum CommandType {
   /**
    *
    */
-  AddMembersToGroup(610, CommandCategory.UPDATE,
+  AddMembersToGroup(610, CommandCategory.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup.class,
           CommandResultType.NULL, false, false,
           "Adds the member guids to the group specified by guid. "
@@ -1233,22 +1233,22 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
+//  /**
+//   *
+//   */
+//  AddMembersToGroupSelf(611, CommandCategory.OTHER,
+//          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class,
+//          CommandResultType.NULL, false, false,
+//          "Adds the member guids to the group specified by guid. "
+//          + "Writer guid needs to have write access and sign the command.",
+//          new String[]{GNSProtocol.GUID.toString(),
+//            GNSProtocol.MEMBERS.toString(),
+//            GNSProtocol.SIGNATURE.toString(),
+//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  AddMembersToGroupSelf(611, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class,
-          CommandResultType.NULL, false, false,
-          "Adds the member guids to the group specified by guid. "
-          + "Writer guid needs to have write access and sign the command.",
-          new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.MEMBERS.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
-  /**
-   *
-   */
-  AddToGroup(612, CommandCategory.UPDATE,
+  AddToGroup(612, CommandCategory.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup.class,
           CommandResultType.NULL, false, false,
           "Adds the member guid to the group specified by guid. "
@@ -1259,17 +1259,17 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
-  /**
-   *
-   */
-  AddToGroupSelf(613, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
-          CommandResultType.NULL, false, false,
-          "Adds the member guid to the group specified by guid.",
-          new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.MEMBER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+//  /**
+//   *
+//   */
+//  AddToGroupSelf(613, CommandCategory.UPDATE,
+//          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
+//          CommandResultType.NULL, false, false,
+//          "Adds the member guid to the group specified by guid.",
+//          new String[]{GNSProtocol.GUID.toString(),
+//            GNSProtocol.MEMBER.toString(),
+//            GNSProtocol.SIGNATURE.toString(),
+//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1282,15 +1282,15 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.READER.toString()}),
-  /**
-   *
-   */
-  GetGroupMembersSelf(615, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
-          CommandResultType.LIST, true, false,
-          "Returns the members of the group formatted as a JSON Array.",
-          new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+//  /**
+//   *
+//   */
+//  GetGroupMembersSelf(615, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
+//          CommandResultType.LIST, true, false,
+//          "Returns the members of the group formatted as a JSON Array.",
+//          new String[]{GNSProtocol.GUID.toString(),
+//            GNSProtocol.SIGNATURE.toString(),
+//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1303,19 +1303,19 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.READER.toString()}),
+//  /**
+//   *
+//   */
+//  GetGroupsSelf(617, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
+//          CommandResultType.LIST, true, false,
+//          "Returns the groups that a guid is a member of formatted as a JSON Array.",
+//          new String[]{GNSProtocol.GUID.toString(),
+//            GNSProtocol.SIGNATURE.toString(),
+//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  GetGroupsSelf(617, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
-          CommandResultType.LIST, true, false,
-          "Returns the groups that a guid is a member of formatted as a JSON Array.",
-          new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
-  /**
-   *
-   */
-  RemoveFromGroup(620, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup.class,
+  RemoveFromGroup(620, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup.class,
           CommandResultType.NULL, false, false,
           "Removes the member guid from the group specified by guid. "
           + "Writer guid needs to have write access and sign the command.",
@@ -1325,20 +1325,20 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
+//  /**
+//   *
+//   */
+//  RemoveFromGroupSelf(621, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class,
+//          CommandResultType.NULL, false, false,
+//          "Removes the member guid from the group specified by guid.",
+//          new String[]{GNSProtocol.GUID.toString(),
+//            GNSProtocol.MEMBER.toString(),
+//            GNSProtocol.SIGNATURE.toString(),
+//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  RemoveFromGroupSelf(621, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class,
-          CommandResultType.NULL, false, false,
-          "Removes the member guid from the group specified by guid.",
-          new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.MEMBER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
-  /**
-   *
-   */
-  RemoveMembersFromGroup(622, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup.class,
+  RemoveMembersFromGroup(622, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup.class,
           CommandResultType.NULL, false, false,
           "Removes the member guids from the group specified by guid. "
           + "Writer guid needs to have write access and sign the command.",
@@ -1348,16 +1348,16 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
-  /**
-   *
-   */
-  RemoveMembersFromGroupSelf(623, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class,
-          CommandResultType.NULL, false, false,
-          "Removes the member guids from the group specified by guid.",
-          new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.MEMBERS.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+//  /**
+//   *
+//   */
+//  RemoveMembersFromGroupSelf(623, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class,
+//          CommandResultType.NULL, false, false,
+//          "Removes the member guids from the group specified by guid.",
+//          new String[]{GNSProtocol.GUID.toString(),
+//            GNSProtocol.MEMBERS.toString(),
+//            GNSProtocol.SIGNATURE.toString(),
+//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1740,15 +1740,12 @@ public enum CommandType {
    */
   static {
     Read.setChain(ReadUnsigned);
-    //ReadSelf.setChain(ReadUnsigned);
     ReadUnsigned.setChain();
     ReadMultiField.setChain(ReadUnsigned);
     ReadMultiFieldUnsigned.setChain(ReadUnsigned);
     ReadArray.setChain(ReadUnsigned);
     ReadArrayOne.setChain(ReadUnsigned);
-    //ReadArrayOneSelf.setChain(ReadUnsigned);
     ReadArrayOneUnsigned.setChain();
-    //ReadArraySelf.setChain(ReadUnsigned);
     ReadArrayUnsigned.setChain();
     // Every command that is a subclass of AbstractUpdate could potentially call ReadUnsigned 
     // because of the group guid check in NSAuthentication.signatureAndACLCheck.
@@ -1756,65 +1753,44 @@ public enum CommandType {
     // which is most of them.
     Append.setChain(ReadUnsigned);
     AppendList.setChain(ReadUnsigned);
-    //AppendListSelf.setChain(ReadUnsigned);
     AppendListUnsigned.setChain(ReadUnsigned);
     AppendListWithDuplication.setChain(ReadUnsigned);
-    //AppendListWithDuplicationSelf.setChain(ReadUnsigned);
     AppendListWithDuplicationUnsigned.setChain(ReadUnsigned);
     AppendOrCreate.setChain(ReadUnsigned);
     AppendOrCreateList.setChain(ReadUnsigned);
-    //AppendOrCreateListSelf.setChain(ReadUnsigned);
     AppendOrCreateListUnsigned.setChain(ReadUnsigned);
-    //AppendOrCreateSelf.setChain(ReadUnsigned);
     AppendOrCreateUnsigned.setChain(ReadUnsigned);
-    //AppendSelf.setChain(ReadUnsigned);
     AppendUnsigned.setChain(ReadUnsigned);
     AppendWithDuplication.setChain(ReadUnsigned);
-    //AppendWithDuplicationSelf.setChain(ReadUnsigned);
     AppendWithDuplicationUnsigned.setChain(ReadUnsigned);
     Clear.setChain(ReadUnsigned);
-    //ClearSelf.setChain(ReadUnsigned);
     ClearUnsigned.setChain(ReadUnsigned);
     Create.setChain(ReadUnsigned);
     CreateEmpty.setChain(ReadUnsigned);
-    //CreateEmptySelf.setChain(ReadUnsigned);
     CreateList.setChain(ReadUnsigned);
-    //CreateListSelf.setChain(ReadUnsigned);
-    //CreateSelf.setChain(ReadUnsigned);
     Remove.setChain(ReadUnsigned);
     RemoveList.setChain(ReadUnsigned);
-    //RemoveListSelf.setChain(ReadUnsigned);
     RemoveListUnsigned.setChain(ReadUnsigned);
-    //RemoveSelf.setChain(ReadUnsigned);
     RemoveUnsigned.setChain(ReadUnsigned);
     Replace.setChain(ReadUnsigned);
     ReplaceList.setChain(ReadUnsigned);
-    //ReplaceListSelf.setChain(ReadUnsigned);
     ReplaceListUnsigned.setChain(ReadUnsigned);
     ReplaceOrCreate.setChain(ReadUnsigned);
     ReplaceOrCreateList.setChain(ReadUnsigned);
-    //ReplaceOrCreateListSelf.setChain(ReadUnsigned);
     ReplaceOrCreateListUnsigned.setChain(ReadUnsigned);
-    //ReplaceOrCreateSelf.setChain(ReadUnsigned);
     ReplaceOrCreateUnsigned.setChain(ReadUnsigned);
-    //ReplaceSelf.setChain(ReadUnsigned);
     ReplaceUnsigned.setChain(ReadUnsigned);
     ReplaceUserJSON.setChain(ReadUnsigned);
     ReplaceUserJSONUnsigned.setChain(ReadUnsigned);
     CreateIndex.setChain(ReadUnsigned);
     Substitute.setChain(ReadUnsigned);
     SubstituteList.setChain(ReadUnsigned);
-    //SubstituteListSelf.setChain(ReadUnsigned);
     SubstituteListUnsigned.setChain(ReadUnsigned);
-    //SubstituteSelf.setChain(ReadUnsigned);
     SubstituteUnsigned.setChain(ReadUnsigned);
     RemoveField.setChain(ReadUnsigned);
-    //RemoveFieldSelf.setChain(ReadUnsigned);
     RemoveFieldUnsigned.setChain(ReadUnsigned);
     Set.setChain(ReadUnsigned);
-    //SetSelf.setChain(ReadUnsigned);
     SetFieldNull.setChain(ReadUnsigned);
-    //SetFieldNullSelf.setChain(ReadUnsigned);
     //
     Select.setChain();
     SelectGroupLookupQuery.setChain();
@@ -1864,17 +1840,11 @@ public enum CommandType {
     FieldAclExists.setChain(ReadUnsigned);
     //
     AddMembersToGroup.setChain(AppendListUnsigned);
-    AddMembersToGroupSelf.setChain(AppendListUnsigned);
     AddToGroup.setChain(AppendListUnsigned);
-    AddToGroupSelf.setChain(ReadUnsigned);
     GetGroupMembers.setChain(ReadUnsigned);
-    GetGroupMembersSelf.setChain(ReadUnsigned);
-    GetGroupsSelf.setChain(ReadUnsigned);
     GetGroups.setChain(ReadUnsigned);
     RemoveFromGroup.setChain(RemoveUnsigned);
     RemoveMembersFromGroup.setChain(RemoveUnsigned);
-    RemoveFromGroupSelf.setChain(ReadUnsigned);
-    RemoveMembersFromGroupSelf.setChain(ReadUnsigned);
     //
     SetCode.setChain();
     ClearCode.setChain();

@@ -73,45 +73,44 @@ public class NSGroupAccess {
    */
   public static final String GROUP_QUERY_STRING = InternalField.makeInternalFieldString("groupQueryString");
 
-  /**
-   * Update the members of a group guid.
-   *
-   * @param guid
-   * @param members
-   * @param handler
-   * @param lnsAddress
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws java.io.IOException
-   * @throws org.json.JSONException
- * @throws InternalRequestException 
-   */
-  public static void updateMembers(InternalRequestHeader header, String guid, Set<String> members,
-          ClientRequestHandlerInterface handler, InetSocketAddress lnsAddress)
-          throws ClientException, IOException, JSONException, InternalRequestException {
-    //ClientSupportConfig.getLogger().info("RQ: ");
-
-//    String response = handler.getRemoteQuery().fieldReplaceOrCreateArray(guid, GroupAccess.GROUP,
-//            new ResultValue(members));
-	  String response = handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GroupAccess.GROUP, new ResultValue(members), header)).getResultString();
-//    NSResponseCode groupResponse = LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(members),
-//            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
-    // We could roll back the above operation if the one below gets an error, but we don't
-    // We'll worry about this when we get transactions working.
-
-    if (response.equals(GNSProtocol.OK_RESPONSE.toString())) {
-      //if (!groupResponse.isAnError()) {
-      // This is probably a bad idea to update every member
-      for (String member : members) {
-//        handler.getRemoteQuery().fieldReplaceOrCreateArray(member, GroupAccess.GROUPS,
-//                new ResultValue(Arrays.asList(guid)));
-				handler.getInternalClient().execute(
-						GNSCommandInternal.fieldUpdate(
-								CommandType.ReplaceOrCreateUnsigned, member,
-								GroupAccess.GROUPS,
-								new ResultValue(Arrays.asList(guid)), header));
-      }
-    }
-  }
+//  /**
+//   * Update the members of a group guid.
+//   *
+//   * @param guid
+//   * @param members
+//   * @param handler
+//   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+//   * @throws java.io.IOException
+//   * @throws org.json.JSONException
+// * @throws InternalRequestException 
+//   */
+//  public static void updateMembers(InternalRequestHeader header, String guid, Set<String> members,
+//          ClientRequestHandlerInterface handler)
+//          throws ClientException, IOException, JSONException, InternalRequestException {
+//    //ClientSupportConfig.getLogger().info("RQ: ");
+//
+////    String response = handler.getRemoteQuery().fieldReplaceOrCreateArray(guid, GroupAccess.GROUP,
+////            new ResultValue(members));
+//	  String response = handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GroupAccess.GROUP, new ResultValue(members), header)).getResultString();
+////    NSResponseCode groupResponse = LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(members),
+////            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
+//    // We could roll back the above operation if the one below gets an error, but we don't
+//    // We'll worry about this when we get transactions working.
+//
+//    if (response.equals(GNSProtocol.OK_RESPONSE.toString())) {
+//      //if (!groupResponse.isAnError()) {
+//      // This is probably a bad idea to update every member
+//      for (String member : members) {
+////        handler.getRemoteQuery().fieldReplaceOrCreateArray(member, GroupAccess.GROUPS,
+////                new ResultValue(Arrays.asList(guid)));
+//				handler.getInternalClient().execute(
+//						GNSCommandInternal.fieldUpdate(
+//								CommandType.ReplaceOrCreateUnsigned, member,
+//								GroupAccess.GROUPS,
+//								new ResultValue(Arrays.asList(guid)), header));
+//      }
+//    }
+//  }
 
   /**
    * Return the members of a the group guid.

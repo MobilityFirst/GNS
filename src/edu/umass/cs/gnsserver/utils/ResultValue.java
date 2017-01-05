@@ -109,15 +109,4 @@ public class ResultValue extends ArrayList<Object> {
     return result;
   }
   
-  // FIXME: CALLING THIS SOMETIMES HANGS THINGS!
-//  /**
-//   * Limits the size of fields printed by toReasonableString.
-//   */
-//  public static int reasonableFieldSize = 1500;
-//
-//  public String toReasonableString() {
-//    return Util.ellipsize(this.toString(), reasonableFieldSize);
-//  }
-  
-  
 }

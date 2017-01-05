@@ -492,7 +492,7 @@ public class AccountAccess {
 			final String hostPortString, final String name, final String guid,
 			String publicKey, String password, boolean useEmailVerification,
 			ClientRequestHandlerInterface handler) throws ClientException,
-			IOException, JSONException {
+			IOException, JSONException, InternalRequestException {
 
 		CommandResponse response;
 		// make this even if we don't need it
@@ -944,7 +944,7 @@ public class AccountAccess {
 	 */
 	public static CommandResponse removeAccount(InternalRequestHeader header,
 			AccountInfo accountInfo, ClientRequestHandlerInterface handler)
-			throws ClientException, IOException, JSONException {
+			throws ClientException, IOException, JSONException, InternalRequestException {
 		boolean removedGroupLinks = false, deletedGUID = false, deletedName = false, deletedAliases = false;
 		try {
 			// First remove any group links
@@ -1324,7 +1324,7 @@ public class AccountAccess {
 	 */
 	public static CommandResponse removeGuid(InternalRequestHeader header,
 			GuidInfo guid, ClientRequestHandlerInterface handler)
-			throws ClientException, IOException, JSONException {
+			throws ClientException, IOException, JSONException, InternalRequestException {
 		return removeGuid(header, guid, null, false, handler);
 	}
 
@@ -1344,7 +1344,7 @@ public class AccountAccess {
 	public static CommandResponse removeGuid(InternalRequestHeader header,
 			GuidInfo guid, AccountInfo accountInfo,
 			ClientRequestHandlerInterface handler) throws ClientException,
-			IOException, JSONException {
+			IOException, JSONException, InternalRequestException {
 		return removeGuid(header, guid, accountInfo, false, handler);
 	}
 
@@ -1369,7 +1369,7 @@ public class AccountAccess {
 	public static CommandResponse removeGuid(InternalRequestHeader header,
 			GuidInfo guidInfo, AccountInfo accountInfo,
 			boolean ignoreAccountGuid, ClientRequestHandlerInterface handler)
-			throws ClientException, IOException, JSONException {
+			throws ClientException, IOException, JSONException, InternalRequestException {
 		GNSConfig.getLogger().log(Level.FINE,
 				"REMOVE: GUID INFO: {0} ACCOUNT INFO: {1}",
 				new Object[] { guidInfo, accountInfo });

@@ -208,4 +208,23 @@ public class JSONUtils {
     }
     return result;
   }
+
+  /**
+   * Returns true if the JSON Array contains the object.
+   * Returns false if the object is null or the array is empty.
+   *
+   * @param jsonArray
+   * @return an ArrayList of Objects
+   * @throws JSONException
+   */
+  public static boolean JSONArrayContains(Object object, JSONArray jsonArray) throws JSONException {
+    if (object != null) {
+      for (int i = 0; i < jsonArray.length(); i++) {
+        if (object.equals(jsonArray.get(i))) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }
