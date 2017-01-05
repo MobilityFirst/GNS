@@ -46,7 +46,7 @@ public class PacketUtils {
 	 * @return InternalRequestHeader
 	 */
 	public static InternalRequestHeader getInternalRequestHeader(
-			SelectResponsePacket selectResponse) {
+			SelectResponsePacket<String> selectResponse) {
 		return new InternalRequestHeader() {
 
 			@Override

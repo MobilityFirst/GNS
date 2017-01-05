@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
@@ -155,6 +154,6 @@ public class GNSClientInternal extends GNSClient {
 	@Override
 	public CommandPacket execute(CommandPacket command) throws IOException,
 			ClientException {
-		return (CommandPacket) this.execute(command, getTimeout(command));
+		return this.execute(command, getTimeout(command));
 	}
 }
