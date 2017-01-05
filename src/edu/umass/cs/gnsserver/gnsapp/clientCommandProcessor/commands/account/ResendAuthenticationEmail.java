@@ -88,7 +88,7 @@ public class ResendAuthenticationEmail extends AbstractCommand {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
     } else {
       try {
-        return AccountAccess.resendAuthenticationEmail(accountInfo, guid, signature, message, handler);
+        return AccountAccess.resendAuthenticationEmail(header, commandPacket, accountInfo,  guid, signature, message, handler);
       } catch (UnknownHostException e) {
         return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
                 GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());

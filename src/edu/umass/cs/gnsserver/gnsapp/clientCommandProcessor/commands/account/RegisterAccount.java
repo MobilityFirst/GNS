@@ -87,7 +87,7 @@ public class RegisterAccount extends AbstractCommand {
       return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
     try {
-      CommandResponse result = AccountAccess.addAccount(header, 
+      CommandResponse result = AccountAccess.addAccount(header, commandPacket,
               handler.getHttpServerHostPortString(),
               name, guid, publicKey,
               password,

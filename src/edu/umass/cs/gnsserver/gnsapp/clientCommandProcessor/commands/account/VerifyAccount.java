@@ -67,7 +67,7 @@ public class VerifyAccount extends AbstractCommand {
     JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String code = json.getString(GNSProtocol.CODE.toString());
-    return AccountAccess.verifyAccount(header, guid, code, handler);
+    return AccountAccess.verifyAccount(header, commandPacket, guid, code, handler);
   }
 
   

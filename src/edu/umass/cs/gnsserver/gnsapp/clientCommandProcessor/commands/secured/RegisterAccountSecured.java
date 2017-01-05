@@ -88,7 +88,7 @@ public class RegisterAccountSecured extends AbstractCommand {
     }
     try {
       // Add the account but don't enable email verification
-      CommandResponse result = AccountAccess.addAccount(header, 
+      CommandResponse result = AccountAccess.addAccount(header, commandPacket,
               handler.getHttpServerHostPortString(),
               name, guid, publicKey,
               password, false, handler);

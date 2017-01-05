@@ -97,7 +97,7 @@ public class AclAddSecured extends AbstractCommand {
     }
     // This is where we update the ACL. Put the public key of the accessing guid in the appropriate ACL list.
     ResponseCode responseCode;
-    if (!(responseCode = FieldMetaData.add(header, access, guid, field,
+    if (!(responseCode = FieldMetaData.add(header, commandPacket, access, guid, field,
             accessorPublicKey, 
             GNSProtocol.INTERNAL_QUERIER.toString(),
             //GNSConfig.getInternalOpSecret(),

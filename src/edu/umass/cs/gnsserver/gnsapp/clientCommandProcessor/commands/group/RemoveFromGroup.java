@@ -82,7 +82,7 @@ public class RemoveFromGroup extends AbstractCommand {
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
     ResponseCode responseCode;
     try {
-      if (!(responseCode = GroupAccess.removeFromGroup(header, guid, member,
+      if (!(responseCode = GroupAccess.removeFromGroup(header, commandPacket, guid, member,
               writer, signature, message, timestamp, handler)).isExceptionOrError()) {
         return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {

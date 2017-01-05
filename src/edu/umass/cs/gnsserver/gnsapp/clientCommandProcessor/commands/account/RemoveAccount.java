@@ -91,7 +91,7 @@ public class RemoveAccount extends AbstractCommand {
         // Fixme: verify that we might need to look remotely for this.
         AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
         if (accountInfo != null) {
-          return AccountAccess.removeAccount(header, accountInfo, handler);
+          return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
         } else {
           return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
         }

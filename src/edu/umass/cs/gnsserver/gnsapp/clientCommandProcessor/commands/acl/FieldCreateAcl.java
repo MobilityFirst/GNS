@@ -88,7 +88,8 @@ public class FieldCreateAcl extends AbstractCommand {
     }
     ResponseCode responseCode;
     if (!(responseCode
-            = FieldMetaData.createField(header, access, guid, field, writer,
+            = FieldMetaData.createField(header, commandPacket,
+                    access, guid, field, writer,
                     signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {

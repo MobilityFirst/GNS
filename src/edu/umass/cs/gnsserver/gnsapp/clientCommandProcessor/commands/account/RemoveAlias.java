@@ -85,7 +85,7 @@ public class RemoveAlias extends AbstractCommand {
     } else if (!accountInfo.isVerified()) {
       return new CommandResponse(ResponseCode.VERIFICATION_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.VERIFICATION_ERROR.toString() + " Account not verified");
     }
-    return AccountAccess.removeAlias(header, accountInfo, name, guid, signature, message, timestamp, handler);
+    return AccountAccess.removeAlias(header, commandPacket, accountInfo, name, guid, signature, message, timestamp, handler);
   }
 
 }

@@ -44,7 +44,6 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  *
@@ -91,7 +90,8 @@ public class AddAlias extends AbstractCommand {
     } else if (accountInfo.getAliases().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_ALIASES)) {
       return new CommandResponse(ResponseCode.TOO_MANY_ALIASES_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_ALIASES.toString());
     } else {
-      return AccountAccess.addAlias(header, accountInfo, name, guid, signature, message, timestamp, handler);
+      return AccountAccess.addAlias(header, commandPacket, 
+              accountInfo, name, guid, signature, message, timestamp, handler);
     }
   }
 }

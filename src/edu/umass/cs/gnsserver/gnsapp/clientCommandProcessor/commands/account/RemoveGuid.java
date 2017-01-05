@@ -100,7 +100,7 @@ public class RemoveGuid extends AbstractCommand {
             return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + accountGuid);
           }
         }
-        return AccountAccess.removeGuid(header, guidInfoToRemove, accountInfo, handler);
+        return AccountAccess.removeGuid(header, commandPacket, guidInfoToRemove, accountInfo, handler);
       } else {
         return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
       }

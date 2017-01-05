@@ -82,7 +82,7 @@ public class SetCode extends AbstractCommand {
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
 
     try {
-      ResponseCode response = ActiveCode.setCode(guid, action,
+      ResponseCode response = ActiveCode.setCode(header, commandPacket, guid, action,
               code, writer, signature, message, timestamp, handler);
 
       if (!response.isExceptionOrError()) {

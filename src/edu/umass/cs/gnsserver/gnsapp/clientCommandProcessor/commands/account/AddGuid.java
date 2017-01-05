@@ -99,7 +99,8 @@ public class AddGuid extends AbstractCommand {
       } else if (accountInfo.getGuids().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_SUBGUIDS)) {
         return new CommandResponse(ResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_GUIDS.toString());
       } else {
-        CommandResponse result = AccountAccess.addGuid(header, accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
+        CommandResponse result = AccountAccess.addGuid(header, commandPacket,
+                accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
         if (result.getExceptionOrErrorCode().isOKResult()) {
           // Everything is hunkey dorey so return the new guid
           return new CommandResponse(ResponseCode.NO_ERROR, newGuid);

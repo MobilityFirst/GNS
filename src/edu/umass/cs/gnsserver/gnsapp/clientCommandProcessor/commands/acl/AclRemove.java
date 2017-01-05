@@ -103,7 +103,8 @@ public class AclRemove extends AbstractCommand {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
     }
-    if (!(responseCode = FieldMetaData.removeValue(header, access,
+    if (!(responseCode = FieldMetaData.removeValue(header, commandPacket,
+            access,
             guid, field, accessorPublicKey,
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());

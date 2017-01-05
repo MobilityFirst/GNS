@@ -85,7 +85,8 @@ public class AclRetrieveSecured extends AbstractCommand {
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
-    JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(header, access,
+    JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(header, 
+            access,
             guid, field, 
             GNSProtocol.INTERNAL_QUERIER.toString(),
             //GNSConfig.getInternalOpSecret(), 

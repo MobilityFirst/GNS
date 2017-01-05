@@ -33,7 +33,6 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -100,7 +99,8 @@ public class AclRemoveSecured extends AbstractCommand {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
     }
-    if (!(responseCode = FieldMetaData.removeValue(header, access,
+    if (!(responseCode = FieldMetaData.removeValue(header, commandPacket,
+            access,
             guid, field, accessorPublicKey,
             GNSProtocol.INTERNAL_QUERIER.toString(),
             //GNSConfig.getInternalOpSecret(),

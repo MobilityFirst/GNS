@@ -83,7 +83,8 @@ public abstract class AbstractUpdateList extends AbstractCommand {
       timestamp = null;
     }
     ResponseCode responseCode;
-    if (!(responseCode = FieldAccess.update(header, guid, field,
+    if (!(responseCode = FieldAccess.update(header, commandPacket, 
+            guid, field,
             JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
             argument,

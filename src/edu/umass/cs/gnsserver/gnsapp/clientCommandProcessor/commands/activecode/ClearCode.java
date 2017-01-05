@@ -82,7 +82,8 @@ public class ClearCode extends AbstractCommand {
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
 
     try {
-      ResponseCode response = ActiveCode.clearCode(header, guid, action,
+      ResponseCode response = ActiveCode.clearCode(header, commandPacket,
+              guid, action,
               writer, signature, message, timestamp, handler);
 
       if (!response.isExceptionOrError()) {

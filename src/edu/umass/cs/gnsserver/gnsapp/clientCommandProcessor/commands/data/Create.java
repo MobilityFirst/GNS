@@ -86,7 +86,7 @@ public class Create extends AbstractCommand {
       timestamp = null;
     }
     ResponseCode responseCode;
-    if (!(responseCode = FieldAccess.createField(header, guid, field,
+    if (!(responseCode = FieldAccess.createField(header, commandPacket, guid, field,
             (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());

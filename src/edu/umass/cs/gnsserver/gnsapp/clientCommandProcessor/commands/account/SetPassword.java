@@ -85,7 +85,7 @@ public class SetPassword extends AbstractCommand {
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.VERIFICATION_ERROR.toString()
               + " Account not verified");
     }
-    return AccountAccess.setPassword(header, accountInfo, password, guid, signature, message, timestamp, handler);
+    return AccountAccess.setPassword(header, commandPacket, accountInfo, password, guid, signature, message, timestamp, handler);
   }
 
 }

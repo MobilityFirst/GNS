@@ -22,11 +22,11 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
@@ -199,6 +199,7 @@ public class FieldAccess {
    * whole "guid data is a JSONObject" format so we might be
    * transitioning away from this altogether at some point.
    *
+   * @param header
    * @param guid
    * @param field
    * @param reader
@@ -276,6 +277,7 @@ public class FieldAccess {
   /**
    * Returns the first value of the field in a guid in a an old-style JSONArray field value.
    *
+   * @param header
    * @param guid
    * @param field
    * @param reader
@@ -313,6 +315,7 @@ public class FieldAccess {
   /**
    * Returns the first value of all the fields in a guid in an old-style JSONArray field value.
    *
+   * @param header
    * @param guid
    * @param reader
    * @param signature
@@ -357,6 +360,7 @@ public class FieldAccess {
    * Updates the field with value.
    *
    * @param header
+   * @param commandPacket
    * @param guid - the guid to update
    * @param key - the field to update
    * @param value - the new value
@@ -373,12 +377,14 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static ResponseCode update(InternalRequestHeader header, String guid, String key, String value, String oldValue,
+  public static ResponseCode update(InternalRequestHeader header, 
+          CommandPacket commandPacket, 
+          String guid, String key, String value, String oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message,
           Date timestamp,
           ClientRequestHandlerInterface handler) {
-    return update(header, guid, key,
+    return update(header, commandPacket, guid, key,
             new ResultValue(Arrays.asList(value)),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
             argument,
@@ -390,6 +396,7 @@ public class FieldAccess {
    * Updates the field with value.
    *
    * @param header
+   * @param commandPacket
    * @param guid - the guid to update
    * @param key - the field to update
    * @param value - the new value
@@ -406,7 +413,7 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static ResponseCode update(InternalRequestHeader header, String guid, String key,
+  public static ResponseCode update(InternalRequestHeader header, CommandPacket commandPacket, String guid, String key,
           ResultValue value, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message,
@@ -414,7 +421,7 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     try {
-      return NSUpdateSupport.executeUpdateLocal(header, guid, key, writer, signature, message,
+      return NSUpdateSupport.executeUpdateLocal(header, commandPacket, guid, key, writer, signature, message,
               timestamp,
               operation,
               value, oldValue, argument, null, handler.getApp(), false);
@@ -446,11 +453,12 @@ public class FieldAccess {
    * @return an NSResponseCode
    */
   private static ResponseCode update(InternalRequestHeader header,
+          CommandPacket commandPacket,
           String guid, JSONObject json, UpdateOperation operation,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     try {
-      return NSUpdateSupport.executeUpdateLocal(header, guid, null,
+      return NSUpdateSupport.executeUpdateLocal(header, commandPacket, guid, null,
               writer, signature, message, timestamp, operation,
               null, null, -1, new ValuesMap(json), handler.getApp(), false);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
@@ -465,6 +473,7 @@ public class FieldAccess {
    * Sends an update request to the server containing a JSON Object.
    *
    * @param header
+   * @param commandPacket
    * @param guid - the guid to update
    * @param json - the JSONObject to use in the update
    * @param writer - the guid performing the write operation, can be the same as the guid being written. Can be null for globally
@@ -477,10 +486,12 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static ResponseCode updateUserJSON(InternalRequestHeader header, String guid, JSONObject json,
+  public static ResponseCode updateUserJSON(InternalRequestHeader header,
+          CommandPacket commandPacket,
+          String guid, JSONObject json,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(header, guid, new ValuesMap(json),
+    return FieldAccess.update(header, commandPacket, guid, new ValuesMap(json),
             UpdateOperation.USER_JSON_REPLACE,
             writer, signature, message, timestamp, handler);
   }
@@ -490,6 +501,7 @@ public class FieldAccess {
    * This is a convenience method - one could use the <code>update</code> method.
    *
    * @param header
+   * @param commandPacket
    * @param guid - the guid to update
    * @param key - the field to createField
    * @param value - the initial value of the field
@@ -503,10 +515,12 @@ public class FieldAccess {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode createField(InternalRequestHeader header, String guid, String key, ResultValue value,
+  public static ResponseCode createField(InternalRequestHeader header,
+          CommandPacket commandPacket,
+          String guid, String key, ResultValue value,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
-    return update(header, guid, key, value, null, -1,
+    return update(header, commandPacket, guid, key, value, null, -1,
             UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message,
             timestamp, handler);
   }
@@ -515,6 +529,7 @@ public class FieldAccess {
    * Deletes the field from the guid.
    *
    * @param header
+   * @param commandPacket
    * @param guid - the guid to update
    * @param key - the field to createField
    * @param writer - the guid performing the delete operation, can be the same as the guid being written.
@@ -527,10 +542,10 @@ public class FieldAccess {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode deleteField(InternalRequestHeader header, String guid, String key,
+  public static ResponseCode deleteField(InternalRequestHeader header, CommandPacket commandPacket, String guid, String key,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
-    return update(header, guid, key,
+    return update(header, commandPacket, guid, key,
             "", null, -1, // these are ignored anyway
             UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, message,
             timestamp, handler);
@@ -556,6 +571,7 @@ public class FieldAccess {
   /**
    * Sends a select request to the server to retrieve all the guids matching the request.
    *
+   * @param header
    * @param key - the key to match
    * @param value - the value to match
    * @param handler
@@ -582,6 +598,7 @@ public class FieldAccess {
   /**
    * Sends a select request to the server to retrieve all the guids within an area specified by a bounding box.
    *
+   * @param header
    * @param key - the field to match - should be a location field
    * @param value - a bounding box
    * @param handler
@@ -610,6 +627,7 @@ public class FieldAccess {
   /**
    * Sends a select request to the server to retrieve all the guids within maxDistance of value.
    *
+   * @param header
    * @param key - the field to match - should be a location field
    * @param value - the position
    * @param maxDistance - the maximum distance from position
@@ -638,6 +656,7 @@ public class FieldAccess {
   /**
    * Sends a select request to the server to retrieve all the guid matching the query.
    *
+   * @param header
    * @param query
    * @param handler
    * @return a command response
@@ -664,6 +683,8 @@ public class FieldAccess {
   /**
    * Sends a select request to the server to setup a context aware group guid and retrieve all the guids matching the query.
    *
+   * @param header
+   * @param commandPacket
    * @param accountGuid
    * @param query
    * @param publicKey
@@ -672,7 +693,9 @@ public class FieldAccess {
    * @return a command response
  * @throws InternalRequestException 
    */
-  public static CommandResponse selectGroupSetupQuery(InternalRequestHeader header, String accountGuid, String query, String publicKey,
+  public static CommandResponse selectGroupSetupQuery(InternalRequestHeader header, 
+          CommandPacket commandPacket,
+          String accountGuid, String query, String publicKey,
           int interval,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
@@ -700,7 +723,8 @@ public class FieldAccess {
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
         String name = Base64.encodeToString(ShaOneHashFunction.getInstance().hash(query), false);
-        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(header, accountInfo, accountGuidInfo,
+        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(header, commandPacket,
+                accountInfo, accountGuidInfo,
                 name, guid, publicKey, handler);
         // If there was a problem adding return that error response.
         if (!groupGuidCreateresult.getExceptionOrErrorCode().isOKResult()) {
@@ -730,6 +754,7 @@ public class FieldAccess {
   /**
    * Sends a select request to the server to retrieve the members of a context aware group guid.
    *
+   * @param header
    * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
    * @param handler
    * @return a command response
@@ -775,7 +800,8 @@ public class FieldAccess {
 	  return signatureAndACLCheckForRead(null, guid, field, fields, reader, signature, message, timestamp, app);
   }
   
-  public static ResponseCode signatureAndACLCheckForRead(InternalRequestHeader header, String guid,
+  public static ResponseCode signatureAndACLCheckForRead(InternalRequestHeader header, 
+          String guid,
           String field, List<String> fields,
           String reader, String signature, String message,
           Date timestamp,
@@ -787,8 +813,6 @@ public class FieldAccess {
     try {
     	assert(header!=null);
     	
-      // if reader is the internal secret this means that this is an internal
-      // request that doesn't need to be authenticated
       // note: reader can also be null here
       if (!header.verifyInternal()
               && (field != null || fields != null)) {
@@ -800,8 +824,9 @@ public class FieldAccess {
   	            new Object[]{reader, header.verifyInternal(), field, fields});
     	  
     	  // internal commands don't need even ACL checks
-    	  if (header.verifyInternal() && (GNSProtocol.INTERNAL_QUERIER.toString().equals(reader)))
-    		  return ResponseCode.NO_ERROR;
+    	  if (header.verifyInternal() && (GNSProtocol.INTERNAL_QUERIER.toString().equals(reader))) {
+            return ResponseCode.NO_ERROR;
+          }
           
     	  if (field != null) {
     		  errorCode = NSAuthentication.aclCheck(header, guid, field,

@@ -86,7 +86,7 @@ public class RemoveAccountSecured extends AbstractCommand {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
       }
       // And... we're done.
-      return AccountAccess.removeAccount(header, accountInfo, handler);
+      return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
     } catch (ClientException | IOException e) {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
               + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());

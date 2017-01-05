@@ -68,7 +68,7 @@ public class ResetKey extends AbstractCommand {
     String guid = json.getString(GNSProtocol.GUID.toString());
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
     String password = json.getString(GNSProtocol.PASSWORD.toString());
-    return AccountAccess.resetPublicKey(header, guid, password, publicKey, handler);
+    return AccountAccess.resetPublicKey(header, commandPacket, guid, password, publicKey, handler);
   }
 
 }

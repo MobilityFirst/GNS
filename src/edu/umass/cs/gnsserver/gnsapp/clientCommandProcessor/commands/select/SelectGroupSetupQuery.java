@@ -65,7 +65,7 @@ public class SelectGroupSetupQuery extends AbstractCommand {
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
     int interval = json.optInt(GNSProtocol.INTERVAL.toString(), -1);
 
-    return FieldAccess.selectGroupSetupQuery(header, accountGuid, query, publicKey, interval, handler);
+    return FieldAccess.selectGroupSetupQuery(header, commandPacket, accountGuid, query, publicKey, interval, handler);
   }
 
   

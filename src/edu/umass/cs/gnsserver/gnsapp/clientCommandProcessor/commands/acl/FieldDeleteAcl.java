@@ -82,13 +82,14 @@ public class FieldDeleteAcl extends AbstractCommand {
 
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, GNSProtocol.BAD_RESPONSE.toString() 
+      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, GNSProtocol.BAD_RESPONSE.toString()
               + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
     ResponseCode responseCode;
     if (!(responseCode
-            = FieldMetaData.deleteField(header, access, guid, field, writer,
+            = FieldMetaData.deleteField(header, commandPacket,
+                    access, guid, field, writer,
                     signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {

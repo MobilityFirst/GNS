@@ -102,7 +102,8 @@ public class AclAdd extends AbstractCommand {
     }
     // This is where we update the ACL. Put the public key of the accessing guid in the appropriate ACL list.
     ResponseCode responseCode;
-    if (!(responseCode = FieldMetaData.add(header, access, guid, field,
+    if (!(responseCode = FieldMetaData.add(header, commandPacket,
+            access, guid, field,
             accessorPublicKey, writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {
