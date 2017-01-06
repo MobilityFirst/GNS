@@ -1,4 +1,6 @@
 language: java
+# sudo: required instructs Travis to use a "real VM" instead of a docker VM
+sudo: required
 jdk:
 - oraclejdk8
 services:
@@ -8,19 +10,4 @@ notifications:
     on_success: always
     on_failure: always
 script:
-- ant test
-#after_failure:
-#- git config user.email "$GITEMAIL"
-#- git config user.name  "$GITUSER"
-#- export GITCOMMITUSER=$(git --no-pager show -s --format='%an' $TRAVIS_COMMIT);
-#- git checkout master;
-#- if [ "$GITCOMMITUSER" == "$GITUSER" ]; then echo "Not reverting since this commit
-#  was issued automatically by travis..."; else git revert "$TRAVIS_COMMIT" HEAD --no-edit
-#  --no-commit; git commit -m "Autoreverting a commit due to failed tests!"; $(git
-#  push -q https://$GITUSER:$GITPASSWORD@github.com/MobilityFirst/GNS.git > /dev/null);
-#  fi
-env:
-  global:
-  - secure: l+vGafJuEu4/wAykdB7mOuUMncAM9lqMqEJZa5UAdpW1F/spBgBkj3Hc1LuhiXADO6bitLhIWkoU8laBL4OkPRXhfJSaZmRhTL+ALcg1OpJ4UgBwfiP/KCAxk71eOmehFwJEPnwYktCQAArt3P0/RqTjbKfe0VH4M6qkK2+qr505KCo+8ilkuIPh3hdcgSsxIK3CD+kZW16upLEHHo6SwimPY/Sr/5SdTfrD3AGyq4cpSTGia/YA1Sfseu6DYwbRaYtUl1Cv7jRgo8MNtbVL3a+uAepn8kyB7Gc3h0O0v9xzy10hyyAvI2rO1cDgHB25aMF/h/jn1yBmdcs7hHAN9CG+7/GJlqrHF4IBAXi7WAML+BE1CV0j+HJfnOdS4Hxs5dx7NSUww9Jg06tkqEA+9Pkz/kt6TTkY6qCnmkq9mOsgCeWgD4doOYVtyZUxbfhKxQ8sfFHZ1hHMlL6/Any2GAXzW1NdM5cuc0MwpFeEWuXOfrorXl7gxid4bUEJzZWfqgoshIm37+GA8Kaw+Frc5N1DOzay4DjeZNoovbYQS9aaeFkK4NoHiCIleEwiq53jsTlS3biwpdIjoZ2XenjyetIaajDS0zLAx+BcwR3udJjwv0q17bp/To3On/Cme8sS/Ianufq8+hYi40JXvWSUMhzQek5MW8Z9k08P0zbJSW8=
-  - secure: a0TrWEBhk3mi/GOB1PPwaeQnLYuspka6KY1iYD/dcpjkwv5jYBy6xwZGKTeC9+6Kg/yOSSpMvxTXODg8VTSW+fthf2ZeN3+dBTcRx8JzdCvE0G4Z4G+HQjDeifq01HOx1PeWHMiW3GrQeyCmPosWf4WOXcszztl68AS/uF+nuU/p+cILrpDtUPkHihMF/6V8Uo4CWOibAcZOp70eKEihbP6Aacu9gMpZdrZAZEUsIP/IEsO9cFwEH15DBZbhzSB+HrkXo7bC2oaCAI5kN+BJNFTnHfzr5BbhIstAYghnoTWz6lPAhVghE3wDUeWZD66Q68GWGmjWPq5vf8t9R7ZAwNh0Mc5Jw3w8GksVZsmWVj7fC6YdMJWGs9mYC6xQPbP89ZAG5ipOMdgnpl9QBIaKVc7Am/Luf083jH5klSwYTeAZxJlS5/6r/so4bDTpHv3i8d4DTLHa2RoSgIxB1SarcUFnz5en9krgaBnU5q717jh+F5Z/MtodRtYeDDpxQbptu0fwy7iO1KBwwg72+1EfMgH5zqodrFOy9nzOppvz6JMTwXPz9y/jdKclBN3S1g4qdymFdT32BMBGRmQn6ZraWehhvY8vdhYkCJK/Kq2WQOuQH2WmVn9kgmEIfgS8JPtv9VC+ARGdgUtyeGFWo24EiqOeEmSYM7OekoBwmXnblW0=
-  - secure: TXoEei096cbFkjEh0VaxMwS8lNtNFdojs+jRtyCdgMNYFsHdq7Vrc79Zo8C0IdV9mFMXuG9++KH1YJm2RFq6lRuvcE/tnMXoKuC0WLmepK2AcL1+WSBKlnT+4SYO1u5CLNnPlI0ufJFI+dz5d1N8PzlWEz5bKQILZ5Tby+1HqgtTchF/ZWq+aGv9gmKlazyYszf4I4JCpmhJ22RGbmsBsF+/vH0fu4eRRaRDXTuGu4iOOC7uZmA9LX3LT2K0S/nMzO+0uVij01uRyDfZlCwdHhauwjIJszyxLGv/Ju5/yoxAkxAPmjPfK9ZZhGNFr3Y97m3Oi/jWlTyLt35dzJXaEEMToABxr6TYMP5U/Lfs0EaF3pesjLnoY1Y2tnxakDsJfed5Uho/0LUyw1A5A+IjGiCGGKtVgTgYndyBiksIhskt7rogu+M1RNXQYbF3239GBTuGO1N+H5cKYFXobzUw5o+s8k06qk9C4jIXl3Vn8dAjtNimqKQrH2IyIYSzLAAC72uuVX6w697wVkyjczW/JdsswxKdT1oG64RbRiU39l9DUI1I60SegpqWydrvY/EcenFzhWmB7bXDC2+fovoWGyL0FVxUNAqQkGsrA19nNEaHvEvSAN1lS6DFmkyKYdbfZNupNhVFcTktPqVF7Ilr31nrvsviy4UUCbyMe3hvm04=
+- ./scripts/travis_checks.sh
