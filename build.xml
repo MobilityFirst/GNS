@@ -46,20 +46,19 @@
 
   <!-- pretty much everything depends on this -->
   <target name="compile" depends="init, buildnumber" description="compile java files">
+    <property name="maxWarningsJavac" value="100000" />
     <javac srcdir="${src.dir}:${test.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source"
            includeantruntime="false">
-      <compilerarg value="-Xlint:unchecked"/>
-      <compilerarg value="-Xlint:rawtypes"/>
-      <compilerarg value="-Xlint:cast"/>
-      <compilerarg value="-Xlint:serial"/>
+      <compilerarg value="-Xlint:all"/>
+      <compilerarg value="-Xmaxwarns"/>
+      <compilerarg value="${maxWarningsJavac}"/>
       <classpath refid="classpath.base"/>
     </javac>
     <javac srcdir="${test.dir}" destdir="${build.test.classes.dir}" debug="true" debuglevel="lines,vars,source"
            includeantruntime="false">
-      <compilerarg value="-Xlint:unchecked"/>
-      <compilerarg value="-Xlint:rawtypes"/>
-      <compilerarg value="-Xlint:cast"/>
-      <compilerarg value="-Xlint:serial"/>
+      <compilerarg value="-Xlint:all"/>
+      <compilerarg value="-Xmaxwarns"/>
+      <compilerarg value="${maxWarningsJavac}"/>
       <classpath refid="classpath.base"/>
     </javac>
     <!-- fetch gigapaxos scripts -->
@@ -162,11 +161,12 @@
   </target>
 
   <target name="doc" description="generate javadoc">
+    <property name="maxErrWarningsJavadoc" value="100000" />
     <mkdir dir="${build.dir}/doc"/>
     <javadoc packagenames="edu.umass.cs.*" 
              sourcepath="${src.dir}" 
              destdir="${build.dir}/doc"
-             additionalparam="-Xdoclint:none"
+             additionalparam="-Xdoclint:all -Xmaxerrs ${maxErrWarningsJavadoc} -Xmaxwarns ${maxErrWarningsJavadoc}"
              author="true"
              version="true"
              use="true"
