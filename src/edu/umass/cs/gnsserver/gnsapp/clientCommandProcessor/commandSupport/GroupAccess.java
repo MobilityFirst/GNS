@@ -107,8 +107,6 @@ public class GroupAccess {
     }
   }
 
-  
-
   /**
    * Sends a request to the NS to add a list of GUIDs to a group.
    * Updates the GROUP field in a group GUID adding the group members to it and
@@ -133,12 +131,11 @@ public class GroupAccess {
    */
   public static ResponseCode addToGroup(InternalRequestHeader header, String groupGuid, ResultValue members, String writer,
           String signature, String message, Date timestamp,
-          ClientRequestHandlerInterface handler) 
+          ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException, InternalRequestException {
 
     boolean membersUpdateOK = membersUpdateForAdd(header, groupGuid, members.toStringSet(), handler);
     boolean allGroupsUpdatesOK = true;
-
     for (String memberGuid : members.toStringSet()) {
       if (!groupsUpdateForAdd(header, groupGuid, memberGuid, handler)) {
         allGroupsUpdatesOK = false;
@@ -172,18 +169,20 @@ public class GroupAccess {
   public static ResponseCode removeFromGroup(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, String memberGuid, String writer,
           String signature, String message, Date timestamp,
-          ClientRequestHandlerInterface handler) 
+          ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException, InternalRequestException {
-    ResponseCode code;
-    code = FieldAccess.update(header, commandPacket, guid, GROUP, memberGuid, null, -1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message,
-            timestamp, handler);
-    if (code.isOKResult()) {
-      //handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
-      handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid,
-                GroupAccess.GROUPS, guid, header));
+
+    boolean membersUpdateOK = GNSProtocol.OK_RESPONSE.toString().equals(
+            handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(guid,
+                    GroupAccess.GROUP, memberGuid, header)).getResultString());
+    boolean groupsUpdateOK = GNSProtocol.OK_RESPONSE.toString().equals(
+            handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid,
+                    GroupAccess.GROUPS, guid, header)).getResultString());
+    if (membersUpdateOK && groupsUpdateOK) {
+      return ResponseCode.NO_ERROR;
+    } else {
+      return ResponseCode.UPDATE_ERROR;
     }
-    return code;
   }
 
   /**
@@ -204,24 +203,28 @@ public class GroupAccess {
    * @throws org.json.JSONException
    * @throws InternalRequestException
    */
-  public static ResponseCode removeFromGroup(InternalRequestHeader header, 
+  public static ResponseCode removeFromGroup(InternalRequestHeader header,
           CommandPacket commandPacket,
           String guid, ResultValue members, String writer,
           String signature, String message, Date timestamp,
-          ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException, 
+          ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException,
           InternalRequestException {
-    ResponseCode code;
-    code = FieldAccess.update(header, commandPacket, guid, GROUP, members, null, -1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message,
-            timestamp, handler);
-    if (code.isOKResult()) {
-      for (String memberGuid : members.toStringSet()) {
-        //handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
-        handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid,
-                GroupAccess.GROUPS, guid, header));
+    boolean membersUpdateOK = GNSProtocol.OK_RESPONSE.toString().equals(
+            handler.getInternalClient().execute(GNSCommandInternal.fieldRemoveList(guid,
+                    GroupAccess.GROUP, members, header)).getResultString());
+    boolean allGroupsUpdatesOK = true;
+    for (String memberGuid : members.toStringSet()) {
+      //handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
+      if (!GNSProtocol.OK_RESPONSE.toString().equals(handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid,
+              GroupAccess.GROUPS, guid, header)).getResultString())) {
+        allGroupsUpdatesOK = false;
       }
     }
-    return code;
+    if (membersUpdateOK && allGroupsUpdatesOK) {
+      return ResponseCode.NO_ERROR;
+    } else {
+      return ResponseCode.UPDATE_ERROR;
+    }
   }
 
   /**
@@ -242,7 +245,7 @@ public class GroupAccess {
           String guid, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket,
-            guid, GROUP, 
+            guid, GROUP,
             null, //fields
             reader, signature, message, timestamp,
             handler.getApp());
@@ -270,8 +273,8 @@ public class GroupAccess {
   public static ResultValue lookupGroupsAnywhere(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler, boolean remoteLookup) throws FailedDBOperationException {
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, 
-            GROUPS, 
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid,
+            GROUPS,
             null, // fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -295,7 +298,7 @@ public class GroupAccess {
   public static ResultValue lookupGroupsLocally(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, GROUPS, 
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, GROUPS,
             null, //fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -303,11 +306,10 @@ public class GroupAccess {
     }
     return NSFieldAccess.lookupListFieldLocallySafe(guid, GROUPS, handler.getApp().getDB());
   }
-  
+
   //
   // Helper methods
   //
-  
   private static boolean membersUpdateForAdd(InternalRequestHeader header, String groupGuid, Set<String> newMembers,
           ClientRequestHandlerInterface handler)
           throws IOException, JSONException, ClientException, InternalRequestException {
@@ -385,7 +387,7 @@ public class GroupAccess {
    */
   public static void cleanupGroupsForDelete(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, ClientRequestHandlerInterface handler)
-          throws ClientException, IOException, JSONException, 
+          throws ClientException, IOException, JSONException,
           InternalRequestException {
 
     LOGGER.log(Level.FINE, "DELETE CLEANUP: {0}", guid);

@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gigapaxos.interfaces.Summarizable;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
@@ -37,7 +36,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
@@ -122,36 +120,12 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
     return getCommandType().getCommandDescription();
   }
 
-  // FIXME: This is a workaround to the missing execute method described in MOB-918
-  // I'm not sure what effect a null InternalRequestHeader will have going out.
-  // This is currently only used by the HTTP server
-  /**
-   * 
-   * @param commandPacket
-   * @param handler
-   * @return
-   * @throws InvalidKeyException
-   * @throws InvalidKeySpecException
-   * @throws JSONException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   * @throws UnsupportedEncodingException
-   * @throws ParseException
-   * @throws InternalRequestException 
-   */
-  @Override
-  public CommandResponse execute(CommandPacket commandPacket, ClientRequestHandlerInterface handler)
-          throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException,
-          UnsupportedEncodingException, ParseException, InternalRequestException {
-    return execute(null, commandPacket, handler);
-  }
-
   /**
    *
-   * This method by default simply calls {@link #execute(JSONObject, ClientRequestHandlerInterface)}
-   * but Read and Update queries need to be adapted to drag {@link CommandPacket} for longer to use
-   * {@link InternalRequestHeader} information inside them.
+   * Executes the command.
+   * Arguments are passed in the CommandPacket.
+   * This is used by Read and Update queries to drag {@link edu.umass.cs.gnscommon.packets.CommandPacket} 
+   * for longer to use {@link InternalRequestHeader} information inside them.
    *
    * @param internalHeader
    * @param commandPacket

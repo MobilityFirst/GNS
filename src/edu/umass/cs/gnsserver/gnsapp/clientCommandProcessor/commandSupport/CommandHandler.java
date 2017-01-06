@@ -170,11 +170,7 @@ public class CommandHandler {
   }
 
   /**
-   *
-   * Same as
-   * {@link #executeCommand(AbstractCommand, JSONObject, ClientRequestHandlerInterface)}
-   * that is needed by the HTTP server, but we need this for pulling {@link CommandPacket}
-   * all the way through for {@link InternalRequestHeader} to work correctly.
+   * Execute the commandPacket.
    *
    * @param commandHandler
    * @param commandPacket
@@ -242,40 +238,6 @@ public class CommandHandler {
     // nothing suspicious detected
     return header;
   }
-
-//  /**
-//   * Executes the given command with the parameters supplied in the
-//   * JSONObject. Same as
-//   * {@link #executeCommand(AbstractCommand, JSONObject, ClientRequestHandlerInterface)}
-//   * but this is used by the HTTP server that doesn't get {@link CommandPacket}.
-//   *
-//   * @param command
-//   * @param json
-//   * @param handler
-//   * @return a command response
-// * @throws InternalRequestException 
-//   */
-//  public static CommandResponse executeCommand(AbstractCommand command,
-//          JSONObject json, ClientRequestHandlerInterface handler) throws InternalRequestException {
-//    assert command != null;
-//    try {
-//      ClientCommandProcessorConfig.getLogger().log(Level.FINE,
-//              "{0} Executing command {1} in packet {2}",
-//              new Object[]{handler.getApp(), command, json});
-//      // Gin up a command packet
-//      
-//      return command.execute(new CommandPacket((long) (Math.random() * Long.MAX_VALUE), json), handler);
-//    } catch (JSONException e) {
-//      // e.printStackTrace();
-//      return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-//              GNSProtocol.BAD_RESPONSE.toString() + " "
-//              + GNSProtocol.JSON_PARSE_ERROR.toString() + " " + e
-//              + " while executing command.");
-//    } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
-//      return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
-//              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString() + " " + e);
-//    }
-//  }
 
   private static long lastStatsTime = 0;
 

@@ -15,6 +15,7 @@ import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.ResultValue;
 
 /**
  * @author arun
@@ -224,20 +225,28 @@ public class GNSCommandInternal extends InternalCommandPacket {
 //            new JSONObject().put(field, value));
 //  }
   /**
-   * @param memberGuid
-   * @param groups
    * @param guid
+   * @param field
+   * @param value
    * @param header
    * @return InternalCommandPacket
    * @throws JSONException
    * @throws InternalRequestException
    */
-  public static InternalCommandPacket fieldRemove(String memberGuid,
-          String groups, String guid, InternalRequestHeader header)
+  public static InternalCommandPacket fieldRemove(String guid,
+          String field, String value, InternalRequestHeader header)
           throws InternalRequestException, JSONException {
     return getCommand(CommandType.RemoveUnsigned, header,
             GNSProtocol.GUID.toString(), guid,
-            GNSProtocol.FIELD.toString(), groups,
-            GNSProtocol.VALUE.toString(), guid.toString());
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.VALUE.toString(), value);
+  }
+  
+  public static InternalCommandPacket fieldRemoveList(String guid, String field, ResultValue value, 
+          InternalRequestHeader header) throws InternalRequestException, JSONException {
+    return getCommand(CommandType.RemoveListUnsigned, header,
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field, 
+            GNSProtocol.VALUE.toString(), value);   
   }
 }
