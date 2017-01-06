@@ -49,7 +49,8 @@ public class HttpClientTest {
 
   public HttpClientTest() {
     if (client == null) {
-      client = new HttpClient("127.0.0.1", 8080);
+      // This should look up the appropriate port
+      client = new HttpClient("127.0.0.1", 24703);
     }
   }
   

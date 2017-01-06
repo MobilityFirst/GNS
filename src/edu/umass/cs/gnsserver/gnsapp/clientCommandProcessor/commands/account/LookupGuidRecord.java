@@ -33,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  *
@@ -59,7 +60,8 @@ public class LookupGuidRecord extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler)) == null) {

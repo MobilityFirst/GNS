@@ -45,6 +45,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  * Command to add a guid.
@@ -72,8 +73,9 @@ public class AddGuid extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
+    JSONObject json = commandPacket.getCommand();
     String name = json.getString(GNSProtocol.NAME.toString());
     String accountGuid = json.getString(GNSProtocol.GUID.toString());
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
@@ -97,7 +99,8 @@ public class AddGuid extends AbstractCommand {
       } else if (accountInfo.getGuids().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_SUBGUIDS)) {
         return new CommandResponse(ResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_GUIDS.toString());
       } else {
-        CommandResponse result = AccountAccess.addGuid(header, accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
+        CommandResponse result = AccountAccess.addGuid(header, commandPacket,
+                accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
         if (result.getExceptionOrErrorCode().isOKResult()) {
           // Everything is hunkey dorey so return the new guid
           return new CommandResponse(ResponseCode.NO_ERROR, newGuid);

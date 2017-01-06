@@ -43,6 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  *
@@ -69,8 +70,9 @@ public class ResendAuthenticationEmail extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
@@ -86,7 +88,7 @@ public class ResendAuthenticationEmail extends AbstractCommand {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
     } else {
       try {
-        return AccountAccess.resendAuthenticationEmail(accountInfo, guid, signature, message, handler);
+        return AccountAccess.resendAuthenticationEmail(header, commandPacket, accountInfo,  guid, signature, message, handler);
       } catch (UnknownHostException e) {
         return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
                 GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());

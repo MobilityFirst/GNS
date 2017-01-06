@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCom
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -61,11 +62,12 @@ public class VerifyAccount extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String code = json.getString(GNSProtocol.CODE.toString());
-    return AccountAccess.verifyAccount(header, guid, code, handler);
+    return AccountAccess.verifyAccount(header, commandPacket, guid, code, handler);
   }
 
   

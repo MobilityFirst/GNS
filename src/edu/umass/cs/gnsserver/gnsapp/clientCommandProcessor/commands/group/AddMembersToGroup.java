@@ -30,6 +30,7 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.utils.Format;
 
@@ -68,8 +69,9 @@ public class AddMembersToGroup extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String members = json.getString(GNSProtocol.MEMBERS.toString());
     // writer might be same as guid

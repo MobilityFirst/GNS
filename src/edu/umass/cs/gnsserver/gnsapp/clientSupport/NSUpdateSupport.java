@@ -7,12 +7,12 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
@@ -51,6 +51,7 @@ public class NSUpdateSupport {
    * Executes a local updateEntireValuesMap operation.
    *
    * @param header
+   * @param commandPacket
    * @param guid
    * @param field
    * @param writer
@@ -74,8 +75,9 @@ public class NSUpdateSupport {
    * @throws FailedDBOperationException
    * @throws RecordNotFoundException
    * @throws FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
    */
-  public static ResponseCode executeUpdateLocal(InternalRequestHeader header, String guid, String field,
+  public static ResponseCode executeUpdateLocal(InternalRequestHeader header, CommandPacket commandPacket, String guid, String field,
           String writer, String signature, String message, Date timestamp,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
           ValuesMap userJSON, GNSApplicationInterface<String> app, boolean doNotReplyToClient)
@@ -84,10 +86,7 @@ public class NSUpdateSupport {
           RecordNotFoundException, FieldNotFoundException, InternalRequestException {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
     assert(header!=null);
-    // writer will be the INTERNAL_OP_SECRET for super secret internal system accesses
-    if (!header.verifyInternal()
-    		//!GNSConfig.getInternalOpSecret().equals(writer)
-    		) {
+    if (!header.verifyInternal() && !commandPacket.getCommandType().isMutualAuth()) {
       if (field != null) {
         errorCode = NSAuthentication.signatureAndACLCheck(header, guid, field, null,
                 writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
@@ -99,7 +98,8 @@ public class NSUpdateSupport {
                 "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
         return ResponseCode.ACCESS_ERROR;
       }
-    } else if (header != null && !writer.equals(GNSProtocol.INTERNAL_QUERIER.toString())) {
+      // This is supposed to be a check for when a active code remote query
+    } else if (!commandPacket.getCommandType().isMutualAuth()) {
     	// Must be internal request if here
       // This ACL check will be only used for active code remote query
       if (field != null) {

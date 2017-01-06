@@ -41,6 +41,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 
 /**
@@ -68,9 +69,10 @@ public class RemoveAccountSecured extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException,
           InternalRequestException {
+    JSONObject json = commandPacket.getCommand();
     // The name of the account we are removing.
     String name = json.getString(GNSProtocol.NAME.toString());
     // The guid of this account.
@@ -84,7 +86,7 @@ public class RemoveAccountSecured extends AbstractCommand {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
       }
       // And... we're done.
-      return AccountAccess.removeAccount(header, accountInfo, handler);
+      return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
     } catch (ClientException | IOException e) {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
               + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());

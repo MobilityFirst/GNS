@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.Format;
@@ -41,6 +42,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 
+import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -66,8 +68,9 @@ public abstract class AbstractUpdate extends AbstractCommand {
   public abstract UpdateOperation getUpdateOperation();
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.optString(GNSProtocol.FIELD.toString(), null);
     String value = json.optString(GNSProtocol.VALUE.toString(), null);
@@ -83,12 +86,14 @@ public abstract class AbstractUpdate extends AbstractCommand {
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
 
     if (json.has("originalBase64")) {
-      ClientCommandProcessorConfig.getLogger().warning("||||||||||||||||||||||||||| message:" + message
-              + " original" + new String(Base64.decode(json.getString("originalBase64"))));
+      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, 
+              "||||||||||||||||||||||||||| message:{0} original{1}", 
+              new Object[]{message, new String(Base64.decode(json.getString("originalBase64")))});
     }
     ResponseCode responseCode;
     if (field == null) {
-      responseCode = FieldAccess.updateUserJSON(header, guid, userJSON, writer, signature, message, timestamp, handler);
+      responseCode = FieldAccess.updateUserJSON(header, commandPacket,
+              guid, userJSON, writer, signature, message, timestamp, handler);
       if (!responseCode.isExceptionOrError()) {
         return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
@@ -96,7 +101,8 @@ public abstract class AbstractUpdate extends AbstractCommand {
       }
     } else // single field update
     {
-      if (!(responseCode = FieldAccess.update(header, guid, field,
+      if (!(responseCode = FieldAccess.update(header, commandPacket,
+              guid, field,
               // special case for the ops which do not need a value
               value != null ? new ResultValue(Arrays.asList(value)) : new ResultValue(),
               oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,

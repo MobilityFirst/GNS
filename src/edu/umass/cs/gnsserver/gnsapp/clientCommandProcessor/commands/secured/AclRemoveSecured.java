@@ -29,10 +29,10 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaD
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -69,8 +69,9 @@ public class AclRemoveSecured extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.getString(GNSProtocol.FIELD.toString());
     // The guid that is losing access to this field
@@ -98,7 +99,8 @@ public class AclRemoveSecured extends AbstractCommand {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
     }
-    if (!(responseCode = FieldMetaData.removeValue(header, access,
+    if (!(responseCode = FieldMetaData.removeValue(header, commandPacket,
+            access,
             guid, field, accessorPublicKey,
             GNSProtocol.INTERNAL_QUERIER.toString(),
             //GNSConfig.getInternalOpSecret(),

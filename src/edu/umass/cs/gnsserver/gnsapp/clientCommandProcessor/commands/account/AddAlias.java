@@ -43,6 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  *
@@ -69,8 +70,9 @@ public class AddAlias extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     // The guid of the account we are adding the alias to
     String guid = json.getString(GNSProtocol.GUID.toString());
     // The HRN (alias) we are adding to this account guid
@@ -88,7 +90,8 @@ public class AddAlias extends AbstractCommand {
     } else if (accountInfo.getAliases().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_ALIASES)) {
       return new CommandResponse(ResponseCode.TOO_MANY_ALIASES_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_ALIASES.toString());
     } else {
-      return AccountAccess.addAlias(header, accountInfo, name, guid, signature, message, timestamp, handler);
+      return AccountAccess.addAlias(header, commandPacket, 
+              accountInfo, name, guid, signature, message, timestamp, handler);
     }
   }
 }

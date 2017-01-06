@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCom
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 
 import java.security.InvalidKeyException;
@@ -65,8 +66,9 @@ public class GetGroupMembers extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     // reader might be same as guid
     String reader = json.optString(GNSProtocol.READER.toString(), guid);
@@ -75,7 +77,7 @@ public class GetGroupMembers extends AbstractCommand {
     String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
     Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString()) 
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
-    return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(GroupAccess.lookup(header, guid,
-            reader, signature, message, timestamp, handler)).toString());
+    return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(GroupAccess.lookup(header, commandPacket,
+            guid, reader, signature, message, timestamp, handler)).toString());
   }
 }

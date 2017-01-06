@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaD
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -67,8 +68,9 @@ public class AclAddSecured extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.getString(GNSProtocol.FIELD.toString());
     // The guid that wants to access this field
@@ -95,7 +97,7 @@ public class AclAddSecured extends AbstractCommand {
     }
     // This is where we update the ACL. Put the public key of the accessing guid in the appropriate ACL list.
     ResponseCode responseCode;
-    if (!(responseCode = FieldMetaData.add(header, access, guid, field,
+    if (!(responseCode = FieldMetaData.add(header, commandPacket, access, guid, field,
             accessorPublicKey, 
             GNSProtocol.INTERNAL_QUERIER.toString(),
             //GNSConfig.getInternalOpSecret(),

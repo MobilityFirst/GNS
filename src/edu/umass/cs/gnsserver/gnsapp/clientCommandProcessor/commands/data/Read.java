@@ -39,6 +39,7 @@ import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  *
@@ -64,12 +65,14 @@ public class Read extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader internalHeader, CommandPacket commandPacket,
+          ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
 
-    assert(internalHeader != null);
-    
+    assert (internalHeader != null);
+
     // the opt hair below is for the subclasses... cute, huh?
     String field = json.optString(GNSProtocol.FIELD.toString(), null);
     ArrayList<String> fields = json.has(GNSProtocol.FIELDS.toString())
@@ -92,15 +95,15 @@ public class Read extends AbstractCommand {
     }
 
     if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-      return FieldAccess.lookupMultipleValues(internalHeader, guid, reader,
+      return FieldAccess.lookupMultipleValues(internalHeader, commandPacket, guid, reader,
               signature, message, timestamp, handler);
     } else if (field != null) {
-      return FieldAccess.lookupSingleField(internalHeader, guid, field, reader, signature,
+      return FieldAccess.lookupSingleField(internalHeader, commandPacket, guid, field, reader, signature,
               message, timestamp, handler);
     } else { // multi-field lookup
-      return FieldAccess.lookupMultipleFields(internalHeader, guid, fields, reader, signature,
+      return FieldAccess.lookupMultipleFields(internalHeader, commandPacket, guid, fields, reader, signature,
               message, timestamp, handler);
     }
   }
- 
+
 }

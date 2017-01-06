@@ -40,6 +40,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  * This class helps to implement a unified set of client support commands that translate
@@ -124,12 +125,26 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   // FIXME: This is a workaround to the missing execute method described in MOB-918
   // I'm not sure what effect a null InternalRequestHeader will have going out.
   // This is currently only used by the HTTP server
+  /**
+   * 
+   * @param commandPacket
+   * @param handler
+   * @return
+   * @throws InvalidKeyException
+   * @throws InvalidKeySpecException
+   * @throws JSONException
+   * @throws NoSuchAlgorithmException
+   * @throws SignatureException
+   * @throws UnsupportedEncodingException
+   * @throws ParseException
+   * @throws InternalRequestException 
+   */
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler)
+  public CommandResponse execute(CommandPacket commandPacket, ClientRequestHandlerInterface handler)
           throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException,
           UnsupportedEncodingException, ParseException, InternalRequestException {
-    return execute(null, json, handler);
+    return execute(null, commandPacket, handler);
   }
 
   /**
@@ -139,8 +154,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
    * {@link InternalRequestHeader} information inside them.
    *
    * @param internalHeader
-   * @param command
-   *
+   * @param commandPacket
    * @param handler
    * @return Result of executing {@code commandPacket}
    * @throws InvalidKeyException
@@ -150,9 +164,11 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
    * @throws SignatureException
    * @throws UnsupportedEncodingException
    * @throws ParseException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
    */
   @Override
-  abstract public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
+  abstract public CommandResponse execute(InternalRequestHeader internalHeader, 
+          CommandPacket commandPacket,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, UnsupportedEncodingException, ParseException, InternalRequestException;

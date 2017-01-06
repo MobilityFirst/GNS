@@ -34,6 +34,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
@@ -67,10 +68,11 @@ public class GetCode extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String reader = json.getString(GNSProtocol.READER.toString());
     String action = json.getString(GNSProtocol.AC_ACTION.toString());
@@ -80,7 +82,7 @@ public class GetCode extends AbstractCommand {
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
 
     try {
-      return new CommandResponse(ResponseCode.NO_ERROR, ActiveCode.getCode(header, guid, action,
+      return new CommandResponse(ResponseCode.NO_ERROR, ActiveCode.getCode(header, commandPacket, guid, action,
               reader, signature, message, timestamp, handler));
     } catch (FailedDBOperationException | IllegalArgumentException | JSONException e) {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString()

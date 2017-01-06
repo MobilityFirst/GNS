@@ -42,6 +42,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
@@ -71,9 +72,10 @@ public class RegisterAccount extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException,
           InternalRequestException {
+    JSONObject json = commandPacket.getCommand();
     String name = json.getString(GNSProtocol.NAME.toString());
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
     String password = json.getString(GNSProtocol.PASSWORD.toString());
@@ -85,7 +87,7 @@ public class RegisterAccount extends AbstractCommand {
       return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
     try {
-      CommandResponse result = AccountAccess.addAccount(header, 
+      CommandResponse result = AccountAccess.addAccount(header, commandPacket,
               handler.getHttpServerHostPortString(),
               name, guid, publicKey,
               password,

@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaD
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -68,8 +69,9 @@ public class AclRetrieve extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.getString(GNSProtocol.FIELD.toString());
     String accessType = json.getString(GNSProtocol.ACL_TYPE.toString());
@@ -86,7 +88,9 @@ public class AclRetrieve extends AbstractCommand {
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
-    JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(header, access,
+    JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(
+            new JSONArray(FieldMetaData.lookup(header, commandPacket,
+            access,
             guid, field, reader, signature, message, timestamp, handler)));
     return new CommandResponse(ResponseCode.NO_ERROR, guids.toString());
   }

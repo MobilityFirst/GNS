@@ -26,6 +26,7 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -34,10 +35,8 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -156,6 +155,7 @@ public class GroupAccess {
    * Sends a request to the NS to remove a single GUID from a group.
    *
    * @param header
+   * @param commandPacket
    * @param guid
    * @param memberGuid
    * @param writer
@@ -167,13 +167,15 @@ public class GroupAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
    */
-  public static ResponseCode removeFromGroup(InternalRequestHeader header, String guid, String memberGuid, String writer,
+  public static ResponseCode removeFromGroup(InternalRequestHeader header, CommandPacket commandPacket,
+          String guid, String memberGuid, String writer,
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) 
           throws ClientException, IOException, JSONException, InternalRequestException {
     ResponseCode code;
-    code = FieldAccess.update(header, guid, GROUP, memberGuid, null, -1,
+    code = FieldAccess.update(header, commandPacket, guid, GROUP, memberGuid, null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message,
             timestamp, handler);
     if (code.isOKResult()) {
@@ -188,6 +190,7 @@ public class GroupAccess {
    * Sends a request to the NS to remove a list of GUIDs from a group.
    *
    * @param header
+   * @param commandPacket
    * @param guid
    * @param members
    * @param writer
@@ -201,12 +204,14 @@ public class GroupAccess {
    * @throws org.json.JSONException
    * @throws InternalRequestException
    */
-  public static ResponseCode removeFromGroup(InternalRequestHeader header, String guid, ResultValue members, String writer,
+  public static ResponseCode removeFromGroup(InternalRequestHeader header, 
+          CommandPacket commandPacket,
+          String guid, ResultValue members, String writer,
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException, 
           InternalRequestException {
     ResponseCode code;
-    code = FieldAccess.update(header, guid, GROUP, members, null, -1,
+    code = FieldAccess.update(header, commandPacket, guid, GROUP, members, null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message,
             timestamp, handler);
     if (code.isOKResult()) {
@@ -223,6 +228,7 @@ public class GroupAccess {
    * Returns the members of the group GUID.
    *
    * @param header
+   * @param commandPacket
    *
    * @param guid
    * @param reader
@@ -232,11 +238,12 @@ public class GroupAccess {
    * @param handler
    * @return a response code
    */
-  public static ResultValue lookup(InternalRequestHeader header, String guid,
-          String reader, String signature, String message, Date timestamp,
+  public static ResultValue lookup(InternalRequestHeader header, CommandPacket commandPacket,
+          String guid, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid,
-            GROUP, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket,
+            guid, GROUP, 
+            null, //fields
             reader, signature, message, timestamp,
             handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -249,6 +256,7 @@ public class GroupAccess {
    * Returns the groups that a GUID is a member of.
    *
    * @param header
+   * @param commandPacket
    * @param guid
    * @param reader
    * @param signature
@@ -259,10 +267,12 @@ public class GroupAccess {
    * @return a response code
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ResultValue lookupGroupsAnywhere(InternalRequestHeader header, String guid,
-          String reader, String signature, String message, Date timestamp,
+  public static ResultValue lookupGroupsAnywhere(InternalRequestHeader header, CommandPacket commandPacket,
+          String guid, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler, boolean remoteLookup) throws FailedDBOperationException {
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid, GROUPS, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, 
+            GROUPS, 
+            null, // fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new ResultValue();
@@ -273,6 +283,7 @@ public class GroupAccess {
   /**
    *
    * @param header
+   * @param commandPacket
    * @param guid
    * @param reader
    * @param signature
@@ -281,10 +292,11 @@ public class GroupAccess {
    * @param handler
    * @return the groups as a ResultValue
    */
-  public static ResultValue lookupGroupsLocally(InternalRequestHeader header, String guid,
-          String reader, String signature, String message, Date timestamp,
+  public static ResultValue lookupGroupsLocally(InternalRequestHeader header, CommandPacket commandPacket,
+          String guid, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid, GROUPS, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, GROUPS, 
+            null, //fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new ResultValue();
@@ -362,27 +374,30 @@ public class GroupAccess {
    * Removes all group links when we're deleting a guid.
    *
    * @param header
+   * @param commandPacket
    *
    * @param guid
    * @param handler
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
    */
-  public static void cleanupGroupsForDelete(InternalRequestHeader header, String guid, ClientRequestHandlerInterface handler)
+  public static void cleanupGroupsForDelete(InternalRequestHeader header, CommandPacket commandPacket,
+          String guid, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException, 
           InternalRequestException {
 
     LOGGER.log(Level.FINE, "DELETE CLEANUP: {0}", guid);
     try {
       // We're ignoring signatures and authentication
-      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(header, guid,
+      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(header, commandPacket, guid,
               GNSProtocol.INTERNAL_QUERIER.toString(),
               //GNSConfig.getInternalOpSecret(),
               null, null,
               null, handler, true).toStringSet()) {
         LOGGER.log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
-        removeFromGroup(header, groupGuid, guid,
+        removeFromGroup(header, commandPacket, groupGuid, guid,
                 GNSProtocol.INTERNAL_QUERIER.toString(),
                 //GNSConfig.getInternalOpSecret(),
                 null, null, null,

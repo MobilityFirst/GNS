@@ -89,15 +89,14 @@ public class GNSHttpsServer extends GNSHttpServer {
 
       SSLContext sslContext = SSLContext.getInstance("TLS");
 
-      // initialise the keystore
-      char[] password = "qwerty".toCharArray();
-      KeyStore keyStore = KeyStore.getInstance("JKS");
-      FileInputStream inputStream = new FileInputStream("conf/keyStore/node100.jks");
-      keyStore.load(inputStream, password);
+      char[] keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword").toCharArray();
+      FileInputStream inputStream = new FileInputStream(System.getProperty("javax.net.ssl.keyStore"));
+      KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+      keyStore.load(inputStream, keyStorePassword);
 
       // setup the key manager factory
       KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-      keyManagerFactory.init(keyStore, password);
+      keyManagerFactory.init(keyStore, keyStorePassword);
 
       // setup the trust manager factory
       TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
@@ -141,7 +140,8 @@ public class GNSHttpsServer extends GNSHttpServer {
               "HTTPS server failed to start on port {0} due to {1}",
               new Object[]{port, e});
       return false;
-    } catch (IOException | NoSuchAlgorithmException | KeyStoreException | CertificateException | UnrecoverableKeyException | KeyManagementException e) {
+    } catch (IOException | NoSuchAlgorithmException | KeyStoreException 
+            | CertificateException | UnrecoverableKeyException | KeyManagementException e) {
       LOG.log(Level.FINE,
               "HTTPS server failed to start on port {0} due to {1}",
               new Object[]{port, e});

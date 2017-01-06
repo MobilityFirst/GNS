@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -85,7 +86,9 @@ public class ActiveCode {
   /**
    * Sets active code for the guid and action.
    *
+   * @param header
    * @param guid
+   * @param commandPacket
    * @param action
    * @param code
    * @param writer
@@ -96,14 +99,16 @@ public class ActiveCode {
    * @return a {@link ResponseCode}
    * @throws org.json.JSONException
    */
-  public static ResponseCode setCode(String guid, String action, String code, String writer,
+  public static ResponseCode setCode(InternalRequestHeader header, 
+          CommandPacket commandPacket, String guid, 
+          String action, String code, String writer,
           String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler)
           throws JSONException, IllegalArgumentException {
     JSONObject json;
     json = new JSONObject();
     json.put(getCodeField(action), code); // getCodeField can throw IllegalArgumentException
-    ResponseCode response = FieldAccess.updateUserJSON(null, guid, json,
+    ResponseCode response = FieldAccess.updateUserJSON(header, commandPacket, guid, json,
             writer, signature, message, timestamp, handler);
     return response;
   }
@@ -111,6 +116,8 @@ public class ActiveCode {
   /**
    * Clears the active code for the guid and action.
    *
+   * @param header
+   * @param commandPacket
    * @param guid
    * @param action
    * @param writer
@@ -120,12 +127,12 @@ public class ActiveCode {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode clearCode(InternalRequestHeader header, String guid, String action,
+  public static ResponseCode clearCode(InternalRequestHeader header, CommandPacket commandPacket, String guid, String action,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) throws IllegalArgumentException {
     String field = getCodeField(action); // can throw IllegalArgumentException
 
-    ResponseCode response = FieldAccess.update(header, guid, field, "", null, -1,
+    ResponseCode response = FieldAccess.update(header, commandPacket, guid, field, "", null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature,
             message, timestamp, handler);
     return response;
@@ -134,6 +141,8 @@ public class ActiveCode {
   /**
    * Gets the currently set active code for the guid and action.
    *
+   * @param header
+   * @param commandPacket
    * @param guid
    * @param action
    * @param reader
@@ -145,13 +154,15 @@ public class ActiveCode {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws org.json.JSONException
    */
-  public static String getCode(InternalRequestHeader header, String guid, String action, String reader,
+  public static String getCode(InternalRequestHeader header, CommandPacket commandPacket,
+          String guid, String action, String reader,
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler)
           throws IllegalArgumentException, FailedDBOperationException, JSONException {
 
     String field = getCodeField(action); // can throw IllegalArgumentException
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid, field, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, field, 
+            null, // fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return GNSProtocol.NULL_RESPONSE.toString();

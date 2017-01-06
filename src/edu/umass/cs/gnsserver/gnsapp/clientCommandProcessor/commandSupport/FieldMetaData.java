@@ -23,13 +23,12 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldMetaData;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.utils.Config;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -56,6 +55,8 @@ public class FieldMetaData {
   /**
    * Adds a value to the metadata of the field in the guid.
    *
+   * @param header
+   * @param commandPacket
    * @param type
    * @param guid
    * @param key
@@ -67,10 +68,10 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode add(InternalRequestHeader header, MetaDataTypeName type, String guid,
+  public static ResponseCode add(InternalRequestHeader header, CommandPacket commandPacket, MetaDataTypeName type, String guid,
           String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(header, guid, makeFieldMetaDataKey(type, key), value, null, -1,
+    return FieldAccess.update(header, commandPacket, guid, makeFieldMetaDataKey(type, key), value, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message,
             timestamp, handler);
   }
@@ -78,7 +79,9 @@ public class FieldMetaData {
   /**
    * Create an empty metadata field in the guid.
    *
+   * @param header
    * @param type
+   * @param commandPacket
    * @param guid
    * @param key
    * @param writer
@@ -88,10 +91,12 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode createField(InternalRequestHeader header, MetaDataTypeName type, String guid,
+  public static ResponseCode createField(InternalRequestHeader header, 
+          CommandPacket commandPacket,
+          MetaDataTypeName type, String guid,
           String key, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.createField(header, guid, makeFieldMetaDataKey(type, key),
+    return FieldAccess.createField(header, commandPacket, guid, makeFieldMetaDataKey(type, key),
             new ResultValue(),
             writer, signature, message,
             timestamp, handler);
@@ -100,7 +105,9 @@ public class FieldMetaData {
   /**
    * Delete a metadata field in the guid.
    *
+   * @param header
    * @param type
+   * @param commandPacket
    * @param guid
    * @param key
    * @param writer
@@ -110,10 +117,12 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode deleteField(InternalRequestHeader header, MetaDataTypeName type, String guid,
+  public static ResponseCode deleteField(InternalRequestHeader header, 
+          CommandPacket commandPacket,
+          MetaDataTypeName type, String guid,
           String key, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.deleteField(header, guid, makeFieldMetaDataKey(type, key),
+    return FieldAccess.deleteField(header, commandPacket, guid, makeFieldMetaDataKey(type, key),
             writer, signature, message,
             timestamp, handler);
   }
@@ -144,6 +153,8 @@ public class FieldMetaData {
   /**
    * Grabs the metadata indexed by type from the field from the guid.
    *
+   * @param header
+   * @param commandPacket
    * @param type
    * @param guid
    * @param key
@@ -154,12 +165,15 @@ public class FieldMetaData {
    * @param handler
    * @return a set of strings
    */
-  public static Set<String> lookup(InternalRequestHeader header, MetaDataTypeName type, String guid, String key,
+  public static Set<String> lookup(InternalRequestHeader header, 
+          CommandPacket commandPacket,
+          MetaDataTypeName type, String guid, String key,
           String reader, String signature,
           String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     String field = makeFieldMetaDataKey(type, key);
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid, field, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, field, 
+            null, //fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new HashSet<>();
@@ -171,6 +185,8 @@ public class FieldMetaData {
 
   /**
    *
+   * @param header
+   * @param commandPacket
    * @param type
    * @param guid
    * @param key
@@ -182,9 +198,11 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode removeValue(InternalRequestHeader header, MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
+  public static ResponseCode removeValue(InternalRequestHeader header, 
+          CommandPacket commandPacket,
+          MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(header, guid, makeFieldMetaDataKey(type, key), value, null, -1,
+    return FieldAccess.update(header, commandPacket, guid, makeFieldMetaDataKey(type, key), value, null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, timestamp, handler);
   }
 
