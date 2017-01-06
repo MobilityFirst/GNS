@@ -78,7 +78,9 @@ public class GetGroups extends AbstractCommand {
     String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
     Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString()) 
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
-    return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(GroupAccess.lookupGroupsLocally(header, guid, reader,
+    return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(GroupAccess.lookupGroupsLocally(header, 
+            commandPacket,
+            guid, reader,
             signature, message, timestamp, handler)).toString());
   }
 }

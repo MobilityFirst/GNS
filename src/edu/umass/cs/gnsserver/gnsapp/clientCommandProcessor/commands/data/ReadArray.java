@@ -91,14 +91,18 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
     if (getCommandType().equals(CommandType.ReadArrayOne)
             || getCommandType().equals(CommandType.ReadArrayOneUnsigned)) {
       if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-        return FieldAccess.lookupOneMultipleValues(header, guid, reader, signature, message, timestamp, handler);
+        return FieldAccess.lookupOneMultipleValues(header, commandPacket, guid, reader, 
+                signature, message, timestamp, handler);
       } else {
-        return FieldAccess.lookupOne(header, guid, field, reader, signature, message, timestamp, handler);
+        return FieldAccess.lookupOne(header, commandPacket, guid, field, reader, 
+                signature, message, timestamp, handler);
       }
     } else if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-      return FieldAccess.lookupMultipleValues(header, guid, reader, signature, message, timestamp, handler);
+      return FieldAccess.lookupMultipleValues(header, commandPacket, guid, reader, 
+              signature, message, timestamp, handler);
     } else {
-      return FieldAccess.lookupJSONArray(header, guid, field, reader, signature, message, timestamp, handler);
+      return FieldAccess.lookupJSONArray(header, commandPacket, guid, field, reader, 
+              signature, message, timestamp, handler);
     }
   }
 }

@@ -95,13 +95,13 @@ public class Read extends AbstractCommand {
     }
 
     if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-      return FieldAccess.lookupMultipleValues(internalHeader, guid, reader,
+      return FieldAccess.lookupMultipleValues(internalHeader, commandPacket, guid, reader,
               signature, message, timestamp, handler);
     } else if (field != null) {
-      return FieldAccess.lookupSingleField(internalHeader, guid, field, reader, signature,
+      return FieldAccess.lookupSingleField(internalHeader, commandPacket, guid, field, reader, signature,
               message, timestamp, handler);
     } else { // multi-field lookup
-      return FieldAccess.lookupMultipleFields(internalHeader, guid, fields, reader, signature,
+      return FieldAccess.lookupMultipleFields(internalHeader, commandPacket, guid, fields, reader, signature,
               message, timestamp, handler);
     }
   }

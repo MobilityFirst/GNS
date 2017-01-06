@@ -101,6 +101,7 @@ public class SecureCommandTest {
         failWithStackTrace("Exception while looking up account record: ", e);
       }
     }
+    // Also make sure the verified flag is set
     if (json != null) {
       try {
         Assert.assertTrue(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
@@ -187,31 +188,31 @@ public class SecureCommandTest {
               = new JSONArray(new ArrayList<>(Arrays.asList(secondAccountGuid)));
       JSONArray actual = client.execute(GNSCommand.aclGetSecure(AclAccessType.READ_WHITELIST, accountGuid,
               GNSProtocol.ENTIRE_RECORD.toString())).getResultJSONArray();
-      JSONAssert.assertEquals(expected, actual, false);
+      JSONAssert.assertEquals(expected, actual, true);
     } catch (ClientException | IOException | JSONException e) {
       failWithStackTrace("Exception while retrieving account record acl: ", e);
     }
   }
-
-  @Test
-  public void test_20_SecureRemoveAccount() {
-    try {
-      client.execute(GNSCommand.accountGuidRemoveSecure(accountAlias));
-    } catch (ClientException | IOException e) {
-      failWithStackTrace("Exception while removing account record: ", e);
-    }
-  }
-
-  @Test
-  public void test_21_SecureRemoveAccountCheck() {
-
-    try {
-      client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
-      failWithStackTrace("Should have throw a client "
-              + "exception while looking the guid for " + accountAlias);
-    } catch (ClientException | IOException e) {
-    }
-  }
+//
+//  @Test
+//  public void test_20_SecureRemoveAccount() {
+//    try {
+//      client.execute(GNSCommand.accountGuidRemoveSecure(accountAlias));
+//    } catch (ClientException | IOException e) {
+//      failWithStackTrace("Exception while removing account record: ", e);
+//    }
+//  }
+//
+//  @Test
+//  public void test_21_SecureRemoveAccountCheck() {
+//
+//    try {
+//      client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
+//      failWithStackTrace("Should have throw a client "
+//              + "exception while looking the guid for " + accountAlias);
+//    } catch (ClientException | IOException e) {
+//    }
+//  }
 
   private static final void failWithStackTrace(String message, Exception... e) {
     if (e != null && e.length > 0) {

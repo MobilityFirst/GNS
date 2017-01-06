@@ -142,6 +142,7 @@ public class ActiveCode {
    * Gets the currently set active code for the guid and action.
    *
    * @param header
+   * @param commandPacket
    * @param guid
    * @param action
    * @param reader
@@ -153,13 +154,15 @@ public class ActiveCode {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws org.json.JSONException
    */
-  public static String getCode(InternalRequestHeader header, String guid, String action, String reader,
+  public static String getCode(InternalRequestHeader header, CommandPacket commandPacket,
+          String guid, String action, String reader,
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler)
           throws IllegalArgumentException, FailedDBOperationException, JSONException {
 
     String field = getCodeField(action); // can throw IllegalArgumentException
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid, field, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, field, 
+            null, // fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return GNSProtocol.NULL_RESPONSE.toString();

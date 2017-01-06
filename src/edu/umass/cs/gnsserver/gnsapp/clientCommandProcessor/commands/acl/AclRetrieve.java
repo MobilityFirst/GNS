@@ -88,7 +88,8 @@ public class AclRetrieve extends AbstractCommand {
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
-    JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(header, 
+    JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(
+            new JSONArray(FieldMetaData.lookup(header, commandPacket,
             access,
             guid, field, reader, signature, message, timestamp, handler)));
     return new CommandResponse(ResponseCode.NO_ERROR, guids.toString());

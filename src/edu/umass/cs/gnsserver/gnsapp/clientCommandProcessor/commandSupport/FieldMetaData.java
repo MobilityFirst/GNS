@@ -154,6 +154,7 @@ public class FieldMetaData {
    * Grabs the metadata indexed by type from the field from the guid.
    *
    * @param header
+   * @param commandPacket
    * @param type
    * @param guid
    * @param key
@@ -164,13 +165,15 @@ public class FieldMetaData {
    * @param handler
    * @return a set of strings
    */
-  public static Set<String> lookup(InternalRequestHeader header,
+  public static Set<String> lookup(InternalRequestHeader header, 
+          CommandPacket commandPacket,
           MetaDataTypeName type, String guid, String key,
           String reader, String signature,
           String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     String field = makeFieldMetaDataKey(type, key);
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, guid, field, null,
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, field, 
+            null, //fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new HashSet<>();
