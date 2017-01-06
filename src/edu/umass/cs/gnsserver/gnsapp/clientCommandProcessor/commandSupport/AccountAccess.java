@@ -406,10 +406,15 @@ public class AccountAccess {
 		if (allowRemoteLookup) {
 			GNSConfig.getLogger().log(Level.FINE,
 					"LOOKING REMOTELY for GUID_INFO for {0}", guid);
-			String value = null;
+			String value = null; Object obj = null;
 			try {
 				//value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
-				value = handler.getInternalClient().execute(GNSCommandInternal.fieldRead(guid, GUID_INFO, header)).getResultString();
+				value = (obj = handler
+						.getInternalClient()
+						.execute(
+								GNSCommandInternal.fieldRead(guid, GUID_INFO,
+										header)).getResultMap().get(GUID_INFO)) != null ? obj
+						.toString() : value;
 			} catch (IOException | JSONException | ClientException | InternalRequestException e) {
 				GNSConfig
 						.getLogger()
