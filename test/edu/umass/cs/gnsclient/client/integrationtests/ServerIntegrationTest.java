@@ -1680,7 +1680,6 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws Exception
    */
   @Test
-  @Repeat( times = 1 )
   public void test_210_GroupTests() throws Exception {
     GuidEntry westyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "westy210" + RandomString.randomString(6));
     GuidEntry samEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "sam210" + RandomString.randomString(6));
