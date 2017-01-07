@@ -571,6 +571,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws Exception
    */
   @Test
+  @Repeat( times = 0) //Disabled temporarily
   public void test_031_RemoveAccountWithPasswordTest() throws Exception {
     String accountToRemoveWithPassword = RandomString.randomString(12) + "-" + "passwordremovetest@gns.name";
     GuidEntry accountToRemoveGuid = test_035_RemoveAccountWithPasswordCreateAccount(accountToRemoveWithPassword);
@@ -1618,6 +1619,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * Tests different DB substitute list methods.
    */
   @Test
+  @Repeat( times = 10 )
   public void test_200_SubstituteList() {
     //CHECKED FOR VALIDITY
     String testSubstituteListGuid = "testSubstituteListGUID"
@@ -1678,6 +1680,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws Exception
    */
   @Test
+  @Repeat( times = 1 )
   public void test_210_GroupTests() throws Exception {
     GuidEntry westyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "westy210" + RandomString.randomString(6));
     GuidEntry samEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "sam210" + RandomString.randomString(6));
@@ -2978,6 +2981,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws Exception
    */
   @Test
+  @Repeat( times = 10 )
   public void test_500_Batch_Tests() throws Exception {
     GuidEntry accountGuidForBatch = test_510_CreateBatchAccountGuid();
     test_511_CreateBatch(accountGuidForBatch);
@@ -3054,6 +3058,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws ClientException
    */
   @Test
+  @Repeat( times = 10 )
   public void test_530_Index_Tests() throws ClientException, IOException, JSONException {
     String createIndexTestField = test_540_CreateField();
     test_541_CreateIndex(createIndexTestField);
@@ -3121,6 +3126,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws EncryptionException
    */
   @Test
+  @Repeat( times = 10 )
   public void test_550_Query_Tests() throws EncryptionException, NoSuchAlgorithmException {
     String groupTestFieldName = "_SelectAutoGroupTestQueryField_" + RandomString.randomString(12);
     GuidEntry groupOneGuid;
@@ -3438,6 +3444,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   // these two attributes right now are supported by CS
   @Test
+  @Repeat( times = 10 )
   public void test_620_contextServiceTest() {
     // run it only when CS is enabled
     // to check if context service is enabled.
@@ -3482,6 +3489,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   // FIXME: Maybe add something in here to insure that we're actually using an LNS?
   @Test
+  @Repeat( times = 10 )
   public void test_630_CheckLNSProxy() {
     try {
       //PaxosConfig.getActives() works here because the server and client use the same properties file.
