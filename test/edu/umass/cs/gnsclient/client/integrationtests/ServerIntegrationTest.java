@@ -16,6 +16,7 @@
 package edu.umass.cs.gnsclient.client.integrationtests;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.gnscommon.CommandType;
@@ -57,7 +58,9 @@ import static org.hamcrest.Matchers.*;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,6 +80,8 @@ import edu.umass.cs.utils.RepeatRule;
 import edu.umass.cs.utils.Util;
 
 import java.awt.geom.Point2D;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -368,7 +373,6 @@ public class ServerIntegrationTest extends DefaultTest {
 		  ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
 	  for(String server : PaxosConfig.getActives().keySet()) 
 		  ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
-	  
   }
 
   /**
@@ -378,9 +382,9 @@ public class ServerIntegrationTest extends DefaultTest {
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     if(clientCommands!=null) clientCommands.close();
-    /* arun: need a more efficient, parallel implementation of removal
-		 * of sub-guids, otherwise this times out.
-     */
+    System.out.println("--"+RequestInstrumenter.getLog()+"--");
+		/* arun: need a more efficient, parallel implementation of removal of
+		 * sub-guids, otherwise this times out. */
     //client.accountGuidRemove(masterGuid);
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
@@ -487,12 +491,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * TODO: Increase the timeout for these test commands so that they almost never fail due to timeout.
    * 
    */
-	 /**
-	 * To repeat a test a given number of times.
-	 */
-	@Rule
-	 public RepeatRule repeatRule = new RepeatRule();
-	 
+
 	/**
 	 * Creates a guid.
 	 * 
@@ -511,6 +510,24 @@ public class ServerIntegrationTest extends DefaultTest {
 		// GuidEntry guidEntry = clientCommands.guidCreate(masterGuid, alias);
 		// Assert.assertNotNull(guidEntry);
 		// Assert.assertEquals(alias, guidEntry.getEntityName());
+	}
+	
+	/**
+	 * @throws Exception
+	 */
+	@Test
+	@Repeat(times = 100)
+	public void test_001_CreateAndUpdate() throws Exception {
+		// CHECKED FOR VALIDITY
+		String alias = "testGUID" + RandomString.randomString(12);
+		String createdGUID = client.execute(
+				GNSCommand.createGUID(masterGuid, alias)).getResultString();
+		GuidEntry createdGUIDEntry = GuidUtils.getGUIDKeys(alias);
+		String key="key1", value="value1";
+		client.execute(GNSCommand.update(createdGUID,
+				new JSONObject().put(key, value), createdGUIDEntry));
+		Assert.assertEquals(value,
+				client.execute(GNSCommand.fieldRead(createdGUIDEntry, key)).getResultMap().get(key));
 	}
 
 	/**
@@ -771,7 +788,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   private void test_101_ACLCreateField(GuidEntry masterGuid, String testFieldName) throws ClientException, IOException {
 	    //CHECKED FOR VALIDITY
-	  p("test_101_ACLCreateField:" + testFieldName);
+	  //p("test_101_ACLCreateField:" + testFieldName);
     clientCommands.fieldCreateOneElementList(masterGuid.getGuid(), testFieldName, "testValue", masterGuid);
   }
 
@@ -853,6 +870,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws JSONException
    */
   @Test
+  @Repeat (times=100)
   public void test_117_ACLTest_Single_Field() throws JSONException, Exception {
     final String TEST_FIELD_NAME = "testField";
     String testFieldName = TEST_FIELD_NAME + RandomString.randomString(6);
@@ -861,7 +879,6 @@ public class ServerIntegrationTest extends DefaultTest {
     test_121_CheckAcl(testFieldName);
     test_122_DeleteAcl(testFieldName);
     test_123_CheckAclGone(testFieldName);
-
   }
 
   private void test_120_CreateAcl(String testFieldName) throws Exception {
@@ -2666,7 +2683,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONObject actual = clientCommands.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
-      System.out.println(actual);
+      //System.out.println(actual);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading JSON: ", e);
     }
@@ -2793,7 +2810,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONObject actual = clientCommands.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
-      System.out.println(actual);
+      //System.out.println(actual);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading JSON: ", e);
     }
@@ -2856,7 +2873,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONObject actual = clientCommands.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
-      System.out.println(actual);
+      //System.out.println(actual);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading JSON: ", e);
     }
@@ -2886,7 +2903,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONObject actual = clientCommands.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
-      System.out.println(actual);
+      //System.out.println(actual);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading JSON: ", e);
     }
@@ -2918,7 +2935,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONObject actual = clientCommands.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
-      System.out.println(actual);
+      //System.out.println(actual);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading JSON: ", e);
     }
