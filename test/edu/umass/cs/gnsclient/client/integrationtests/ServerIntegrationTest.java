@@ -201,12 +201,13 @@ public class ServerIntegrationTest extends DefaultTest {
             GP_SERVER);
   }
 
-  private static void failWithStackTrace(String message, Exception... e) {
-    if (e != null && e.length > 0) {
-      e[0].printStackTrace();
-    }
-    org.junit.Assert.fail(message);
-  }
+	private static void failWithStackTrace(String message, Exception... e) {
+		System.out.println("--" + RequestInstrumenter.getLog() + "--");
+		if (e != null && e.length > 0) {
+			e[0].printStackTrace();
+		}
+		org.junit.Assert.fail(message);
+	}
 
   /* We need this below even though a majority being up suffices and account GNSProtocol.GUID.toString() 
 	 * creation success (with retransmission) auto-detects whether a majority is up,
@@ -2074,7 +2075,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   /**
    *
-   * @return
+   * @return GuidEntry
    * @throws Exception
    */
   public GuidEntry test_249_UnsignedReadDefaultWriteCreateAccountGuid() throws Exception {
@@ -2645,7 +2646,7 @@ public class ServerIntegrationTest extends DefaultTest {
   /**
    * Tests update using JSON.
    *
-   * @return
+   * @return GuidEntry created
    * @throws Exception
    */
   public GuidEntry test_410_JSONUpdate() throws Exception {
@@ -2959,7 +2960,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * Tests that updating a field with bytes.
    *
    * @param BYTE_TEST_FIELD
-   * @return
+   * @return GuidEntry created
    * @throws IOException
    * @throws ClientException
    */
@@ -3037,7 +3038,6 @@ public class ServerIntegrationTest extends DefaultTest {
       //Brendan: I added Integer.toString(i) to this to guarantee no collisions during creation.
       aliases.add("testGUID511" + Integer.toString(i) + RandomString.randomString(12));
     }
-    String result = null;
     long oldTimeout = clientCommands.getReadTimeout();
     try {
       clientCommands.setReadTimeout(20 * 1000); // 30 seconds
@@ -3084,7 +3084,7 @@ public class ServerIntegrationTest extends DefaultTest {
   /**
    * Create a field for test index.
    *
-   * @return
+   * @return Created index test field.
    * @throws JSONException
    * @throws IOException
    * @throws ClientException
@@ -3211,7 +3211,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @param groupTestFieldName
    * @param queryOne
    * @param queryTwo
-   * @return
+   * @return List of groups
    * @throws NoSuchAlgorithmException
    * @throws EncryptionException
    */
