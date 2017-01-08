@@ -3531,43 +3531,6 @@ public class ServerIntegrationTest extends DefaultTest {
     clientCommands.setGNSProxy(null);
   }
 
-  private HashMap<String, String> readingOptionsFromNSProperties() {
-    HashMap<String, String> propMap = new HashMap<>();
-
-    BufferedReader br = null;
-    try {
-      String sCurrentLine;
-
-      String filename = new File(
-              System.getProperty(DefaultProps.SERVER_COMMAND.key))
-              .getParent()
-              + "/ns.properties";
-      if (!new File(filename).exists()) {
-        return propMap;
-      }
-
-      br = new BufferedReader(new FileReader(filename));
-
-      while ((sCurrentLine = br.readLine()) != null) {
-        String[] parsed = sCurrentLine.split("=");
-
-        if (parsed.length == 2) {
-          propMap.put(parsed[0].trim(), parsed[1].trim());
-        }
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      try {
-        if (br != null) {
-          br.close();
-        }
-      } catch (IOException ex) {
-        ex.printStackTrace();
-      }
-    }
-    return propMap;
-  }
 
   // HELPER STUFF
   private static final String POLYGON = "Polygon";
