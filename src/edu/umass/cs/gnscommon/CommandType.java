@@ -1872,42 +1872,8 @@ public enum CommandType {
     //return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
   }
 
-  private static String generateSwiftConstants() {
-    StringBuilder result = new StringBuilder();
-    for (CommandType commandType : CommandType.values()) {
-      result.append("    public static let ");
-      result.append(StringUtil.insertUnderScoresBeforeCapitals(
-              commandType.toString()).toUpperCase());
-      result.append("\t\t\t\t = ");
-      result.append("\"");
-      result.append(commandType.toString());
-      result.append("\"\n");
-    }
-    return result.toString();
-  }
 
-  /**
-   *
-   * enum CommandType: Int {
-   * case tab = "\t"
-   * case lineFeed = "\n"
-   * case carriageReturn = "\r"
-   * }
-   *
-   */
-  private static String generateSwiftEnum() {
-    StringBuilder result = new StringBuilder();
-    result.append("enum CommandType: Int {\n");
-    for (CommandType commandType : CommandType.values()) {
-      result.append("  case ");
-      result.append(commandType.toString());
-      result.append(" = ");
-      result.append(commandType.getInt());
-      result.append("\n");
-    }
-    result.append("}");
-    return result.toString();
-  }
+
 
   private static String generateSwiftStructStaticConstants() {
     StringBuilder result = new StringBuilder();
@@ -1935,80 +1901,6 @@ public enum CommandType {
     return result.toString();
   }
 
-  /**
-   * Append(110, CommandCategory.UPDATE,
-   * edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,
-   * GNSCommand.ResultType.NULL, true, false),
-   *
-   * @return the code as a string
-   */
-  private static String generateCommandTypeCode() {
-    StringBuilder result = new StringBuilder();
-    String prefix = "";
-    for (CommandType commandType : CommandType.values()) {
-      result.append(prefix);
-      result.append(commandType.toString());
-      try {
-        Class<?> clazz = commandType.getCommandClass();
-        result.append("(");
-        result.append(commandType.getInt());
-        result.append(", Type.");
-        result.append(commandType.getCategory());
-        result.append(", ");
-        result.append(commandType.getCommandClass().getName());
-        result.append(".class,\n GNSCommand.ResultType.");
-        result.append(commandType.getResultType());
-        result.append(", ");
-        result.append(commandType.isCanBeSafelyCoordinated());
-        result.append(", ");
-        result.append(commandType.isNotForRogueClients());
-        result.append(",\n\"");
-        Method descriptionMethod = clazz.getMethod("getCommandDescription");
-        Constructor<?> constructor = clazz.getConstructor(CommandModule.class
-        );
-        result.append(descriptionMethod.invoke(constructor.newInstance(new CommandModule())));
-        result.append("\",\n");
-        Method parametersMethod = clazz.getMethod("getCommandParameters");
-        constructor
-                = clazz.getConstructor(CommandModule.class
-                );
-        result.append(arrayForCode((String[]) parametersMethod.invoke(constructor.newInstance(new CommandModule()))));
-        result.append(")");
-      } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-        GNSConfig.getLogger().log(Level.WARNING, "Problem: " + e);
-      }
-      prefix = ", \n";
-    }
-    return result.toString();
-  }
-
-  private static String arrayForCode(String[] array) {
-    StringBuilder result = new StringBuilder();
-    result.append("new String[]{");
-    String prefix = "";
-    for (String string : array) {
-      result.append(prefix);
-      result.append("GNSCommandProtocol.");
-      result.append(string.toUpperCase());
-      result.append("");
-      prefix = ", \n";
-    }
-    result.append("}");
-    return result.toString();
-  }
-
-  private static String generateEmptySetChains() {
-    StringBuilder result = new StringBuilder();
-    for (CommandType commandType : CommandType.values()) {
-      if (commandType.invokedCommands == null) {
-        result.append("    ");
-        result.append(commandType.name());
-        result.append(".setChain(ReadUnsigned);");
-        result.append("\n");
-      }
-    }
-    return result.toString();
-  }
 
   private static void enforceChecks() {
     HashSet<CommandType> curLevel, nextLevel = new HashSet<CommandType>(), cumulative = new HashSet<CommandType>();
