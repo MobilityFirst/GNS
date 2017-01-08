@@ -764,8 +764,12 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   public void test_100_ACLTest_All_Fields() throws JSONException, Exception {
     final String TEST_FIELD_NAME = "testField";
-    GuidEntry accountGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
-    		RandomString.randomString(6) + "@gns.name", PASSWORD, true);
+//    GuidEntry accountGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+//    		RandomString.randomString(6) + "@gns.name", PASSWORD, true);
+    String name = RandomString.randomString(6) + "@gns.name";
+	client.execute(GNSCommand.createAccount(name, PASSWORD));
+    GuidEntry accountGuid = GuidUtils.getGUIDKeys(name);
+    
     String testFieldName = TEST_FIELD_NAME + RandomString.randomString(6);
     test_101_ACLCreateField(accountGuid, testFieldName);
     test_110_ACLMaybeAddAllFields(accountGuid);
@@ -1590,7 +1594,6 @@ public class ServerIntegrationTest extends DefaultTest {
       // Utils.clearTestGuids(client);
       // System.out.println("cleared old GUIDs");
       testEntry = clientCommands.guidCreate(masterGuid, testSubstituteGuid);
-      System.out.print("created test guid: " + testEntry);
     } catch (Exception e) {
       failWithStackTrace("Exception during init: ", e);
     }
@@ -1648,7 +1651,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // Utils.clearTestGuids(client);
       // System.out.println("cleared old GUIDs");
       testEntry = clientCommands.guidCreate(masterGuid, testSubstituteListGuid);
-      System.out.print("created test guid: " + testEntry);
+      System.out.print(testEntry + " ");
     } catch (Exception e) {
       failWithStackTrace("Exception during init: ", e);
     }
@@ -2079,9 +2082,11 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws Exception
    */
   public GuidEntry test_249_UnsignedReadDefaultWriteCreateAccountGuid() throws Exception {
-    GuidEntry unsignedReadAccountGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
-            "unsignedReadAccountGuid249" + RandomString.randomString(12), PASSWORD, true);
-    return unsignedReadAccountGuid;
+//    GuidEntry unsignedReadAccountGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+//            "unsignedReadAccountGuid249" + RandomString.randomString(12), PASSWORD, true);
+    String name = "unsignedReadAccountGuid249" + RandomString.randomString(12);
+	client.execute(GNSCommand.createAccount(name, PASSWORD));
+    return GuidUtils.getGUIDKeys(name);
   }
 
   /**
@@ -2555,7 +2560,7 @@ public class ServerIntegrationTest extends DefaultTest {
                 array, testEntry);
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception while tryint to create the guids: ", e);
+      failWithStackTrace("Exception while trying to create the guids: ", e);
     }
 
     try {
@@ -2653,7 +2658,7 @@ public class ServerIntegrationTest extends DefaultTest {
     //CHECKED FOR VALIDITY
     GuidEntry westyEntry = clientCommands.guidCreate(masterGuid,
             "westy410" + RandomString.randomString(12));
-    System.out.print("Created: " + westyEntry);
+    //System.out.print("Created: " + westyEntry);
     try {
       JSONObject json = new JSONObject();
       json.put("name", "frank");
@@ -2712,7 +2717,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONObject actual = clientCommands.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
-      System.out.println(actual);
+      //System.out.println(actual);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading change of \"occupation\" to \"rocket scientist\": ",
               e);
@@ -2742,7 +2747,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONObject actual = clientCommands.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
-      System.out.println(actual);
+      //System.out.println(actual);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading JSON: ", e);
     }
@@ -2764,7 +2769,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONObject actual = clientCommands.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
-      System.out.println(actual);
+      //System.out.println(actual);
     } catch (Exception e) {
       failWithStackTrace("Exception while reading JSON: ", e);
     }
@@ -3014,16 +3019,18 @@ public class ServerIntegrationTest extends DefaultTest {
   public GuidEntry test_510_CreateBatchAccountGuid() throws Exception {
     //CHECKED FOR VALIDITY
     // can change the number to create on the command line
-    GuidEntry accountGuidForBatch;
+//    GuidEntry accountGuidForBatch;
     if (System.getProperty("count") != null
             && !System.getProperty("count").isEmpty()) {
       numberTocreate = Integer.parseInt(System.getProperty("count"));
     }
     String batchAccountAlias = "batchTest510"
             + RandomString.randomString(12) + "@gns.name";
-    accountGuidForBatch = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
-            batchAccountAlias, "password", true);
-    return accountGuidForBatch;
+    client.execute(GNSCommand.createAccount(batchAccountAlias));
+    return GuidUtils.getGUIDKeys(batchAccountAlias);
+//    accountGuidForBatch = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+//            batchAccountAlias, "password", true);
+//    return accountGuidForBatch;
   }
 
   /**
@@ -3124,7 +3131,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = clientCommands.selectQuery(buildQuery(
               createIndexTestField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
-        System.out.println(result.get(i).toString());
+        System.out.print(result.get(i).toString()+" ");
       }
       Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
     } catch (Exception e) {

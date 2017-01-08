@@ -495,7 +495,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
     <property name="waitTillAllServersReady" value="5000"/>
-    <property name="singleJVM" value="false"/>
+    <property name="singleJVM" value="true"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
