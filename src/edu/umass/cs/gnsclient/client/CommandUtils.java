@@ -468,8 +468,10 @@ public class CommandUtils {
         throw new InvalidGuidException(code, errorSummary);
       case NONEXISTENT_NAME_EXCEPTION:
         throw new InvalidGuidException(code, errorSummary);
+
       case TIMEOUT:
-        throw new ClientException(code, errorSummary);
+      case RECONFIGURATION_EXCEPTION:
+          throw new ClientException(code, errorSummary);    	  
 
       default:
         throw new ClientException(code,

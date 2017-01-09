@@ -288,7 +288,6 @@ public class GNSClient {
 	}
 
 	/**
-	 *
 	 * This method synchronously retrieves the response and checks for and
 	 * throws exceptions if needed. This checkResponse behavior is unlike
 	 * sendAsync that can not throw exceptions to the caller because the

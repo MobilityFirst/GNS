@@ -2089,7 +2089,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws IOException
    * @throws ClientException
    */
-  @Deprecated
+  //@Deprecated
   public void fieldReplaceFirstElement(String targetGuid, String field,
           String value, GuidEntry writer) throws IOException, ClientException {
     if (writer == null) {
@@ -2237,7 +2237,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * array.
    * @throws Exception
    */
-  @Deprecated
+  //@Deprecated
   public String fieldReadArrayFirstElement(String guid, String field,
           GuidEntry reader) throws Exception {
     return getResponse(reader != null ? CommandType.ReadArrayOne

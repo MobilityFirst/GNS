@@ -69,6 +69,18 @@
     <chmod perm="ug+x" dir="${bin.dir}" includes="**/*.sh"/>
   </target>
   
+  <target name="compile_eclipse" depends="init, buildnumber" description="compile java files using eclipse java compiler">
+    <javac compiler="org.eclipse.jdt.core.JDTCompilerAdapter" source="1.8"
+         target="1.8" srcdir="${src.dir}:${test.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+      <classpath refid="classpath.base"/>
+      <compilerarg value="-warn:+allJavadoc" />
+    </javac>
+    <javac srcdir="${test.dir}" destdir="${build.test.classes.dir}" debug="true" debuglevel="lines,vars,source"
+           includeantruntime="false">
+      <classpath refid="classpath.base"/>
+    </javac>
+  </target>
+
   <target name="server_jarbuild" depends="compile" description="generate jar files">
     <mkdir dir="${build.jar.dir}"/>
     <jar destfile="${build.jar.dir}/gnsserver-${build.major.number}.${build.minor.number}.${build.revision.number}.jar" 
@@ -483,7 +495,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
     <property name="waitTillAllServersReady" value="5000"/>
-    <property name="singleJVM" value="false"/>
+    <property name="singleJVM" value="true"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
@@ -505,17 +517,19 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
- <target name="testCreate" description="Runs the default integration test against a 3 node server." 
+ <target name="testMethod" description="Runs the default integration test against a 3 node server." 
           depends="compile, compiletest">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.createtest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.createtest.properties"/>
     <property name="waitTillAllServersReady" value="5000"/>
     <property name="reps" value="1"/>
+    <property name="test" value="test_010_CreateEntity"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test
 name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"
-methods="test_010_CreateEntity"/>
+methods="${test}"/>
       <formatter type="plain" usefile="false"/>
+      <jvmarg value="-Dtest=${test}"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
