@@ -242,7 +242,16 @@ public class GNSCommandInternal extends InternalCommandPacket {
             GNSProtocol.VALUE.toString(), value);
   }
   
-  public static InternalCommandPacket fieldRemoveList(String guid, String field, ResultValue value, 
+  /**
+ * @param guid
+ * @param field
+ * @param value
+ * @param header
+ * @return InternalCommandPacket
+ * @throws InternalRequestException
+ * @throws JSONException
+ */
+public static InternalCommandPacket fieldRemoveList(String guid, String field, ResultValue value, 
           InternalRequestHeader header) throws InternalRequestException, JSONException {
     return getCommand(CommandType.RemoveListUnsigned, header,
             GNSProtocol.GUID.toString(), guid,
