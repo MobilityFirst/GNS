@@ -331,6 +331,8 @@ public class GNSInstaller {
             break;
           case RESTART:
             break;
+		default:
+			break;
         }
         if (!noopTest) {
           startServers(nsId, createLNS, hostname, runAsRoot);

@@ -467,7 +467,7 @@ public class EC2Runner {
 
   private static boolean showDialog(String message, final long timeout) {
     try {
-      int dialog = JOptionPane.YES_NO_OPTION;
+      //int dialog = JOptionPane.YES_NO_OPTION;
       JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE,
               JOptionPane.YES_NO_OPTION);
       final JDialog dlg = optionPane.createDialog("Error");

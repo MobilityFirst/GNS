@@ -56,13 +56,13 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
       String guid = jsonFormattedCommand.getString(GNSProtocol.GUID.toString());
       String field = jsonFormattedCommand.optString(GNSProtocol.FIELD.toString(), null);
       String value = jsonFormattedCommand.optString(GNSProtocol.VALUE.toString(), null);
-      String oldValue = jsonFormattedCommand.optString(GNSProtocol.OLD_VALUE.toString(), null);
-      int index = jsonFormattedCommand.optInt(GNSProtocol.N.toString(), -1);
+      //String oldValue = jsonFormattedCommand.optString(GNSProtocol.OLD_VALUE.toString(), null);
+      //int index = jsonFormattedCommand.optInt(GNSProtocol.N.toString(), -1);
       JSONObject userJSON = jsonFormattedCommand.has(GNSProtocol.USER_JSON.toString()) ? new JSONObject(jsonFormattedCommand.getString(GNSProtocol.USER_JSON.toString())) : null;
       // writer might be unspecified so we use the guid
       String writer = jsonFormattedCommand.optString(GNSProtocol.WRITER.toString(), guid);
-      String signature = jsonFormattedCommand.optString(GNSProtocol.SIGNATURE.toString(), null);
-      String message = jsonFormattedCommand.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
+      //String signature = jsonFormattedCommand.optString(GNSProtocol.SIGNATURE.toString(), null);
+      //String message = jsonFormattedCommand.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
 
       if (writer.equals(
     		  GNSProtocol.INTERNAL_QUERIER.toString()

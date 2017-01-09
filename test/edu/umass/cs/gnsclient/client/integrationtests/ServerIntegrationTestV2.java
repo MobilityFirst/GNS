@@ -331,7 +331,7 @@ public class ServerIntegrationTestV2 extends DefaultTest {
     int tries = 5;
     boolean accountCreated = false;
 
-    long t = System.currentTimeMillis();
+    //long t = System.currentTimeMillis();
     Thread.sleep(WAIT_TILL_ALL_SERVERS_READY);
 
     do {
@@ -2806,7 +2806,7 @@ public class ServerIntegrationTestV2 extends DefaultTest {
       //Brendan: I added Integer.toString(i) to this to guarantee no collisions during creation.
       aliases.add("testGUID511" + Integer.toString(i)+ RandomString.randomString(12));
     }
-    String result = null;
+    //String result = null;
     long oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(20 * 1000); // 30 seconds

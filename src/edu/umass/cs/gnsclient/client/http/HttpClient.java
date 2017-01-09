@@ -1730,11 +1730,11 @@ public class HttpClient {
       // This is a debugging aid so we can auto check the message part on the other side. 
       String debuggingPart = "";
       // Currently not being used.
-      if (false) {
-        debuggingPart = KEYSEP + "originalMessageBase64" + VALSEP
-                + URIEncoderDecoder.quoteIllegal(
-                        Base64.encodeToString(canonicalJSON.getBytes(GNSProtocol.CHARSET.toString()), false));
-      }
+//      if (false) {
+//        debuggingPart = KEYSEP + "originalMessageBase64" + VALSEP
+//                + URIEncoderDecoder.quoteIllegal(
+//                        Base64.encodeToString(canonicalJSON.getBytes(GNSProtocol.CHARSET.toString()), false));
+//      }
       // Finally return everything
       return encodedString.toString() + signaturePart + debuggingPart;
     } catch (JSONException | UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | IllegalBlockSizeException |

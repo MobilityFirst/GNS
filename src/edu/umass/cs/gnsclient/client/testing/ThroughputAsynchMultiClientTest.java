@@ -187,7 +187,7 @@ public class ThroughputAsynchMultiClientTest {
    * @param alias - the alias to use to create the account guid. null uses "boo@hoo.com".
    */
   public ThroughputAsynchMultiClientTest(String alias) {
-    InetSocketAddress address;
+    //InetSocketAddress address;
     if (alias != null) {
       accountAlias = alias;
     }
@@ -230,10 +230,6 @@ public class ThroughputAsynchMultiClientTest {
       }
 
       String alias = parser.getOptionValue("alias");
-      String host = parser.getOptionValue("host");
-      String port = parser.getOptionValue("port");
-      boolean disableSSL = parser.hasOption("disableSSL");
-
       if (parser.hasOption("op")
               && ("update".equals(parser.getOptionValue("op"))
               || "write".equals(parser.getOptionValue("op")))) {

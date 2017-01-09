@@ -134,8 +134,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
     this.nodeConfig = nodeConfig;
     this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
-    AsyncLNSClient asyncClient;
-    this.demultiplexer = new LNSPacketDemultiplexer<>(this, asyncClient = new AsyncLNSClient(
+    this.demultiplexer = new LNSPacketDemultiplexer<>(this, new AsyncLNSClient(
             ReconfigurationConfig.getReconfiguratorAddresses(),
             ReconfigurationConfig.getClientSSLMode(),
             ReconfigurationConfig.getClientPortSSLOffset()));
@@ -533,12 +532,12 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
    */
   public void testCache() {
     String serviceName = "fred";
-    Set<InetSocketAddress> actives;
-    if ((actives = getActivesIfValid(serviceName)) != null) {
+    //Set<InetSocketAddress> actives;
+    if ((getActivesIfValid(serviceName)) != null) {
       LOGGER.severe("Cache should be empty!");
     }
     updateCacheEntry(serviceName, new HashSet<>(Arrays.asList(new InetSocketAddress(35000))));
-    if ((actives = getActivesIfValid(serviceName)) == null) {
+    if ((getActivesIfValid(serviceName)) == null) {
       LOGGER.severe("Cache should not be empty!");
     }
     StringBuilder cacheString = new StringBuilder();

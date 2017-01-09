@@ -204,7 +204,6 @@ public class JSONByteConverter {
 	 * @throws JSONException 
 	 * @throws IOException 
 	 */
-	@SuppressWarnings("unchecked") //JSON keys are assumed to be strings.
 	public static byte[] toBytesMsgpack(JSONObject json) throws JSONException, IOException{
 		MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
 		packJSONObject(json, packer);

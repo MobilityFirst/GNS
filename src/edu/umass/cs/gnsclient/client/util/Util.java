@@ -141,7 +141,6 @@ public class Util {
    * @param arguments
    * @return the new object
    */
-  @SuppressWarnings("unchecked")
   public static Object createObject(String className, Object... arguments) {
     Object object;
     Class<?>[] types = new Class<?>[arguments.length];

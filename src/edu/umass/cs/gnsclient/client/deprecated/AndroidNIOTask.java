@@ -65,7 +65,6 @@ public class AndroidNIOTask extends AsyncTask<Object, Void, String>
    * @param args
    * @return the result of executing the command
    */
-  @SuppressWarnings("unchecked")
   @Override
   protected String doInBackground(Object... args)
   {

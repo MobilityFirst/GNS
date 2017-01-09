@@ -26,7 +26,6 @@ import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.TreeSet;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.lang.reflect.InvocationTargetException;

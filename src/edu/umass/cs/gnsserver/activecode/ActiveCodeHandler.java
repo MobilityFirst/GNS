@@ -256,7 +256,7 @@ public class ActiveCodeHandler {
    * @throws InternalRequestException
    */
   public static void main(String[] args) throws InterruptedException, ExecutionException, IOException, JSONException, InternalRequestException {
-    ActiveCodeHandler handler = new ActiveCodeHandler("Test");
+    //ActiveCodeHandler handler = new ActiveCodeHandler("Test");
 
     // initialize the parameters used in the test 
     JSONObject obj = new JSONObject();

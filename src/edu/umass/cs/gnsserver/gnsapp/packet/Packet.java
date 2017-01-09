@@ -145,7 +145,7 @@ public class Packet {
         if (type.className != null) {
           try {
             Class<?> klass = Class.forName(type.className, false, Packet.class.getClassLoader());
-            //GNS.getLogger().info(type.name() + "->" + klass.getName());
+            GNSConfig.getLogger().finer(type.name() + "->" + klass.getName());
           } catch (ClassNotFoundException e) {
             GNSConfig.getLogger().log(Level.WARNING,
                     "Unknown class for {0}:{1}", new Object[]{type.name(), type.className});
@@ -423,7 +423,6 @@ public class Packet {
    * @return Returns the Socket over which the packet was sent, or null if the port type is incorrect.
    * @throws java.io.IOException *
    */
-  @SuppressWarnings("unchecked")
   public static Socket sendTCPPacket(GNSNodeConfig<String> gnsNodeConfig, JSONObject json,
           String nameserverId, OldHackyConstants.PortType portType) throws IOException {
     int port = gnsNodeConfig.getPortForTopLevelNode(nameserverId, portType);
@@ -494,7 +493,6 @@ public class Packet {
    * @param portType Type of port to connect
    * @param excludeNameServers *
    */
-  @SuppressWarnings("unchecked")
   public static void multicastTCP(GNSNodeConfig<String> gnsNodeConfig,
           Set<String> nameServerIds, JSONObject json, int numRetry,
           OldHackyConstants.PortType portType, Set<Object> excludeNameServers) {

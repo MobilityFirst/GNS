@@ -54,9 +54,8 @@ public class Dump extends AbstractCommand {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException {
-    JSONObject json = commandPacket.getCommand();
+    //JSONObject json = commandPacket.getCommand();
     return handler.getAdmintercessor().sendDump(handler);
   }
 

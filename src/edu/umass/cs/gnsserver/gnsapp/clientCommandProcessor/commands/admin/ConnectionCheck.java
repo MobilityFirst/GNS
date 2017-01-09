@@ -56,8 +56,8 @@ public class ConnectionCheck extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException {
-    JSONObject json = commandPacket.getCommand();
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, 
+		  ClientRequestHandlerInterface handler) throws JSONException {
     return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
   }
 

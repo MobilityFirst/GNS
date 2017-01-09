@@ -104,8 +104,6 @@ public class CreateGuidTest {
         System.exit(1);
       }
       String alias = parser.getOptionValue("alias");
-      String host = parser.getOptionValue("host");
-      String portString = parser.getOptionValue("port");
       new CreateGuidTest(alias != null ? alias : ACCOUNT_ALIAS);
       System.exit(0);
     } catch (HeadlessException e) {

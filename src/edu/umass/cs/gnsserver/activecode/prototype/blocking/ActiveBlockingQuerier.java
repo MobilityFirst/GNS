@@ -1,12 +1,8 @@
 package edu.umass.cs.gnsserver.activecode.prototype.blocking;
 
 import java.io.IOException;
-import java.util.Map;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.maxmind.geoip2.record.Location;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
@@ -138,12 +134,10 @@ public class ActiveBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 		return null;
 	}
 	
-	@SuppressWarnings("restriction")
 	protected ScriptObjectMirror string2JS(String str){
 		return (ScriptObjectMirror) JSON.callMember("parse", str);
 	}
 	
-	@SuppressWarnings("restriction")
 	protected String js2String(ScriptObjectMirror obj){
 		return (String) JSON.callMember("stringify", obj);
 	}
@@ -152,9 +146,9 @@ public class ActiveBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		ActiveBlockingQuerier querier = new ActiveBlockingQuerier(null, null);
-		int ttl = 1;
-		String guid = "Zhaoyu Gao";			
+//		ActiveBlockingQuerier querier = new ActiveBlockingQuerier(null, null);
+//		int ttl = 1;
+//		String guid = "Zhaoyu Gao";			
 		
 		int n = 1000000;		
 		long t1 = System.currentTimeMillis();		

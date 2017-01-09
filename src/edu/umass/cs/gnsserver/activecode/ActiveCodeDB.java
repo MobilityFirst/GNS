@@ -3,7 +3,6 @@ package edu.umass.cs.gnsserver.activecode;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;

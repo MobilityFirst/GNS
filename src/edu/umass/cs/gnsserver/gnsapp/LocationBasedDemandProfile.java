@@ -558,14 +558,14 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     testThings(dp);
   }
 
-  private static class LocationBasedDemandProfileTest extends DefaultTest {
-
-    @Test
-    public void testShouldReconfigure() {
-      LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
-
-    }
-  }
+//  private static class LocationBasedDemandProfileTest extends DefaultTest {
+//
+//    @Test
+//    public void testShouldReconfigure() {
+//      //LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
+//
+//    }
+//  }
 
   private static void testThings(LocationBasedDemandProfile dp) throws UnknownHostException {
     LOG.log(Level.INFO, "0,0,3 = {0}", dp.computeNumberOfReplicas(0, 0, 3));
