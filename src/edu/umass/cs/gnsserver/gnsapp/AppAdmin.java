@@ -47,7 +47,6 @@ import java.util.logging.Level;
  * A separate thread that runs in the NameServer that handles administrative (AKA non-data related, non-user)
  * type operations. All of the things in here are for server administration and debugging.
  */
-@SuppressWarnings("unchecked")
 public class AppAdmin extends Thread implements Shutdownable {
 
   /**
@@ -83,7 +82,6 @@ public class AppAdmin extends Thread implements Shutdownable {
    */
   @Override
   public void run() {
-    int numRequest = 0;
     GNSConfig.getLogger().log(Level.INFO,
             "NS Node {0} starting Admin Request Server on port {1}",
             new Object[]{app.getNodeID(), serverSocket.getLocalPort()});
@@ -206,9 +204,13 @@ public class AppAdmin extends Thread implements Shutdownable {
                   GNSConfig.getLogger().log(Level.WARNING,
                           "NSListenerAdmin ({0}) : Ignoring DUMPCACHE request", app.getNodeID());
                   break;
+			default:
+				break;
 
               }
               break;
+		default:
+			break;
           }
         }
       } catch (IOException | JSONException | FailedDBOperationException | ParseException | IllegalArgumentException | SecurityException e) {

@@ -189,7 +189,7 @@ public class KeyPairUtilsAndroid {
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
    */
   public static void removeDefaultGuidEntryFromPreferences(String gnsName) {
-    String aliasKey = gnsName + "@default-guid";
+    //String aliasKey = gnsName + "@default-guid";
 
     // adding order
     // alias,

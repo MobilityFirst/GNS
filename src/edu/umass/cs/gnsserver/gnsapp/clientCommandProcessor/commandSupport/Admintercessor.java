@@ -235,6 +235,8 @@ public class Admintercessor {
             ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Parse error during admin response processing: {0}", e);
           }
           break;
+	default:
+		break;
       }
     } catch (JSONException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "JSON error while getting packet type: {0}", e);
@@ -294,7 +296,6 @@ public class Admintercessor {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private String formatDumpRecords(Map<String, TreeSet<NameRecord>> recordsMap,
           ClientRequestHandlerInterface handler) {
     // now process all the records we received
@@ -388,6 +389,8 @@ public class Admintercessor {
             ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "JSON error during dump sentinel processing: {0}", e);
           }
           break;
+	default:
+		break;
       }
     } catch (JSONException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "JSON error while getting packet type: {0}", e);

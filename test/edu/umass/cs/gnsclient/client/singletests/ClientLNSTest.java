@@ -85,10 +85,10 @@ public class ClientLNSTest {
     } catch (Exception e) {
       fail("Exception while looking up guid: " + e);
     }
-    JSONObject json = null;
+    //JSONObject json = null;
     if (guidString != null) {
       try {
-        json = client.lookupAccountRecord(guidString);
+        client.lookupAccountRecord(guidString);
       } catch (Exception e) {
         fail("Exception while looking up account record: " + e);
       }

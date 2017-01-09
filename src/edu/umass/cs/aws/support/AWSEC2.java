@@ -55,7 +55,6 @@ import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
-import static edu.umass.cs.aws.support.AWSEC2.DEFAULTSECONDMOUNTPOINT;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.aws.networktools.ExecuteBash;

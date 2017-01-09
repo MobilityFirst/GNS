@@ -266,7 +266,7 @@ public class ServerConnectTest extends DefaultTest {
     int tries = 5;
     boolean accountCreated = false;
 
-    long t = System.currentTimeMillis();
+    //long t = System.currentTimeMillis();
 
     do {
       try {

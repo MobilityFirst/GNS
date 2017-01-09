@@ -22,7 +22,6 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GNSClient.AsyncClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -221,7 +220,7 @@ public class AdminBadAuthTest {
    */
   @Test(expected=ClientException.class)
   public void test_04_Dump() throws Exception {
-      String result = client.dump();
+      client.dump();
   }
   
   /**
@@ -282,7 +281,7 @@ public class AdminBadAuthTest {
    */
   @Test(expected=ClientException.class)
   public void test_14_Dump_ClientPort() throws Exception {
-      String result =  badClient.dump();
+      badClient.dump();
   }
   
 //  /**

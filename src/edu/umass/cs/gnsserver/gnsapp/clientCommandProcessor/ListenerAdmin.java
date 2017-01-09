@@ -78,7 +78,6 @@ public class ListenerAdmin extends Thread implements Shutdownable {
    */
   @Override
   public void run() {
-    int numRequest = 0;
     ClientCommandProcessorConfig.getLogger().log(Level.INFO,
             "Server Node {0} starting Admin Server on port {1}", new Object[]{handler.getNodeAddress(), serverSocket.getLocalPort()});
     while (true) {

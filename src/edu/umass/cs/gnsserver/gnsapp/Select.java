@@ -237,7 +237,6 @@ public class Select {
     return null;
   }
 
-  @SuppressWarnings("unchecked")
   private static SelectResponsePacket<String> getMySelectedRecords(
           SelectRequestPacket<String> request,
           GNSApplicationInterface<String> app) {
@@ -274,7 +273,6 @@ public class Select {
    * @param app
    * @throws JSONException
    */
-  @SuppressWarnings("unchecked")
   private static void handleSelectRequestFromNS(SelectRequestPacket<String> request,
           GNSApplicationInterface<String> app) throws JSONException {
     getLogger().log(Level.FINE,
@@ -285,7 +283,6 @@ public class Select {
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
-      @SuppressWarnings("unchecked")
       SelectResponsePacket<String> response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(),
               request.getClientAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), app.getNodeID(), jsonRecords);
@@ -360,7 +357,6 @@ public class Select {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private static SelectResponsePacket<String> createReponsePacket(InternalRequestHeader header, long id,
           InetSocketAddress address, Set<String> guids,
           GNSApplicationInterface<String> app) throws JSONException {

@@ -12,7 +12,6 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
  * @author gaozy
  *
  */
-@SuppressWarnings("restriction")
 public interface Querier {
 	
 	/**

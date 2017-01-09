@@ -72,7 +72,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param value
    * @param otherValue
    */
-  @SuppressWarnings("unchecked")
   public SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupBehavior,
           String key, Object value, Object otherValue) {
     super(null);
@@ -98,7 +97,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param guid
    * @param minRefreshInterval
    */
-  @SuppressWarnings("unchecked")
   private SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupOperation,
           String query, String guid, int minRefreshInterval) {
     super(null);
@@ -160,7 +158,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param unstringer
    * @throws org.json.JSONException
    */
-  @SuppressWarnings("unchecked")
   public SelectRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json, unstringer);
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {

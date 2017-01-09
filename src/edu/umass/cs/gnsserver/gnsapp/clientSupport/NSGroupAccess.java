@@ -19,8 +19,14 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSProtocol;
+import java.io.IOException;
+import java.util.Date;
+import java.util.Set;
+import java.util.logging.Level;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -36,16 +42,6 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Set;
-import java.util.logging.Level;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 /**
  * GroupAccess provides an interface to the group information in the GNS.

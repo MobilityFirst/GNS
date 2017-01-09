@@ -92,7 +92,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = testJson.toString().getBytes();
-			JSONObject testJson2 = new JSONObject(new String(bytes));
+			new JSONObject(new String(bytes));
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -117,7 +117,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = JSONByteConverter.toBytesHardcoded(testJson);
-			//JSONObject testJson2 = JSONByteConverter.fromBytesHardcoded(bytes);
+			JSONByteConverter.fromBytesHardcoded(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -139,17 +139,17 @@ public class ByteificationComparison {
   @Test
 	public void test_03_jackson() throws IOException, JSONException{
 		long startTime = System.nanoTime();
-		JSONObject testJson2;
+		//JSONObject testJson2;
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = JSONByteConverter.toBytesJackson(testJson);
-			testJson2 = JSONByteConverter.fromBytesJackson(bytes);
+			JSONByteConverter.fromBytesJackson(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
 		System.out.println("Average byteification time Jackson Contrived was " + avg + " nanoseconds.");
 		byte[] bytes = JSONByteConverter.toBytesJackson(testJson);
-		testJson2 = JSONByteConverter.fromBytesJackson(bytes);
+		JSONByteConverter.fromBytesJackson(bytes);
 
 		//System.out.println("JSON1: \n" + testJson.toString());
 		//System.out.println("JSON2: \n" + testJson2.toString());
@@ -192,7 +192,7 @@ public class ByteificationComparison {
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json128 = packet128.toJSONObject();
 			byte[] bytes = JSONByteConverter.toBytesHardcoded(json128);
-			JSONObject testJson2 = JSONByteConverter.fromBytesHardcoded(bytes);
+			JSONByteConverter.fromBytesHardcoded(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -217,7 +217,7 @@ public class ByteificationComparison {
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json128 = packet128.toJSONObject();
 			byte[] bytes = JSONByteConverter.toBytesJackson(json128);
-			JSONObject testJson2 = JSONByteConverter.fromBytesJackson(bytes);
+			JSONByteConverter.fromBytesJackson(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -225,7 +225,7 @@ public class ByteificationComparison {
 		System.out.println("Average byteification time Jackson 128B was " + avg + " nanoseconds.");
 		JSONObject json128 = packet128.toJSONObject();
 		byte[] bytes = JSONByteConverter.toBytesJackson(json128);
-		JSONObject testJson2 = JSONByteConverter.fromBytesJackson(bytes);
+		JSONByteConverter.fromBytesJackson(bytes);
 		//assert(json128.toString().equals(testJson2.toString()));
 		//System.out.println("JSON1: \n" + testJson.toString());
 		//System.out.println("JSON2: \n" + testJson2.toString());
@@ -240,8 +240,8 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json128 = packet128.toJSONObject();
-			byte[] bytes = json128.toString().getBytes();
-			JSONObject testJson2 = new JSONObject(new String(bytes));
+		    byte[] bytes = json128.toString().getBytes();
+			new JSONObject(new String(bytes));
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -267,7 +267,7 @@ public class ByteificationComparison {
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json128 = packet128.toJSONObject();
 			byte[] bytes = JSONByteConverter.toBytesMsgpack(json128);
-			JSONObject testJson2 = JSONByteConverter.fromBytesMsgpack(bytes);
+			JSONByteConverter.fromBytesMsgpack(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -292,7 +292,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet128.toBytesInstrument();
-			RequestPacket packet = new RequestPacket(bytes);
+			new RequestPacket(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -318,7 +318,7 @@ public class ByteificationComparison {
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json1024 = packet1024.toJSONObject();
 			byte[] bytes = JSONByteConverter.toBytesHardcoded(json1024);
-			JSONObject testJson2 = JSONByteConverter.fromBytesHardcoded(bytes);
+			JSONByteConverter.fromBytesHardcoded(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -343,7 +343,7 @@ public class ByteificationComparison {
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json1024 = packet1024.toJSONObject();
 			byte[] bytes = JSONByteConverter.toBytesJackson(json1024);
-			JSONObject testJson2 = JSONByteConverter.fromBytesJackson(bytes);
+			JSONByteConverter.fromBytesJackson(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -351,7 +351,7 @@ public class ByteificationComparison {
 		System.out.println("Average byteification time Jackson 1024B was " + avg + " nanoseconds.");
 		JSONObject json1024 = packet1024.toJSONObject();
 		byte[] bytes = JSONByteConverter.toBytesJackson(json1024);
-		JSONObject testJson2 = JSONByteConverter.fromBytesJackson(bytes);
+		JSONByteConverter.fromBytesJackson(bytes);
 		//assert(json1024.toString().equals(testJson2.toString()));
 		//System.out.println("JSON1: \n" + testJson.toString());
 		//System.out.println("JSON2: \n" + testJson2.toString());
@@ -367,7 +367,7 @@ public class ByteificationComparison {
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json1024 = packet1024.toJSONObject();
 			byte[] bytes = json1024.toString().getBytes();
-			JSONObject testJson2 = new JSONObject(new String(bytes));
+			new JSONObject(new String(bytes));
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -393,7 +393,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet1024.toBytesInstrument();
-			RequestPacket packet = new RequestPacket(bytes);
+			new RequestPacket(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -419,7 +419,7 @@ public class ByteificationComparison {
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json1024 = packet1024.toJSONObject();
 			byte[] bytes = JSONByteConverter.toBytesMsgpack(json1024);
-			JSONObject testJson2 = JSONByteConverter.fromBytesMsgpack(bytes);
+			JSONByteConverter.fromBytesMsgpack(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -444,7 +444,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
-			ResponsePacket outputPacket = ResponsePacket.fromBytes(bytes);
+			ResponsePacket.fromBytes(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
@@ -465,7 +465,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
-			ResponsePacket outputPacket = ResponsePacket.fromBytes(bytes);
+			ResponsePacket.fromBytes(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
@@ -485,7 +485,7 @@ public class ByteificationComparison {
 		ResponsePacket packet = new ResponsePacket(1, ResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
-			byte[] bytes = packet.toBytes();
+			packet.toBytes();
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
@@ -505,7 +505,7 @@ public class ByteificationComparison {
 		ResponsePacket packet = new ResponsePacket(1, ResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
-			byte[] bytes = packet.toBytes();
+			packet.toBytes();
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
@@ -529,7 +529,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
-			CommandPacket outputPacket = new CommandPacket(bytes);
+			new CommandPacket(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
@@ -556,7 +556,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
-			CommandPacket outputPacket = new CommandPacket(bytes);
+			new CommandPacket(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
@@ -586,7 +586,7 @@ public class ByteificationComparison {
 		assert(jsonBefore.equals(packet.toJSONObject().toString()));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
-			CommandPacket outputPacket = new CommandPacket(bytes);
+			new CommandPacket(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
@@ -633,7 +633,7 @@ public class ByteificationComparison {
 		assert(jsonBefore.equals(packet.toJSONObject().toString()));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
-			CommandPacket outputPacket = new CommandPacket(bytes);
+			new CommandPacket(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
@@ -667,7 +667,7 @@ public class ByteificationComparison {
 		byte[] bytes = packet.toBytes();
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
-			CommandPacket outputPacket = new CommandPacket(bytes);
+			new CommandPacket(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
@@ -678,13 +678,13 @@ public class ByteificationComparison {
 		//assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 
-	private static GuidEntry getRandomGuidEntry() {
-		try {
-			return GuidUtils.createAndSaveGuidEntry("random" + (long)(Math.random()*Long.MAX_VALUE) , "gns");
-		} catch (EncryptionException | NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
+//	private static GuidEntry getRandomGuidEntry() {
+//		try {
+//			return GuidUtils.createAndSaveGuidEntry("random" + (long)(Math.random()*Long.MAX_VALUE) , "gns");
+//		} catch (EncryptionException | NoSuchAlgorithmException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return null;
+//	}
 }

@@ -41,7 +41,6 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
   private final static String ID = "id";
   private final static String RECORDS = "records";
   private final static String GUIDS = "guids";
-  private final static String LNSQUERYID = "lnsQueryId";
   private final static String NSQUERYID = "nsQueryId";
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";

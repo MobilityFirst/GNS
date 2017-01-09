@@ -477,7 +477,6 @@ public class NSAccessSupport {
    * @return a set of public keys
    * @throws FailedDBOperationException
    */
-  @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
     if (Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {

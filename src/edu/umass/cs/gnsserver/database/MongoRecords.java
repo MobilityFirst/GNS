@@ -402,7 +402,7 @@ public class MongoRecords implements NoSQLRecords {
       }
     }
     // Maybe check the result?
-    BulkWriteResult result = unordered.execute();
+    unordered.execute();
   }
 
   @Override
