@@ -111,6 +111,8 @@ public class ServerIntegrationTest extends DefaultTest {
   private static GNSClient client = null;
   //private static GNSClientCommandsV2 client = null;
   private static GuidEntry masterGuid;
+  
+  private static final int REPEAT = 10;
 
   /**
    *
@@ -202,7 +204,7 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
 	private static void failWithStackTrace(String message, Exception... e) {
-		System.out.println("--" + RequestInstrumenter.getLog() + "--");
+		System.out.println("\n--" + RequestInstrumenter.getLog() + "--");
 		if (e != null && e.length > 0) {
 			e[0].printStackTrace();
 		}
@@ -499,7 +501,7 @@ public class ServerIntegrationTest extends DefaultTest {
 	 * @throws Exception
 	 */
 	@Test
-	@Repeat( times = 10 )
+	@Repeat( times = REPEAT )
 	public void test_010_CreateEntity() throws Exception {
 		// CHECKED FOR VALIDITY
 		String alias = "testGUID" + RandomString.randomString(12);
@@ -517,7 +519,7 @@ public class ServerIntegrationTest extends DefaultTest {
 	 * @throws Exception
 	 */
 	@Test
-	@Repeat(times = 100)
+	@Repeat(times = REPEAT*10)
 	public void test_001_CreateAndUpdate() throws Exception {
 		// CHECKED FOR VALIDITY
 		String alias = "testGUID" + RandomString.randomString(12);
@@ -875,7 +877,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws JSONException
    */
   @Test
-  @Repeat (times=100)
+  @Repeat (times = REPEAT*10)
   public void test_117_ACLTest_Single_Field() throws JSONException, Exception {
     final String TEST_FIELD_NAME = "testField";
     String testFieldName = TEST_FIELD_NAME + RandomString.randomString(6);
@@ -1640,7 +1642,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * Tests different DB substitute list methods.
    */
   @Test
-  @Repeat( times = 10 )
+  @Repeat( times = REPEAT )
   public void test_200_SubstituteList() {
     //CHECKED FOR VALIDITY
     String testSubstituteListGuid = "testSubstituteListGUID"
@@ -2995,19 +2997,21 @@ public class ServerIntegrationTest extends DefaultTest {
     }
   }
 
-  private static int numberTocreate = 100;
+  private static int numberToCreate = 2;
 
   /**
-   * The test set for testing batch creates.
+   * The test set for testing batch creates. The test will create batches
+   * of size 2, 4, 8,..., 128.
    *
    * @throws Exception
    */
   @Test
-  @Repeat( times = 10 )
+  @Repeat( times = 7 )
   public void test_500_Batch_Tests() throws Exception {
     GuidEntry accountGuidForBatch = test_510_CreateBatchAccountGuid();
     test_511_CreateBatch(accountGuidForBatch);
     test_512_CheckBatch(accountGuidForBatch);
+    numberToCreate*=2;
   }
 
   /**
@@ -3022,7 +3026,7 @@ public class ServerIntegrationTest extends DefaultTest {
 //    GuidEntry accountGuidForBatch;
     if (System.getProperty("count") != null
             && !System.getProperty("count").isEmpty()) {
-      numberTocreate = Integer.parseInt(System.getProperty("count"));
+      numberToCreate = Integer.parseInt(System.getProperty("count"));
     }
     String batchAccountAlias = "batchTest510"
             + RandomString.randomString(12) + "@gns.name";
@@ -3041,7 +3045,7 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_511_CreateBatch(GuidEntry accountGuidForBatch) {
     //CHECKED FOR VALIDITY
     Set<String> aliases = new HashSet<>();
-    for (int i = 0; i < numberTocreate; i++) {
+    for (int i = 0; i < numberToCreate; i++) {
       //Brendan: I added Integer.toString(i) to this to guarantee no collisions during creation.
       aliases.add("testGUID511" + Integer.toString(i) + RandomString.randomString(12));
     }
@@ -3067,7 +3071,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       JSONObject accountRecord = clientCommands
               .lookupAccountRecord(accountGuidForBatch.getGuid());
-      Assert.assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+      Assert.assertEquals(numberToCreate, accountRecord.getInt("guidCnt"));
     } catch (JSONException | ClientException | IOException e) {
       failWithStackTrace("Exception while fetching account record: ", e);
     }
@@ -3081,7 +3085,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws ClientException
    */
   @Test
-  @Repeat( times = 10 )
+  @Repeat( times = REPEAT )
   public void test_530_Index_Tests() throws ClientException, IOException, JSONException {
     String createIndexTestField = test_540_CreateField();
     test_541_CreateIndex(createIndexTestField);
@@ -3149,7 +3153,7 @@ public class ServerIntegrationTest extends DefaultTest {
    * @throws EncryptionException
    */
   @Test
-  @Repeat( times = 10 )
+  @Repeat( times = REPEAT )
   public void test_550_Query_Tests() throws EncryptionException, NoSuchAlgorithmException {
     String groupTestFieldName = "_SelectAutoGroupTestQueryField_" + RandomString.randomString(12);
     GuidEntry groupOneGuid;
@@ -3467,7 +3471,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   // these two attributes right now are supported by CS
   @Test
-  @Repeat( times = 10 )
+  @Repeat( times = REPEAT )
   public void test_620_contextServiceTest() {
     // run it only when CS is enabled
     // to check if context service is enabled.
@@ -3512,7 +3516,7 @@ public class ServerIntegrationTest extends DefaultTest {
    */
   // FIXME: Maybe add something in here to insure that we're actually using an LNS?
   @Test
-  @Repeat( times = 10 )
+  @Repeat( times = REPEAT )
   public void test_630_CheckLNSProxy() {
     try {
       //PaxosConfig.getActives() works here because the server and client use the same properties file.
