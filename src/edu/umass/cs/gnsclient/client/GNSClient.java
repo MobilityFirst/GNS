@@ -384,20 +384,6 @@ public class GNSClient {
 		/* We could also simply have used gigapaxos' sync send above, but using
 		 * the async code above avoids the redundancy with sendAsync on checking
 		 * for anycast/proxy/default. */
-
-		// ClientRequest request = packet
-		// .setForceCoordinatedReads(isForceCoordinatedReads());
-		// Request response = null;
-		//
-		// if (isAnycast(packet)) {
-		// response = this.asyncClient.sendRequestAnycast(request, timeout);
-		// } else if (this.GNSProxy != null) {
-		// response = this.asyncClient.sendRequest(request, this.GNSProxy,
-		// timeout);
-		// } else {
-		// response = this.asyncClient.sendRequest(request, timeout);
-		// }
-		// return defaultHandleResponse(response);
 	}
 
 	private int numRetriesUponTimeout = 0;

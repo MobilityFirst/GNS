@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
+
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -48,7 +50,7 @@ public class GNSClientInternal extends GNSClient {
 
 	@Override
 	protected String getLabel() {
-		return GNSClientInternal.class.getSimpleName();
+		return GNSClientInternal.class.getSimpleName()+":"+this.myID+":";
 	}
 
 	/* Note that GNSClient itself doesn't have any fixed timeouts because it is

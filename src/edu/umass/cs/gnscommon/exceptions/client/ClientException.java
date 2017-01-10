@@ -78,7 +78,7 @@ public class ClientException extends GNSException {
 			return ResponseCode.IO_EXCEPTION;
 		if (e instanceof InternalRequestException)
 			return ResponseCode.INTERNAL_REQUEST_EXCEPTION;
-		if(e  instanceof TimeoutException) 
+		if(e instanceof TimeoutException || e.getCause() instanceof TimeoutException) 
 			return ResponseCode.TIMEOUT;
 		if (e instanceof ReconfigurationException)
 			return ((ReconfigurationException) e).getCode() == ResponseCodes.DUPLICATE_ERROR ? ResponseCode.DUPLICATE_ID_EXCEPTION
