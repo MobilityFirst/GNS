@@ -30,20 +30,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
-import edu.umass.cs.gigapaxos.async.RequestCallbackFuture;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.Callback;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -59,7 +58,6 @@ import edu.umass.cs.reconfiguration.interfaces.ReconfiguratorRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
 /**
  * Implementation of a GNS client using gigapaxos' async client.
