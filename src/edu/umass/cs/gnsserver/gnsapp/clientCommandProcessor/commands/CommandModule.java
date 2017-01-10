@@ -219,7 +219,7 @@ public class CommandModule {
               + json.optString(GNSProtocol.COMMANDNAME.toString(), "also missing command name!"));
     }
     if (command != null) {
-      ClientCommandProcessorConfig.getLogger().log(Level.FINE,
+      ClientCommandProcessorConfig.getLogger().log(Level.FINEST,
               "Found {0} using table lookup", command);
       return command;
     }
