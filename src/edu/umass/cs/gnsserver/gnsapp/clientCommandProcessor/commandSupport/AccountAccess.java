@@ -851,8 +851,13 @@ public class AccountAccess {
         assert (returnCode != null);
         if (!returnCode.isExceptionOrError()
 <<<<<<< HEAD
+<<<<<<< HEAD
                 || name.equals(boundHRN=GUIDMatchingHRNExists(header, handler, returnCode,
                         name, guid))) // all good if here
+=======
+                || GUIDmatchingHRNExists(header, handler, returnCode,
+                        name, guid)) // all good if here
+>>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
 =======
                 || GUIDmatchingHRNExists(header, handler, returnCode,
                         name, guid)) // all good if here
@@ -941,6 +946,7 @@ public class AccountAccess {
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   private static String GUIDMatchingHRNExists(InternalRequestHeader header,
 =======
   private static boolean GUIDmatchingHRNExists(InternalRequestHeader header,
@@ -961,6 +967,12 @@ public class AccountAccess {
 										.toString()))) {
 				}
 =======
+=======
+  private static boolean GUIDmatchingHRNExists(InternalRequestHeader header,
+          ClientRequestHandlerInterface handler, ResponseCode code,
+          String name, String guid) throws ClientException, JSONException {
+    try {
+>>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
       if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
         if (name.equals(
                 // handler.getRemoteQuery().fieldRead(guid,GNSProtocol.NAME.toString())
@@ -971,6 +983,9 @@ public class AccountAccess {
                 .getResultMap().values().iterator().next())) {
           return true;
         }
+<<<<<<< HEAD
+>>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
+=======
 >>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
       }
     } catch (IOException | InternalRequestException e) {
@@ -1206,7 +1221,11 @@ public class AccountAccess {
       boolean GUIDMatches = false;
       if (guidCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
 <<<<<<< HEAD
+<<<<<<< HEAD
               && !name.equals(boundHRN = GUIDMatchingHRNExists(header, handler,
+=======
+              && !(GUIDMatches = GUIDmatchingHRNExists(header, handler,
+>>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
 =======
               && !(GUIDMatches = GUIDmatchingHRNExists(header, handler,
 >>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
