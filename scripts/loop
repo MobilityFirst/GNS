@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # default number of runs
-RUNS=1000
+RUNS=50
 if [[ ! -z $2 ]]; then
   RUNS=$2
 fi
@@ -28,7 +28,6 @@ while [[ $i -lt $RUNS ]]; do
     successes=`expr $successes + 1`
   else 
     failures=`expr $failures + 1`
-    exit
   fi
   echo "===================successes=$successes, failures=$failures=================="
 

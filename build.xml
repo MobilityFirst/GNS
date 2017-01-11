@@ -520,8 +520,8 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
 
  <target name="testMethod" description="Runs the default integration test against a 3 node server." 
           depends="compile, compiletest">
-    <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
-    <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
+    <property name="gigapaxosConfig" value="conf/gnsserver.3local.createtest.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.createtest.properties"/>
     <property name="waitTillAllServersReady" value="5000"/>
     <property name="reps" value="1"/>
     <property name="test" value="test_010_CreateEntity"/>
@@ -667,8 +667,7 @@ methods="${test}"/>
       <test name="edu.umass.cs.gnsclient.client.AlwaysFail"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
-      <jvmarg
-value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
@@ -689,7 +688,7 @@ value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
       <jvmarg value="-DstartServer=false"/>
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.1local.properties"/>
-      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
       <jvmarg value="-Dserver.command=scripts/singlenodetests/reset_and_restart.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -712,7 +711,7 @@ value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
       <jvmarg value="-DfailureTest.threads=${failureTestThreads}"/>
       <jvmarg value="-DfailureTest.roundTime=${failureTestRoundTime}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.unittest.properties"/>
-      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
@@ -734,7 +733,7 @@ integration tests sequentially"
       <jvmarg value="-DstartServer=false"/>
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.1local.properties"/>
-      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
       <jvmarg value="-Dserver.command=scripts/singlenodetests/reset_and_restart.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -759,7 +758,7 @@ integration tests sequentially"
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.properties"/>
-      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
       <!--<jvmarg value="-Dserver.command=scripts/3nodeslocal/reset_and_restart.sh"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>

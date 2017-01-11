@@ -424,6 +424,8 @@ public class CommandUtils {
 
     ResponseCode code = responsePacket.getErrorCode();
     String returnValue = responsePacket.getReturnValue();
+    GNSConfig.getLogger().log(Level.FINE, "New check response: {0} {1}",
+            new Object[]{code, responsePacket.getSummary()});
     // If the code isn't an error or exception we're just returning the
     // return value. Also handle the special case where the command
     // wants to return a null value.

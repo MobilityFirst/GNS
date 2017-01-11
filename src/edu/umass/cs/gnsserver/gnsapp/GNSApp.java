@@ -278,7 +278,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     try {
       Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType ? (Packet.PacketType) request
               .getRequestType() : null;
-      GNSConfig.getLogger().log(Level.FINE, "{0} starting execute({1})",
+      GNSConfig.getLogger().log(Level.FINE, "{0} &&&&&&& handling {1} ",
               new Object[]{this, request.getSummary()});
       Request prev = null;
       // arun: enqueue request, dequeue before returning
@@ -317,7 +317,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       // arun: always clean up all created state upon exiting
       if (request instanceof RequestIdentifier && prev == null) {
         GNSConfig.getLogger().log(Level.FINE,
-                "{0} finished execute({1})  ->  {2}",
+                "{0} dequeueing request {1}; response={2}",
                 new Object[]{
                   this,
                   request.getSummary(),
@@ -609,7 +609,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
               .getNameRecord(nameRecordDB, name);
       GNSConfig.getLogger().log(
               Level.FINE,
-              "{0} getting state for {1} : {2} ",
+              "&&&&&&& {0} getting state for {1} : {2} ",
               new Object[]{this, name,
                 nameRecord.getValuesMap().getSummary()});
       return nameRecord.getValuesMap().toString();
@@ -637,7 +637,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   @Override
   public boolean restore(String name, String state) {
     GNSConfig.getLogger().log(Level.FINE,
-            "{0} updating {1} with state [{2}]",
+            "&&&&&&& {0} updating {1} with state [{2}]",
             new Object[]{this, name, Util.truncate(state, 32, 32)});
     try {
       if (state == null) {
@@ -790,7 +790,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                       "{0} set response {1} for requesting client {2} for request {3}",
                       new Object[]{
                         this,
-                        response,
+                        response.getSummary(),
                         ((BasicPacketWithClientAddress) originalRequest)
                         .getClientAddress(),
                         originalRequest.getSummary()});
