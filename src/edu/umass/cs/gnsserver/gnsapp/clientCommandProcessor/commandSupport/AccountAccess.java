@@ -848,26 +848,28 @@ public class AccountAccess {
                 handler.getInternalClient().createOrExists(
                         new CreateServiceName(guid, json.toString()));
 
-        String boundHRN=null;
         assert (returnCode != null);
         if (!returnCode.isExceptionOrError()
-                || name.equals(boundHRN=GUIDmatchingHRNExists(header, handler, returnCode,
+<<<<<<< HEAD
+                || name.equals(boundHRN=GUIDMatchingHRNExists(header, handler, returnCode,
                         name, guid))) // all good if here
+=======
+                || GUIDmatchingHRNExists(header, handler, returnCode,
+                        name, guid)) // all good if here
+>>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
         {
           return CommandResponse.noError();
         }
 
         if (returnCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) // try to delete the record we added above
         {
-        	return rollback(
-        			handler,
-        			ResponseCode.CONFLICTING_GUID_EXCEPTION
-        			.setMessage(" Existing GUID "
-        					+ guid
-        					+ " has HRN "
-        					+ boundHRN
-        					+ " and can not be associated with the HRN "
-        					+ name), name, guid);
+          return rollback(
+                  handler,
+                  ResponseCode.CONFLICTING_GUID_EXCEPTION
+                  .setMessage("GUID "
+                          + guid
+                          + " exists and can not be associated with the HRN "
+                          + name), name, guid);
         }
       } else if (returnCode.equals(ResponseCode.DUPLICATE_FIELD_EXCEPTION) && !guid.equals(boundGUID)) {
         return new CommandResponse(
@@ -938,11 +940,15 @@ public class AccountAccess {
     return remoteRead;
   }
 
-  private static String GUIDmatchingHRNExists(InternalRequestHeader header,
+<<<<<<< HEAD
+  private static String GUIDMatchingHRNExists(InternalRequestHeader header,
+=======
+  private static boolean GUIDmatchingHRNExists(InternalRequestHeader header,
+>>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
           ClientRequestHandlerInterface handler, ResponseCode code,
           String name, String guid) throws ClientException, JSONException {
-  	Object value = null; 
     try {
+<<<<<<< HEAD
 			if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
 				if (name.equals(value =
 				// handler.getRemoteQuery().fieldRead(guid,GNSProtocol.NAME.toString())
@@ -951,16 +957,27 @@ public class AccountAccess {
 								GNSCommandInternal.fieldRead(guid, GUID_INFO,
 										header))
 						.getResultMap()
-						.get(InternalField
-								.makeInternalFieldString(GNSProtocol.NAME
-										.toString())))) {
+						.get(GNSProtocol.NAME
+										.toString()))) {
 				}
+=======
+      if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
+        if (name.equals(
+                // handler.getRemoteQuery().fieldRead(guid,GNSProtocol.NAME.toString())
+                handler.getInternalClient()
+                .execute(
+                        GNSCommandInternal.fieldRead(guid,
+                                InternalField.makeInternalFieldString(GNSProtocol.NAME.toString()), header))
+                .getResultMap().values().iterator().next())) {
+          return true;
+        }
+>>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
       }
     } catch (IOException | InternalRequestException e) {
       throw new ClientException(ResponseCode.UNSPECIFIED_ERROR,
               e.getMessage(), e);
     }
-    return value!=null ? value.toString() : null;
+    return false;
   }
 
   /* This method is currently not used because roll backs when invoked seem as
@@ -1186,20 +1203,22 @@ public class AccountAccess {
               new CreateServiceName(guid, jsonGuid.toString()));
 
       assert (guidCode != null);
-      String boundHRN = null;
+      boolean GUIDMatches = false;
       if (guidCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
-              && !name.equals(boundHRN = GUIDmatchingHRNExists(header, handler,
+<<<<<<< HEAD
+              && !name.equals(boundHRN = GUIDMatchingHRNExists(header, handler,
+=======
+              && !(GUIDMatches = GUIDmatchingHRNExists(header, handler,
+>>>>>>> parent of 63decf2... Merge branch 'master' of http://github.com/MobilityFirst/GNS
                       guidCode, name, guid))) // rollback name creation
       {
-    	  return rollback(
-    			  handler,
-    			  ResponseCode.CONFLICTING_GUID_EXCEPTION
-    			  .setMessage(": Existing GUID "
-    					  + guid
-    					  + " is associated with "
-    					  + boundHRN
-    					  + " and can not be associated with the HRN "
-    					  + name), name, guid);
+        return rollback(
+                handler,
+                ResponseCode.CONFLICTING_GUID_EXCEPTION
+                .setMessage("GUID "
+                        + guid
+                        + "exists and can not be associated with the HRN "
+                        + name), name, guid);
       }
 
       // redundant to check with GNSClientInternal
@@ -1212,13 +1231,7 @@ public class AccountAccess {
       }
 
       // else all good, continue
-      assert (!guidCode.isExceptionOrError() || name.equals(boundHRN)) : "code="
-      + guidCode
-      + "; boundHRN="
-      + boundHRN
-      + "; name="
-      + name
-      + "; for GUID=" + guid;
+      assert (!code.isExceptionOrError() || GUIDMatches);
 
       createdGUID = true;
 
