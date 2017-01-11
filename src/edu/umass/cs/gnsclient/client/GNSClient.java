@@ -128,10 +128,11 @@ public class GNSClient {
 	 * @param anyReconfiguratorHostName
 	 * @throws IOException
 	 */
+	//[@WIKI start gnsclient]
 	public GNSClient(String anyReconfiguratorHostName) throws IOException {
 		this(new InetSocketAddress(anyReconfiguratorHostName,
 				GNSConfig.DEFAULT_RECONFIGURATOR_PORT));
-	}
+	}//[@WIKI end gnsclient]
 	
 	// non-public constructors below
 	

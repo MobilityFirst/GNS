@@ -1,14 +1,5 @@
-[
-  {
-    "constantName": "GNSSERVER_1LOCAL_PROPERTIES_FILE",
-    "constantValue": "conf/gnsserver.1local.properties"
-  },
-  {
-    "constantName": "DEFAULT_PROPERTIES_FILE",
-    "constantValue": "conf/gnsserver.1local.properties"
-  },
-  {
-    "constantName": "EMAIL_VERIFICATION_OPTION",
-    "constantValue": "ENABLE_EMAIL_VERIFICATION"
-  }
-]
+{
+  "GNSSERVER_1LOCAL_PROPERTIES_FILE": "conf/gnsserver.1local.properties",
+  "EMAIL_VERIFICATION_OPTION": "ENABLE_EMAIL_VERIFICATION",
+  "DEFAULT_PROPERTIES_FILE": "conf/gnsserver.1local.properties"
+}

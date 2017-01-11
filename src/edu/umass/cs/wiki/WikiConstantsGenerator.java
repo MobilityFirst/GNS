@@ -2,9 +2,13 @@ package edu.umass.cs.wiki;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.util.ArrayList;
 
 /**
  * Writes {@link WikiConstants} to a JSON file
@@ -28,9 +32,14 @@ public class WikiConstantsGenerator {
         file.getParentFile().mkdirs();
 
         FileWriter fileWriter = null;
-        JSONArray jsonData = null;
+        JSONObject jsonData = new JSONObject();
         try {
-            jsonData = new JSONArray(WikiConstants.values());
+            WikiConstants constants[] = WikiConstants.values();
+
+            for(int i=0; i< constants.length; i++) {
+                jsonData.put(constants[i].getConstantName(), constants[i].getConstantValue());
+            }
+
             fileWriter = new FileWriter(WIKI_CONSTANTS_FILE_PATH);
             fileWriter.write(jsonData.toString(2));
         } catch (IOException e) {

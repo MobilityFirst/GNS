@@ -100,9 +100,9 @@ import org.junit.Assert;
  *
  */
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ServerIntegrationTest extends DefaultTest {
+public class /*[@WIKI start itestname]*/ServerIntegrationTest/*[@WIKI end itestname]*/ extends DefaultTest {
 
-  private static final String DEFAULT_ACCOUNT_ALIAS = "support@gns.name";
+  private static final String DEFAULT_ACCOUNT_ALIAS = /*[@WIKI start default_alias]*/"support@gns.name"/*[@WIKI end default_alias]*/;
 
   private static String accountAlias = DEFAULT_ACCOUNT_ALIAS; // REPLACE //
   // ALIAS

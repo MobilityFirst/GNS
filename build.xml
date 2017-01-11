@@ -824,4 +824,5 @@ integration tests sequentially"
       <classpath refid="classpath.base"/>
     </java>
   </target>
+
 </project>
