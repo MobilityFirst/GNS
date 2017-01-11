@@ -848,23 +848,26 @@ public class AccountAccess {
                 handler.getInternalClient().createOrExists(
                         new CreateServiceName(guid, json.toString()));
 
+        String boundHRN=null;
         assert (returnCode != null);
         if (!returnCode.isExceptionOrError()
-                || GUIDmatchingHRNExists(header, handler, returnCode,
-                        name, guid)) // all good if here
+                || name.equals(boundHRN=GUIDmatchingHRNExists(header, handler, returnCode,
+                        name, guid))) // all good if here
         {
           return CommandResponse.noError();
         }
 
         if (returnCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) // try to delete the record we added above
         {
-          return rollback(
-                  handler,
-                  ResponseCode.CONFLICTING_GUID_EXCEPTION
-                  .setMessage("GUID "
-                          + guid
-                          + " exists and can not be associated with the HRN "
-                          + name), name, guid);
+        	return rollback(
+        			handler,
+        			ResponseCode.CONFLICTING_GUID_EXCEPTION
+        			.setMessage(" Existing GUID "
+        					+ guid
+        					+ " has HRN "
+        					+ boundHRN
+        					+ " and can not be associated with the HRN "
+        					+ name), name, guid);
         }
       } else if (returnCode.equals(ResponseCode.DUPLICATE_FIELD_EXCEPTION) && !guid.equals(boundGUID)) {
         return new CommandResponse(
@@ -935,26 +938,29 @@ public class AccountAccess {
     return remoteRead;
   }
 
-  private static boolean GUIDmatchingHRNExists(InternalRequestHeader header,
+  private static String GUIDmatchingHRNExists(InternalRequestHeader header,
           ClientRequestHandlerInterface handler, ResponseCode code,
           String name, String guid) throws ClientException, JSONException {
+  	Object value = null; 
     try {
-      if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
-        if (name.equals(
-                // handler.getRemoteQuery().fieldRead(guid,GNSProtocol.NAME.toString())
-                handler.getInternalClient()
-                .execute(
-                        GNSCommandInternal.fieldRead(guid,
-                                InternalField.makeInternalFieldString(GNSProtocol.NAME.toString()), header))
-                .getResultMap().values().iterator().next())) {
-          return true;
-        }
+			if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
+				if (name.equals(value =
+				// handler.getRemoteQuery().fieldRead(guid,GNSProtocol.NAME.toString())
+				handler.getInternalClient()
+						.execute(
+								GNSCommandInternal.fieldRead(guid, GUID_INFO,
+										header))
+						.getResultMap()
+						.get(InternalField
+								.makeInternalFieldString(GNSProtocol.NAME
+										.toString())))) {
+				}
       }
     } catch (IOException | InternalRequestException e) {
       throw new ClientException(ResponseCode.UNSPECIFIED_ERROR,
               e.getMessage(), e);
     }
-    return false;
+    return value!=null ? value.toString() : null;
   }
 
   /* This method is currently not used because roll backs when invoked seem as
@@ -1180,18 +1186,20 @@ public class AccountAccess {
               new CreateServiceName(guid, jsonGuid.toString()));
 
       assert (guidCode != null);
-      boolean GUIDMatches = false;
+      String boundHRN = null;
       if (guidCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
-              && !(GUIDMatches = GUIDmatchingHRNExists(header, handler,
+              && !name.equals(boundHRN = GUIDmatchingHRNExists(header, handler,
                       guidCode, name, guid))) // rollback name creation
       {
-        return rollback(
-                handler,
-                ResponseCode.CONFLICTING_GUID_EXCEPTION
-                .setMessage("GUID "
-                        + guid
-                        + "exists and can not be associated with the HRN "
-                        + name), name, guid);
+    	  return rollback(
+    			  handler,
+    			  ResponseCode.CONFLICTING_GUID_EXCEPTION
+    			  .setMessage(": Existing GUID "
+    					  + guid
+    					  + " is associated with "
+    					  + boundHRN
+    					  + " and can not be associated with the HRN "
+    					  + name), name, guid);
       }
 
       // redundant to check with GNSClientInternal
@@ -1204,7 +1212,13 @@ public class AccountAccess {
       }
 
       // else all good, continue
-      assert (!code.isExceptionOrError() || GUIDMatches);
+      assert (!guidCode.isExceptionOrError() || name.equals(boundHRN)) : "code="
+      + guidCode
+      + "; boundHRN="
+      + boundHRN
+      + "; name="
+      + name
+      + "; for GUID=" + guid;
 
       createdGUID = true;
 

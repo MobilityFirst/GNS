@@ -30,20 +30,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
-import edu.umass.cs.gigapaxos.async.RequestCallbackFuture;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.Callback;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -59,7 +58,6 @@ import edu.umass.cs.reconfiguration.interfaces.ReconfiguratorRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
 /**
  * Implementation of a GNS client using gigapaxos' async client.
@@ -308,6 +306,11 @@ public class GNSClient {
 				retries);
 		CommandUtils.checkResponse(nullToTimeoutResponse(response, packet),
 				PacketUtils.setResult(packet, response));
+		GNSClientConfig.getLogger()
+				.log(Level.FINE,
+						"{0} received response {0} for request {1}",
+						new Object[] { this, response.getSummary(),
+								packet.getSummary() });
 		return packet;
 	}
 
@@ -384,20 +387,6 @@ public class GNSClient {
 		/* We could also simply have used gigapaxos' sync send above, but using
 		 * the async code above avoids the redundancy with sendAsync on checking
 		 * for anycast/proxy/default. */
-
-		// ClientRequest request = packet
-		// .setForceCoordinatedReads(isForceCoordinatedReads());
-		// Request response = null;
-		//
-		// if (isAnycast(packet)) {
-		// response = this.asyncClient.sendRequestAnycast(request, timeout);
-		// } else if (this.GNSProxy != null) {
-		// response = this.asyncClient.sendRequest(request, this.GNSProxy,
-		// timeout);
-		// } else {
-		// response = this.asyncClient.sendRequest(request, timeout);
-		// }
-		// return defaultHandleResponse(response);
 	}
 
 	private int numRetriesUponTimeout = 0;

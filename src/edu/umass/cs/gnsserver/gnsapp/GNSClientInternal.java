@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -48,7 +49,7 @@ public class GNSClientInternal extends GNSClient {
 
 	@Override
 	protected String getLabel() {
-		return GNSClientInternal.class.getSimpleName();
+		return GNSClientInternal.class.getSimpleName()+":"+this.myID+":";
 	}
 
 	/* Note that GNSClient itself doesn't have any fixed timeouts because it is
@@ -59,7 +60,18 @@ public class GNSClientInternal extends GNSClient {
 
 	private static final long DEFAULT_TIMEOUT = 4000;
 
-	private static final long RC_TIMEOUT = DEFAULT_TIMEOUT;
+	/**
+	 * Increased to 6s because it can take ~5s for reconfigurators to checkpoint
+	 * RC records for the default CHECKPOINT_INTERVAL of 400. Note that we don't
+	 * retransmit create/delete requests in this internal client as we might as
+	 * well rely on end-to-end retransmission. But setting a longer timeout here
+	 * allows for more requests to succeed in the first or second attempt. A
+	 * short timeout might trigger a retransmit of the create (via the
+	 * end-client) that might also fail because the original create succeeds
+	 * after all after the checkpointing is complete but the retransmitted
+	 * create queued right behind it fails silently.
+	 */
+	private static final long RC_TIMEOUT = 6000;
 	// plus 1 second for every 20 names in batch creates
 	private static final double BATCH_TIMEOUT_FACTOR = 1000 / 20;
 
