@@ -185,7 +185,8 @@ public class Packet {
      */
     public static PacketType getPacketType(int number) {
       PacketType t = map.get(number);
-      assert(t!=null) : number;
+//      assert(t!=null) : number;
+      if(t==null) throw new RuntimeException("Unrecognized packet type " + number);
       return t;
     }
   }
