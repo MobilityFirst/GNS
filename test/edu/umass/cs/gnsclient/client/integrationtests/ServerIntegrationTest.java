@@ -327,7 +327,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
     System.out.println("Starting client");
 
-    int numRetries = 2;
+    int numRetries = 1;
     boolean forceCoordinated = true;
     
     clientCommands = (GNSClientCommands)new GNSClientCommands()

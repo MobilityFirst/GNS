@@ -816,7 +816,7 @@ public class FieldAccess {
           Date timestamp,
           GNSApplicationInterface<String> app) {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
-    LOGGER.log(Level.FINEST,
+    LOGGER.log(Level.FINE,
             "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2}",
             new Object[]{guid, field, reader});
     try {
@@ -829,7 +829,7 @@ public class FieldAccess {
         errorCode = NSAuthentication.signatureAndACLCheck(header, guid, field, fields, reader,
                 signature, message, MetaDataTypeName.READ_WHITELIST, app);
       } else {
-        LOGGER.log(Level.FINEST,
+        LOGGER.log(Level.FINE,
                 "reader={0}; internal={1} field={2}; fields={3};",
                 new Object[]{reader, header.verifyInternal(), field, fields});
 
