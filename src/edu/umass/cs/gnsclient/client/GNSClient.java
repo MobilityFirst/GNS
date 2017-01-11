@@ -306,6 +306,11 @@ public class GNSClient {
 				retries);
 		CommandUtils.checkResponse(nullToTimeoutResponse(response, packet),
 				PacketUtils.setResult(packet, response));
+		GNSClientConfig.getLogger()
+				.log(Level.FINE,
+						"{0} received response {0} for request {1}",
+						new Object[] { this, response.getSummary(),
+								packet.getSummary() });
 		return packet;
 	}
 

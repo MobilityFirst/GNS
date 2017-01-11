@@ -73,6 +73,7 @@ public class ClientException extends GNSException {
 		super(getCode(throwable), throwable);
 	}
 
+	// FIXME: Make enums for these static mappings
 	private static ResponseCode getCode(Throwable e) {
 		if (e instanceof IOException || e.getCause() instanceof IOException)
 			return ResponseCode.IO_EXCEPTION;
@@ -87,6 +88,8 @@ public class ClientException extends GNSException {
 
 					: ((ReconfigurationException) e).getCode() == ResponseCodes.NONEXISTENT_NAME_ERROR ? ResponseCode.NONEXISTENT_NAME_EXCEPTION
 
+							: ((ReconfigurationException) e).getCode() == ResponseCodes.TIMEOUT_EXCEPTION ? ResponseCode.TIMEOUT
+									
 							: ResponseCode.RECONFIGURATION_EXCEPTION;
 		
 		return ResponseCode.UNSPECIFIED_ERROR;
