@@ -848,9 +848,10 @@ public class AccountAccess {
                 handler.getInternalClient().createOrExists(
                         new CreateServiceName(guid, json.toString()));
 
+        String boundHRN=null;
         assert (returnCode != null);
         if (!returnCode.isExceptionOrError()
-                || name.equals(GUIDmatchingHRNExists(header, handler, returnCode,
+                || name.equals(boundHRN=GUIDmatchingHRNExists(header, handler, returnCode,
                         name, guid))) // all good if here
         {
           return CommandResponse.noError();
@@ -858,13 +859,15 @@ public class AccountAccess {
 
         if (returnCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) // try to delete the record we added above
         {
-          return rollback(
-                  handler,
-                  ResponseCode.CONFLICTING_GUID_EXCEPTION
-                  .setMessage("GUID "
-                          + guid
-                          + " exists and can not be associated with the HRN "
-                          + name), name, guid);
+        	return rollback(
+        			handler,
+        			ResponseCode.CONFLICTING_GUID_EXCEPTION
+        			.setMessage(" Existing GUID "
+        					+ guid
+        					+ " has HRN "
+        					+ boundHRN
+        					+ " and can not be associated with the HRN "
+        					+ name), name, guid);
         }
       } else if (returnCode.equals(ResponseCode.DUPLICATE_FIELD_EXCEPTION) && !guid.equals(boundGUID)) {
         return new CommandResponse(
@@ -1188,13 +1191,15 @@ public class AccountAccess {
               && !name.equals(boundHRN = GUIDmatchingHRNExists(header, handler,
                       guidCode, name, guid))) // rollback name creation
       {
-        return rollback(
-                handler,
-                ResponseCode.CONFLICTING_GUID_EXCEPTION
-                .setMessage("GUID "
-                        + guid
-                        + "exists and can not be associated with the HRN "
-                        + name), name, guid);
+    	  return rollback(
+    			  handler,
+    			  ResponseCode.CONFLICTING_GUID_EXCEPTION
+    			  .setMessage(": Existing GUID "
+    					  + guid
+    					  + " is associated with "
+    					  + boundHRN
+    					  + " and can not be associated with the HRN "
+    					  + name), name, guid);
       }
 
       // redundant to check with GNSClientInternal

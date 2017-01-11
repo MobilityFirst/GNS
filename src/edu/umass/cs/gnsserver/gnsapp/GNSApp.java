@@ -638,10 +638,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   public boolean restore(String name, String state) {
     GNSConfig.getLogger().log(Level.FINE,
             "{0} updating {1} with state [{2}]",
-            new Object[]{this, name, //Util.truncate
-    		(state
-            		//, 32, 32
-            		)});
+            new Object[]{this, name, Util.truncate(state, 32, 32)});
     try {
       if (state == null) {
         // If state is null the only thing it means is that we need to
@@ -793,7 +790,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                       "{0} set response {1} for requesting client {2} for request {3}",
                       new Object[]{
                         this,
-                        response.getSummary(),
+                        response,
                         ((BasicPacketWithClientAddress) originalRequest)
                         .getClientAddress(),
                         originalRequest.getSummary()});
