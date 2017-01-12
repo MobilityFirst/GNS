@@ -1,0 +1,10 @@
+Section title
+    Building-from-source.html Building from source
+    Command-Line-Interface.html Command Line Interface
+    FAQ.html FAQ
+Another section
+    Getting-Started.html Getting Started
+    Hello-world.html Hello World
+    Home.html Home
+    Shibboleth-SP-Location-Demo.html Shibboleth SP Location Demo
+    Troubleshooting.html Troubleshooting

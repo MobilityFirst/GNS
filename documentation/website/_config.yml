@@ -1,0 +1,19 @@
+#url: "http://j2objc.org"
+destination: production
+markdown: kramdown
+kramdown:
+    input: GFM
+    hard_wrap: false
+    smart_quotes: ["apos", "apos", "quot", "quot"]
+gems:
+  - jekyll-sitemap
+  - jekyll-redirect-from
+  - jekyll-paginate
+defaults:
+  -
+    scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "docs"
+      title: "Sample title"
