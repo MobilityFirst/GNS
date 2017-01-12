@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
@@ -32,7 +31,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCom
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

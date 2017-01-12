@@ -155,6 +155,33 @@ public class GNSClientInternal extends GNSClient {
 			throw e;
 		}
 	}
+        
+        /**
+	 * A convenience method to suppress a deletion exception if the name does 
+	 * not exist. If name does not exist this method will 
+         * return {@link ResponseCode#NONEXISTENT_NAME_EXCEPTION} unless noErrorIfNotExists
+         * is true in which case it will return {@link ResponseCode#NO_ERROR}.
+	 * 
+         * @param name
+         * @param noErrorIfNotExists
+	 * @return Response code
+	 * @throws ClientException
+	 */
+        public ResponseCode deleteOrNotExists(String name, boolean noErrorIfNotExists)
+			throws ClientException {
+		try {
+			return this.sendRequest(new DeleteServiceName(name));
+		} catch (ClientException e) {
+			if (e.getCode().equals(ResponseCode.NONEXISTENT_NAME_EXCEPTION)) {
+                          if (noErrorIfNotExists) {
+                            return ResponseCode.NO_ERROR;
+                          } else {
+                            return e.getCode();
+                          }
+                        }
+			throw e;
+		}
+	}
 
 	/**
 	 * Overrides corresponding {@link GNSClient} method with a finite timeout.

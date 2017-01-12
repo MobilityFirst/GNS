@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
@@ -68,6 +67,13 @@ public class NSGroupAccess {
    */
   public static final String GROUP_QUERY_STRING = InternalField.makeInternalFieldString("groupQueryString");
 
+  /**
+   * The default interval (in seconds) before which a query will not be refreshed. In other words
+   * if you wait this interval you will get the latest from the database, otherwise you will get the
+   * cached value.
+   */
+  public static final int DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT = 60; //seconds
+  
   /**
    * Return the members of a the group guid.
    *
@@ -215,7 +221,7 @@ public class NSGroupAccess {
     if (!result.equals(-1)) {
       return result.intValue();
     } else {
-      return ClientAsynchBase.DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT;
+      return DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT;
     }
   }
 
