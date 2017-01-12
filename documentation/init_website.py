@@ -16,6 +16,9 @@ website_path = "website"
 
 
 cwd = sys.path[0]
+
+call("cp scripts/wiki/*.json  "+ cwd + os.sep + website_path + os.sep + "_data" , shell=True)
+
 for module in modules:
 	modulepath_src = cwd + os.sep + module
 	modulepath_dest = cwd + os.sep + website_path + os.sep + module

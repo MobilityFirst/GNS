@@ -824,7 +824,7 @@ integration tests sequentially"
       <classpath refid="classpath.base"/>
     </java>
     <exec executable="python" failonerror="true">
-    <arg line="scripts/wiki/wikisamples.py" />
+    <arg line="documentation/init_website.py" />
     </exec>
   </target>
 
