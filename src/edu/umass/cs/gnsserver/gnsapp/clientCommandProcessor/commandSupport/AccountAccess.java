@@ -997,19 +997,13 @@ public class AccountAccess {
    *
    * @param header
    * @param commandPacket
-   *
    * @param accountInfo
    * @param handler
    * @return status result
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws java.io.IOException
-   * @throws org.json.JSONException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
    */
   public static CommandResponse removeAccount(InternalRequestHeader header,
           CommandPacket commandPacket,
-          AccountInfo accountInfo, ClientRequestHandlerInterface handler)
-          throws ClientException, IOException, JSONException, InternalRequestException {
+          AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
     // Step 1 - remove any group links
     ResponseCode removedGroupLinksResponseCode;
     try {
@@ -1022,8 +1016,13 @@ public class AccountAccess {
     // Step 2 - delete all the aliases records for this account
     ResponseCode deleteAliasesResponseCode = ResponseCode.NO_ERROR;
     for (String alias : accountInfo.getAliases()) {
-      if (handler.getRemoteQuery().deleteRecordSuppressExceptions(
-              alias).isExceptionOrError()) {
+      ResponseCode responseCode;
+      try {
+        responseCode = handler.getRemoteQuery().deleteRecordSuppressExceptions(alias);
+      } catch (ClientException e) {
+        responseCode = e.getCode();
+      }
+      if (responseCode.isExceptionOrError()) {
         deleteAliasesResponseCode = ResponseCode.UPDATE_ERROR;
       }
     }
@@ -1053,10 +1052,10 @@ public class AccountAccess {
       return new CommandResponse(ResponseCode.UPDATE_ERROR,
               GNSProtocol.BAD_RESPONSE.toString()
               + " "
-              + (removedGroupLinksResponseCode.isOKResult() ? "; removed group links" : "")
-              + (deleteAliasesResponseCode.isOKResult() ? "; removed aliases" : "")
-              + (deleteSubGuidsResponseCode.isOKResult() ? "; removed aliases" : "")
-              + (deleteNameResponseCode.isOKResult() ? "; deleted " + accountInfo.getName() : "")
+              + (removedGroupLinksResponseCode.isOKResult() ? "" : "; failed to remove links")
+              + (deleteAliasesResponseCode.isOKResult() ? "" : "; failed to remove aliases")
+              + (deleteSubGuidsResponseCode.isOKResult() ? "" : "; failed to remove subguids")
+              + (deleteNameResponseCode.isOKResult() ? "" : "failed to delete " + accountInfo.getName())
       );
     } else {
       // Step 4 - If all the above stuff worked we delete the account guid record
@@ -1500,17 +1499,12 @@ public class AccountAccess {
    * @param accountInfo
    * @param guid
    * @param handler
-   * @return status result
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws java.io.IOException
-   * @throws org.json.JSONException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
+   * @return a command response
    */
   public static CommandResponse removeGuid(InternalRequestHeader header,
           CommandPacket commandPacket,
           GuidInfo guid, AccountInfo accountInfo,
-          ClientRequestHandlerInterface handler) throws ClientException,
-          IOException, JSONException, InternalRequestException {
+          ClientRequestHandlerInterface handler) {
     return removeGuidInternal(header, commandPacket, guid, accountInfo, false, handler);
   }
 
@@ -1606,10 +1600,10 @@ public class AccountAccess {
       return new CommandResponse(ResponseCode.UPDATE_ERROR,
               GNSProtocol.BAD_RESPONSE.toString()
               + " "
-              + (removedGroupLinksResponseCode.isOKResult() ? "; removed group links" : "")
+              + (removedGroupLinksResponseCode.isOKResult() ? "" : "; failed to remove group links")
               + (accountInfoResponseCode.isOKResult() ? "" : "; failed to update account info "
                       + accountInfo.getGuid())
-              + (deleteNameResponseCode.isOKResult() ? "; deleted " + guidInfo.getName() : "")
+              + (deleteNameResponseCode.isOKResult() ? "" : "; failed to delete " + guidInfo.getName())
       );
     } else {
       // Step 4 - If all the above stuff worked we delete the guid record
