@@ -851,7 +851,7 @@ public class AccountAccess {
         String boundHRN = null;
         assert (returnCode != null);
         if (!returnCode.isExceptionOrError()
-                || name.equals(boundHRN = GUIDmatchingHRNExists(header, handler, returnCode,
+                || name.equals(boundHRN=GUIDMatchingHRNExists(header, handler, returnCode,
                         name, guid))) // all good if here
         {
           return CommandResponse.noError();
@@ -938,23 +938,22 @@ public class AccountAccess {
     return remoteRead;
   }
 
-  private static String GUIDmatchingHRNExists(InternalRequestHeader header,
+  private static String GUIDMatchingHRNExists(InternalRequestHeader header,
           ClientRequestHandlerInterface handler, ResponseCode code,
           String name, String guid) throws ClientException, JSONException {
     Object value = null;
     try {
-      if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
-        if (name.equals(value
-                = // handler.getRemoteQuery().fieldRead(guid,GNSProtocol.NAME.toString())
-                handler.getInternalClient()
-                .execute(
-                        GNSCommandInternal.fieldRead(guid, GUID_INFO,
-                                header))
-                .getResultMap()
-                .get(InternalField
-                        .makeInternalFieldString(GNSProtocol.NAME
-                                .toString())))) {
-        }
+			if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) {
+				if (name.equals(value =
+				// handler.getRemoteQuery().fieldRead(guid,GNSProtocol.NAME.toString())
+				handler.getInternalClient()
+						.execute(
+								GNSCommandInternal.fieldRead(guid, GUID_INFO,
+										header))
+						.getResultMap()
+						.get(GNSProtocol.NAME
+										.toString()))) {
+				}
       }
     } catch (IOException | InternalRequestException e) {
       throw new ClientException(ResponseCode.UNSPECIFIED_ERROR,
@@ -1272,7 +1271,7 @@ public class AccountAccess {
       assert (guidCode != null);
       String boundHRN = null;
       if (guidCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
-              && !name.equals(boundHRN = GUIDmatchingHRNExists(header, handler,
+              && !name.equals(boundHRN = GUIDMatchingHRNExists(header, handler,
                       guidCode, name, guid))) // rollback name creation
       {
         return rollback(
