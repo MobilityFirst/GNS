@@ -49,7 +49,7 @@ public class ActiveCodeTest {
    *
    */
   @Test
-  public void test_000_ActiveCodeCreateGuids() {
+  public void test_000_ActiveCodeCheckForEnabled() {
     Assert.assertFalse("Active code is disabled!!", 
             Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE));
   }
