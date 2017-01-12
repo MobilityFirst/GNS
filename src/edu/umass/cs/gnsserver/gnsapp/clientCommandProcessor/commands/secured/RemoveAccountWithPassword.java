@@ -81,19 +81,14 @@ public class RemoveAccountWithPassword extends AbstractCommand {
     if (guid == null) {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + name);
     }
-    try {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
-      if (accountInfo == null) {
-        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
-      }
-      if (!password.equals(accountInfo.getPassword())) {
-        return new CommandResponse(ResponseCode.ACCESS_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.ACCESS_DENIED.toString());
-      } else {
-        return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
-      }
-    } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
-              + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
+    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
+    if (accountInfo == null) {
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
+    }
+    if (!password.equals(accountInfo.getPassword())) {
+      return new CommandResponse(ResponseCode.ACCESS_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.ACCESS_DENIED.toString());
+    } else {
+      return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
     }
   }
 

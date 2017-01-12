@@ -86,20 +86,16 @@ public class RemoveAccount extends AbstractCommand {
     if ((guidInfo = AccountAccess.lookupGuidInfoAnywhere(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
-    try {
-      if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-        // Fixme: verify that we might need to look remotely for this.
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
-        if (accountInfo != null) {
-          return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
-        } else {
-          return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
-        }
+    if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
+      // Fixme: verify that we might need to look remotely for this.
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
+      if (accountInfo != null) {
+        return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
       } else {
-        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
+        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
       }
-    } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
+    } else {
+      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
   }
 

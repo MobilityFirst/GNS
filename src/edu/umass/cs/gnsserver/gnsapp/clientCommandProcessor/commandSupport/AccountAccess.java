@@ -418,16 +418,17 @@ public class AccountAccess {
     if (allowRemoteLookup) {
       GNSConfig.getLogger().log(Level.FINE,
               "LOOKING REMOTELY for GUID_INFO for {0}", guid);
-		String value = null; Object obj = null;
-		try {
-			//value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
-			value = (obj = handler
-					.getInternalClient()
-					.execute(
-							GNSCommandInternal.fieldRead(guid, GUID_INFO,
-									header)).getResultMap().get(GUID_INFO)) != null ? obj
-					.toString() : value;      
-					} catch (IOException | JSONException | ClientException | InternalRequestException e) {
+      String value = null;
+      Object obj = null;
+      try {
+        //value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
+        value = (obj = handler
+                .getInternalClient()
+                .execute(
+                        GNSCommandInternal.fieldRead(guid, GUID_INFO,
+                                header)).getResultMap().get(GUID_INFO)) != null ? obj
+                .toString() : value;
+      } catch (IOException | JSONException | ClientException | InternalRequestException e) {
         GNSConfig
                 .getLogger()
                 .log(Level.SEVERE,
@@ -625,7 +626,7 @@ public class AccountAccess {
         accountInfo.setVerificationCode(code);
         accountInfo.noteUpdate();
         if (updateAccountInfoLocallyNoAuthentication(header, commandPacket, accountInfo,
-                handler)) {
+                handler).isOKResult()) {
           return new CommandResponse(ResponseCode.NO_ERROR,
                   GNSProtocol.OK_RESPONSE.toString());
         } else {
@@ -704,11 +705,10 @@ public class AccountAccess {
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
-    if (updateAccountInfoLocallyNoAuthentication(header, commandPacket, accountInfo, handler)) {
+    if (updateAccountInfoLocallyNoAuthentication(header, commandPacket, accountInfo, handler).isOKResult()) {
       return new CommandResponse(ResponseCode.NO_ERROR,
               GNSProtocol.OK_RESPONSE.toString() + " "
               + "Your account has been verified."); // add a
-      // little something for the kids
     } else {
       return new CommandResponse(ResponseCode.UPDATE_ERROR,
               GNSProtocol.BAD_RESPONSE.toString() + " "
@@ -854,7 +854,7 @@ public class AccountAccess {
                 handler.getInternalClient().createOrExists(
                         new CreateServiceName(guid, json.toString()));
 
-        String boundHRN=null;
+        String boundHRN = null;
         assert (returnCode != null);
         if (!returnCode.isExceptionOrError()
                 || name.equals(boundHRN=GUIDMatchingHRNExists(header, handler, returnCode,
@@ -865,15 +865,15 @@ public class AccountAccess {
 
         if (returnCode.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)) // try to delete the record we added above
         {
-        	return rollback(
-        			handler,
-        			ResponseCode.CONFLICTING_GUID_EXCEPTION
-        			.setMessage(" Existing GUID "
-        					+ guid
-        					+ " has HRN "
-        					+ boundHRN
-        					+ " and can not be associated with the HRN "
-        					+ name), name, guid);
+          return rollback(
+                  handler,
+                  ResponseCode.CONFLICTING_GUID_EXCEPTION
+                  .setMessage(" Existing GUID "
+                          + guid
+                          + " has HRN "
+                          + boundHRN
+                          + " and can not be associated with the HRN "
+                          + name), name, guid);
         }
       } else if (returnCode.equals(ResponseCode.DUPLICATE_FIELD_EXCEPTION) && !guid.equals(boundGUID)) {
         return new CommandResponse(
@@ -998,6 +998,92 @@ public class AccountAccess {
    *
    * @param header
    * @param commandPacket
+   * @param accountInfo
+   * @param handler
+   * @return status result
+   */
+  public static CommandResponse removeAccount(InternalRequestHeader header,
+          CommandPacket commandPacket,
+          AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
+    // Step 1 - remove any group links
+    ResponseCode removedGroupLinksResponseCode;
+    try {
+      removedGroupLinksResponseCode = GroupAccess.removeGuidFromGroups(header, commandPacket, accountInfo.getGuid(), handler);
+    } catch (ClientException e) {
+      removedGroupLinksResponseCode = e.getCode();
+    } catch (IOException | InternalRequestException | JSONException e) {
+      removedGroupLinksResponseCode = ResponseCode.UPDATE_ERROR;
+    }
+    // Step 2 - delete all the aliases records for this account
+    ResponseCode deleteAliasesResponseCode = ResponseCode.NO_ERROR;
+    for (String alias : accountInfo.getAliases()) {
+      ResponseCode responseCode;
+      try {
+        responseCode = handler.getRemoteQuery().deleteRecordSuppressExceptions(alias);
+      } catch (ClientException e) {
+        responseCode = e.getCode();
+      }
+      if (responseCode.isExceptionOrError()) {
+        deleteAliasesResponseCode = ResponseCode.UPDATE_ERROR;
+      }
+    }
+    // Step 3 - delete all the subGuids
+    ResponseCode deleteSubGuidsResponseCode = ResponseCode.NO_ERROR;
+    for (String subguid : accountInfo.getGuids()) {
+      GuidInfo subGuidInfo = lookupGuidInfoAnywhere(header, subguid, handler);
+      if (subGuidInfo != null && removeGuidInternal(header, commandPacket, subGuidInfo, accountInfo, true,
+              handler).getExceptionOrErrorCode().isExceptionOrError()) {
+        deleteSubGuidsResponseCode = ResponseCode.UPDATE_ERROR;
+      }
+    }
+    // Step 4 - delete the HRN record
+    ResponseCode deleteNameResponseCode;
+    try {
+      deleteNameResponseCode = handler.getRemoteQuery().deleteRecordSuppressExceptions(accountInfo.getName());
+    } catch (ClientException e) {
+      deleteNameResponseCode = e.getCode();
+    }
+
+    if ((removedGroupLinksResponseCode.isExceptionOrError()
+            || deleteAliasesResponseCode.isExceptionOrError())
+            || deleteSubGuidsResponseCode.isExceptionOrError()
+            || deleteNameResponseCode.isExceptionOrError()) {
+
+      // Don't really care who caused the error, other than for debugging.
+      return new CommandResponse(ResponseCode.UPDATE_ERROR,
+              GNSProtocol.BAD_RESPONSE.toString()
+              + " "
+              + (removedGroupLinksResponseCode.isOKResult() ? "" : "; failed to remove links")
+              + (deleteAliasesResponseCode.isOKResult() ? "" : "; failed to remove aliases")
+              + (deleteSubGuidsResponseCode.isOKResult() ? "" : "; failed to remove subguids")
+              + (deleteNameResponseCode.isOKResult() ? "" : "failed to delete " + accountInfo.getName())
+      );
+    } else {
+      // Step 4 - If all the above stuff worked we delete the account guid record
+      ResponseCode deleteGuidResponseCode;
+      try {
+        deleteGuidResponseCode = handler.getRemoteQuery().deleteRecordSuppressExceptions(accountInfo.getGuid());
+      } catch (ClientException e) {
+        return new CommandResponse(e.getCode(),
+                GNSProtocol.BAD_RESPONSE.toString()
+                + " Failed to delete " + accountInfo.getGuid());
+      }
+      if (deleteGuidResponseCode.isOKResult()) {
+        return new CommandResponse(ResponseCode.NO_ERROR,
+                GNSProtocol.OK_RESPONSE.toString());
+      } else {
+        return new CommandResponse(deleteGuidResponseCode,
+                GNSProtocol.BAD_RESPONSE.toString()
+                + " Failed to delete " + accountInfo.getGuid());
+      }
+    }
+  }
+
+  /**
+   * Removes a GNS user account.
+   *
+   * @param header
+   * @param commandPacket
    *
    * @param accountInfo
    * @param handler
@@ -1007,7 +1093,7 @@ public class AccountAccess {
    * @throws org.json.JSONException
    * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
    */
-  public static CommandResponse removeAccount(InternalRequestHeader header,
+  private static CommandResponse removeAccountOld(InternalRequestHeader header,
           CommandPacket commandPacket,
           AccountInfo accountInfo, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException, InternalRequestException {
@@ -1036,7 +1122,7 @@ public class AccountAccess {
                   handler);
           if (subGuidInfo != null) { // should not be null, ignore if
             // it is
-            removeGuid(header, commandPacket, subGuidInfo, accountInfo, true,
+            removeGuidInternal(header, commandPacket, subGuidInfo, accountInfo, true,
                     handler);
           }
         }
@@ -1178,9 +1264,7 @@ public class AccountAccess {
               Arrays.asList(accountGuidInfo.getPublicKey()));
       // prefix is the same for all acls so just pick one to use here
       jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
-      /* arun: You were not checking the response code below at all, which
-			 * was a bug. The addGuid needs to be rolled back if the second step
-			 * fails. */
+      // The addGuid needs to be rolled back if the second step fails.
       ResponseCode guidCode;
       // guidCode = handler.getRemoteQuery().createRecord(guid, jsonGuid);
       guidCode = handler.getInternalClient().createOrExists(
@@ -1192,15 +1276,15 @@ public class AccountAccess {
               && !name.equals(boundHRN = GUIDMatchingHRNExists(header, handler,
                       guidCode, name, guid))) // rollback name creation
       {
-    	  return rollback(
-    			  handler,
-    			  ResponseCode.CONFLICTING_GUID_EXCEPTION
-    			  .setMessage(": Existing GUID "
-    					  + guid
-    					  + " is associated with "
-    					  + boundHRN
-    					  + " and can not be associated with the HRN "
-    					  + name), name, guid);
+        return rollback(
+                handler,
+                ResponseCode.CONFLICTING_GUID_EXCEPTION
+                .setMessage(": Existing GUID "
+                        + guid
+                        + " is associated with "
+                        + boundHRN
+                        + " and can not be associated with the HRN "
+                        + name), name, guid);
       }
 
       // redundant to check with GNSClientInternal
@@ -1214,12 +1298,12 @@ public class AccountAccess {
 
       // else all good, continue
       assert (!guidCode.isExceptionOrError() || name.equals(boundHRN)) : "code="
-      + guidCode
-      + "; boundHRN="
-      + boundHRN
-      + "; name="
-      + name
-      + "; for GUID=" + guid;
+              + guidCode
+              + "; boundHRN="
+              + boundHRN
+              + "; name="
+              + name
+              + "; for GUID=" + guid;
 
       createdGUID = true;
 
@@ -1318,15 +1402,11 @@ public class AccountAccess {
       for (String key : hrnMap.keySet()) {
         nameStates.put(key, hrnMap.get(key).toString());
       }
-      if (!(returnCode
-              = //					handler.getRemoteQuery().createRecordBatch(new HashSet<>(names), hrnMap, handler))
-              handler.getInternalClient().createOrExists(new CreateServiceName(null, nameStates)))
+      if (!(returnCode = handler.getInternalClient().createOrExists(new CreateServiceName(null, nameStates)))
               .isExceptionOrError()) {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(header, commandPacket, accountInfo,
-                handler, true)) {
-//					handler.getRemoteQuery().createRecordBatch(guids,guidInfoMap, handler);
-
+                handler, true).isOKResult()) {
           HashMap<String, String> guidInfoNameStates = new HashMap<>();
           for (String key : guidInfoMap.keySet()) {
             guidInfoNameStates.put(key, guidInfoMap.get(key).toString());
@@ -1411,47 +1491,140 @@ public class AccountAccess {
   }
 
   /**
-   * Remove a GUID. Guid should not be an account GUID.
+   * Remove a GUID. If accountInfo is not null it should be the
+   * account guid associated with this guid. It can be null in which case
+   * we will look it up.
    *
    * @param header
    * @param commandPacket
-   *
-   * @param guid
-   * @param handler
-   * @return the command response
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws java.io.IOException
-   * @throws org.json.JSONException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
-   */
-  public static CommandResponse removeGuid(InternalRequestHeader header,
-          CommandPacket commandPacket,
-          GuidInfo guid, ClientRequestHandlerInterface handler)
-          throws ClientException, IOException, JSONException, InternalRequestException {
-    return removeGuid(header, commandPacket, guid, null, false, handler);
-  }
-
-  /**
-   * Remove a GUID associated with an account.
-   *
-   * @param header
-   * @param commandPacket
-   *
    * @param accountInfo
    * @param guid
    * @param handler
-   * @return status result
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws java.io.IOException
-   * @throws org.json.JSONException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
+   * @return a command response
    */
   public static CommandResponse removeGuid(InternalRequestHeader header,
           CommandPacket commandPacket,
           GuidInfo guid, AccountInfo accountInfo,
-          ClientRequestHandlerInterface handler) throws ClientException,
-          IOException, JSONException, InternalRequestException {
-    return removeGuid(header, commandPacket, guid, accountInfo, false, handler);
+          ClientRequestHandlerInterface handler) {
+    return removeGuidInternal(header, commandPacket, guid, accountInfo, false, handler);
+  }
+
+  /**
+   * Remove a guid. If ignoreAccountGuid is true we're deleting
+   * the account guid as well so we don't have to check or
+   * update that info.
+   * The accountInfo parameter can be null in which case we
+   * look it up.
+   *
+   * @param header
+   * @param commandPacket
+   * @param guidInfo
+   * @param accountInfo - can be null in which case we look it up
+   * @param ignoreAccountGuid
+   * @param handler
+   * @return the command response
+   */
+  // This can be called from the context of an account guid deleting one if it's
+  // subguids or a guid deleting itself. The difference being who signs the command,
+  // but that's outside of this function
+  private static CommandResponse removeGuidInternal(InternalRequestHeader header,
+          CommandPacket commandPacket,
+          GuidInfo guidInfo, AccountInfo accountInfo,
+          boolean ignoreAccountGuid, ClientRequestHandlerInterface handler) {
+    GNSConfig.getLogger().log(Level.FINE,
+            "REMOVE: GUID INFO: {0} ACCOUNT INFO: {1}",
+            new Object[]{guidInfo, accountInfo});
+    // First make sure guid is not an account GUID
+    // (unless we're sure it's not because we're deleting an account guid)
+    if (!ignoreAccountGuid) {
+      if (lookupAccountInfoFromGuidAnywhere(header, guidInfo.getGuid(), handler) != null) {
+        return new CommandResponse(ResponseCode.BAD_GUID_ERROR,
+                GNSProtocol.BAD_RESPONSE.toString() + " "
+                + GNSProtocol.BAD_GUID.toString() + " "
+                + guidInfo.getGuid() + " is an account guid");
+      }
+    }
+    // Fill in a missing account info
+    if (accountInfo == null) {
+      String accountGuid = AccountAccess.lookupPrimaryGuid(header,
+              guidInfo.getGuid(), handler, true);
+      // should not happen unless records got messed up in GNS
+      if (accountGuid == null) {
+        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
+                GNSProtocol.BAD_RESPONSE.toString() + " "
+                + GNSProtocol.BAD_ACCOUNT.toString() + " "
+                + guidInfo.getGuid()
+                + " does not have a primary account guid");
+      }
+      if ((accountInfo = lookupAccountInfoFromGuidAnywhere(header, accountGuid,
+              handler)) == null) {
+        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
+                GNSProtocol.BAD_RESPONSE.toString() + " "
+                + GNSProtocol.BAD_ACCOUNT.toString() + " "
+                + guidInfo.getGuid()
+                + " cannot find primary account guid for "
+                + accountGuid);
+      }
+    }
+
+    // Step 1 - remove any group links
+    ResponseCode removedGroupLinksResponseCode;
+    try {
+      removedGroupLinksResponseCode = GroupAccess.removeGuidFromGroups(header, commandPacket, guidInfo.getGuid(), handler);
+    } catch (IOException | InternalRequestException | JSONException e) {
+      removedGroupLinksResponseCode = ResponseCode.UPDATE_ERROR;
+    } catch (ClientException e) {
+      removedGroupLinksResponseCode = e.getCode();
+    }
+    // Step 2 - update the account info record unless this is part of an account guid delete
+    ResponseCode accountInfoResponseCode;
+    if (!ignoreAccountGuid) {
+      accountInfo.removeGuid(guidInfo.getGuid());
+      accountInfo.noteUpdate();
+      accountInfoResponseCode = updateAccountInfoNoAuthentication(header, commandPacket,
+              accountInfo,
+              handler, true);
+    } else {
+      accountInfoResponseCode = ResponseCode.NO_ERROR;
+    }
+    // Step 3 - delete the HRN record
+    ResponseCode deleteNameResponseCode;
+    try {
+      deleteNameResponseCode = handler.getRemoteQuery().deleteRecordSuppressExceptions(guidInfo.getName());
+    } catch (ClientException e) {
+      deleteNameResponseCode = e.getCode();
+    }
+    if ((removedGroupLinksResponseCode.isExceptionOrError()
+            || accountInfoResponseCode.isExceptionOrError())
+            || deleteNameResponseCode.isExceptionOrError()) {
+      // Don't really care who caused the error, other than for debugging.
+      return new CommandResponse(ResponseCode.UPDATE_ERROR,
+              GNSProtocol.BAD_RESPONSE.toString()
+              + " "
+              + (removedGroupLinksResponseCode.isOKResult() ? "" : "; failed to remove group links")
+              + (accountInfoResponseCode.isOKResult() ? "" : "; failed to update account info "
+                      + accountInfo.getGuid())
+              + (deleteNameResponseCode.isOKResult() ? "" : "; failed to delete " + guidInfo.getName())
+      );
+    } else {
+      // Step 4 - If all the above stuff worked we delete the guid record
+      ResponseCode deleteGuidResponseCode;
+      try {
+        deleteGuidResponseCode = handler.getRemoteQuery().deleteRecordSuppressExceptions(guidInfo.getGuid());
+      } catch (ClientException e) {
+        return new CommandResponse(e.getCode(),
+                GNSProtocol.BAD_RESPONSE.toString()
+                + " Failed to delete " + guidInfo.getGuid());
+      }
+      if (deleteGuidResponseCode.isOKResult()) {
+        return new CommandResponse(ResponseCode.NO_ERROR,
+                GNSProtocol.OK_RESPONSE.toString());
+      } else {
+        return new CommandResponse(deleteGuidResponseCode,
+                GNSProtocol.BAD_RESPONSE.toString()
+                + " Failed to delete " + guidInfo.getGuid());
+      }
+    }
   }
 
   /**
@@ -1462,10 +1635,8 @@ public class AccountAccess {
    *
    * @param header
    * @param commandPacket
-   *
    * @param guidInfo
-   * @param accountInfo
-   * - can be null in which case we look it up
+   * @param accountInfo - can be null in which case we look it up
    * @param ignoreAccountGuid
    * @param handler
    * @return the command response
@@ -1474,7 +1645,7 @@ public class AccountAccess {
    * @throws org.json.JSONException
    * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
    */
-  public static CommandResponse removeGuid(InternalRequestHeader header,
+  private static CommandResponse removeGuidInternalOld(InternalRequestHeader header,
           CommandPacket commandPacket,
           GuidInfo guidInfo, AccountInfo accountInfo,
           boolean ignoreAccountGuid, ClientRequestHandlerInterface handler)
@@ -1539,7 +1710,7 @@ public class AccountAccess {
           accountInfo.noteUpdate();
           if (updateAccountInfoNoAuthentication(header, commandPacket,
                   accountInfo,
-                  handler, true)) {
+                  handler, true).isOKResult()) {
             return new CommandResponse(ResponseCode.NO_ERROR,
                     GNSProtocol.OK_RESPONSE.toString());
           } else {
@@ -1569,6 +1740,7 @@ public class AccountAccess {
                       : "") + "; failed to update account info "
               + accountInfo.getGuid());
     }
+
   }
 
   /**
@@ -1777,7 +1949,7 @@ public class AccountAccess {
     }
   }
 
-  private static boolean updateAccountInfoLocallyNoAuthentication(
+  private static ResponseCode updateAccountInfoLocallyNoAuthentication(
           InternalRequestHeader header, CommandPacket commandPacket,
           AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
     return updateAccountInfoNoAuthentication(header, commandPacket,
@@ -1785,15 +1957,15 @@ public class AccountAccess {
             false);
   }
 
-  private static boolean updateAccountInfoNoAuthentication(
+  private static ResponseCode updateAccountInfoNoAuthentication(
           InternalRequestHeader header, CommandPacket commandPacket,
           AccountInfo accountInfo,
           ClientRequestHandlerInterface handler, boolean remoteUpdate) {
-    return !updateAccountInfo(header, commandPacket, accountInfo.getGuid(), accountInfo,
+    return updateAccountInfo(header, commandPacket, accountInfo.getGuid(), accountInfo,
             GNSProtocol.INTERNAL_QUERIER.toString(),
             //				GNSConfig.getInternalOpSecret(),
             null, null, null, handler,
-            remoteUpdate).isExceptionOrError();
+            remoteUpdate);
   }
 
   private static ResponseCode updateGuidInfo(InternalRequestHeader header,
