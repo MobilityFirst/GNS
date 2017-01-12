@@ -55,7 +55,6 @@ import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
-import static edu.umass.cs.aws.support.AWSEC2.DEFAULTSECONDMOUNTPOINT;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.aws.networktools.ExecuteBash;
@@ -83,6 +82,7 @@ import java.util.Set;
  * @author westy
  */
 public class AWSEC2 {
+
   /*
    *            AwsCredentials.properties file before you try to run this
    *            sample.
@@ -92,8 +92,6 @@ public class AWSEC2 {
   /**
    *
    */
-
-
   public static final String DEFAULT_SECURITY_GROUP_NAME = "aws";
 
   private static String currentTab = "";
@@ -411,24 +409,25 @@ public class AWSEC2 {
 
   private static String readPublicKeyMaterial(File file) {
     try {
-      InputStream in = new FileInputStream(file);
-      byte[] b = new byte[(int) file.length()];
-      int len = b.length;
-      int total = 0;
-
-      while (total < len) {
-        int result = in.read(b, total, len - total);
-        if (result == -1) {
-          break;
+      byte[] b;
+      try (InputStream in = new FileInputStream(file)) {
+        b = new byte[(int) file.length()];
+        int len = b.length;
+        int total = 0;
+        while (total < len) {
+          int result = in.read(b, total, len - total);
+          if (result == -1) {
+            break;
+          }
+          total += result;
         }
-        total += result;
       }
-
       return new String(b, "UTF-8");
     } catch (IOException e) {
       System.out.println("Problem reading key material: " + e);
       e.printStackTrace();
     }
+
     return null;
     // JAVA7 return new String(Files.readAllBytes(FileSystems.getDefault().getPath(filename)));
   }
@@ -871,7 +870,7 @@ public class AWSEC2 {
    */
   public static void main(String[] args) throws Exception {
     AWSCredentials credentials = new PropertiesCredentials(
-            AWSEC2.class.getResourceAsStream(System.getProperty("user.home") 
+            AWSEC2.class.getResourceAsStream(System.getProperty("user.home")
                     + FILESEPARATOR + ".aws" + FILESEPARATOR + "credentials"));
     //Create Amazon Client object
     AmazonEC2 ec2 = new AmazonEC2Client(credentials);
