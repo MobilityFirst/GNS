@@ -153,7 +153,7 @@ public class GroupAccess {
    *
    * @param header
    * @param commandPacket
-   * @param guid
+   * @param groupGuid
    * @param memberGuid
    * @param writer
    * @param signature
@@ -167,17 +167,17 @@ public class GroupAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
    */
   public static ResponseCode removeFromGroup(InternalRequestHeader header, CommandPacket commandPacket,
-          String guid, String memberGuid, String writer,
+          String groupGuid, String memberGuid, String writer,
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException, InternalRequestException {
 
     boolean membersUpdateOK = GNSProtocol.OK_RESPONSE.toString().equals(
-            handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(guid,
+            handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(groupGuid,
                     GroupAccess.GROUP, memberGuid, header)).getResultString());
     boolean groupsUpdateOK = GNSProtocol.OK_RESPONSE.toString().equals(
             handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid,
-                    GroupAccess.GROUPS, guid, header)).getResultString());
+                    GroupAccess.GROUPS, groupGuid, header)).getResultString());
     if (membersUpdateOK && groupsUpdateOK) {
       return ResponseCode.NO_ERROR;
     } else {
@@ -373,11 +373,11 @@ public class GroupAccess {
   }
 
   /**
-   * Removes all group links when we're deleting a guid.
+   * Removes all group links from a buid to groups and back to the guid from the groups
+   * when we're deleting a guid.
    *
    * @param header
    * @param commandPacket
-   *
    * @param guid
    * @param handler
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
@@ -390,7 +390,7 @@ public class GroupAccess {
           throws ClientException, IOException, JSONException,
           InternalRequestException {
 
-    LOGGER.log(Level.FINE, "DELETE CLEANUP: {0}", guid);
+    LOGGER.log(Level.FINE, "OLD DELETE CLEANUP: {0}", guid);
     try {
       // We're ignoring signatures and authentication
       for (String groupGuid : GroupAccess.lookupGroupsAnywhere(header, commandPacket, guid,
@@ -398,7 +398,7 @@ public class GroupAccess {
               //GNSConfig.getInternalOpSecret(),
               null, null,
               null, handler, true).toStringSet()) {
-        LOGGER.log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
+        LOGGER.log(Level.FINE, "OLD GROUP CLEANUP: {0}", groupGuid);
         removeFromGroup(header, commandPacket, groupGuid, guid,
                 GNSProtocol.INTERNAL_QUERIER.toString(),
                 //GNSConfig.getInternalOpSecret(),
@@ -407,6 +407,50 @@ public class GroupAccess {
       }
     } catch (FailedDBOperationException e) {
       LOGGER.log(Level.SEVERE, "Unabled to remove guid from groups:{0}", e);
+    }
+  }
+
+  /**
+   * Removes all group links back to the guid when we're deleting a guid.
+   *
+   * @param header
+   * @param commandPacket
+   * @param memberGuid
+   * @param handler
+   * @return a ResponseCode
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
+   */
+  public static ResponseCode removeGuidFromGroups(InternalRequestHeader header, CommandPacket commandPacket,
+          String memberGuid, ClientRequestHandlerInterface handler)
+          throws ClientException, IOException, JSONException,
+          InternalRequestException {
+
+    LOGGER.log(Level.FINE, "DELETE CLEANUP: {0}", memberGuid);
+    try {
+      boolean allUpdatesOK = true;
+      // We're ignoring signatures and authentication
+      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(header, commandPacket, memberGuid,
+              GNSProtocol.INTERNAL_QUERIER.toString(),
+              null, null,
+              null, handler, true).toStringSet()) {
+        LOGGER.log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
+        if (!GNSProtocol.OK_RESPONSE.toString().equals(
+                handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid,
+                        GroupAccess.GROUPS, groupGuid, header)).getResultString())) {
+          allUpdatesOK = false;
+        }
+      }
+      if (allUpdatesOK) {
+        return ResponseCode.NO_ERROR;
+      } else {
+        return ResponseCode.UPDATE_ERROR;
+      }
+    } catch (FailedDBOperationException e) {
+      LOGGER.log(Level.SEVERE, "Unabled to remove guid from groups:{0}", e);
+      return ResponseCode.UPDATE_ERROR;
     }
   }
 
