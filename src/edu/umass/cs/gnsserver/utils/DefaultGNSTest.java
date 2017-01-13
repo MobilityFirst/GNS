@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -21,6 +22,8 @@ import edu.umass.cs.gnsclient.client.integrationtests.RunServer;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.database.MongoRecords;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
@@ -44,7 +47,9 @@ public class DefaultGNSTest extends DefaultTest {
 
 	protected static final String DEFAULT_ACCOUNT_ALIAS = "support@gns.name";
 	protected static final String DEFAULT_PASSWORD = "password";
+	protected static final String RANDOM_ACCOUNT_ALIAS_PREFIX = "accountGUID";
 
+	// static but not final
 	protected static String accountAlias = DEFAULT_ACCOUNT_ALIAS;
 	@Deprecated
 	protected static GNSClientCommands clientCommands = null;
@@ -52,6 +57,9 @@ public class DefaultGNSTest extends DefaultTest {
 	protected static GuidEntry masterGuid = null;
 
 	protected static boolean serversStarted = false;
+
+	// non-static
+	protected GuidEntry accountGUID = null;
 
 	private static final String getPath(String filename) {
 		if (new File(filename).exists()) {
@@ -161,11 +169,8 @@ public class DefaultGNSTest extends DefaultTest {
 						GNSCommand.createAccount(accountAlias))
 						.getResultString();
 				Assert.assertEquals(createdGUID,
-						GuidUtils.getGUIDKeys(accountAlias).guid);
+						(masterGuid = GuidUtils.getGUIDKeys(accountAlias)).guid);
 
-				// older code; okay to leave it hanging or to remove
-				masterGuid = GuidUtils.lookupOrCreateAccountGuid(
-						clientCommands, accountAlias, DEFAULT_PASSWORD, true);
 				accountCreated = true;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -432,5 +437,19 @@ public class DefaultGNSTest extends DefaultTest {
 		for (File f : getMatchingFiles(dir, logFile))
 			f.delete();
 		System.out.println(" ...done");
+	}
+
+	// synchronized for one-time acount GUID creation
+	protected synchronized GuidEntry createOnceAccountGUID()
+			throws ClientException, NoSuchAlgorithmException, IOException {
+		if (accountGUID != null)
+			return accountGUID;
+		String accountHRN = RANDOM_ACCOUNT_ALIAS_PREFIX
+				+ RandomString.randomString(12);
+		String createdGUID = client.execute(
+				GNSCommand.createAccount(accountHRN)).getResultString();
+		Assert.assertEquals(createdGUID,
+				(accountGUID = GuidUtils.getGUIDKeys(accountAlias)).guid);
+		return accountGUID;
 	}
 }
