@@ -42,6 +42,10 @@ public class RemoveGuidTestWithoutReadCoordinationGnsClientCommands {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
+
+  /**
+   *
+   */
   protected static GNSClientCommands client;
   private static GuidEntry masterGuid;
   private static GuidEntry guidToDeleteEntry;
@@ -89,7 +93,10 @@ public class RemoveGuidTestWithoutReadCoordinationGnsClientCommands {
     }
   }
 
-   @Test
+  /**
+   *
+   */
+  @Test
   public void test_212_GuidCreateCheck() {
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
@@ -110,6 +117,9 @@ public class RemoveGuidTestWithoutReadCoordinationGnsClientCommands {
     }
   }
   
+  /**
+   *
+   */
   @Test
   public void test_216_GroupRemoveGuidCheck() {
     try {

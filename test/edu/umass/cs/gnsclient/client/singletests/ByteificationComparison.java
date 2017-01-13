@@ -61,10 +61,10 @@ public class ByteificationComparison {
 		//json128=packet128.toJSONObject();
 		//json1024=packet1024.toJSONObject();
 		
-		Collection<String> collection1 = new ArrayList<String>();
-		Collection<String> collection2 = new ArrayList<String>();
-		Collection<String> collection3 = new ArrayList<String>();
-		Collection<Collection<String>> recursiveCollection = new ArrayList<Collection<String>>();
+		Collection<String> collection1 = new ArrayList<>();
+		Collection<String> collection2 = new ArrayList<>();
+		Collection<String> collection3 = new ArrayList<>();
+		Collection<Collection<String>> recursiveCollection = new ArrayList<>();
 		
 		for (int i = 0; i < 5; i++){
 			collection1.add(new String(Util.getRandomAlphanumericBytes(64)));

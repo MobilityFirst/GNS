@@ -18,7 +18,6 @@ package edu.umass.cs.gnsclient.client.integrationtests;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -32,7 +31,6 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
@@ -41,15 +39,12 @@ import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.utils.Base64;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -58,11 +53,8 @@ import static org.hamcrest.Matchers.*;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -76,19 +68,13 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Repeat;
-import edu.umass.cs.utils.RepeatRule;
 import edu.umass.cs.utils.Util;
 
 import java.awt.geom.Point2D;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.json.JSONException;
@@ -1020,7 +1006,6 @@ public class ServerIntegrationTest extends DefaultTest {
 	 * @throws IOException
 	 * @throws JSONException
 	 * @throws ClientException
-	 * @throws IOException
 	 */
 	public void test_135_ACLMaybeAddAllFieldsForMaster(GuidEntry westyEntry)
 			throws ClientException, JSONException, IOException {

@@ -28,7 +28,6 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import java.io.IOException;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.json.JSONException;
 
 import static org.junit.Assert.*;
 

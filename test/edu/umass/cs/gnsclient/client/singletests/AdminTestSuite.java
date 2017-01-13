@@ -150,7 +150,7 @@ public class AdminTestSuite extends DefaultTest{
    */
   @Test
   public void test_04_Dump() throws Exception {
-      String result = client.dump();
+     client.dump();
   }
   
 //  /**

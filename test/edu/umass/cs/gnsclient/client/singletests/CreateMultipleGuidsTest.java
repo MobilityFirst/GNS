@@ -21,14 +21,11 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
-import edu.umass.cs.utils.Config;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,10 +45,6 @@ public class CreateMultipleGuidsTest {
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands client;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
 
   private static final String fieldName = "_MultipleGuidsTestField_";
@@ -62,16 +55,6 @@ public class CreateMultipleGuidsTest {
    */
   public CreateMultipleGuidsTest() {
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = new InetSocketAddress("127.0.0.1", 
-                Config.getGlobalInt(GNSClientConfig.GNSCC.LOCAL_NAME_SERVER_PORT));
-      }
        try {
         client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);

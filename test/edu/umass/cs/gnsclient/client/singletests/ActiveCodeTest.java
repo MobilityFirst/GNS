@@ -34,6 +34,9 @@ public class ActiveCodeTest {
   private static final String OTHER_FIELD = "otherField";
   private static final String OTHER_RESULT = "other field succeeds";
 
+  /**
+   *
+   */
   public ActiveCodeTest() {
     if (client == null) {
       try {
@@ -119,7 +122,6 @@ public class ActiveCodeTest {
   @Test
   public void test_050_ActiveCodeSetReadCode() {
     String readcode = null;
-    String writecode = null;
     try {
       // read in the code as a string
       readcode = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/readTest.js")));

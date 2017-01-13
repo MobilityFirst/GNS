@@ -26,8 +26,6 @@ import edu.umass.cs.gnscommon.utils.RandomString;
 
 import java.io.IOException;
 
-import org.json.JSONArray;
-
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -101,9 +99,8 @@ public class WriteSizeTest {
       } catch (Exception e) {
         fail("Exception appending value onto field: " + e);
       }
-      JSONArray array = null;
       try {
-        array = client.fieldReadArray(tempEntry.getGuid(), fieldName, tempEntry);
+        client.fieldReadArray(tempEntry.getGuid(), fieldName, tempEntry);
       } catch (Exception e) {
         fail("Exception appending value onto field: " + e);
       }

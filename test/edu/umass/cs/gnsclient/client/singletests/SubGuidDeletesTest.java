@@ -4,28 +4,22 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
-import edu.umass.cs.gigapaxos.testing.TESTPaxosMain;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
-import edu.umass.cs.reconfiguration.testing.TESTReconfigurationConfig;
-import edu.umass.cs.reconfiguration.testing.TESTReconfigurationConfig.TRC;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
@@ -82,9 +76,10 @@ public class SubGuidDeletesTest extends DefaultTest {
 
 	private void setupClientsAndGuids() throws Exception {
 		clients = new GNSClientCommands[numClients];
-		for (int i = 0; i < numClients; i++)
-			clients[i] = new GNSClientCommands();
-		String gnsInstance = clients[0].getGNSProvider();
+		for (int i = 0; i < numClients; i++) {
+                  clients[i] = new GNSClientCommands();
+                }
+		String gnsInstance = GNSClientCommands.getGNSProvider();
 		accountGuidEntries = new GuidEntry[numAccountGuids];
 
 		for (int i = 0; i < numAccountGuids; i++) {

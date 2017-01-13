@@ -21,13 +21,11 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
 import java.io.IOException;
 
 import java.net.InetSocketAddress;
-import org.json.JSONObject;
 
 import static org.junit.Assert.*;
 
@@ -45,7 +43,6 @@ public class ClientLNSTest {
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands client;
-  private static GuidEntry masterGuid;
 
   /**
    *
@@ -68,7 +65,7 @@ public class ClientLNSTest {
   @Test
   public void test_01_CreateAccount() {
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+      GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
     }
@@ -85,10 +82,9 @@ public class ClientLNSTest {
     } catch (Exception e) {
       fail("Exception while looking up guid: " + e);
     }
-    JSONObject json = null;
     if (guidString != null) {
       try {
-        json = client.lookupAccountRecord(guidString);
+        client.lookupAccountRecord(guidString);
       } catch (Exception e) {
         fail("Exception while looking up account record: " + e);
       }
