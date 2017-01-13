@@ -149,7 +149,7 @@ public class ServerIntegrationTest extends DefaultTest {
             true),
     TRUSTSTORE_PASSWORD("javax.net.ssl.trustStorePassword", "qwerty"),
     LOGGING_PROPERTIES("java.util.logging.config.file",
-            "conf/logging.gns.properties"),
+            "conf/logging.gns.unittest.properties", true),
     START_SERVER("startServer", "true"),;
 
     final String key;
@@ -248,6 +248,8 @@ public class ServerIntegrationTest extends DefaultTest {
 	logProps.load(new FileInputStream(System.getProperty(DefaultProps.LOGGING_PROPERTIES.key)));
 	String logFiles = logProps.getProperty("java.util.logging.FileHandler.pattern");
 	if(logFiles!=null) logFiles = logFiles.replaceAll("%.*", "").trim() + "*";
+	new File(logFiles.replaceFirst("/[^/]*$", "")).mkdirs();
+
 	
     if (logFiles != null) {
   	  System.out.print("Deleting log files " + logFiles);
