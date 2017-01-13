@@ -20,4 +20,4 @@ List of available constants:
 {% endhighlight %}
 
 
-For example, use {% raw %} ``` {{site.data.wiki_constants.GNSSERVER_1LOCAL_PROPERTIES_FILE}}``` {% endraw %}
+For example, use {% raw %} ``` {% wikiconstant <constant-name> %}``` or ``` {% wikisample <sample-name> %}``` {% endraw %}
