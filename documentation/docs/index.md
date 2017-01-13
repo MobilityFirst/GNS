@@ -1,6 +1,3 @@
----
----
-
 ## Example title - Index page
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat delectus iure debitis ullam iusto rem ab a porro eligendi incidunt, aut consequatur voluptatum provident sunt. Cupiditate non neque deleniti mollitia.
