@@ -45,21 +45,18 @@ public class DefaultGNSTest extends DefaultTest {
 	private static final String GNS_DIR = "GNS";
 	private static final String GNS_HOME = HOME + "/" + GNS_DIR + "/";
 
-	protected static final String DEFAULT_ACCOUNT_ALIAS = "support@gns.name";
-	protected static final String DEFAULT_PASSWORD = "password";
+	protected static final String RANDOM_PASSWORD = "password"
+			+ RandomString.randomString(12);
 	protected static final String RANDOM_ACCOUNT_ALIAS_PREFIX = "accountGUID";
+	protected static final String globalAccountName = RANDOM_ACCOUNT_ALIAS_PREFIX
+			+ RandomString.randomString(12);
 
 	// static but not final
-	protected static String accountAlias = DEFAULT_ACCOUNT_ALIAS;
-	@Deprecated
-	protected static GNSClientCommands clientCommands = null;
 	protected static GNSClient client = null;
-	protected static GuidEntry masterGuid = null;
-
 	protected static boolean serversStarted = false;
 
 	// non-static
-	protected GuidEntry accountGUID = null;
+	private GuidEntry myAccountGUID = null;
 
 	private static final String getPath(String filename) {
 		if (new File(filename).exists()) {
@@ -166,10 +163,10 @@ public class DefaultGNSTest extends DefaultTest {
 				System.out.println("Creating account guid: " + (tries - 1)
 						+ " attempt remaining.");
 				String createdGUID = client.execute(
-						GNSCommand.createAccount(accountAlias))
+						GNSCommand.createAccount(globalAccountName))
 						.getResultString();
 				Assert.assertEquals(createdGUID,
-						(masterGuid = GuidUtils.getGUIDKeys(accountAlias)).guid);
+						(GuidUtils.getGUIDKeys(globalAccountName)).guid);
 
 				accountCreated = true;
 			} catch (Exception e) {
@@ -186,9 +183,6 @@ public class DefaultGNSTest extends DefaultTest {
 		System.out.println("Starting client");
 		int numRetries = 2;
 		boolean forceCoordinated = true;
-		clientCommands = (GNSClientCommands) new GNSClientCommands()
-				.setNumRetriesUponTimeout(numRetries).setForceCoordinatedReads(
-						forceCoordinated);
 		client = new GNSClient().setNumRetriesUponTimeout(numRetries)
 				.setForceCoordinatedReads(forceCoordinated)
 				.setForcedTimeout(8000);
@@ -368,8 +362,6 @@ public class DefaultGNSTest extends DefaultTest {
 	}
 
 	private static void closeClients() {
-		if (clientCommands != null)
-			clientCommands.close();
 		if (client != null)
 			client.close();
 	}
@@ -440,16 +432,22 @@ public class DefaultGNSTest extends DefaultTest {
 	}
 
 	// synchronized for one-time acount GUID creation
-	protected synchronized GuidEntry createOnceAccountGUID()
+	private synchronized GuidEntry createOnceAccountGUID()
 			throws ClientException, NoSuchAlgorithmException, IOException {
-		if (accountGUID != null)
-			return accountGUID;
+		if (myAccountGUID != null)
+			return myAccountGUID;
 		String accountHRN = RANDOM_ACCOUNT_ALIAS_PREFIX
 				+ RandomString.randomString(12);
 		String createdGUID = client.execute(
 				GNSCommand.createAccount(accountHRN)).getResultString();
 		Assert.assertEquals(createdGUID,
-				(accountGUID = GuidUtils.getGUIDKeys(accountAlias)).guid);
-		return accountGUID;
+				(myAccountGUID = GuidUtils.getGUIDKeys(accountHRN)).guid);
+		return myAccountGUID;
 	}
+
+	protected GuidEntry myAccountGUID() throws ClientException,
+			NoSuchAlgorithmException, IOException {
+		return this.createOnceAccountGUID();
+	}
+
 }
