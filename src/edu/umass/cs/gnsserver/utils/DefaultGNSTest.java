@@ -88,7 +88,14 @@ public class DefaultGNSTest extends DefaultTest {
 
 		SINGLE_JVM("singleJVM", "true"),
 
-		FORCECLEAR("forceclear", "true");
+		STOP_SERVER("stopServer", "true"),
+
+		/**
+		 * If {@link #STOP_SERVER}, whether to forceclear or just stop.
+		 */
+		FORCECLEAR("forceclear", "true"),
+
+		;
 
 		final String key;
 		final String value;
@@ -145,6 +152,7 @@ public class DefaultGNSTest extends DefaultTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws FileNotFoundException,
 			IOException, InterruptedException {
+		// both can't be true (but both can be false)
 		deleteLogFiles();
 		startServers();
 		waitTillServersReady();
@@ -246,8 +254,7 @@ public class DefaultGNSTest extends DefaultTest {
 	// synchronized to prevent multiple tests calling this at the same time.
 	private synchronized static void startServers() throws IOException {
 		// start server
-		if (System.getProperty("startServer") != null
-				&& System.getProperty("startServer").equals("true")) {
+		if ("true".equals(System.getProperty(DefaultProps.START_SERVER.key))) {
 
 			// forceclear
 			String forceClearCmd = System
@@ -326,8 +333,7 @@ public class DefaultGNSTest extends DefaultTest {
 	private static void closeServers() {
 		System.out.println("--" + RequestInstrumenter.getLog() + "--");
 
-		if (System.getProperty("startServer") != null
-				&& System.getProperty("startServer").equals("true")) {
+		if ("true".equals(System.getProperty(DefaultProps.STOP_SERVER.key))) {
 			if (singleJVM()) {
 				for (String server : PaxosConfig.getActives().keySet())
 					ReconfigurableNode.forceClear(server);
@@ -335,7 +341,7 @@ public class DefaultGNSTest extends DefaultTest {
 						.getReconfiguratorIDs())
 					ReconfigurableNode.forceClear(server);
 			} else {
-
+				// separate JVMs
 				boolean forceclear = System.getProperty(
 						DefaultProps.FORCECLEAR.key).equals("true");
 				String stopCmd = System
