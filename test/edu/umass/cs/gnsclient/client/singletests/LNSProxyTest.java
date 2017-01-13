@@ -371,7 +371,7 @@ public class LNSProxyTest extends DefaultTest {
   }
 
   // arun: this should be zero
-  private static final int COORDINATION_WAIT = 00;
+  //private static final int COORDINATION_WAIT = 00;
 
   /**
    * arun: Coordinated operations generally need some settling time before
@@ -389,13 +389,13 @@ public class LNSProxyTest extends DefaultTest {
    * pick the replica closest by distance and load otherwise.
    */
   private static void waitSettle() {
-    try {
-      if (COORDINATION_WAIT > 0) {
-        Thread.sleep(COORDINATION_WAIT);
-      }
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+//    try {
+//      if (COORDINATION_WAIT > 0) {
+//        Thread.sleep(COORDINATION_WAIT);
+//      }
+//    } catch (InterruptedException e) {
+//      e.printStackTrace();
+//    }
   }
 
   //@Test

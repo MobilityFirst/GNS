@@ -112,7 +112,7 @@ public class ServerIntegrationTest extends DefaultTest {
   private static final String GNS_DIR = "GNS";
   private static final String GNS_HOME = HOME + "/" + GNS_DIR + "/";
 
-  private static final String getPath(String filename) {
+  private static String getPath(String filename) {
     if (new File(filename).exists()) {
       return filename;
     }
@@ -226,14 +226,17 @@ public class ServerIntegrationTest extends DefaultTest {
 		 * still useful for distributed tests as there is no intentionally
 		 * support in gigapaxos' async client to detect if all servrs are up. */
     String waitString = System.getProperty("waitTillAllServersReady");
-    if (waitString != null) 
+    if (waitString != null) {
       WAIT_TILL_ALL_SERVERS_READY = Integer.parseInt(waitString);
+    }
 
     // get pattern for log files
 	Properties logProps = new Properties();
 	logProps.load(new FileInputStream(System.getProperty(DefaultProps.LOGGING_PROPERTIES.key)));
 	String logFiles = logProps.getProperty("java.util.logging.FileHandler.pattern");
-	if(logFiles!=null) logFiles = logFiles.replaceAll("%.*", "").trim() + "*";
+	if(logFiles!=null) {
+          logFiles = logFiles.replaceAll("%.*", "").trim() + "*";
+    }
 	
     if (logFiles != null) {
   	  System.out.print("Deleting log files " + logFiles);
@@ -277,16 +280,18 @@ public class ServerIntegrationTest extends DefaultTest {
       System.out.println(startServerCmd);
 
       // servers are being started here
-      if(singleJVM())
-    	  startServersSingleJVM();
-      else {
+      if(singleJVM()) {
+        startServersSingleJVM();
+      } else {
     	  ArrayList<String> output = RunServer.command(startServerCmd, ".");
 
-    	  if (output != null) 
-    		  for (String line : output) 
-    			  System.out.println(line);
-    	  else 
-    		  failWithStackTrace("Server command failure: ; aborting all tests.");
+    	  if (output != null) {
+            for (String line : output) {
+              System.out.println(line);
+            }
+              } else {
+            failWithStackTrace("Server command failure: ; aborting all tests.");
+              }
       }
     }
 
@@ -296,20 +301,21 @@ public class ServerIntegrationTest extends DefaultTest {
 	int numServersUp=0;
 	// a little sleep ensures that there is time for at least one log file to get created
 	Thread.sleep(500);
-	if(!singleJVM())
-    do {
-    	output = RunServer.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
-    	String temp = output.get(0);
-    	temp = temp.replaceAll("\\s", "");
-    	try {
-    		numServersUp = Integer.parseInt(temp);
-    	} catch(NumberFormatException e) {
-    		// can happen if no files have yet gotten created
-    		System.out.println(e);
-    	}
-    	System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
-    	Thread.sleep(1000);
-    } while (numServersUp < numServers);
+	if(!singleJVM()) {
+          do {
+            output = RunServer.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
+            String temp = output.get(0);
+            temp = temp.replaceAll("\\s", "");
+            try {
+              numServersUp = Integer.parseInt(temp);
+            } catch(NumberFormatException e) {
+              // can happen if no files have yet gotten created
+              System.out.println(e);
+            }
+            System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
+            Thread.sleep(1000);
+          } while (numServersUp < numServers);
+    }
 
     System.out.println("Starting client");
 
@@ -356,12 +362,14 @@ public class ServerIntegrationTest extends DefaultTest {
 
   }
   
-  private static final void startServersSingleJVM() throws IOException {
+  private static void startServersSingleJVM() throws IOException {
 	  // all JVM properties should be already set above
-	  for(String server : ReconfigurationConfig.getReconfiguratorIDs()) 
-		  ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
-	  for(String server : PaxosConfig.getActives().keySet()) 
-		  ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
+	  for(String server : ReconfigurationConfig.getReconfiguratorIDs()) {
+            ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
+          }
+	  for(String server : PaxosConfig.getActives().keySet()) {
+            ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
+          }
   }
 
   /**
@@ -378,10 +386,12 @@ public class ServerIntegrationTest extends DefaultTest {
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
     	if(singleJVM()) {
-    		for(String server : PaxosConfig.getActives().keySet())
-    			ReconfigurableNode.forceClear(server);
-    		for(String server: ReconfigurationConfig.getReconfiguratorIDs())
-    			ReconfigurableNode.forceClear(server);
+    		for(String server : PaxosConfig.getActives().keySet()) {
+                  ReconfigurableNode.forceClear(server);
+                    }
+    		for(String server: ReconfigurationConfig.getReconfiguratorIDs()) {
+                  ReconfigurableNode.forceClear(server);
+                    }
     	}
     	else if (useGPScript()) {
         String stopCmd = System
@@ -459,8 +469,9 @@ public class ServerIntegrationTest extends DefaultTest {
    */
 	private static void waitSettle(long wait) {
 		try {
-			if (wait > 0)
-				Thread.sleep(wait);
+			if (wait > 0) {
+                          Thread.sleep(wait);
+                        }
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -531,7 +542,7 @@ public class ServerIntegrationTest extends DefaultTest {
 			ClientException, IOException {
 		// CHECKED FOR VALIDITY
 		String testGuidName = "testGUID" + RandomString.randomString(12);
-		GuidEntry testGuid = null;
+		GuidEntry testGuid;
 
 		testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
 		clientCommands.guidRemove(masterGuid, testGuid.getGuid());
@@ -654,7 +665,7 @@ public class ServerIntegrationTest extends DefaultTest {
 			ClientException, IOException {
 		// CHECKED FOR VALIDITY
 		String testGuidName = "testGUID" + RandomString.randomString(12);
-		GuidEntry testGuid = null;
+		GuidEntry testGuid;
 		testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
 
 		Assert.assertEquals(masterGuid.getGuid(),
