@@ -23,7 +23,6 @@ import static edu.umass.cs.gnscommon.utils.NetworkUtils.getLocalHostLANAddress;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.GNSClientInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 
@@ -40,8 +39,7 @@ import java.net.UnknownHostException;
  */
 public class ClientRequestHandler implements ClientRequestHandlerInterface {
 
-	private final GNSClientInternal internalClient;
-  private final RemoteQuery remoteQuery;
+  private final GNSClientInternal internalClient;
   private final Admintercessor admintercessor;
 
   /**
@@ -83,21 +81,13 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     // a little hair to convert fred to fred-activeReplica if we just get fred
     this.activeReplicaID = gnsNodeConfig.isActiveReplica(activeReplicaID) ? activeReplicaID
             : gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
-    this.internalClient = (GNSClientInternal)new GNSClientInternal(app.toString()).setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
-    this.remoteQuery = new RemoteQuery(activeReplicaID,
-            new InetSocketAddress(gnsNodeConfig.getNodeAddress(activeReplicaID),
-                    gnsNodeConfig.getNodePort(activeReplicaID)));
+    this.internalClient = (GNSClientInternal) new GNSClientInternal(app.toString()).setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
     this.app = app;
     // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
   }
-
-  @Override
-  public RemoteQuery getRemoteQuery() {
-    return remoteQuery;
-  }
-
+  
   @Override
   public GNSNodeConfig<String> getGnsNodeConfig() {
     return gnsNodeConfig;
@@ -144,7 +134,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     // job done
     return getLocalHostLANAddress().getHostAddress() + ":" + httpServerPort;
   }
-  
+
   @Override
   public int getHttpsServerPort() {
     return httpsServerPort;
@@ -164,7 +154,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
 
   @Override
   public GNSClientInternal getInternalClient() {
-	  return this.internalClient;
+    return this.internalClient;
   }
 
 }

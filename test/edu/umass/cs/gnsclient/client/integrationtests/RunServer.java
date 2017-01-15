@@ -81,36 +81,6 @@ public class RunServer {
 		return output;
 	}
 
-	private static void spawnStream(Process process, int stream)
-			throws IOException {
-		if (!(stream == 1 || stream == 2))
-			throw new IOException("Unable to attach to stream " + stream);
-
-		timer.schedule(new TimerTask() {
-			public void run() {
-				BufferedReader br = null;
-				try {
-					br = stream == 1 ? new BufferedReader(
-							new InputStreamReader(process.getInputStream()))
-							: new BufferedReader(new InputStreamReader(process
-									.getErrorStream()));
-					String line = null;
-					while ((line = br.readLine()) != null) {
-						(stream == 1 ? System.out : System.err).println(line);
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				} finally {
-					try {
-						br.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}, 0);
-	}
-
 	/**
 	 * @param args
 	 */

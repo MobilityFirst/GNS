@@ -60,7 +60,7 @@ public class StringVersionedMap<KeyType, ValueType> {
    * @param value
    */
   public synchronized void put(KeyType keyPrefix, int version, ValueType value) {
-    this.map.put(this.combineIDVersion(keyPrefix.toString(), version), value);
+    this.map.put(StringVersionedMap.combineIDVersion(keyPrefix.toString(), version), value);
     ArrayList<Integer> versions = this.keyVersions.get(keyPrefix);
     if (versions == null) {
       versions = new ArrayList<>();
@@ -149,10 +149,12 @@ public class StringVersionedMap<KeyType, ValueType> {
     return this.map.get(key);
   }
 
-  /**
-   * ********** Standard map methods below
+  //
+  //Standard map methods below
+  //
+  /*
    *
-   * @return  **********************
+   * @return  a string collection
    */
   public synchronized Collection<String> keySet() {
     return this.map.keySet();

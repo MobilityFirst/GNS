@@ -28,7 +28,6 @@ import java.io.File;
 public class ExecuteBash {
 
   private static final String CHMODCOMMAND = "chmod ugo+x";
-  private static final String FILESEPARATOR = System.getProperty("file.separator");
 
   /**
    * Write a script file and execute it.

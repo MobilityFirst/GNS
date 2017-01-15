@@ -62,13 +62,13 @@ public class Route53 {
     listRecordSetsForHostedZone();
   }
 
-  private void test() {
-    route53.createHostedZone(new CreateHostedZoneRequest()
-            .withName("myDomainName.com")
-            .withCallerReference(CALLER_REFERENCE)
-            .withHostedZoneConfig(new HostedZoneConfig()
-            .withComment("my first Route 53 hosted zone!")));
-  }
+//  private void test() {
+//    route53.createHostedZone(new CreateHostedZoneRequest()
+//            .withName("myDomainName.com")
+//            .withCallerReference(CALLER_REFERENCE)
+//            .withHostedZoneConfig(new HostedZoneConfig()
+//            .withComment("my first Route 53 hosted zone!")));
+//  }
 
   private static void listRecordSetsForHostedZone() {
 

@@ -135,6 +135,12 @@ public class Util {
     return result;
   }
 
+  /**
+   * 
+   * @param query
+   * @return
+   * @throws JSONException 
+   */
   public static JSONObject parseURIQueryStringIntoJSONObject(String query) throws JSONException {
     JSONObject json = new JSONObject();
     URLQueryStringParser parser = new URLQueryStringParser(query);

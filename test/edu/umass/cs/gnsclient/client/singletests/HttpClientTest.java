@@ -47,6 +47,9 @@ public class HttpClientTest {
 
   private static GuidEntry masterGuid;
 
+  /**
+   *
+   */
   public HttpClientTest() {
     if (client == null) {
       // This should look up the appropriate port
@@ -54,6 +57,9 @@ public class HttpClientTest {
     }
   }
   
+  /**
+   *
+   */
   @Test
   public void test_899_Http_CreateAccountGuid() {
     try {
@@ -94,6 +100,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_902_Http_RemoveACL() {
     try {
@@ -105,6 +114,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_910_Http_UpdateFields() {
     try {
@@ -117,6 +129,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_911_Http_CheckFields() {
     try {
@@ -134,6 +149,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_913_Http_CheckFieldsFail() {
     try {
@@ -150,6 +168,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_920_Http_ACLAdd() {
     try {
@@ -167,6 +188,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_921_Http_CheckAccess() {
     try {
@@ -202,6 +226,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_933_ReadAll() {
     try {
@@ -225,6 +252,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_934_ReadDeep() {
     try {
@@ -235,6 +265,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_935_ReadMid() {
     try {
@@ -248,6 +281,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_936_ReadShallow() {
     try {
@@ -261,6 +297,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_951_Http_createCats() {
     try {
@@ -270,6 +309,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_952_Http_testCats() {
     try {
@@ -280,6 +322,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_953_Http_createMoreCats() {
     try {
@@ -291,6 +336,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_954_Http_checkMoreCats() {
     try {
@@ -305,6 +353,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_955_Http_clearCats() {
     try {
@@ -315,6 +366,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_956_Http_checkClearCats() {
     try {
@@ -329,6 +383,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_957_Http_createEvenMoreCats() {
     try {
@@ -338,6 +395,9 @@ public class HttpClientTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_958_Http_checkEvenMoreCats() {
     try {

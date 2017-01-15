@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
@@ -85,32 +86,35 @@ public class NSUpdateSupport {
           SignatureException, JSONException, IOException, FailedDBOperationException,
           RecordNotFoundException, FieldNotFoundException, InternalRequestException {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
-    assert(header!=null);
-    if (!header.verifyInternal() && !commandPacket.getCommandType().isMutualAuth()) {
-      if (field != null) {
-        errorCode = NSAuthentication.signatureAndACLCheck(header, guid, field, null,
-                writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
-      } else if (userJSON != null) {
-        errorCode = NSAuthentication.signatureAndACLCheck(header, guid, null, userJSON.getKeys(),
-                writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
+    assert (header != null);
+    // No checks for local non-auth commands like verifyAccount or for mutual auth
+    if (!GNSProtocol.INTERNAL_QUERIER.toString().equals(writer)
+            && !commandPacket.getCommandType().isMutualAuth()) {
+      if (!header.verifyInternal()) {
+        // This the standard auth check for most updates
+        if (field != null) {
+          errorCode = NSAuthentication.signatureAndACLCheck(header, guid, field, null,
+                  writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
+        } else if (userJSON != null) {
+          errorCode = NSAuthentication.signatureAndACLCheck(header, guid, null, userJSON.getKeys(),
+                  writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
+        } else {
+          ClientSupportConfig.getLogger().log(Level.FINE,
+                  "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
+          return ResponseCode.ACCESS_ERROR;
+        }
       } else {
-        ClientSupportConfig.getLogger().log(Level.FINE,
-                "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
-        return ResponseCode.ACCESS_ERROR;
-      }
-      // This is supposed to be a check for when a active code remote query
-    } else if (!commandPacket.getCommandType().isMutualAuth()) {
-    	// Must be internal request if here
-      // This ACL check will be only used for active code remote query
-      if (field != null) {
-    	  assert(header.getQueryingGUID()!=null) : guid+":"+field+":"+writer+"::"+header.getOriginatingGUID();
-        errorCode = NSAuthentication.aclCheck(header, guid, field, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app).getResponseCode();
-      } else if (userJSON != null) {
-        List<String> fields = userJSON.getKeys();
-        for (String aField : fields) {
-          AclCheckResult aclResult = NSAuthentication.aclCheck(header, guid, aField, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app);
-          if (aclResult.getResponseCode().isExceptionOrError()) {
-            errorCode = aclResult.getResponseCode();
+        // This ACL check will be only used for active code remote query 
+        if (field != null) {
+          assert (header.getQueryingGUID() != null) : guid + ":" + field + ":" + writer + "::" + header.getOriginatingGUID();
+          errorCode = NSAuthentication.aclCheck(header, guid, field, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app).getResponseCode();
+        } else if (userJSON != null) {
+          List<String> fields = userJSON.getKeys();
+          for (String aField : fields) {
+            AclCheckResult aclResult = NSAuthentication.aclCheck(header, guid, aField, header.getQueryingGUID(), MetaDataTypeName.WRITE_WHITELIST, app);
+            if (aclResult.getResponseCode().isExceptionOrError()) {
+              errorCode = aclResult.getResponseCode();
+            }
           }
         }
       }
@@ -122,7 +126,7 @@ public class NSUpdateSupport {
         errorCode = ResponseCode.STALE_COMMAND_VALUE;
       }
     }
-    // return an error packet if one of the checks doesn't pass
+    // Return an error code if one of the checks doesn't pass
     if (errorCode.isExceptionOrError()) {
       return errorCode;
     }
@@ -133,8 +137,7 @@ public class NSUpdateSupport {
               app.getDB(), app.getActiveCodeHandler());
       return ResponseCode.NO_ERROR;
     } else // Handle special case of a create index
-    {
-      if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
+     if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "Creating index for {0} {1}", new Object[]{field, updateValue});
         app.getDB().createIndex(field, (String) updateValue.get(0));
@@ -144,7 +147,6 @@ public class NSUpdateSupport {
         ClientSupportConfig.getLogger().log(Level.SEVERE, "Invalid index value:{0}", updateValue);
         return ResponseCode.UPDATE_ERROR;
       }
-    }
   }
 
   private static NameRecord getNameRecord(String guid, String field, UpdateOperation operation, BasicRecordMap db) throws RecordNotFoundException, FailedDBOperationException {
@@ -152,19 +154,17 @@ public class NSUpdateSupport {
       // some operations don't require a read first
       return new NameRecord(db, guid);
     } else //try {
-    {
-      if (field == null) {
+     if (field == null) {
         return NameRecord.getNameRecord(db, guid);
       } else {
         return NameRecord.getNameRecordMultiUserFields(db, guid,
                 ColumnFieldType.LIST_STRING, field);
       }
-    }
   }
 
   private static void updateNameRecord(InternalRequestHeader header, NameRecord nameRecord, String guid, String field,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
-          ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) 
+          ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler)
           throws FailedDBOperationException, FieldNotFoundException, InternalRequestException {
     ValuesMap newValue = userJSON;
     if (activeCodeHandler != null) {

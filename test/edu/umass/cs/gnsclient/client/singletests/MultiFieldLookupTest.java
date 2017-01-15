@@ -51,7 +51,6 @@ public class MultiFieldLookupTest {
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
-  private static GuidEntry samEntry;
 
   /**
    *
