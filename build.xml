@@ -74,7 +74,7 @@
     <javac compiler="org.eclipse.jdt.core.JDTCompilerAdapter" source="1.8"
          target="1.8" srcdir="${src.dir}:${test.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source" includeantruntime="false">
       <classpath refid="classpath.base"/>
-      <compilerarg value="-warn:+allJavadoc,+invalidJavadocVisibility(public),+missingJavadocTagsVisibility(public)" />
+      <compilerarg value="-warn:+allJavadoc" />
     </javac>
     <javac srcdir="${test.dir}" destdir="${build.test.classes.dir}" debug="true" debuglevel="lines,vars,source"
            includeantruntime="false">
