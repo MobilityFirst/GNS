@@ -18,6 +18,7 @@ import org.junit.BeforeClass;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
+import edu.umass.cs.gigapaxos.testing.TESTPaxosShutdownThread;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
@@ -280,6 +281,20 @@ public class DefaultGNSTest extends DefaultTest {
 					+ options;
 			System.out.println(startServerCmd);
 
+			// if we started servers, add a graceful shutdown hook
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						tearDownAfterClass(true);
+					} catch (ClientException | IOException e) {
+						// can't do much at this point
+						e.printStackTrace();
+					}
+				}
+			}));
+
 			// servers are being started here
 			if (singleJVM())
 				startServersSingleJVM();
@@ -433,9 +448,11 @@ public class DefaultGNSTest extends DefaultTest {
 
 	private static final String getLogFile() throws FileNotFoundException,
 			IOException {
+		String logPropsFile = System
+				.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
+		if(logPropsFile==null) return null;
 		Properties logProps = new Properties();
-		logProps.load(new FileInputStream(System
-				.getProperty(DefaultProps.LOGGING_PROPERTIES.key)));
+		logProps.load(new FileInputStream(logPropsFile));
 		String logFiles = logProps
 				.getProperty("java.util.logging.FileHandler.pattern");
 		if (logFiles != null)
