@@ -196,13 +196,15 @@ public class DefaultGNSTest extends DefaultTest {
 				+ GuidUtils.getGUIDKeys(globalAccountName));
 	}
 
+	protected static final long TIMEOUT = 8000;
+
 	private static void startClients() throws IOException {
-		System.out.println("Starting client ");
+		System.out.print("Starting client ");
 		int numRetries = 2;
 		boolean forceCoordinated = true;
 		client = new GNSClient().setNumRetriesUponTimeout(numRetries)
 				.setForceCoordinatedReads(forceCoordinated)
-				.setForcedTimeout(8000);
+				.setForcedTimeout(TIMEOUT);
 		System.out.println("..client(s) created and connected to server.");
 	}
 
@@ -337,8 +339,14 @@ public class DefaultGNSTest extends DefaultTest {
 		/* arun: need a more efficient, parallel implementation of removal of
 		 * sub-guids, otherwise this times out. */
 
-		// client.execute(GNSCommand.accountGuidRemove(GuidUtils
-		// .getGUIDKeys(globalAccountName)));
+		try {
+			client.execute(
+					GNSCommand.accountGuidRemove(GuidUtils
+							.getGUIDKeys(globalAccountName)));
+		} catch (ClientException e) {
+			// FIXME: need to increase timeout
+			e.printStackTrace();
+		}
 	}
 
 	private static void closeServers(String stopOrForceclear) {

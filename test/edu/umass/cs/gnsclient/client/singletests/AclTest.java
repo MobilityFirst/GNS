@@ -52,6 +52,8 @@ public class AclTest extends DefaultGNSTest {
 
 //  private static final String ACCOUNT_ALIAS = "test@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
 //  private static final String PASSWORD = "password";
+	
+	@Deprecated
   private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
