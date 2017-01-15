@@ -71,6 +71,7 @@ import org.junit.runner.notification.Failure;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.database.MongoRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.utils.Config;
@@ -100,7 +101,7 @@ import org.junit.Assert;
  *
  */
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ServerIntegrationTest extends DefaultTest {
+public class ServerIntegrationTest extends DefaultGNSTest {
 
   private static final String DEFAULT_ACCOUNT_ALIAS = "support@gns.name";
 
@@ -108,7 +109,7 @@ public class ServerIntegrationTest extends DefaultTest {
   // ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands clientCommands = null;
-  private static GNSClient client = null;
+  //private static GNSClient client = null;
   //private static GNSClientCommandsV2 client = null;
   private static GuidEntry masterGuid;
   
@@ -233,8 +234,23 @@ public class ServerIntegrationTest extends DefaultTest {
  * @throws InterruptedException 
    *
    */
-  @BeforeClass
-  public static void setUpBeforeClass() throws FileNotFoundException, IOException, InterruptedException {
+  @BeforeClass  
+	public static void setUpBeforeClass() throws FileNotFoundException,
+			IOException, InterruptedException {
+		System.setProperty(DefaultGNSTest.DefaultProps.FORCECLEAR.key, "true");
+		DefaultGNSTest.setUpBeforeClass();
+		masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
+		clientCommands = (GNSClientCommands) new GNSClientCommands()
+				.setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
+	}
+  
+  /**
+   * @throws FileNotFoundException
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  @Deprecated
+  public static void setUpBeforeClassOld() throws FileNotFoundException, IOException, InterruptedException {
 		/* The waitTillAllServersReady parameter is not needed for
 		 * single-machine tests as we check the logs explicitly below. It is
 		 * still useful for distributed tests as there is no intentionally
@@ -382,10 +398,10 @@ public class ServerIntegrationTest extends DefaultTest {
 
   /**
    *
-   * @throws Exception
    */
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
+//  @AfterClass
+  @Deprecated
+  public static void tearDownAfterClass() {
     if(clientCommands!=null) clientCommands.close();
     System.out.println("--"+RequestInstrumenter.getLog()+"--");
 		/* arun: need a more efficient, parallel implementation of removal of
