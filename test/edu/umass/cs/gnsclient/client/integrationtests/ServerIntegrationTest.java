@@ -15,6 +15,7 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsclient.client.integrationtests;
 
+import edu.umass.cs.gnsserver.utils.RunCommand;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
@@ -240,7 +241,7 @@ public class ServerIntegrationTest extends DefaultTest {
 	
     if (logFiles != null) {
   	  System.out.print("Deleting log files " + logFiles);
-  	  RunServer.command("rm -f " + logFiles, ".", false);
+  	  RunCommand.command("rm -f " + logFiles, ".", false);
   	  System.out.print(" ...done" + logFiles);
     }
 
@@ -258,7 +259,7 @@ public class ServerIntegrationTest extends DefaultTest {
         		+ " "
         		+ getGigaPaxosOptions() + " forceclear all";
         System.out.println(forceClearCmd);
-        RunServer.command(
+        RunCommand.command(
         		forceClearCmd, ".");
 
         /* We need to do this to limit the number of files used by mongo.
@@ -283,7 +284,7 @@ public class ServerIntegrationTest extends DefaultTest {
       if(singleJVM()) {
         startServersSingleJVM();
       } else {
-    	  ArrayList<String> output = RunServer.command(startServerCmd, ".");
+    	  ArrayList<String> output = RunCommand.command(startServerCmd, ".");
 
     	  if (output != null) {
             for (String line : output) {
@@ -303,7 +304,7 @@ public class ServerIntegrationTest extends DefaultTest {
 	Thread.sleep(500);
 	if(!singleJVM()) {
           do {
-            output = RunServer.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
+            output = RunCommand.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
             String temp = output.get(0);
             temp = temp.replaceAll("\\s", "");
             try {
@@ -403,7 +404,7 @@ public class ServerIntegrationTest extends DefaultTest {
                         + System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key) + " with " + stopCmd);
 
         try {
-          RunServer.command(stopCmd, ".");
+          RunCommand.command(stopCmd, ".");
         } catch (Exception e) {
           System.out.println(" failed to stop all servers with [" + stopCmd + "]");
           e.printStackTrace();
@@ -411,7 +412,7 @@ public class ServerIntegrationTest extends DefaultTest {
         }
         System.out.println(" stopped all servers.");
       } else {
-        ArrayList<String> output = RunServer.command(
+        ArrayList<String> output = RunCommand.command(
                 new File(System
                         .getProperty(DefaultProps.SERVER_COMMAND.key))
                 .getParent()
@@ -3242,12 +3243,12 @@ public class ServerIntegrationTest extends DefaultTest {
     }
     // the HRN is a hash of the query
     String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne), false);
-    GuidEntry groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, clientCommands.getGNSProvider());
+    GuidEntry groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, GNSClientCommands.getGNSProvider());
     //groupGuid = client.guidCreate(masterGuid, groupGuidName + RandomString.randomString(6));
 
     // the HRN is a hash of the query
     String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo), false);
-    GuidEntry groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, clientCommands.getGNSProvider());
+    GuidEntry groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, GNSClientCommands.getGNSProvider());
     //groupTwoGuid = client.guidCreate(masterGuid, groupTwoGuidName + RandomString.randomString(6));
 
     List<GuidEntry> list = new ArrayList<>(2);

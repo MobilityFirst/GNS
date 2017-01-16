@@ -23,7 +23,7 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.integrationtests.RunServer;
+import edu.umass.cs.gnsserver.utils.RunCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
@@ -215,7 +215,7 @@ public class LNSProxyTest extends DefaultTest {
 
       // clear explicitly if gigapaxos
       if (useGPScript()) {
-        RunServer
+        RunCommand
                 .command(
                         "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | "
                         + "grep -v ServerIntegrationTest  | grep -v \"context\" | awk '{print $2}'`",
@@ -225,7 +225,7 @@ public class LNSProxyTest extends DefaultTest {
                 + " "
                 + getGigaPaxosOptions() + " forceclear all");
 
-        RunServer.command(
+        RunCommand.command(
                 System.getProperty(DefaultProps.SERVER_COMMAND.key)
                 + " " + getGigaPaxosOptions()
                 + " forceclear all", ".");
@@ -245,7 +245,7 @@ public class LNSProxyTest extends DefaultTest {
               .getProperty(DefaultProps.SERVER_COMMAND.key)
               + " "
               + options);
-      ArrayList<String> output = RunServer.command(
+      ArrayList<String> output = RunCommand.command(
               System.getProperty(DefaultProps.SERVER_COMMAND.key) + " "
               + options, ".");
       if (output != null) {
@@ -319,7 +319,7 @@ public class LNSProxyTest extends DefaultTest {
                         + System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key) + "...");
 
         try {
-          RunServer.command(command, ".");
+          RunCommand.command(command, ".");
         } catch (Exception e) {
           System.out.println(" failed to stop all servers with [" + command + "]");
           e.printStackTrace();
@@ -327,7 +327,7 @@ public class LNSProxyTest extends DefaultTest {
         }
         System.out.println(" stopped all servers.");
       } else {
-        ArrayList<String> output = RunServer.command(
+        ArrayList<String> output = RunCommand.command(
                 new File(System
                         .getProperty(DefaultProps.SERVER_COMMAND.key))
                 .getParent()
