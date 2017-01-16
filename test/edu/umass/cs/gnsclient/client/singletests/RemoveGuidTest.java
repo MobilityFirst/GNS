@@ -68,7 +68,7 @@ public class RemoveGuidTest {
    *
    */
   @Test
-  public void test_01_RemoveGuidUsingAccount() {
+  public void test_10_RemoveGuidUsingAccount() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
@@ -94,13 +94,14 @@ public class RemoveGuidTest {
     }
   }
 
+  private static String testGuidName = "testGUID" + RandomString.randomString(6);
+  private static GuidEntry testGuid = null;
+  
   /**
    *
    */
   @Test
-  public void test_02_RemoveGuid() {
-    String testGuidName = "testGUID" + RandomString.randomString(6);
-    GuidEntry testGuid = null;
+  public void test_20_RemoveGuid() {
     try {
       testGuid = client.guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
@@ -125,7 +126,19 @@ public class RemoveGuidTest {
    *
    */
   @Test
-  public void test_03_RemoveAccount() {
+  public void test_30_RemoveGuidAgain() {
+    try {
+      client.guidRemove(testGuid);
+    } catch (Exception e) {
+      fail("Exception while removing testGuid: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_40_RemoveAccount() {
     try {
       client.accountGuidRemove(masterGuid);
     } catch (Exception e) {
@@ -137,7 +150,7 @@ public class RemoveGuidTest {
    *
    */
   @Test
-  public void test_04_CheckForRemoval() {
+  public void test_50_CheckForRemoval() {
     try {
       client.lookupGuid(ACCOUNT_ALIAS);
       fail("lookupGuid for " + ACCOUNT_ALIAS + " should have throw an exception.");
@@ -145,6 +158,18 @@ public class RemoveGuidTest {
 
     } catch (IOException e) {
       fail("Exception while lookupAccountRecord for " + ACCOUNT_ALIAS + " :" + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_60_RemoveAccountAgain() {
+    try {
+      client.accountGuidRemove(masterGuid);
+    } catch (Exception e) {
+      fail("Exception while removing testGuid: " + e);
     }
   }
 }
