@@ -15,10 +15,13 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
-import edu.umass.cs.gigapaxos.testing.TESTPaxosShutdownThread;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
@@ -33,6 +36,7 @@ import edu.umass.cs.gnsserver.database.MongoRecords;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
@@ -73,6 +77,26 @@ public class DefaultGNSTest extends DefaultTest {
 		}
 		return null;
 	}
+	
+	/**
+	 * Overriding parent watcher with {code tearDownAfterClass(boolean)} invocation.
+	 */
+	@Rule
+	public TestWatcher teardown = new TestWatcher() {
+		@Override
+		protected void failed(Throwable e, Description description) {
+			System.out.println(" FAILED!!!!!!!!!!!!! " + e);
+			e.printStackTrace();
+			if (Config.getGlobalBoolean(PC.DEBUG))
+				System.out.println(RequestInstrumenter.getLog());
+			try {
+				tearDownAfterClass(true);
+			} catch (ClientException | IOException e1) {
+				e1.printStackTrace();
+			}
+			System.exit(1);
+		}
+	};
 
 	protected static enum DefaultProps {
 		SERVER_COMMAND("server.command", GP_SERVER, true),
@@ -349,19 +373,7 @@ public class DefaultGNSTest extends DefaultTest {
 
 	private static void removeCreatedState() throws ClientException,
 			IOException {
-		System.out.println("Removing global account "
-				+ GuidUtils.getGUIDKeys(globalAccountName));
-		/* arun: need a more efficient, parallel implementation of removal of
-		 * sub-guids, otherwise this times out. */
-
-		try {
-			client.execute(
-					GNSCommand.accountGuidRemove(GuidUtils
-							.getGUIDKeys(globalAccountName)));
-		} catch (ClientException e) {
-			// FIXME: need to increase timeout
-			e.printStackTrace();
-		}
+		// need to remove globalAccountName here
 	}
 
 	private static void closeServers(String stopOrForceclear) {
