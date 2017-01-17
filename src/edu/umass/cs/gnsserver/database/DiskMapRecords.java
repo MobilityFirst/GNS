@@ -13,7 +13,6 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnscommon.utils.JSONDotNotation;
-import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -282,7 +281,7 @@ public class DiskMapRecords implements NoSQLRecords {
     }
     LOGGER.log(Level.FINE, "Record before:{0}", record);
     if (record == null) {
-      throw new FailedDBOperationException(collection, name);
+      throw new FailedDBOperationException(collection, name, "Record is null.");
     }
     if (valuesMapField != null && valuesMapKeys != null) {
       try {
@@ -361,42 +360,42 @@ public class DiskMapRecords implements NoSQLRecords {
   @Override
   public AbstractRecordCursor getAllRowsIterator(String collection) throws FailedDBOperationException {
     getMap(collection).commit();
-    return getMongoRecords(collection).getAllRowsIterator(DBNAMERECORD);
+    return getMongoRecords(collection).getAllRowsIterator(MongoRecords.DBNAMERECORD);
   }
 
   @Override
   public AbstractRecordCursor selectRecords(String collection, ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException {
     getMap(collection).commit();
-    return getMongoRecords(collection).selectRecords(DBNAMERECORD, valuesMapField, key, value);
+    return getMongoRecords(collection).selectRecords(MongoRecords.DBNAMERECORD, valuesMapField, key, value);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsWithin(String collection, ColumnField valuesMapField, String key, String value) throws FailedDBOperationException {
     getMap(collection).commit();
-    return getMongoRecords(collection).selectRecordsWithin(DBNAMERECORD, valuesMapField, key, value);
+    return getMongoRecords(collection).selectRecordsWithin(MongoRecords.DBNAMERECORD, valuesMapField, key, value);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsNear(String collection, ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException {
     getMap(collection).commit();
-    return getMongoRecords(collection).selectRecordsNear(DBNAMERECORD, valuesMapField, key, value, maxDistance);
+    return getMongoRecords(collection).selectRecordsNear(MongoRecords.DBNAMERECORD, valuesMapField, key, value, maxDistance);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query) throws FailedDBOperationException {
     getMap(collection).commit();
-    return getMongoRecords(collection).selectRecordsQuery(DBNAMERECORD, valuesMapField, query);
+    return getMongoRecords(collection).selectRecordsQuery(MongoRecords.DBNAMERECORD, valuesMapField, query);
   }
 
   @Override
   public void createIndex(String collection, String field, String index) {
     getMap(collection).commit();
-    getMongoRecords(collection).createIndex(DBNAMERECORD, field, index);
+    getMongoRecords(collection).createIndex(MongoRecords.DBNAMERECORD, field, index);
   }
 
   @Override
   public void printAllEntries(String collection) throws FailedDBOperationException {
     getMap(collection).commit();
-    getMongoRecords(collection).printAllEntries(DBNAMERECORD);
+    getMongoRecords(collection).printAllEntries(MongoRecords.DBNAMERECORD);
   }
 }
