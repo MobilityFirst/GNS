@@ -315,7 +315,7 @@ public class GNSConfig {
      * Turn off active code handling. Default is false.
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_ACTIVE_CODE(true);
+    DISABLE_ACTIVE_CODE(false);
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;

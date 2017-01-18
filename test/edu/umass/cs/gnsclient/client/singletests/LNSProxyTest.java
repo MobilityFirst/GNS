@@ -23,7 +23,7 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.integrationtests.RunServer;
+import edu.umass.cs.gnsserver.utils.RunCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
@@ -33,13 +33,10 @@ import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.utils.Base64;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import static org.hamcrest.Matchers.*;
@@ -218,7 +215,7 @@ public class LNSProxyTest extends DefaultTest {
 
       // clear explicitly if gigapaxos
       if (useGPScript()) {
-        RunServer
+        RunCommand
                 .command(
                         "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | "
                         + "grep -v ServerIntegrationTest  | grep -v \"context\" | awk '{print $2}'`",
@@ -228,7 +225,7 @@ public class LNSProxyTest extends DefaultTest {
                 + " "
                 + getGigaPaxosOptions() + " forceclear all");
 
-        RunServer.command(
+        RunCommand.command(
                 System.getProperty(DefaultProps.SERVER_COMMAND.key)
                 + " " + getGigaPaxosOptions()
                 + " forceclear all", ".");
@@ -248,7 +245,7 @@ public class LNSProxyTest extends DefaultTest {
               .getProperty(DefaultProps.SERVER_COMMAND.key)
               + " "
               + options);
-      ArrayList<String> output = RunServer.command(
+      ArrayList<String> output = RunCommand.command(
               System.getProperty(DefaultProps.SERVER_COMMAND.key) + " "
               + options, ".");
       if (output != null) {
@@ -322,7 +319,7 @@ public class LNSProxyTest extends DefaultTest {
                         + System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key) + "...");
 
         try {
-          RunServer.command(command, ".");
+          RunCommand.command(command, ".");
         } catch (Exception e) {
           System.out.println(" failed to stop all servers with [" + command + "]");
           e.printStackTrace();
@@ -330,7 +327,7 @@ public class LNSProxyTest extends DefaultTest {
         }
         System.out.println(" stopped all servers.");
       } else {
-        ArrayList<String> output = RunServer.command(
+        ArrayList<String> output = RunCommand.command(
                 new File(System
                         .getProperty(DefaultProps.SERVER_COMMAND.key))
                 .getParent()
@@ -373,9 +370,8 @@ public class LNSProxyTest extends DefaultTest {
 
   }
 
-  private static final int RETRANSMISSION_INTERVAL = 100;
   // arun: this should be zero
-  private static final int COORDINATION_WAIT = 00;
+  //private static final int COORDINATION_WAIT = 00;
 
   /**
    * arun: Coordinated operations generally need some settling time before
@@ -393,13 +389,13 @@ public class LNSProxyTest extends DefaultTest {
    * pick the replica closest by distance and load otherwise.
    */
   private static void waitSettle() {
-    try {
-      if (COORDINATION_WAIT > 0) {
-        Thread.sleep(COORDINATION_WAIT);
-      }
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+//    try {
+//      if (COORDINATION_WAIT > 0) {
+//        Thread.sleep(COORDINATION_WAIT);
+//      }
+//    } catch (InterruptedException e) {
+//      e.printStackTrace();
+//    }
   }
 
   //@Test
@@ -1099,7 +1095,7 @@ public class LNSProxyTest extends DefaultTest {
       fail("Exception during create: ", e);
     }
 
-    this.waitSettle();
+    waitSettle();
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(
               "Frank", "Joe", "Sally", "Rita"));
@@ -1144,7 +1140,7 @@ public class LNSProxyTest extends DefaultTest {
       }
       guidToDeleteEntry = client.guidCreate(masterGuid, "deleteMe"
               + RandomString.randomString(12));
-      this.waitSettle();
+      waitSettle();
       mygroupEntry = client.guidCreate(masterGuid, mygroupName);
     } catch (Exception e) {
       fail("Exception while creating guids: ", e);
@@ -1396,7 +1392,7 @@ public class LNSProxyTest extends DefaultTest {
         fail("Exception adding Sam to Westy's writelist: ", e);
         e.printStackTrace();
       }
-      this.waitSettle();
+      waitSettle();
       // write my own field
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(),
@@ -1405,7 +1401,7 @@ public class LNSProxyTest extends DefaultTest {
         fail("Exception while Westy's writing own field: ", e);
         e.printStackTrace();
       }
-      this.waitSettle();
+      waitSettle();
       // now check the value
       assertEquals("shopping", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), fieldName, westyEntry));
@@ -1417,7 +1413,7 @@ public class LNSProxyTest extends DefaultTest {
         fail("Exception while Sam writing Westy's field: ", e);
         e.printStackTrace();
       }
-      this.waitSettle();
+      waitSettle();
       // now check the value
       assertEquals("driving", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), fieldName, westyEntry));
@@ -1728,14 +1724,14 @@ public class LNSProxyTest extends DefaultTest {
     } catch (Exception e) {
       fail("Exception when we were not expecting it: ", e);
     }
-    this.waitSettle();
+    waitSettle();
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), field,
               "work", westyEntry);
     } catch (Exception e) {
       fail("Exception while creating the field: ", e);
     }
-    this.waitSettle();
+    waitSettle();
     try {
       // read my own field
       assertEquals("work", client.fieldReadArrayFirstElement(
@@ -1748,7 +1744,7 @@ public class LNSProxyTest extends DefaultTest {
     } catch (Exception e) {
       fail("Exception while setting field to null field: ", e);
     }
-    this.waitSettle();
+    waitSettle();
     try {
       assertEquals(null, client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), field, westyEntry));
@@ -1969,7 +1965,7 @@ public class LNSProxyTest extends DefaultTest {
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack.sally.right\": ", e);
     }
-    this.waitSettle();
+    waitSettle();
     try {
       JSONObject expected = new JSONObject();
       expected.put("name", "frank");
@@ -2286,44 +2282,6 @@ public class LNSProxyTest extends DefaultTest {
       fail("Exception while looking up account name: " + e);
     }
     client.setGNSProxy(null);
-  }
-
-  private HashMap<String, String> readingOptionsFromNSProperties() {
-    HashMap<String, String> propMap = new HashMap<String, String>();
-
-    BufferedReader br = null;
-    try {
-      String sCurrentLine;
-
-      String filename = new File(
-              System.getProperty(DefaultProps.SERVER_COMMAND.key))
-              .getParent()
-              + "/ns.properties";
-      if (!new File(filename).exists()) {
-        return propMap;
-      }
-
-      br = new BufferedReader(new FileReader(filename));
-
-      while ((sCurrentLine = br.readLine()) != null) {
-        String[] parsed = sCurrentLine.split("=");
-
-        if (parsed.length == 2) {
-          propMap.put(parsed[0].trim(), parsed[1].trim());
-        }
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      try {
-        if (br != null) {
-          br.close();
-        }
-      } catch (IOException ex) {
-        ex.printStackTrace();
-      }
-    }
-    return propMap;
   }
 
   // HELPER STUFF

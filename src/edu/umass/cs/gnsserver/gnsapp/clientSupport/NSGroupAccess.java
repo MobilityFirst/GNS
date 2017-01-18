@@ -19,10 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
@@ -38,8 +34,6 @@ import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Level;
@@ -73,48 +67,17 @@ public class NSGroupAccess {
    */
   public static final String GROUP_QUERY_STRING = InternalField.makeInternalFieldString("groupQueryString");
 
-//  /**
-//   * Update the members of a group guid.
-//   *
-//   * @param guid
-//   * @param members
-//   * @param handler
-//   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-//   * @throws java.io.IOException
-//   * @throws org.json.JSONException
-// * @throws InternalRequestException 
-//   */
-//  public static void updateMembers(InternalRequestHeader header, String guid, Set<String> members,
-//          ClientRequestHandlerInterface handler)
-//          throws ClientException, IOException, JSONException, InternalRequestException {
-//    //ClientSupportConfig.getLogger().info("RQ: ");
-//
-////    String response = handler.getRemoteQuery().fieldReplaceOrCreateArray(guid, GroupAccess.GROUP,
-////            new ResultValue(members));
-//	  String response = handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GroupAccess.GROUP, new ResultValue(members), header)).getResultString();
-////    NSResponseCode groupResponse = LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(members),
-////            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
-//    // We could roll back the above operation if the one below gets an error, but we don't
-//    // We'll worry about this when we get transactions working.
-//
-//    if (response.equals(GNSProtocol.OK_RESPONSE.toString())) {
-//      //if (!groupResponse.isAnError()) {
-//      // This is probably a bad idea to update every member
-//      for (String member : members) {
-////        handler.getRemoteQuery().fieldReplaceOrCreateArray(member, GroupAccess.GROUPS,
-////                new ResultValue(Arrays.asList(guid)));
-//				handler.getInternalClient().execute(
-//						GNSCommandInternal.fieldUpdate(
-//								CommandType.ReplaceOrCreateUnsigned, member,
-//								GroupAccess.GROUPS,
-//								new ResultValue(Arrays.asList(guid)), header));
-//      }
-//    }
-//  }
-
+  /**
+   * The default interval (in seconds) before which a query will not be refreshed. In other words
+   * if you wait this interval you will get the latest from the database, otherwise you will get the
+   * cached value.
+   */
+  public static final int DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT = 60; //seconds
+  
   /**
    * Return the members of a the group guid.
    *
+   * @param header
    * @param guid
    * @param allowQueryToOtherNSs
    * @param handler
@@ -141,6 +104,7 @@ public class NSGroupAccess {
   /**
    * Returns the groups that a GUID is a member of.
    *
+   * @param header
    * @param guid
    * @param handler
    * @return a set of strings
@@ -155,6 +119,7 @@ public class NSGroupAccess {
    * Returns the groups that a GUID is a member of.
    * Doesn't attempt to access another server to find it.
    *
+   * @param header
    * @param guid
    * @param handler
    * @return a set of strings
@@ -164,49 +129,14 @@ public class NSGroupAccess {
     // this guid could be on another NS hence the true below
     return NSFieldAccess.lookupListFieldAnywhere(header, guid, GroupAccess.GROUPS, false, handler).toStringSet();
   }
-
-  /**
-   * Removes from the groupGuid the memberGuid.
-   *
-   * @param groupGuid
-   * @param memberGuid
-   * @param handler
-   * @return an {@link ResponseCode}
-   */
-  public static ResponseCode removeFromGroup(String groupGuid, String memberGuid,
-          ClientRequestHandlerInterface handler) {
-    try {
-      handler.getRemoteQuery().fieldRemove(groupGuid, GroupAccess.GROUP, memberGuid);
-      // We could roll back the above operation if the one below gets an error, but we don't
-      // We'll worry about this when we get transactions working.
-      handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, groupGuid);
-      // FIXME: Don't ignore errors in above code.
-      return ResponseCode.NO_ERROR;
-    } catch (IOException | JSONException | ClientException e) {
-      return ResponseCode.UNSPECIFIED_ERROR;
-    }
-
-  }
-
-  /**
-   * Removes all group links when we're deleting a guid.
-   *
-   * @param guid
-   * @param handler
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public static void cleanupGroupsForDelete(InternalRequestHeader header, String guid, ClientRequestHandlerInterface handler) throws FailedDBOperationException {
-    for (String groupGuid : lookupGroups(header, guid, handler)) {
-      removeFromGroup(groupGuid, guid, handler);
-    }
-  }
-
+  
   ///
   /// Support code for context sensitive group guids
   ///
   /**
    * Updates the last update field for this group guid.
    *
+   * @param header
    * @param guid
    * @param lastUpdate
    * @param handler
@@ -224,6 +154,7 @@ public class NSGroupAccess {
   /**
    * Updates the min refresh interval field for this group guid.
    *
+   * @param header
    * @param guid
    * @param minRefresh
    * @param handler
@@ -241,6 +172,7 @@ public class NSGroupAccess {
   /**
    * Updates the query string field for this group guid.
    *
+   * @param header
    * @param guid
    * @param queryString
    * @param handler
@@ -258,6 +190,7 @@ public class NSGroupAccess {
   /**
    * Returns the last update time for this group guid.
    *
+   * @param header
    * @param guid
    * @param handler
    * @return the last update time
@@ -276,6 +209,7 @@ public class NSGroupAccess {
   /**
    * Returns the min refresh interval for this group guid.
    *
+   * @param header
    * @param guid
    * @param handler
    * @return the min refresh interval
@@ -287,13 +221,14 @@ public class NSGroupAccess {
     if (!result.equals(-1)) {
       return result.intValue();
     } else {
-      return ClientAsynchBase.DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT;
+      return DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT;
     }
   }
 
   /**
    * Returns the query string for this group guid.
    *
+   * @param header
    * @param guid
    * @param handler
    * @return the query string or null if it can't be found
@@ -306,6 +241,7 @@ public class NSGroupAccess {
 
   /**
    *
+   * @param header
    * @param guid
    * @param field
    * @param handler
@@ -329,6 +265,7 @@ public class NSGroupAccess {
   
   /**
    *
+   * @param header
    * @param guid
    * @param field
    * @param defaultValue
@@ -355,6 +292,7 @@ public class NSGroupAccess {
    * Returns the values of a field in a set of guids contained in a group guid.
    * The result is return as an array of values.
    *
+   * @param header
    * @param groupGuid
    * @param field
    * @param gnsApp

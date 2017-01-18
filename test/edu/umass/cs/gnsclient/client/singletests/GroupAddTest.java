@@ -28,8 +28,7 @@ import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-
+  
 import java.util.Arrays;
 import java.util.HashSet;
 import org.json.JSONArray;
@@ -50,17 +49,11 @@ public class GroupAddTest {
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands client;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
-  
-   private static final int COORDINATION_WAIT = 100;
 
   /**
    *
@@ -129,6 +122,9 @@ public class GroupAddTest {
     }
   }
 
+  /**
+   *
+   */
   @Test
   public void test_212_GroupAddCheck() {
     try {
@@ -158,7 +154,10 @@ public class GroupAddTest {
   private static GuidEntry threeEntry;
   private static GuidEntry anotherGroupEntry;
   
-   @Test
+  /**
+   *
+   */
+  @Test
   public void test_220_testCreateSecondGuids() {
     try {
       oneEntry = client.guidCreate(masterGuid, "one" + RandomString.randomString(6));
@@ -169,6 +168,9 @@ public class GroupAddTest {
     }
   }
   
+  /**
+   *
+   */
   @Test
   public void test_221_GroupSecondCreate() {
     String another = "anotherGroupEntry" + RandomString.randomString(6);
@@ -222,6 +224,9 @@ public class GroupAddTest {
     }
   }
   
+  /**
+   *
+   */
   @Test
   public void test_227_GroupAddCheck() {
     try {

@@ -1,3 +1,22 @@
+/*
+ *
+ *  Copyright (c) 2016 University of Massachusetts
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you
+ *  may not use this file except in compliance with the License. You
+ *  may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ *  implied. See the License for the specific language governing
+ *  permissions and limitations under the License.
+ *
+ *  Initial developer(s): Arun
+ *
+ */
 package edu.umass.cs.gnsserver.utils;
 
 import java.io.File;
@@ -25,7 +44,6 @@ import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
-import edu.umass.cs.gnsclient.client.integrationtests.RunServer;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.CommandType;
@@ -323,7 +341,7 @@ public class DefaultGNSTest extends DefaultTest {
 			if (singleJVM())
 				startServersSingleJVM();
 			else {
-				ArrayList<String> output = RunServer.command(startServerCmd,
+				ArrayList<String> output = RunCommand.command(startServerCmd,
 						".");
 				if (output != null)
 					for (String line : output)
@@ -398,7 +416,7 @@ public class DefaultGNSTest extends DefaultTest {
 						+ " with " + stopCmd);
 
 				try {
-					RunServer.command(stopCmd, ".");
+					RunCommand.command(stopCmd, ".");
 				} catch (Exception e) {
 					System.out.println(" failed to stop all servers with ["
 							+ stopCmd + "]");

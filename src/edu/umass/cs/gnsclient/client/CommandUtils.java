@@ -482,7 +482,7 @@ public class CommandUtils {
    * @return Random long.
    */
   public static String getRandomRequestNonce() {
-    return (random.nextLong() + "").toString();
+    return (random.nextLong() + "");
   }
 
   /**
@@ -490,6 +490,7 @@ public class CommandUtils {
    * number of key and value pairs. Includes a NONCE and TIMESTAMP field.
    * 
    * @param commandType
+   * @param includeTimestamp
    * @param keysAndValues
    * @return a JSONObject
    * @throws ClientException

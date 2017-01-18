@@ -15,31 +15,19 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsclient.client.integrationtests;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
+import edu.umass.cs.gnsserver.utils.RunCommand;
 
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-
-import org.apache.commons.lang3.RandomUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
@@ -79,6 +67,17 @@ import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Repeat;
 import edu.umass.cs.utils.Util;
 
+import java.awt.geom.Point2D;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.security.NoSuchAlgorithmException;
+import java.util.Set;
+
+import org.apache.commons.lang3.RandomUtils;
+import org.hamcrest.Matchers;
+import org.json.JSONException;
+import org.junit.Assert;
+
 /**
  * Functionality test for core elements in the client using the
  * GNSClientCommands.
@@ -93,7 +92,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   // ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands clientCommands = null;
-  //private static GNSClient client = null;
+  private static GNSClient client = null;
   //private static GNSClientCommandsV2 client = null;
   private static GuidEntry masterGuid;
   
@@ -111,7 +110,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   private static final String GNS_DIR = "GNS";
   private static final String GNS_HOME = HOME + "/" + GNS_DIR + "/";
 
-  private static final String getPath(String filename) {
+  private static String getPath(String filename) {
     if (new File(filename).exists()) {
       return filename;
     }
@@ -225,6 +224,11 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 		masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
 		clientCommands = (GNSClientCommands) new GNSClientCommands()
 				.setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
+                client = new GNSClient()
+                             .setNumRetriesUponTimeout(2)
+                             .setForceCoordinatedReads(true)
+                             .setForcedTimeout(8000);
+    
 	}
   
   /**
@@ -239,20 +243,21 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 		 * still useful for distributed tests as there is no intentionally
 		 * support in gigapaxos' async client to detect if all servrs are up. */
     String waitString = System.getProperty("waitTillAllServersReady");
-    if (waitString != null) 
+    if (waitString != null) {
       WAIT_TILL_ALL_SERVERS_READY = Integer.parseInt(waitString);
+    }
 
     // get pattern for log files
 	Properties logProps = new Properties();
 	logProps.load(new FileInputStream(System.getProperty(DefaultProps.LOGGING_PROPERTIES.key)));
 	String logFiles = logProps.getProperty("java.util.logging.FileHandler.pattern");
+
 	if(logFiles!=null) logFiles = logFiles.replaceAll("%.*", "").trim() + "*";
 	new File(logFiles.replaceFirst("/[^/]*$", "")).mkdirs();
-
 	
     if (logFiles != null) {
   	  System.out.print("Deleting log files " + logFiles);
-  	  RunServer.command("rm -f " + logFiles, ".", false);
+  	  RunCommand.command("rm -f " + logFiles, ".", false);
   	  System.out.print(" ...done" + logFiles);
     }
 
@@ -270,7 +275,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
         		+ " "
         		+ getGigaPaxosOptions() + " forceclear all";
         System.out.println(forceClearCmd);
-        RunServer.command(
+        RunCommand.command(
         		forceClearCmd, ".");
 
         /* We need to do this to limit the number of files used by mongo.
@@ -292,16 +297,18 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       System.out.println(startServerCmd);
 
       // servers are being started here
-      if(singleJVM())
-    	  startServersSingleJVM();
-      else {
-    	  ArrayList<String> output = RunServer.command(startServerCmd, ".");
+      if(singleJVM()) {
+        startServersSingleJVM();
+      } else {
+    	  ArrayList<String> output = RunCommand.command(startServerCmd, ".");
 
-    	  if (output != null) 
-    		  for (String line : output) 
-    			  System.out.println(line);
-    	  else 
-    		  failWithStackTrace("Server command failure: ; aborting all tests.");
+    	  if (output != null) {
+            for (String line : output) {
+              System.out.println(line);
+            }
+              } else {
+            failWithStackTrace("Server command failure: ; aborting all tests.");
+              }
       }
     }
 
@@ -311,20 +318,21 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 	int numServersUp=0;
 	// a little sleep ensures that there is time for at least one log file to get created
 	Thread.sleep(500);
-	if(!singleJVM())
-    do {
-    	output = RunServer.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
-    	String temp = output.get(0);
-    	temp = temp.replaceAll("\\s", "");
-    	try {
-    		numServersUp = Integer.parseInt(temp);
-    	} catch(NumberFormatException e) {
-    		// can happen if no files have yet gotten created
-    		System.out.println(e);
-    	}
-    	System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
-    	Thread.sleep(1000);
-    } while (numServersUp < numServers);
+	if(!singleJVM()) {
+          do {
+            output = RunCommand.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
+            String temp = output.get(0);
+            temp = temp.replaceAll("\\s", "");
+            try {
+              numServersUp = Integer.parseInt(temp);
+            } catch(NumberFormatException e) {
+              // can happen if no files have yet gotten created
+              System.out.println(e);
+            }
+            System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
+            Thread.sleep(1000);
+          } while (numServersUp < numServers);
+    }
 
     System.out.println("Starting client");
 
@@ -371,12 +379,14 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
   }
   
-  private static final void startServersSingleJVM() throws IOException {
+  private static void startServersSingleJVM() throws IOException {
 	  // all JVM properties should be already set above
-	  for(String server : ReconfigurationConfig.getReconfiguratorIDs()) 
-		  ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
-	  for(String server : PaxosConfig.getActives().keySet()) 
-		  ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
+	  for(String server : ReconfigurationConfig.getReconfiguratorIDs()) {
+            ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
+          }
+	  for(String server : PaxosConfig.getActives().keySet()) {
+            ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
+          }
   }
 
   public static void tearDownAfterClass() throws ClientException, IOException {
@@ -398,10 +408,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
     	if(singleJVM()) {
-    		for(String server : PaxosConfig.getActives().keySet())
-    			ReconfigurableNode.forceClear(server);
-    		for(String server: ReconfigurationConfig.getReconfiguratorIDs())
-    			ReconfigurableNode.forceClear(server);
+    		for(String server : PaxosConfig.getActives().keySet()) {
+                  ReconfigurableNode.forceClear(server);
+                    }
+    		for(String server: ReconfigurationConfig.getReconfiguratorIDs()) {
+                  ReconfigurableNode.forceClear(server);
+                    }
     	}
     	else if (useGPScript()) {
         String stopCmd = System
@@ -413,7 +425,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
                         + System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key) + " with " + stopCmd);
 
         try {
-          RunServer.command(stopCmd, ".");
+          RunCommand.command(stopCmd, ".");
         } catch (Exception e) {
           System.out.println(" failed to stop all servers with [" + stopCmd + "]");
           e.printStackTrace();
@@ -421,7 +433,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
         }
         System.out.println(" stopped all servers.");
       } else {
-        ArrayList<String> output = RunServer.command(
+        ArrayList<String> output = RunCommand.command(
                 new File(System
                         .getProperty(DefaultProps.SERVER_COMMAND.key))
                 .getParent()
@@ -479,8 +491,9 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
 	private static void waitSettle(long wait) {
 		try {
-			if (wait > 0)
-				Thread.sleep(wait);
+			if (wait > 0) {
+                          Thread.sleep(wait);
+                        }
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -551,7 +564,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 			ClientException, IOException {
 		// CHECKED FOR VALIDITY
 		String testGuidName = "testGUID" + RandomString.randomString(12);
-		GuidEntry testGuid = null;
+		GuidEntry testGuid;
 
 		testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
 		clientCommands.guidRemove(masterGuid, testGuid.getGuid());
@@ -674,7 +687,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 			ClientException, IOException {
 		// CHECKED FOR VALIDITY
 		String testGuidName = "testGUID" + RandomString.randomString(12);
-		GuidEntry testGuid = null;
+		GuidEntry testGuid;
 		testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
 
 		Assert.assertEquals(masterGuid.getGuid(),
@@ -1026,7 +1039,6 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 	 * @throws IOException
 	 * @throws JSONException
 	 * @throws ClientException
-	 * @throws IOException
 	 */
 	public void test_135_ACLMaybeAddAllFieldsForMaster(GuidEntry westyEntry)
 			throws ClientException, JSONException, IOException {
@@ -1924,7 +1936,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(
               clientCommands.groupGetMembers(mygroupEntry.getGuid(),
                       mygroupEntry));
-      Assert.assertThat(actual, not(hasItem(westyEntry.getGuid())));
+      Assert.assertThat(actual, Matchers.not(Matchers.hasItem(westyEntry.getGuid())));
     } catch (ClientException | IOException | JSONException e) {
       failWithStackTrace("Exception while getting group members in GroupAndACLTestRemoveGuidCheck: ", e);
     }
@@ -1975,7 +1987,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 			 * not coordinated or forceCoordinateable.
        */
       // make sure our new one is in there
-      Assert.assertThat(actual, hasItem(alias));
+      Assert.assertThat(actual, Matchers.hasItem(alias));
       // now remove it
       clientCommands.removeAlias(masterGuid, alias);
     } catch (Exception e) {
@@ -2528,7 +2540,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       JSONArray result = clientCommands.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in
       // results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectNear: ", e);
     }
@@ -2547,7 +2559,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectWithin: ", e);
     }
@@ -2580,7 +2592,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       }
       // best we can do should be at least 5, but possibly more objects in
       // results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectNear: ", e);
     }
@@ -2599,7 +2611,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectWithin: ", e);
     }
@@ -3143,7 +3155,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       for (int i = 0; i < result.length(); i++) {
         System.out.print(result.get(i).toString()+" ");
       }
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
     } catch (Exception e) {
       failWithStackTrace("Exception executing second selectNear: ", e);
     }
@@ -3189,7 +3201,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
   private static void checkSelectTheReturnValues(JSONArray result, String groupTestFieldName) throws Exception {
     // should be 5
-    Assert.assertThat(result.length(), equalTo(5));
+    Assert.assertThat(result.length(), Matchers.equalTo(5));
     // look up the individual values
     for (int i = 0; i < result.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
@@ -3252,12 +3264,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
     // the HRN is a hash of the query
     String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne), false);
-    GuidEntry groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, clientCommands.getGNSProvider());
+    GuidEntry groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, GNSClientCommands.getGNSProvider());
     //groupGuid = client.guidCreate(masterGuid, groupGuidName + RandomString.randomString(6));
 
     // the HRN is a hash of the query
     String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo), false);
-    GuidEntry groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, clientCommands.getGNSProvider());
+    GuidEntry groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, GNSClientCommands.getGNSProvider());
     //groupTwoGuid = client.guidCreate(masterGuid, groupTwoGuidName + RandomString.randomString(6));
 
     List<GuidEntry> list = new ArrayList<>(2);
@@ -3285,7 +3297,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectSetupGroupQuery: ", e);
     }
@@ -3310,7 +3322,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
         System.out.println(result.get(i).toString());
       }
       // should be nothing in this group now
-      Assert.assertThat(result.length(), equalTo(0));
+      Assert.assertThat(result.length(), Matchers.equalTo(0));
     } catch (Exception e) {
       failWithStackTrace("Exception executing second selectSetupGroupQuery: ", e);
     }
@@ -3432,7 +3444,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     try {
       JSONArray result = clientCommands.selectLookupGroupQuery(groupOneGuid.getGuid());
       // should only be one
-      Assert.assertThat(result.length(), equalTo(1));
+      Assert.assertThat(result.length(), Matchers.equalTo(1));
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
@@ -3459,7 +3471,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     try {
       JSONArray result = clientCommands.selectLookupGroupQuery(groupTwoGuid.getGuid());
       // should be 4 now
-      Assert.assertThat(result.length(), equalTo(4));
+      Assert.assertThat(result.length(), Matchers.equalTo(4));
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
@@ -3509,7 +3521,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
         // third argument is arbitrary expiry time, not used now
         int resultSize = csClient.sendSearchQuery(query, resultArray,
                 300000);
-        Assert.assertThat(resultSize, greaterThanOrEqualTo(1));
+        Assert.assertThat(resultSize, Matchers.greaterThanOrEqualTo(1));
 
       } catch (Exception e) {
         failWithStackTrace("Exception during contextServiceTest: ", e);

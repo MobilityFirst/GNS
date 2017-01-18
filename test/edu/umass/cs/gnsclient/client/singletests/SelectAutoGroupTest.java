@@ -121,7 +121,7 @@ public class SelectAutoGroupTest {
     try {
       // the HRN is a hash of the query
       String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne), false);
-      groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, client.getGNSProvider());
+      groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, GNSClientCommands.getGNSProvider());
       //groupGuid = client.guidCreate(masterGuid, groupGuidName + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
@@ -130,7 +130,7 @@ public class SelectAutoGroupTest {
     try {
       // the HRN is a hash of the query
       String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo), false);
-      groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, client.getGNSProvider());
+      groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, GNSClientCommands.getGNSProvider());
       //groupTwoGuid = client.guidCreate(masterGuid, groupTwoGuidName + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();

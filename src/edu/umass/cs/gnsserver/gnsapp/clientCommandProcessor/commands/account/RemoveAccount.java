@@ -77,29 +77,25 @@ public class RemoveAccount extends AbstractCommand {
     JSONObject json = commandPacket.getCommand();
     // The name of the account we are removing.
     String name = json.getString(GNSProtocol.NAME.toString());
-    // The guid of that wants to remove this account.
+    // The guid of the account we are removing.
     String guid = json.getString(GNSProtocol.GUID.toString());
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     GuidInfo guidInfo;
-    // Fixme: verify that we might need to look remotely for this.
-    if ((guidInfo = AccountAccess.lookupGuidInfoAnywhere(header, guid, handler)) == null) {
-      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
+    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler)) == null) {
+      // Removing a non-existant guid is not longer an error.
+      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+      //return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
-    try {
-      if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-        // Fixme: verify that we might need to look remotely for this.
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
-        if (accountInfo != null) {
-          return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
-        } else {
-          return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
-        }
+    if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
+      if (accountInfo != null) {
+        return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
       } else {
-        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
+        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
       }
-    } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
+    } else {
+      return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
     }
   }
 

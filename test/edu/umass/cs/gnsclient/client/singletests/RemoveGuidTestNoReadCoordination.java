@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -44,6 +43,10 @@ public class RemoveGuidTestNoReadCoordination {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
+
+  /**
+   *
+   */
   protected static GNSClient client;
   private static GuidEntry masterGuid;
   private static GuidEntry guidToDeleteEntry;
@@ -91,7 +94,10 @@ public class RemoveGuidTestNoReadCoordination {
     }
   }
 
-   @Test
+  /**
+   *
+   */
+  @Test
   public void test_212_GuidCreateCheck() {
     try {
       client.execute(GNSCommand.lookupGUIDRecord(guidToDeleteEntry.getGuid()));
@@ -112,6 +118,9 @@ public class RemoveGuidTestNoReadCoordination {
     }
   }
   
+  /**
+   *
+   */
   @Test
   public void test_216_GroupRemoveGuidCheck() {
     try {

@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
@@ -47,7 +46,6 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UnsignedReadTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands client = null;
 
@@ -67,6 +65,9 @@ public class UnsignedReadTest {
  
   private static GuidEntry unsignedReadAccountGuid;
 
+  /**
+   *
+   */
   @Test
   public void test_249_UnsignedReadDefaultWriteCreateAccountGuid() {
     try {
@@ -279,7 +280,10 @@ public class UnsignedReadTest {
     }
   }
   
-   @Test
+  /**
+   *
+   */
+  @Test
   public void test_263_UnsignedReadFailMissingField() {
     String missingFieldName = "missingField" + RandomString.randomString(12);
     try {

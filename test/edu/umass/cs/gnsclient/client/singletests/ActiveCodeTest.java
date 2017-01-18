@@ -7,6 +7,8 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
 import java.io.IOException;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -32,6 +34,9 @@ public class ActiveCodeTest {
   private static final String OTHER_FIELD = "otherField";
   private static final String OTHER_RESULT = "other field succeeds";
 
+  /**
+   *
+   */
   public ActiveCodeTest() {
     if (client == null) {
       try {
@@ -41,6 +46,15 @@ public class ActiveCodeTest {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
     }
+  }
+  
+  /**
+   *
+   */
+  @Test
+  public void test_000_ActiveCodeCheckForEnabled() {
+    Assert.assertFalse("Active code is disabled!!", 
+            Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE));
   }
 
   /**
@@ -108,7 +122,6 @@ public class ActiveCodeTest {
   @Test
   public void test_050_ActiveCodeSetReadCode() {
     String readcode = null;
-    String writecode = null;
     try {
       // read in the code as a string
       readcode = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/readTest.js")));
