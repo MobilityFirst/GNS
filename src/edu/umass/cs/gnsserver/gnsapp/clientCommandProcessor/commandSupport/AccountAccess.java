@@ -108,7 +108,7 @@ public class AccountAccess {
    */
   public static final String GUID_INFO = InternalField
           .makeInternalFieldString("guid_info");
-
+  
   /**
    * Defines the field name in the guid where the HRN is stored.
    */

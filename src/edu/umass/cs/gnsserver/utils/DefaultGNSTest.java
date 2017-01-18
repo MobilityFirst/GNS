@@ -24,15 +24,22 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -47,6 +54,7 @@ import edu.umass.cs.gnsserver.database.MongoRecords;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
@@ -56,8 +64,8 @@ import edu.umass.cs.utils.Util;
  *
  */
 public class DefaultGNSTest extends DefaultTest {
-	/* Do not change stuff or hardcode any thing in this class randomly. Ask if
-	 * you are unsure. */
+	/* arun: Do not change stuff or hardcode any thing in this class without
+	 * consulting me. */
 
 	private static final String HOME = System.getProperty("user.home");
 	private static final String GNS_DIR = "GNS";
@@ -87,8 +95,28 @@ public class DefaultGNSTest extends DefaultTest {
 		}
 		return null;
 	}
+	
+	/**
+	 * Overriding parent watcher with {code tearDownAfterClass(boolean)} invocation.
+	 */
+	@Rule
+	public TestWatcher teardown = new TestWatcher() {
+		@Override
+		protected void failed(Throwable e, Description description) {
+			System.out.println(" FAILED!!!!!!!!!!!!! " + e);
+			e.printStackTrace();
+			if (Config.getGlobalBoolean(PC.DEBUG))
+				System.out.println(RequestInstrumenter.getLog());
+			try {
+				tearDownAfterClass(true);
+			} catch (ClientException | IOException e1) {
+				e1.printStackTrace();
+			}
+			System.exit(1);
+		}
+	};
 
-	private static enum DefaultProps {
+	protected static enum DefaultProps {
 		SERVER_COMMAND("server.command", GP_SERVER, true),
 
 		GIGAPAXOS_CONFIG("gigapaxosConfig",
@@ -104,19 +132,19 @@ public class DefaultGNSTest extends DefaultTest {
 
 		START_SERVER("startServer", "true"),
 
-		SINGLE_JVM("singleJVM", "true"),
+		SINGLE_JVM("singleJVM", "false"),
 
 		STOP_SERVER("stopServer", "true"),
 
 		/**
 		 * If {@link #STOP_SERVER}, whether to forceclear or just stop.
 		 */
-		FORCECLEAR("forceclear", "true"),
+		FORCECLEAR("forceclear", "false"),
 
 		;
 
-		final String key;
-		final String value;
+		public final String key;
+		public final String value;
 		final boolean isFile;
 
 		DefaultProps(String key, String value, boolean isFile) {
@@ -157,8 +185,7 @@ public class DefaultGNSTest extends DefaultTest {
 	}
 
 	private static boolean singleJVM() {
-		return (System.getProperty("singleJVM") != null && System
-				.getProperty("singleJVM").trim().toLowerCase().equals("true"));
+		return ("true".equals(System.getProperty(DefaultProps.SINGLE_JVM.key)));
 	}
 
 	/**
@@ -170,24 +197,29 @@ public class DefaultGNSTest extends DefaultTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws FileNotFoundException,
 			IOException, InterruptedException {
-		// both can't be true (but both can be false)
+		if (!"true".equals(System.getProperty(DefaultProps.START_SERVER.key))
+				|| serversAlreadyStarted())
+			return;
 		deleteLogFiles();
 		startServers();
 		waitTillServersReady();
 		startClients();
 
 		createMasterAccountGUID();
-
 	}
 
+	private static final int MAX_TRIES = 5;
+
 	private static void createMasterAccountGUID() throws InterruptedException {
-		int tries = 5;
+		int tries = MAX_TRIES;
 		boolean accountCreated = false;
 
 		do {
 			try {
-				System.out.println("Creating account guid: " + (tries - 1)
-						+ " attempt remaining.");
+				System.out.print("Creating account GUID "
+						+ (globalAccountName)
+						+ (tries == MAX_TRIES ? "" : ": " + (tries - 1)
+								+ " attempt remaining."));
 				String createdGUID = client.execute(
 						GNSCommand.createAccount(globalAccountName))
 						.getResultString();
@@ -203,23 +235,29 @@ public class DefaultGNSTest extends DefaultTest {
 		if (accountCreated == false) {
 			Util.suicide("Failure setting up account guid; aborting all tests.");
 		}
+		System.out.println(" ..created "
+				+ GuidUtils.getGUIDKeys(globalAccountName));
 	}
 
+	protected static final long TIMEOUT = 8000;
+
 	private static void startClients() throws IOException {
-		System.out.println("Starting client");
+		System.out.print("Starting client ");
 		int numRetries = 2;
 		boolean forceCoordinated = true;
 		client = new GNSClient().setNumRetriesUponTimeout(numRetries)
 				.setForceCoordinatedReads(forceCoordinated)
-				.setForcedTimeout(8000);
-		System.out.println("Client(s) created and connected to server.");
+				.setForcedTimeout(TIMEOUT);
+		System.out.println("..client(s) created and connected to server.");
 	}
 
 	private static void waitTillServersReady() throws InterruptedException,
 			FileNotFoundException, IOException {
 
-		// no need to wait if singleJVM
-		if (singleJVM())
+		// no need to wait if singleJVM or not starting servers
+		if (singleJVM()
+				|| "false".equals(System
+						.getProperty(DefaultProps.START_SERVER.key)))
 			return;
 
 		// explicit sleep not needed in local tests
@@ -265,7 +303,7 @@ public class DefaultGNSTest extends DefaultTest {
 		return true;
 	}
 
-	protected static final boolean serversAlreadyStarted() {
+	protected synchronized static final boolean serversAlreadyStarted() {
 		return serversStarted;
 	}
 
@@ -274,20 +312,8 @@ public class DefaultGNSTest extends DefaultTest {
 		// start server
 		if ("true".equals(System.getProperty(DefaultProps.START_SERVER.key))) {
 
-			// forceclear
-			String forceClearCmd = System
-					.getProperty(DefaultProps.SERVER_COMMAND.key)
-					+ " "
-					+ getGigaPaxosOptions() + " forceclear all";
-			if (System.getProperty(DefaultProps.FORCECLEAR.key).equals("true")) {
-				System.out.println(forceClearCmd);
-				RunCommand.command(forceClearCmd, ".");
-			}
-
-			/* We need to do this to limit the number of files used by mongo.
-			 * Otherwise failed runs quickly lead to more failed runs because
-			 * index files created in previous runs are not removed. */
-			dropAllDatabases();
+			if (System.getProperty(DefaultProps.FORCECLEAR.key).equals("true"))
+				closeServers(DefaultProps.FORCECLEAR.key);
 
 			options = getGigaPaxosOptions() + " restart all";
 
@@ -296,6 +322,20 @@ public class DefaultGNSTest extends DefaultTest {
 					+ " "
 					+ options;
 			System.out.println(startServerCmd);
+
+			// if we started servers, add a graceful shutdown hook
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						tearDownAfterClass(true);
+					} catch (ClientException | IOException e) {
+						// can't do much at this point
+						e.printStackTrace();
+					}
+				}
+			}));
 
 			// servers are being started here
 			if (singleJVM())
@@ -329,46 +369,49 @@ public class DefaultGNSTest extends DefaultTest {
 	}
 
 	/**
+	 * @throws IOException
+	 * @throws ClientException
 	 *
-	 * @throws Exception
 	 */
 	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
+	public static void tearDownAfterClass() throws ClientException, IOException {
+		tearDownAfterClass(false);
+	}
+
+	private static void tearDownAfterClass(boolean force)
+			throws ClientException, IOException {
+		if (!"true".equals(System.getProperty(DefaultProps.STOP_SERVER.key))
+				&& !force)
+			return;
 		removeCreatedState();
+		closeServers(DefaultProps.FORCECLEAR.key);
 		closeClients();
-		closeServers();
-		dropAllDatabases();
 		printReverseEngineeredType();
 	}
 
-	private static void removeCreatedState() {
-		/* arun: need a more efficient, parallel implementation of removal of
-		 * sub-guids, otherwise this times out. */
-
-		// client.accountGuidRemove(masterGuid);
+	private static void removeCreatedState() throws ClientException,
+			IOException {
+		// need to remove globalAccountName here
 	}
 
-	private static void closeServers() {
+	private static void closeServers(String stopOrForceclear) {
 		System.out.println("--" + RequestInstrumenter.getLog() + "--");
 
-		if ("true".equals(System.getProperty(DefaultProps.STOP_SERVER.key))) {
+		// if ("true".equals(System.getProperty(DefaultProps.STOP_SERVER.key)))
+		{
 			if (singleJVM()) {
 				for (String server : PaxosConfig.getActives().keySet())
 					ReconfigurableNode.forceClear(server);
 				for (String server : ReconfigurationConfig
 						.getReconfiguratorIDs())
 					ReconfigurableNode.forceClear(server);
-			} else {
-				// separate JVMs
-				boolean forceclear = System.getProperty(
-						DefaultProps.FORCECLEAR.key).equals("true");
+			} else { // separate JVMs
 				String stopCmd = System
 						.getProperty(DefaultProps.SERVER_COMMAND.key)
 						+ " "
 						+ getGigaPaxosOptions()
-						+ (forceclear ? " forceclear all" : " stop all");
-				System.out.print((forceclear ? "Force-clearing" : "Stopping")
-						+ " all servers in "
+						+ (" " + stopOrForceclear + " all");
+				System.out.print(stopOrForceclear + "ing" + " all servers in "
 						+ System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key)
 						+ " with " + stopCmd);
 
@@ -382,6 +425,7 @@ public class DefaultGNSTest extends DefaultTest {
 				}
 				System.out.println(" stopped all servers.");
 			}
+			dropAllDatabases();
 		}
 	}
 
@@ -414,22 +458,31 @@ public class DefaultGNSTest extends DefaultTest {
 	private static final void startServersSingleJVM() throws IOException {
 		// all JVM properties should be already set above
 		for (String server : ReconfigurationConfig.getReconfiguratorIDs())
-			ReconfigurableNode
-					.main(new String[] { server,
-							ReconfigurationConfig.CommandArgs.start.toString(),
-							server });
+			try {
+				ReconfigurableNode.main(new String[] { server,
+						ReconfigurationConfig.CommandArgs.start.toString(),
+						server });
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		for (String server : PaxosConfig.getActives().keySet())
-			ReconfigurableNode
-					.main(new String[] { server,
-							ReconfigurationConfig.CommandArgs.start.toString(),
-							server });
+			try {
+				ReconfigurableNode.main(new String[] { server,
+						ReconfigurationConfig.CommandArgs.start.toString(),
+						server });
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 	}
 
 	private static final String getLogFile() throws FileNotFoundException,
 			IOException {
+		String logPropsFile = System
+				.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
+		if(logPropsFile==null) return null;
 		Properties logProps = new Properties();
-		logProps.load(new FileInputStream(System
-				.getProperty(DefaultProps.LOGGING_PROPERTIES.key)));
+		logProps.load(new FileInputStream(logPropsFile));
 		String logFiles = logProps
 				.getProperty("java.util.logging.FileHandler.pattern");
 		if (logFiles != null)
@@ -474,4 +527,59 @@ public class DefaultGNSTest extends DefaultTest {
 		return this.createOnceAccountGUID();
 	}
 
+	protected void removeMyAccountGUID() throws ClientException,
+			NoSuchAlgorithmException, IOException {
+		if (this.myAccountGUID == null)
+			return;
+		System.out.println("Removing my account GUID " + this.myAccountGUID);
+		client.execute(GNSCommand.accountGuidRemove(myAccountGUID));
+	}
+
+	private int numExecutedTests = 0;
+
+	/**
+	 * Method to detect if all test methods have been completed so that we can
+	 * do any necessary cleanup.
+	 * 
+	 * @throws ClientException
+	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
+	 */
+	@After
+	public void after() throws ClientException, NoSuchAlgorithmException,
+			IOException {
+		numExecutedTests++;
+		int numTotalTests = 0;
+		Method[] methods = this.getClass().getMethods();
+		for (Method method : methods) {
+			Annotation[] annotations = method.getAnnotations();
+			for (Annotation annotation : annotations)
+				if (annotation.annotationType().equals(org.junit.Test.class))
+					numTotalTests++;
+		}
+		if (numTotalTests == numExecutedTests)
+			cleanup();
+	}
+
+	private void cleanup() throws ClientException, NoSuchAlgorithmException,
+			IOException {
+		removeMyAccountGUID();
+	}
+
+	/**
+	 * A stop-only version of {@link DefaultGNSTest}.
+	 */
+	public static class ZDefaultGNSTest extends DefaultGNSTest {
+		/**
+		 *
+		 */
+		public ZDefaultGNSTest() {
+		}
+
+		@AfterClass
+		public static void tearDownAfterClass() throws ClientException,
+				IOException {
+			DefaultGNSTest.tearDownAfterClass(true);
+		}
+	}
 }

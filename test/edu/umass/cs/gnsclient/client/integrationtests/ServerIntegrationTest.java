@@ -16,29 +16,6 @@
 package edu.umass.cs.gnsclient.client.integrationtests;
 
 import edu.umass.cs.gnsserver.utils.RunCommand;
-import edu.umass.cs.gigapaxos.PaxosConfig;
-import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
-import edu.umass.cs.reconfiguration.ReconfigurableNode;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.contextservice.client.ContextServiceClient;
-import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GNSCommand;
-import edu.umass.cs.gnsclient.client.util.BasicGuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.JSONUtils;
-import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
-import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
-import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
-import edu.umass.cs.gnscommon.utils.Base64;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,25 +26,44 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-
-import static org.hamcrest.Matchers.*;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import edu.umass.cs.contextservice.client.ContextServiceClient;
+import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.util.BasicGuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnsclient.client.util.JSONUtils;
+import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
+import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
+import edu.umass.cs.gnscommon.AclAccessType;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
+import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.database.MongoRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Repeat;
 import edu.umass.cs.utils.Util;
 
@@ -78,6 +74,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 
 import org.apache.commons.lang3.RandomUtils;
+import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.junit.Assert;
 
@@ -87,7 +84,7 @@ import org.junit.Assert;
  *
  */
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ServerIntegrationTest extends DefaultTest {
+public class ServerIntegrationTest extends DefaultGNSTest {
 
   private static final String DEFAULT_ACCOUNT_ALIAS = "support@gns.name";
 
@@ -220,8 +217,27 @@ public class ServerIntegrationTest extends DefaultTest {
  * @throws InterruptedException 
    *
    */
-  @BeforeClass
-  public static void setUpBeforeClass() throws FileNotFoundException, IOException, InterruptedException {
+  @BeforeClass  
+	public static void setUpBeforeClass() throws FileNotFoundException,
+			IOException, InterruptedException {
+		DefaultGNSTest.setUpBeforeClass();
+		masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
+		clientCommands = (GNSClientCommands) new GNSClientCommands()
+				.setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
+                client = new GNSClient()
+                             .setNumRetriesUponTimeout(2)
+                             .setForceCoordinatedReads(true)
+                             .setForcedTimeout(8000);
+    
+	}
+  
+  /**
+   * @throws FileNotFoundException
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  @Deprecated
+  public static void setUpBeforeClassOld() throws FileNotFoundException, IOException, InterruptedException {
 		/* The waitTillAllServersReady parameter is not needed for
 		 * single-machine tests as we check the logs explicitly below. It is
 		 * still useful for distributed tests as there is no intentionally
@@ -373,12 +389,17 @@ public class ServerIntegrationTest extends DefaultTest {
           }
   }
 
+  public static void tearDownAfterClass() throws ClientException, IOException {
+	  // to allow more time for remove
+	  client.setForcedTimeout(TIMEOUT*2);
+	  DefaultGNSTest.tearDownAfterClass();
+  }
   /**
    *
-   * @throws Exception
    */
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
+//  @AfterClass
+  @Deprecated
+  public static void tearDownAfterClassOld() {
     if(clientCommands!=null) clientCommands.close();
     System.out.println("--"+RequestInstrumenter.getLog()+"--");
 		/* arun: need a more efficient, parallel implementation of removal of
@@ -1915,7 +1936,7 @@ public class ServerIntegrationTest extends DefaultTest {
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(
               clientCommands.groupGetMembers(mygroupEntry.getGuid(),
                       mygroupEntry));
-      Assert.assertThat(actual, not(hasItem(westyEntry.getGuid())));
+      Assert.assertThat(actual, Matchers.not(Matchers.hasItem(westyEntry.getGuid())));
     } catch (ClientException | IOException | JSONException e) {
       failWithStackTrace("Exception while getting group members in GroupAndACLTestRemoveGuidCheck: ", e);
     }
@@ -1966,7 +1987,7 @@ public class ServerIntegrationTest extends DefaultTest {
 			 * not coordinated or forceCoordinateable.
        */
       // make sure our new one is in there
-      Assert.assertThat(actual, hasItem(alias));
+      Assert.assertThat(actual, Matchers.hasItem(alias));
       // now remove it
       clientCommands.removeAlias(masterGuid, alias);
     } catch (Exception e) {
@@ -2519,7 +2540,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = clientCommands.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in
       // results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectNear: ", e);
     }
@@ -2538,7 +2559,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectWithin: ", e);
     }
@@ -2571,7 +2592,7 @@ public class ServerIntegrationTest extends DefaultTest {
       }
       // best we can do should be at least 5, but possibly more objects in
       // results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectNear: ", e);
     }
@@ -2590,7 +2611,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectWithin: ", e);
     }
@@ -3134,7 +3155,7 @@ public class ServerIntegrationTest extends DefaultTest {
       for (int i = 0; i < result.length(); i++) {
         System.out.print(result.get(i).toString()+" ");
       }
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
     } catch (Exception e) {
       failWithStackTrace("Exception executing second selectNear: ", e);
     }
@@ -3180,7 +3201,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
   private static void checkSelectTheReturnValues(JSONArray result, String groupTestFieldName) throws Exception {
     // should be 5
-    Assert.assertThat(result.length(), equalTo(5));
+    Assert.assertThat(result.length(), Matchers.equalTo(5));
     // look up the individual values
     for (int i = 0; i < result.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
@@ -3276,7 +3297,7 @@ public class ServerIntegrationTest extends DefaultTest {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
-      Assert.assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (Exception e) {
       failWithStackTrace("Exception executing selectSetupGroupQuery: ", e);
     }
@@ -3301,7 +3322,7 @@ public class ServerIntegrationTest extends DefaultTest {
         System.out.println(result.get(i).toString());
       }
       // should be nothing in this group now
-      Assert.assertThat(result.length(), equalTo(0));
+      Assert.assertThat(result.length(), Matchers.equalTo(0));
     } catch (Exception e) {
       failWithStackTrace("Exception executing second selectSetupGroupQuery: ", e);
     }
@@ -3423,7 +3444,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       JSONArray result = clientCommands.selectLookupGroupQuery(groupOneGuid.getGuid());
       // should only be one
-      Assert.assertThat(result.length(), equalTo(1));
+      Assert.assertThat(result.length(), Matchers.equalTo(1));
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
@@ -3450,7 +3471,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       JSONArray result = clientCommands.selectLookupGroupQuery(groupTwoGuid.getGuid());
       // should be 4 now
-      Assert.assertThat(result.length(), equalTo(4));
+      Assert.assertThat(result.length(), Matchers.equalTo(4));
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
@@ -3500,7 +3521,7 @@ public class ServerIntegrationTest extends DefaultTest {
         // third argument is arbitrary expiry time, not used now
         int resultSize = csClient.sendSearchQuery(query, resultArray,
                 300000);
-        Assert.assertThat(resultSize, greaterThanOrEqualTo(1));
+        Assert.assertThat(resultSize, Matchers.greaterThanOrEqualTo(1));
 
       } catch (Exception e) {
         failWithStackTrace("Exception during contextServiceTest: ", e);
