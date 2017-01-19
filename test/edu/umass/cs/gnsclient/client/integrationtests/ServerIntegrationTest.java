@@ -92,8 +92,6 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   // ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands clientCommands = null;
-  private static GNSClient client = null;
-  //private static GNSClientCommandsV2 client = null;
   private static GuidEntry masterGuid;
   
   private static final int REPEAT = 10;
