@@ -1,0 +1,14 @@
+language: java
+sudo: required
+jdk:
+- oraclejdk8
+services:
+- mongodb
+notifications:
+  email:
+    on_success: never
+    on_failure: never
+before_script:
+  ant
+script:
+  scripts/travis_checks.sh
