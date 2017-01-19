@@ -178,8 +178,9 @@ else
 	new_branch="travis_temp_""$short_commit""_""$handle"
 	git check-ref-format --branch $new_branch > /dev/null
 	travis_template=`cat $scriptdir/travis_template.sh`
-	command=`echo ${command}|tr '\n' "\\\n"`
-	sh_content=`echo "$travis_template"|sed 's~COMMAND_HERE~'"$command"'~'`
+	command_escaped=$(printf '%s\n' "$command" | sed 's,[\/&],\\&,g;s/$/\\/')
+	command_escaped=${command_escaped%?}
+	sh_content=`echo "$travis_template"|sed 's~COMMAND_HERE~'"$command_escaped"'~'`
 	yml_content=`cat "$scriptdir/travis_template.yml"`
 	
 	git checkout $target_branch
@@ -190,7 +191,6 @@ else
 	echo "$sh_content" > "$scriptdir/travis_checks.sh"
 	echo "$yml_content" > "$repo_root/.travis.yml"
 	echo "Successfully wrote Travis script"
-	exit
 	git add -A
 	git commit -am "Temp commit from Travis script"
 	git push origin $new_branch
