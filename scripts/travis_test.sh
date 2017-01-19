@@ -190,6 +190,7 @@ else
 	echo "$sh_content" > "$scriptdir/travis_checks.sh"
 	echo "$yml_content" > "$repo_root/.travis.yml"
 	echo "Successfully wrote Travis script"
+	exit
 	git add -A
 	git commit -am "Temp commit from Travis script"
 	git push origin $new_branch
