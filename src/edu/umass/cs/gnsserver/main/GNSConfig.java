@@ -312,10 +312,10 @@ public class GNSConfig {
      */
     DISABLE_MULTI_SERVER_HTTP(false),
     /**
-     * Turn off active code handling. Default is false.
+     * Turn off active code handling. Default is true.
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_ACTIVE_CODE(false);
+    DISABLE_ACTIVE_CODE(true);
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;
