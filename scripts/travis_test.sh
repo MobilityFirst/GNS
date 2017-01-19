@@ -178,6 +178,7 @@ else
 	new_branch="travis_temp_""$short_commit""_""$handle"
 	git check-ref-format --branch $new_branch > /dev/null
 	travis_template=`cat $scriptdir/travis_template.sh`
+	command=`echo ${command}|tr '\n' "\\n"`
 	sh_content=`echo "$travis_template"|sed 's~COMMAND_HERE~'"$command"'~'`
 	yml_content=`cat "$scriptdir/travis_template.yml"`
 	
