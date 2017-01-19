@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# travis_test branch:commit handle [”ant testMethod…”|file] [rep_times]
+# travis_test branch:commit handle ”command” [rep_times]
 # travis_test branch:commit --status handle [--clean]
 
 set -e # Important, the whole script logic is dependent on this
@@ -22,6 +22,7 @@ show_help () {
 	( handle ["command"] rep_times | --status handle [--clean])
 	
 	Ex: $0 master:abcde sample_test \"ant test\" 10
+	    $0 master:abcde sample_test \"\`cat path/to/file.sh\`\" 10
 	    $0 master:abcde --status sample_test --clean
 	"
 }
