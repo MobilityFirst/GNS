@@ -41,10 +41,10 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 /**
  *
  * A simple-to-use client that uses uses {@link GNSClient} and
- * {@link GNSCommand} to communicate with a GNS instance over TCP. 
+ * {@link GNSCommand} to communicate with a GNS instance over TCP.
  * Used for sending synchronous client requests to the GNS server.
  * If you want an asynchronous client see the above classes.
- * 
+ *
  * @author westy
  */
 public class GNSClientCommands extends GNSClient {
@@ -66,14 +66,13 @@ public class GNSClientCommands extends GNSClient {
           throws IOException {
     super(anyReconfigurator);
   }
-  
+
   // READ AND WRITE COMMANDS
   /**
    * Updates the JSONObject associated with targetGuid using the given
    * JSONObject. Top-level fields not specified in the given JSONObject are
    * not modified. The writer is the guid of the user attempting access. Signs
-   * the query using the private key of the user associated with the writer
-   * guid.
+   * the query using the private key of the writer.
    *
    * @param targetGuid
    * @param json
@@ -84,13 +83,12 @@ public class GNSClientCommands extends GNSClient {
   public void update(String targetGuid, JSONObject json, GuidEntry writer)
           throws IOException, ClientException {
     execute(GNSCommand.update(targetGuid, json, writer));
-//    getResponse(CommandType.ReplaceUserJSON, writer, GNSProtocol.GUID.toString(), targetGuid,
-//            GNSProtocol.USER_JSON.toString(), json, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
-   * Replaces the JSON in guid with JSONObject. Signs the query using the
-   * private key of the given guid.
+   * Updates the JSONObject associated with targetGuid using the given
+   * JSONObject. Top-level fields not specified in the given JSONObject are
+   * not modified. Signs the query using the private key the guid.
    *
    * @param guid
    * @param json
@@ -121,27 +119,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldUpdate(String targetGuid, String field, Object value,
           GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldUpdate(targetGuid, field, value, writer));
-//    getResponse(CommandType.ReplaceUserJSON, writer, GNSProtocol.GUID.toString(), targetGuid,
-//            GNSProtocol.USER_JSON.toString(), new JSONObject().put(field, value), GNSProtocol.WRITER.toString(), writer.getGuid());
-  }
-
-  /**
-   * Creates an index for a field. The guid is only used for authentication
-   * purposes.
-   *
-   * @param guid
-   * @param field
-   * @param index
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * if a protocol error occurs or the list cannot be parsed
-   * @throws java.io.IOException
-   * if a communication error occurs
-   */
-  public void fieldCreateIndex(GuidEntry guid, String field, String index)
-          throws IOException, ClientException {
-    execute(GNSCommand.fieldCreateIndex(guid, field, index));
-//    getResponse(CommandType.CreateIndex, guid, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.VALUE.toString(), index, GNSProtocol.WRITER.toString(), guid.getGuid());
   }
 
   /**
@@ -162,9 +139,26 @@ public class GNSClientCommands extends GNSClient {
   }
 
   /**
-   * Reads the JSONObject for the given targetGuid. The reader is the guid of
-   * the user attempting access. Signs the query using the private key of the
-   * user associated with the reader guid (unsigned if reader is null).
+   * Creates an index for a field. The guid is only used for authentication
+   * purposes.
+   *
+   * @param guid
+   * @param field
+   * @param index
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public void fieldCreateIndex(GuidEntry guid, String field, String index)
+          throws IOException, ClientException {
+    execute(GNSCommand.fieldCreateIndex(guid, field, index));
+  }
+
+  /**
+   * Reads the entire record from the GNS server for the given guid as a JSONObject.
+   * The reader is the guid of the user attempting access. Signs the query
+   * using the private key of the the reader guid (unsigned if reader is null).
    *
    * @param targetGuid
    * @param reader
@@ -178,15 +172,11 @@ public class GNSClientCommands extends GNSClient {
   public JSONObject read(String targetGuid, GuidEntry reader)
           throws ClientException, IOException {
     return execute(GNSCommand.read(targetGuid, reader)).getResultJSONObject();
-//    return new JSONObject(getResponse(reader != null ? CommandType.ReadArray
-//            : CommandType.ReadArrayUnsigned, reader, GNSProtocol.GUID.toString(),
-//            targetGuid, GNSProtocol.FIELD.toString(), GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.READER.toString(),
-//            reader != null ? reader.getGuid() : null));
   }
 
   /**
-   * Reads the entire record from the GNS server for the given guid. Signs the
-   * query using the private key of the guid.
+   * Reads the entire record from the GNS server for the given guid as a JSONObject.
+   * Signs the query using the private key of the guid.
    *
    * @param guid
    * @return a JSONObject containing the values in the field
@@ -202,9 +192,8 @@ public class GNSClientCommands extends GNSClient {
   /**
    * Returns true if the field exists in the given targetGuid. Field is a
    * string the naming the field. Field can use dot notation to indicate
-   * subfields. The reader is the guid of the user attempting access. This
-   * method signs the query using the private key of the user associated with
-   * the reader guid (unsigned if reader is null).
+   * subfields. The reader is the guid attempting access. Signs the query
+   * using the private key the reader guid (unsigned if reader is null).
    *
    * @param targetGuid
    * @param field
@@ -224,22 +213,6 @@ public class GNSClientCommands extends GNSClient {
     } catch (ClientException | IOException e) {
       return false;
     }
-
-//    try {
-//      if (reader != null) {
-//        getResponse(CommandType.Read, reader,
-//                GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
-//                GNSProtocol.READER.toString(), reader.getGuid());
-//      } else {
-//        getResponse(CommandType.ReadUnsigned, reader,
-//                GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
-//                GNSProtocol.READER.toString(), null);
-//      }
-//
-//      return true;
-//    } catch (FieldNotFoundException e) {
-//      return false;
-//    }
   }
 
   /**
@@ -262,7 +235,7 @@ public class GNSClientCommands extends GNSClient {
   }
 
   /**
-   * Reads the value of field for the given targetGuid. Field is a string the
+   * Reads the value of field for the given targetGuid. Field is a string
    * naming the field. Field can use dot notation to indicate subfields. The
    * reader is the guid of the user attempting access. This method signs the
    * query using the private key of the user associated with the reader guid
@@ -290,15 +263,6 @@ public class GNSClientCommands extends GNSClient {
         throw new ClientException(e);
       }
     }
-//    if (reader != null) {
-//      return CommandUtils.specialCaseSingleField(getResponse(CommandType.Read, reader,
-//              GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field, 
-//              GNSProtocol.READER.toString(), reader.getGuid()));
-//    } else {
-//      return CommandUtils.specialCaseSingleField(getResponse(CommandType.ReadUnsigned, reader,
-//              GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field, 
-//              GNSProtocol.READER.toString(), null));
-//    }
   }
 
   /**
@@ -321,10 +285,9 @@ public class GNSClientCommands extends GNSClient {
 
   /**
    * Reads the value of fields for the given targetGuid. Fields is a list of
-   * strings the naming the field. Fields can use dot notation to indicate
-   * subfields. The reader is the guid of the user attempting access. This
-   * method signs the query using the private key of the user associated with
-   * the reader guid (unsigned if reader is null).
+   * strings naming the fields. Fields can use dot notation to indicate
+   * subfields. The reader is the guid attempting access. Signs the query
+   * using the private key the reader guid (unsigned if reader is null).
    *
    * @param targetGuid
    * @param fields
@@ -339,15 +302,11 @@ public class GNSClientCommands extends GNSClient {
   public String fieldRead(String targetGuid, ArrayList<String> fields,
           GuidEntry reader) throws ClientException, IOException {
     return execute(GNSCommand.fieldRead(targetGuid, fields, reader)).getResultString();
-//    return getResponse(reader != null ? CommandType.ReadMultiField
-//            : CommandType.ReadMultiFieldUnsigned, reader, GNSProtocol.GUID.toString(), targetGuid,
-//            GNSProtocol.FIELDS.toString(), fields, GNSProtocol.READER.toString(), reader != null ? reader.getGuid()
-//                    : null);
   }
 
   /**
    * Reads the value of fields for the given guid. Fields is a list of strings
-   * the naming the field. Fields can use dot notation to indicate subfields.
+   * naming the fields. Fields can use dot notation to indicate subfields.
    * This method signs the query using the private key of the guid.
    *
    * @param targetGuid
@@ -365,7 +324,7 @@ public class GNSClientCommands extends GNSClient {
 
   /**
    * Removes a field in the JSONObject record of the given targetGuid. The
-   * writer is the guid of the user attempting access. Signs the query using
+   * writer is the guid attempting access. Signs the query using
    * the private key of the user associated with the writer guid.
    *
    * @param targetGuid
@@ -379,8 +338,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldRemove(String targetGuid, String field, GuidEntry writer)
           throws IOException, ClientException {
     execute(GNSCommand.fieldRemove(targetGuid, field, writer));
-//    getResponse(CommandType.RemoveField, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   // SELECT COMMANDS
@@ -392,8 +349,9 @@ public class GNSClientCommands extends GNSClient {
    * https://gns.name/wiki/index.php?title=Query_Syntax
    *
    * Currently there are two predefined field names in the GNS client (this is
-   * in edu.umass.cs.gnsclient.client.GNSCommandProtocol): GNSProtocol.LOCATION_FIELD_NAME.toString()
-   * = "geoLocation"; Defined as a "2d" index in the database.
+   * in edu.umass.cs.gnsclient.client.GNSCommandProtocol):
+   * GNSProtocol.LOCATION_FIELD_NAME.toString() = "geoLocation";
+   * Defined as a "2d" index in the database.
    * GNSProtocol.IPADDRESS_FIELD_NAME.toString() = "netAddress";
    *
    * There are links in the wiki page above to find the exact syntax for
@@ -409,7 +367,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public JSONArray selectQuery(String query) throws ClientException, IOException {
     return execute(GNSCommand.selectQuery(query)).getResultJSONArray();
-    //return new JSONArray(getResponse(CommandType.SelectQuery, GNSProtocol.QUERY.toString(), query));
   }
 
   /**
@@ -438,8 +395,6 @@ public class GNSClientCommands extends GNSClient {
   public JSONArray selectSetupGroupQuery(GuidEntry accountGuid,
           String publicKey, String query, int interval) throws ClientException, IOException {
     return execute(GNSCommand.selectSetupGroupQuery(accountGuid, publicKey, query, interval)).getResultJSONArray();
-//    return new JSONArray(getResponse(CommandType.SelectGroupSetupQuery, GNSProtocol.GUID.toString(), accountGuid.getGuid(),
-//            GNSProtocol.PUBLIC_KEY.toString(), publicKey, GNSProtocol.QUERY.toString(), query, GNSProtocol.INTERVAL.toString(), interval));
   }
 
   /**
@@ -457,7 +412,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public JSONArray selectLookupGroupQuery(String guid) throws ClientException, IOException {
     return execute(GNSCommand.selectLookupGroupQuery(guid)).getResultJSONArray();
-    //return new JSONArray(getResponse(CommandType.SelectGroupLookupQuery, GNSProtocol.GUID.toString(), guid));
   }
 
   // ACCOUNT COMMANDS
@@ -473,7 +427,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public String lookupGuid(String alias) throws IOException, ClientException {
     return execute(GNSCommand.lookupGUID(alias)).getResultString();
-    //return CommandUtils.specialCaseSingleField(getResponse(CommandType.LookupGuid, GNSProtocol.NAME.toString(), alias));
   }
 
   /**
@@ -489,8 +442,6 @@ public class GNSClientCommands extends GNSClient {
   public String lookupPrimaryGuid(String guid)
           throws IOException, ClientException {
     return execute(GNSCommand.lookupPrimaryGUID(guid)).getResultString();
-//    return CommandUtils.specialCaseSingleField(getResponse(CommandType.LookupPrimaryGuid, GNSProtocol.GUID.toString(),
-//            guid));
   }
 
   /**
@@ -508,12 +459,6 @@ public class GNSClientCommands extends GNSClient {
   public JSONObject lookupGuidRecord(String guid) throws IOException,
           ClientException {
     return execute(GNSCommand.lookupGUIDRecord(guid)).getResultJSONObject();
-//    try {
-//      return new JSONObject(getResponse(CommandType.LookupGuidRecord, GNSProtocol.GUID.toString(), guid));
-//    } catch (JSONException e) {
-//      throw new ClientException(
-//              "Failed to parse LOOKUP_GUID_RECORD response", e);
-//    }
   }
 
   /**
@@ -533,11 +478,6 @@ public class GNSClientCommands extends GNSClient {
   public JSONObject lookupAccountRecord(String accountGuid)
           throws IOException, ClientException {
     return execute(GNSCommand.lookupAccountRecord(accountGuid)).getResultJSONObject();
-//    try {
-//      return new JSONObject(getResponse(CommandType.LookupAccountRecord, GNSProtocol.GUID.toString(), accountGuid));
-//    } catch (JSONException e) {
-//      throw new ClientException("Failed to parse LOOKUP_ACCOUNT_RECORD response", e);
-//    }
   }
 
   /**
@@ -565,7 +505,7 @@ public class GNSClientCommands extends GNSClient {
    * @throws java.io.IOException
    * if a communication error occurs
    */
-  // FYI: publicKeyLookupFromGUID is implemented wrong in GNSCommand
+  // Note: publicKeyLookupFromGUID is implemented incorrectly in GNSCommand
   public PublicKey publicKeyLookupFromGuid(String guid)
           throws ClientException, IOException {
     JSONObject guidInfo = lookupGuidRecord(guid);
@@ -614,7 +554,7 @@ public class GNSClientCommands extends GNSClient {
     }
     return guidEntry;
   }
-  
+
   /**
    * Register a new account guid with the corresponding alias on the GNS
    * server. This generates a new guid and a public / private key pair.
@@ -661,8 +601,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public String accountGuidVerify(GuidEntry guid, String code) throws ClientException, IOException {
     return execute(GNSCommand.accountGuidVerify(guid, code)).getResultString();
-//    return getResponse(CommandType.VerifyAccount, guid, GNSProtocol.GUID.toString(),
-//            guid.getGuid(), GNSProtocol.CODE.toString(), code);
   }
 
   /**
@@ -677,8 +615,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public String accountResendAuthenticationEmail(GuidEntry guid) throws ClientException, IOException {
     return execute(GNSCommand.accountResendAuthenticationEmail(guid)).getResultString();
-//    return getResponse(CommandType.ResendAuthenticationEmail, guid, GNSProtocol.GUID.toString(),
-//            guid.getGuid());
   }
 
   /**
@@ -692,8 +628,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public void accountGuidRemove(GuidEntry guid) throws ClientException, IOException {
     execute(GNSCommand.accountGuidRemove(guid)).getResultString();
-//    getResponse(CommandType.RemoveAccount, guid, GNSProtocol.GUID.toString(), guid.getGuid(),
-//            GNSProtocol.NAME.toString(), guid.getEntityName());
   }
 
   /**
@@ -711,7 +645,7 @@ public class GNSClientCommands extends GNSClient {
           throws ClientException, IOException {
     execute(GNSCommand.accountGuidRemoveSecure(name));
   }
-  
+
   /**
    * Deletes the account given by name using the password to authenticate.
    *
@@ -725,9 +659,6 @@ public class GNSClientCommands extends GNSClient {
   public void accountGuidRemoveWithPassword(String name, String password)
           throws ClientException, IOException {
     execute(GNSCommand.accountGuidRemoveWithPassword(name, password));
-//    String encodedPassword = Password.encryptAndEncodePassword(password, name);
-//    getResponse(CommandType.RemoveAccountWithPassword, GNSProtocol.NAME.toString(), name, 
-//            GNSProtocol.PASSWORD.toString(), encodedPassword);
   }
 
   /**
@@ -744,7 +675,7 @@ public class GNSClientCommands extends GNSClient {
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias)
           throws ClientException, IOException {
 
-    execute(GNSCommand.createGUID( accountGuid, alias));
+    execute(GNSCommand.createGUID(accountGuid, alias));
     GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
     // If something went wrong an exception should be thrown above, but we're checking
     // here anyway just to be safe.
@@ -752,21 +683,6 @@ public class GNSClientCommands extends GNSClient {
       throw new ClientException("Failed to create guid for " + alias);
     }
     return guidEntry;
-//    long startTime = System.currentTimeMillis();
-//    GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
-//            getGNSProvider());
-//    DelayProfiler.updateDelay("updatePreferences", startTime);
-//    String returnedGuid = guidCreateHelper(accountGuid, alias,
-//            entry.getPublicKey());
-//    assert returnedGuid.equals(entry.getGuid());
-//    // Anything else we want to do here?
-//    if (!returnedGuid.equals(entry.getGuid())) {
-//      GNSClientConfig.getLogger().log(Level.WARNING,
-//              "Returned guid {0}doesn''t match locally created guid{1}",
-//              new Object[]{returnedGuid, entry.getGuid()});
-//    }
-//    DelayProfiler.updateDelay("guidCreateFromAlias", startTime);
-//    return entry;
   }
 
   /**
@@ -783,15 +699,15 @@ public class GNSClientCommands extends GNSClient {
           throws ClientException, IOException {
     execute(GNSCommand.batchCreateGUIDs(accountGuid, aliases));
   }
-  
+
   /**
    * Batch create guids with the given aliases with a timeout.
-   * 
+   *
    * @param accountGuid
    * @param aliases
    * @param timeout - how long in milliseconds before this command times out
    * @throws ClientException
-   * @throws IOException 
+   * @throws IOException
    */
   public void guidBatchCreate(GuidEntry accountGuid, Set<String> aliases, long timeout)
           throws ClientException, IOException {
@@ -810,7 +726,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public void guidRemove(GuidEntry guid) throws ClientException, IOException {
     execute(GNSCommand.removeGUID(guid));
-    //getResponse(CommandType.RemoveGuidNoAccount, guid, GNSProtocol.GUID.toString(), guid.getGuid());
   }
 
   /**
@@ -826,8 +741,6 @@ public class GNSClientCommands extends GNSClient {
   public void guidRemove(GuidEntry accountGuid, String guidToRemove)
           throws ClientException, IOException {
     execute(GNSCommand.removeGUID(accountGuid, guidToRemove));
-//    getResponse(CommandType.RemoveGuid, accountGuid, GNSProtocol.ACCOUNT_GUID.toString(),
-//            accountGuid.getGuid(), GNSProtocol.GUID.toString(), guidToRemove);
   }
 
   // GROUP COMMANDS
@@ -849,12 +762,6 @@ public class GNSClientCommands extends GNSClient {
   public JSONArray groupGetMembers(String groupGuid, GuidEntry reader)
           throws ClientException, IOException {
     return execute(GNSCommand.groupGetMembers(groupGuid, reader)).getResultJSONArray();
-//    try {
-//      return new JSONArray(getResponse(CommandType.GetGroupMembers,
-//              reader, GNSProtocol.GUID.toString(), groupGuid, GNSProtocol.READER.toString(), reader.getGuid()));
-//    } catch (JSONException e) {
-//      throw new ClientException("Invalid member list", e);
-//    }
   }
 
   /**
@@ -874,12 +781,6 @@ public class GNSClientCommands extends GNSClient {
   public JSONArray guidGetGroups(String guid, GuidEntry reader)
           throws IOException, ClientException {
     return execute(GNSCommand.guidGetGroups(guid, reader)).getResultJSONArray();
-//    try {
-//      return new JSONArray(getResponse(CommandType.GetGroups, reader,
-//              GNSProtocol.GUID.toString(), guid, GNSProtocol.READER.toString(), reader.getGuid()));
-//    } catch (JSONException e) {
-//      throw new ClientException("Invalid member list", e);
-//    }
   }
 
   /**
@@ -901,8 +802,6 @@ public class GNSClientCommands extends GNSClient {
   public void groupAddGuid(String groupGuid, String guidToAdd,
           GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.groupAddGuid(groupGuid, guidToAdd, writer));
-//    getResponse(CommandType.AddToGroup, writer, GNSProtocol.GUID.toString(), groupGuid, GNSProtocol.MEMBER.toString(),
-//            guidToAdd, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -922,8 +821,6 @@ public class GNSClientCommands extends GNSClient {
   public void groupAddGuids(String groupGuid, JSONArray members,
           GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.groupAddGUIDs(groupGuid, members, writer));
-//    getResponse(CommandType.AddMembersToGroup, writer, GNSProtocol.GUID.toString(), groupGuid,
-//            GNSProtocol.MEMBERS.toString(), members, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -943,8 +840,6 @@ public class GNSClientCommands extends GNSClient {
   public void groupRemoveGuid(String groupGuid, String guidToRemove,
           GuidEntry writer) throws ClientException, IOException {
     execute(GNSCommand.groupRemoveGuid(groupGuid, guidToRemove, writer));
-//    getResponse(CommandType.RemoveFromGroup, writer, GNSProtocol.GUID.toString(), groupGuid, GNSProtocol.MEMBER.toString(),
-//            guidToRemove, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -964,8 +859,6 @@ public class GNSClientCommands extends GNSClient {
   public void groupRemoveGuids(String groupGuid, JSONArray members,
           GuidEntry writer) throws ClientException, IOException {
     execute(GNSCommand.groupRemoveGuids(groupGuid, members, writer));
-//    getResponse(CommandType.RemoveMembersFromGroup, writer, GNSProtocol.GUID.toString(), guid,
-//            GNSProtocol.MEMBERS.toString(), members, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -988,8 +881,6 @@ public class GNSClientCommands extends GNSClient {
   public void groupAddMembershipUpdatePermission(GuidEntry groupGuid,
           String guidToAuthorize) throws ClientException, IOException {
     execute(GNSCommand.groupAddMembershipUpdatePermission(groupGuid, guidToAuthorize));
-//    aclAdd(AclAccessType.WRITE_WHITELIST, groupGuid, GNSProtocol.GROUP_ACL.toString(),
-//            guidToAuthorize);
   }
 
   /**
@@ -1012,8 +903,6 @@ public class GNSClientCommands extends GNSClient {
   public void groupRemoveMembershipUpdatePermission(GuidEntry groupGuid,
           String guidToUnauthorize) throws ClientException, IOException {
     execute(GNSCommand.groupRemoveMembershipUpdatePermission(groupGuid, guidToUnauthorize));
-//    aclRemove(AclAccessType.WRITE_WHITELIST, groupGuid, GNSProtocol.GROUP_ACL.toString(),
-//            guidToUnauthorize);
   }
 
   /**
@@ -1036,8 +925,6 @@ public class GNSClientCommands extends GNSClient {
   public void groupAddMembershipReadPermission(GuidEntry groupGuid,
           String guidToAuthorize) throws ClientException, IOException {
     execute(GNSCommand.groupAddMembershipReadPermission(groupGuid, guidToAuthorize));
-//    aclAdd(AclAccessType.READ_WHITELIST, groupGuid, GNSProtocol.GROUP_ACL.toString(),
-//            guidToAuthorize);
   }
 
   /**
@@ -1060,8 +947,6 @@ public class GNSClientCommands extends GNSClient {
   public void groupRemoveMembershipReadPermission(GuidEntry groupGuid,
           String guidToUnauthorize) throws ClientException, IOException {
     execute(GNSCommand.groupRemoveMembershipReadPermission(groupGuid, guidToUnauthorize));
-//    aclRemove(AclAccessType.READ_WHITELIST, groupGuid, GNSProtocol.GROUP_ACL.toString(),
-//            guidToUnauthorize);
   }
 
   // ACL COMMANDS
@@ -1088,7 +973,6 @@ public class GNSClientCommands extends GNSClient {
   public void aclAdd(AclAccessType accessType, GuidEntry targetGuid,
           String field, String accesserGuid) throws ClientException, IOException {
     execute(GNSCommand.aclAdd(accessType, targetGuid, field, accesserGuid));
-    //aclAdd(accessType.name(), targetGuid, field, accesserGuid);
   }
 
   /**
@@ -1111,7 +995,6 @@ public class GNSClientCommands extends GNSClient {
   public void aclRemove(AclAccessType accessType, GuidEntry targetGuid,
           String field, String accesserGuid) throws ClientException, IOException {
     execute(GNSCommand.aclRemove(accessType, targetGuid, field, accesserGuid));
-    //aclRemove(accessType.name(), targetGuid, field, accesserGuid);
   }
 
   /**
@@ -1135,7 +1018,6 @@ public class GNSClientCommands extends GNSClient {
   public JSONArray aclGet(AclAccessType accessType, GuidEntry targetGuid,
           String field, String readerGuid) throws ClientException, IOException {
     return execute(GNSCommand.aclGet(accessType, targetGuid, field, readerGuid)).getResultJSONArray();
-    //return aclGet(accessType.name(), targetGuid, field, readerGuid);
   }
 
   /**
@@ -1154,8 +1036,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldCreateAcl(AclAccessType accessType, GuidEntry guid, String field,
           String writerGuid) throws ClientException, IOException {
     execute(GNSCommand.fieldCreateAcl(accessType, guid, field, writerGuid));
-//    getResponse(CommandType.FieldCreateAcl, guid, GNSProtocol.ACL_TYPE.toString(), accessType.name(), GNSProtocol.GUID.toString(),
-//            guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.WRITER.toString(), writerGuid);
   }
 
   /**
@@ -1189,8 +1069,6 @@ public class GNSClientCommands extends GNSClient {
           String writerGuid)
           throws ClientException, IOException {
     execute(GNSCommand.fieldDeleteAcl(accessType, guid, field, writerGuid));
-//    getResponse(CommandType.FieldDeleteAcl, guid, GNSProtocol.ACL_TYPE.toString(), accessType.name(),
-//            GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.WRITER.toString(), writerGuid);
   }
 
   /**
@@ -1223,15 +1101,10 @@ public class GNSClientCommands extends GNSClient {
   public boolean fieldAclExists(AclAccessType accessType, GuidEntry guid, String field,
           String readerGuid) throws ClientException, IOException {
     return execute(GNSCommand.fieldAclExists(accessType, guid, field, readerGuid)).getResultBoolean();
-//    return Boolean.valueOf(getResponse(CommandType.FieldAclExists, guid, 
-//            GNSProtocol.ACL_TYPE.toString(), accessType.name(),
-//            GNSProtocol.GUID.toString(), guid.getGuid(), 
-//            GNSProtocol.FIELD.toString(), field, 
-//            GNSProtocol.READER.toString(), readerGuid));
   }
 
   /**
-   * 
+   *
    * @param accessType
    * @param guid
    * @param field
@@ -1261,8 +1134,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public void addAlias(GuidEntry guid, String name) throws ClientException, IOException {
     execute(GNSCommand.addAlias(guid, name));
-//    getResponse(CommandType.AddAlias, guid, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.NAME.toString(),
-//            name);
   }
 
   /**
@@ -1278,8 +1149,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public void removeAlias(GuidEntry guid, String name) throws ClientException, IOException {
     execute(GNSCommand.removeAlias(guid, name));
-//    getResponse(CommandType.RemoveAlias, guid, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.NAME.toString(),
-//            name);
   }
 
   /**
@@ -1294,12 +1163,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public JSONArray getAliases(GuidEntry guid) throws ClientException, IOException {
     return execute(GNSCommand.getAliases(guid)).getResultJSONArray();
-//    try {
-//      return new JSONArray(getResponse(CommandType.RetrieveAliases, guid,
-//              GNSProtocol.GUID.toString(), guid.getGuid()));
-//    } catch (JSONException e) {
-//      throw new ClientException("Invalid alias list", e);
-//    }
   }
 
   // Extended commands
@@ -1320,8 +1183,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldCreateList(String targetGuid, String field,
           JSONArray value, GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldCreateList(targetGuid, field, value, writer));
-//    getResponse(CommandType.CreateList, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1340,8 +1201,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldAppendOrCreateList(String targetGuid, String field,
           JSONArray value, GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldAppendOrCreateList(targetGuid, field, value, writer));
-//    getResponse(CommandType.AppendOrCreateList, writer, GNSProtocol.GUID.toString(), targetGuid,
-//            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1360,8 +1219,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldReplaceOrCreateList(String targetGuid, String field,
           JSONArray value, GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldReplaceOrCreateList(targetGuid, field, value, writer));
-//    getResponse(CommandType.ReplaceOrCreateList, writer, GNSProtocol.GUID.toString(), targetGuid,
-//            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1383,9 +1240,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldAppend(String targetGuid, String field, JSONArray value,
           GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldAppend(targetGuid, field, value, writer));
-//    getResponse(CommandType.AppendListWithDuplication, writer, GNSProtocol.GUID.toString(),
-//            targetGuid, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(),
-//            writer.getGuid());
   }
 
   /**
@@ -1408,8 +1262,6 @@ public class GNSClientCommands extends GNSClient {
           JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     execute(GNSCommand.fieldReplaceList(targetGuid, field, value, writer));
-//    getResponse(CommandType.ReplaceList, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1431,8 +1283,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldClear(String targetGuid, String field, JSONArray value,
           GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldClear(targetGuid, field, value, writer));
-//    getResponse(CommandType.RemoveList, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1452,8 +1302,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldClear(String targetGuid, String field, GuidEntry writer)
           throws IOException, ClientException {
     execute(GNSCommand.fieldClear(targetGuid, field, writer));
-//    getResponse(CommandType.Clear, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
-//            GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1481,10 +1329,6 @@ public class GNSClientCommands extends GNSClient {
     } catch (JSONException e) {
       throw new ClientException(e);
     }
-//    return commandResponseToJSONArray(field,
-//            (getResponse(reader != null ? CommandType.ReadArray
-//                    : CommandType.ReadArrayUnsigned, reader, GNSProtocol.GUID.toString(), guid, GNSProtocol.FIELD.toString(),
-//                    field, GNSProtocol.READER.toString(), reader != null ? reader.getGuid() : null)));
   }
 
   /**
@@ -1506,9 +1350,6 @@ public class GNSClientCommands extends GNSClient {
           String newValue, int index, GuidEntry writer) throws IOException,
           ClientException {
     execute(GNSCommand.fieldSetElement(targetGuid, field, newValue, index, writer));
-//    getResponse(CommandType.Set, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
-//            GNSProtocol.VALUE.toString(), newValue, GNSProtocol.N.toString(), Integer.toString(index), GNSProtocol.WRITER.toString(),
-//            writer.getGuid());
   }
 
   /**
@@ -1526,8 +1367,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldSetNull(String targetGuid, String field, GuidEntry writer)
           throws IOException, ClientException {
     execute(GNSCommand.fieldSetNull(targetGuid, field, writer));
-//    getResponse(CommandType.SetFieldNull, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   //
@@ -1547,8 +1386,6 @@ public class GNSClientCommands extends GNSClient {
    */
   public JSONArray select(String field, String value) throws ClientException, IOException {
     return execute(GNSCommand.select(field, value)).getResultJSONArray();
-//    return new JSONArray(getResponse(CommandType.Select,
-//            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value));
   }
 
   /**
@@ -1569,8 +1406,6 @@ public class GNSClientCommands extends GNSClient {
   public JSONArray selectWithin(String field, JSONArray value)
           throws ClientException, IOException {
     return execute(GNSCommand.selectWithin(field, value)).getResultJSONArray();
-//    return new JSONArray(getResponse(CommandType.SelectWithin, GNSProtocol.FIELD.toString(), field, GNSProtocol.WITHIN.toString(),
-//            value));
   }
 
   /**
@@ -1592,8 +1427,6 @@ public class GNSClientCommands extends GNSClient {
   public JSONArray selectNear(String field, JSONArray value,
           Double maxDistance) throws ClientException, IOException {
     return execute(GNSCommand.selectNear(field, value, maxDistance)).getResultJSONArray();
-//    return new JSONArray(getResponse(CommandType.SelectNear, GNSProtocol.FIELD.toString(), field, GNSProtocol.NEAR.toString(), value,
-//            GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance)));
   }
 
   /**
@@ -1656,7 +1489,6 @@ public class GNSClientCommands extends GNSClient {
     } catch (JSONException e) {
       throw new ClientException(e);
     }
-    //return fieldReadArray(targetGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), readerGuid);
   }
 
   /**
@@ -1686,8 +1518,6 @@ public class GNSClientCommands extends GNSClient {
   public void activeCodeClear(String guid, String action, GuidEntry writerGuid)
           throws ClientException, IOException {
     execute(GNSCommand.activeCodeClear(guid, action, writerGuid));
-//    getResponse(CommandType.ClearCode, writerGuid, GNSProtocol.GUID.toString(), guid,
-//            GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.WRITER.toString(), writerGuid.getGuid());
   }
 
   /**
@@ -1700,13 +1530,10 @@ public class GNSClientCommands extends GNSClient {
    * @throws java.io.IOException
    * if a communication error occurs
    */
-  // FIXME: The GNSCommand method expects bytes which it Base64 encodes.
   public void activeCodeSet(String guid, String action, byte[] code,
           GuidEntry writerGuid) throws ClientException, IOException {
+    // The GNSCommand method expects bytes which it Base64 encodes.
     execute(GNSCommand.activeCodeSet(guid, action, code, writerGuid));
-//    getResponse(CommandType.SetCode, writerGuid, GNSProtocol.GUID.toString(), guid,
-//            GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.AC_CODE.toString(), code,
-//            GNSProtocol.WRITER.toString(), writerGuid.getGuid());
   }
 
   /**
@@ -1722,11 +1549,6 @@ public class GNSClientCommands extends GNSClient {
   public String activeCodeGet(String guid, String action, GuidEntry readerGuid)
           throws ClientException, IOException {
     return execute(GNSCommand.activeCodeGet(guid, action, readerGuid)).getResultString();
-//    String code = getResponse(CommandType.GetCode,
-//            readerGuid, GNSProtocol.GUID.toString(), guid, 
-//            GNSProtocol.AC_ACTION.toString(), action,
-//            GNSProtocol.READER.toString(), readerGuid.getGuid());
-//    return code;
   }
 
   // Extended commands
@@ -1744,7 +1566,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldCreateList(GuidEntry target, String field, JSONArray value)
           throws IOException, ClientException {
     execute(GNSCommand.fieldCreateList(field, field, value, target));
-    //fieldCreateList(target.getGuid(), field, value, target);
   }
 
   /**
@@ -1764,8 +1585,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldCreateOneElementList(String targetGuid, String field,
           String value, GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldCreateOneElementList(targetGuid, field, value, writer));
-//    getResponse(CommandType.Create, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1802,8 +1621,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldAppendOrCreate(String targetGuid, String field,
           String value, GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldAppendOrCreate(targetGuid, field, value, writer));
-//    getResponse(CommandType.AppendOrCreate, writer, GNSProtocol.GUID.toString(), targetGuid,
-//            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1824,8 +1641,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldReplaceOrCreate(String targetGuid, String field,
           String value, GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldReplaceOrCreate(targetGuid, field, value, writer));
-//    getResponse(CommandType.ReplaceOrCreate, writer, GNSProtocol.GUID.toString(), targetGuid,
-//            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1882,8 +1697,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldReplace(String targetGuid, String field, String value,
           GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldReplace(writer, field, value));
-//    getResponse(CommandType.Replace, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -1934,9 +1747,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldAppend(String targetGuid, String field, String value,
           GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldAppend(targetGuid, field, value, writer));
-//    getResponse(CommandType.AppendWithDuplication, writer, GNSProtocol.GUID.toString(),
-//            targetGuid, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(),
-//            writer.getGuid());
   }
 
   /**
@@ -1973,8 +1783,6 @@ public class GNSClientCommands extends GNSClient {
           JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     execute(GNSCommand.fieldAppendWithSetSemantics(targetGuid, field, value, writer));
-//    getResponse(CommandType.AppendList, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -2011,8 +1819,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldAppendWithSetSemantics(String targetGuid, String field,
           String value, GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldAppendWithSetSemantics(targetGuid, field, value, writer));
-//    getResponse(CommandType.Append, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
-//            GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -2048,13 +1854,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldReplaceFirstElement(String targetGuid, String field,
           String value, GuidEntry writer) throws IOException, ClientException {
     execute(GNSCommand.fieldReplaceFirstElement(targetGuid, field, value, writer));
-//    if (writer == null) {
-//      throw new ClientException(
-//              "Can not perform an update without querier information");
-//    }
-//    getResponse(CommandType.Replace, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), writer != null ? writer.getGuid()
-//                    : null);
   }
 
   /**
@@ -2096,9 +1895,6 @@ public class GNSClientCommands extends GNSClient {
           String newValue, String oldValue, GuidEntry writer)
           throws IOException, ClientException {
     execute(GNSCommand.fieldSubstitute(writer, field, newValue, oldValue));
-//    getResponse(CommandType.Substitute, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.VALUE.toString(), newValue, GNSProtocol.OLD_VALUE.toString(), oldValue, GNSProtocol.WRITER.toString(),
-//            writer.getGuid());
   }
 
   /**
@@ -2144,9 +1940,6 @@ public class GNSClientCommands extends GNSClient {
           JSONArray newValue, JSONArray oldValue, GuidEntry writer)
           throws IOException, ClientException {
     execute(GNSCommand.fieldSubstitute(writer, field, newValue, oldValue));
-//    getResponse(CommandType.SubstituteList, writer, GNSProtocol.GUID.toString(), targetGuid,
-//            GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), newValue, GNSProtocol.OLD_VALUE.toString(),
-//            oldValue, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
   /**
@@ -2185,13 +1978,10 @@ public class GNSClientCommands extends GNSClient {
    * @throws java.io.IOException
    * if a communication error occurs
    */
-  @Deprecated
+  //FIXME: This should probably be deprecated and removed.
   public String fieldReadArrayFirstElement(String guid, String field,
           GuidEntry reader) throws ClientException, IOException {
     return execute(GNSCommand.fieldReadArrayFirstElement(guid, field, reader)).getResultString();
-//    return getResponse(reader != null ? CommandType.ReadArrayOne
-//            : CommandType.ReadArrayOneUnsigned, reader, GNSProtocol.GUID.toString(), guid, GNSProtocol.FIELD.toString(),
-//            field, GNSProtocol.READER.toString(), reader != null ? reader.getGuid() : null);
   }
 
   /**
@@ -2207,7 +1997,7 @@ public class GNSClientCommands extends GNSClient {
    * @throws java.io.IOException
    * if a communication error occurs
    */
-  @Deprecated
+  //FIXME: This should probably be deprecated and removed.
   public String fieldReadArrayFirstElement(GuidEntry guid, String field)
           throws ClientException, IOException {
     return fieldReadArrayFirstElement(guid.getGuid(), field, guid);
@@ -2227,7 +2017,6 @@ public class GNSClientCommands extends GNSClient {
   public void fieldRemove(GuidEntry guid, String field)
           throws IOException, ClientException {
     execute(GNSCommand.fieldRemove(field, field, guid));
-    //fieldRemove(guid.getGuid(), field, guid);
   }
 
   /**
