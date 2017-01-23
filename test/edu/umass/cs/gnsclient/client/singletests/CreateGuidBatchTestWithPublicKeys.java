@@ -94,16 +94,11 @@ public class CreateGuidBatchTestWithPublicKeys {
     for (int i = 0; i < numberTocreate; i++) {
       aliases.add("testGUID" + RandomString.randomString(6));
     }
-    String result = null;
-    long oldTimeout = client.getReadTimeout();
     try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(masterGuid, aliases);
-      client.setReadTimeout(oldTimeout);
+      client.guidBatchCreate(masterGuid, aliases, 15 * 1000);
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
   }
 
   /**

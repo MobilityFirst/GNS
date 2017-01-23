@@ -82,7 +82,7 @@ public class ActiveCodeHelloWorldExample {
 		System.out.println("Before the code is deployed, the value of field("+field+") is "+response);
 		
 		// read in the code as a string
-		final String code = new String(Files.readAllBytes(Paths.get(codeFile)));
+		final byte[] code = Files.readAllBytes(Paths.get(codeFile));
 		
 		// set up the code for on read operation
 		if(isRead){

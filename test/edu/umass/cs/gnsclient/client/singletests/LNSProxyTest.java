@@ -347,12 +347,14 @@ public class LNSProxyTest extends DefaultTest {
     if (client != null) {
       client.close();
     }
-    System.out.println("\nPrinting reverse-engineered return types:");
-    for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
-      System.out.println(type + " returns "
-              + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
-              + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
-    }
+    
+//    REVERSE_ENGINEER code is no longer relevant in GNSClientCommands - Westy
+//    System.out.println("\nPrinting reverse-engineered return types:");
+//    for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
+//      System.out.println(type + " returns "
+//              + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
+//              + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
+//    }
   }
 
   private static void dropAllDatabases() {
@@ -2120,16 +2122,11 @@ public class LNSProxyTest extends DefaultTest {
     for (int i = 0; i < numberTocreate; i++) {
       aliases.add("testGUID" + RandomString.randomString(12));
     }
-    String result = null;
-    long oldTimeout = client.getReadTimeout();
     try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(accountGuidForBatch, aliases);
-      client.setReadTimeout(oldTimeout);
+      client.guidBatchCreate(accountGuidForBatch, aliases, 15 * 1000);
     } catch (Exception e) {
       fail("Exception while creating guids: ", e);
     }
-    assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
   }
 
   //@Test

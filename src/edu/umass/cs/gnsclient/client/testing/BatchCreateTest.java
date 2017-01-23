@@ -98,10 +98,7 @@ public class BatchCreateTest {
     String result;
     long startTime = System.currentTimeMillis();
     int guidCnt = numberToCreate;
-    long oldTimeout = client.getReadTimeout();
     try {
-      client.setReadTimeout(2 * 60 * 1000); // set the timeout to 2 minutes
-
       while (guidCnt > 0) {
         int numberTocreate = Math.min(guidCnt, MAX_BATCH_SIZE);
         System.out.println("Creating " + numberTocreate);
@@ -110,8 +107,7 @@ public class BatchCreateTest {
           aliases.add("testGUID" + RandomString.randomString(6));
         }
         //Actually create them on the server
-        result = client.guidBatchCreate(masterGuid, aliases);
-        System.out.println("result = " + result);
+        client.guidBatchCreate(masterGuid, aliases, 2 * 60 * 1000); // set the timeout to 2 minutes
 
 //        //make one non batch for comparison
 //        client.guidCreate(masterGuid, "NOTBATCHALIAS");
@@ -133,8 +129,6 @@ public class BatchCreateTest {
       }
     } catch (Exception e) {
       System.out.println("Problem creating batch: " + e);
-    } finally {
-      client.setReadTimeout(oldTimeout);
     }
     System.out.println("Creating " + numberToCreate + " guids took "
             + ((System.currentTimeMillis() - startTime) / 1000) + " seconds");

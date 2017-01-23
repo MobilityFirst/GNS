@@ -2251,6 +2251,7 @@ public static final CommandPacket batchCreateGUIDs(
    * @throws ClientException
    */
   @Deprecated
+  // FIXME: This should probably go away.
   public static final CommandPacket fieldReadArrayFirstElement(String targetGUID, String field,
           GuidEntry reader) throws ClientException {
     return getCommand(reader != null ? CommandType.ReadArrayOne
@@ -2272,6 +2273,7 @@ public static final CommandPacket batchCreateGUIDs(
    * @throws ClientException
    */
   @Deprecated
+  // FIXME: This should probably go away.
   public static final CommandPacket fieldReadArrayFirstElement(GuidEntry targetGUID, String field)
           throws ClientException {
     return fieldReadArrayFirstElement(targetGUID.getGuid(), field, targetGUID);

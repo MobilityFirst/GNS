@@ -121,10 +121,10 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_050_ActiveCodeSetReadCode() {
-    String readcode = null;
+    byte[] readcode = null;
     try {
       // read in the code as a string
-      readcode = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/readTest.js")));
+      readcode = Files.readAllBytes(Paths.get("scripts/activeCode/testing/readTest.js"));
     } catch (IOException e) {
       Utils.failWithStackTrace("Exception reading code file: " + e);
     }
@@ -174,10 +174,10 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_080_ActiveCodeSetWriteCode() {
-    String writecode = null;
+    byte[] writecode = null;
     try {
       // read in the code as a string
-      writecode = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/writeTest.js")));
+      writecode = Files.readAllBytes(Paths.get("scripts/activeCode/testing/writeTest.js"));
     } catch (IOException e) {
       Utils.failWithStackTrace("Exception reading code file: " + e);
     }
@@ -239,10 +239,10 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_120_ActiveCodeSetWriteFromReadCode() {
-    String writecode = null;
+    byte[] writecode = null;
     try {
       // read in the code as a string
-      writecode = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/writeFromReadGuidTest.js")));
+      writecode = Files.readAllBytes(Paths.get("scripts/activeCode/testing/writeFromReadGuidTest.js"));
     } catch (IOException e) {
       Utils.failWithStackTrace("Exception reading code file: " + e);
     }

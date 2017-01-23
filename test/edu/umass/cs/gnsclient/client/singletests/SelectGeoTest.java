@@ -22,22 +22,15 @@ package edu.umass.cs.gnsclient.client.singletests;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
-import java.awt.geom.Point2D;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import static org.junit.Assert.*;
 
@@ -50,7 +43,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SelectGeoTest {
+public class SelectGeoTest extends DefaultGNSTest {
 
   private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static String password = "password";

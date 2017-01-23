@@ -1050,7 +1050,7 @@ public class MultipleClientTest {
 
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), standardWriteFieldName, "bummer", westyEntry);
       try {
-        getRandomClient().fieldReplaceFirstElementTest(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
+        getRandomClient().fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
       } catch (ClientException e) {
       }

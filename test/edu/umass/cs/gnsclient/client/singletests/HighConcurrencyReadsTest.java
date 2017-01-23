@@ -205,7 +205,7 @@ public class HighConcurrencyReadsTest extends DefaultTest {
 			Assert.assertEquals(
 					clients[numClients > 1 ? 1 : 0].fieldRead(guid, someField),
 					(someValue));
-		} catch (IOException | ClientException | JSONException e) {
+		} catch (IOException | ClientException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {

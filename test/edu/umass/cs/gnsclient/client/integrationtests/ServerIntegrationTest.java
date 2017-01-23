@@ -448,13 +448,14 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
     dropAllDatabases();
 
-    System.out.println("\nPrinting reverse-engineered return types:");
-    for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
-      System.out.println(type + " returns "
-              + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
-              + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
-
-    }
+//    REVERSE_ENGINEER code is no longer relevant in GNSClientCommands - Westy
+//    System.out.println("\nPrinting reverse-engineered return types:");
+//    for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
+//      System.out.println(type + " returns "
+//              + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
+//              + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
+//
+//    }
   }
 
   private static void dropAllDatabases() {
@@ -3065,12 +3066,9 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       //Brendan: I added Integer.toString(i) to this to guarantee no collisions during creation.
       aliases.add("testGUID511" + Integer.toString(i) + RandomString.randomString(12));
     }
-    long oldTimeout = clientCommands.getReadTimeout();
     try {
-      clientCommands.setReadTimeout(20 * 1000); // 30 seconds
-      clientCommands.guidBatchCreate(accountGuidForBatch, aliases);
+      clientCommands.guidBatchCreate(accountGuidForBatch, aliases, 20 * 1000);
       //result = client.guidBatchCreate(accountGuidForBatch, aliases);
-      clientCommands.setReadTimeout(oldTimeout);
     } catch (Exception e) {
       failWithStackTrace("Exception while creating guids: ", e);
     }
