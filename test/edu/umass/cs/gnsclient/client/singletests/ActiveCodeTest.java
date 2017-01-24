@@ -136,6 +136,27 @@ public class ActiveCodeTest {
       Utils.failWithStackTrace("Setting active code: " + e);
     }
   }
+  
+  /**
+   *
+   */
+  @Test
+  public void test_055_ActiveCodeCheckGetReadCode() {
+    String expected = null;
+    try {
+      // read in the code as a string
+      expected = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/readTest.js")));
+    } catch (IOException e) {
+      Utils.failWithStackTrace("Exception reading code file: " + e);
+    }
+    String actual = null;
+    try {
+      actual = client.activeCodeGet(masterGuid.getGuid(), ActiveCode.READ_ACTION, masterGuid);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Problem getting active code: " + e);
+    }
+    Assert.assertEquals(expected, actual);
+  }
 
   /**
    *

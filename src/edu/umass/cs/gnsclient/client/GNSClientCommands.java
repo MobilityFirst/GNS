@@ -1801,10 +1801,11 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @param action
    * @param readerGuid
    * @return Active code of {@code guid} as byte[]
-   * @throws Exception
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws java.io.IOException
    */
   public String activeCodeGet(String guid, String action, GuidEntry readerGuid)
-          throws Exception {
+          throws ClientException, IOException {
     String code = getResponse(CommandType.GetCode,
             readerGuid, GNSProtocol.GUID.toString(), guid, 
             GNSProtocol.AC_ACTION.toString(), action, 
