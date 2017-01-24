@@ -32,12 +32,12 @@ import java.io.IOException;
 
 import java.util.HashSet;
 import java.util.Set;
-import static org.hamcrest.Matchers.*;
+import org.hamcrest.Matchers;
 
 import org.json.JSONArray;
 
 import org.json.JSONException;
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -51,7 +51,7 @@ import org.junit.runners.MethodSorters;
 public class SelectGeoTest extends DefaultGNSTest {
 
   private static GNSClientCommands clientCommands = null;
-  private static GuidEntry globalMasterGuid;
+  private static GuidEntry masterGuid;
 
   /**
    *
@@ -65,7 +65,7 @@ public class SelectGeoTest extends DefaultGNSTest {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        globalMasterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
         Utils.failWithStackTrace("Exception while looking up account guid: " + e);
       }
@@ -81,7 +81,7 @@ public class SelectGeoTest extends DefaultGNSTest {
   public void test_10_GeoSpatialSelectCreateGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = clientCommands.guidCreate(globalMasterGuid, 
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, 
                 "geoTest-" + RandomString.randomString(6));
         createdGuids.add(testEntry); // save them so we can delete them later
         clientCommands.setLocation(testEntry, 0.0, 0.0);
@@ -102,7 +102,7 @@ public class SelectGeoTest extends DefaultGNSTest {
       loc.put(1.0);
       JSONArray result = clientCommands.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (JSONException | ClientException | IOException e) {
       Utils.failWithStackTrace("Exception executing selectNear: " + e);
     }
@@ -125,7 +125,7 @@ public class SelectGeoTest extends DefaultGNSTest {
       rect.put(lowerRight);
       JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (JSONException | ClientException | IOException e) {
       Utils.failWithStackTrace("Exception executing selectWithin: " + e);
     }
@@ -138,7 +138,7 @@ public class SelectGeoTest extends DefaultGNSTest {
   public void test_40_GeoSpatialSelectCleanup() {
     try {
       for (GuidEntry guid : createdGuids) {
-        clientCommands.guidRemove(globalMasterGuid, guid.getGuid());
+        clientCommands.guidRemove(masterGuid, guid.getGuid());
       }
       createdGuids.clear();
     } catch (ClientException | IOException e) {
