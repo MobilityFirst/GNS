@@ -8,12 +8,14 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Config;
 import java.io.IOException;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.utils.Utils;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 
@@ -21,11 +23,8 @@ import org.junit.Assert;
  * Active Code Tests
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ActiveCodeTest {
-
-  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client = null;
+public class ActiveCodeTest extends DefaultGNSTest {
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
 
   private static final String FIELD = "someField";
@@ -38,23 +37,14 @@ public class ActiveCodeTest {
    *
    */
   public ActiveCodeTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
     }
-  }
-  
-  /**
-   *
-   */
-  @Test
-  public void test_000_ActiveCodeCheckForEnabled() {
-    Assert.assertFalse("Active code is disabled!!", 
-            Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE));
   }
 
   /**
@@ -62,9 +52,12 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_010_ActiveCodeCreateGuids() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
-
+      masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception while creating guids: " + e);
     }
@@ -75,10 +68,14 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_020_ActiveCodeUpdateFields() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // set up a field
-      client.fieldUpdate(masterGuid, FIELD, ORIGINAL_VALUE);
-      client.fieldUpdate(masterGuid, OTHER_FIELD, OTHER_RESULT);
+      clientCommands.fieldUpdate(masterGuid, FIELD, ORIGINAL_VALUE);
+      clientCommands.fieldUpdate(masterGuid, OTHER_FIELD, OTHER_RESULT);
     } catch (IOException | ClientException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
@@ -89,29 +86,36 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_030_ActiveCodeClearCode() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // clear code for both read and write action
-      client.activeCodeClear(masterGuid.getGuid(), ActiveCode.READ_ACTION, masterGuid);
-      client.activeCodeClear(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, masterGuid);
+      clientCommands.activeCodeClear(masterGuid.getGuid(), ActiveCode.READ_ACTION, masterGuid);
+      clientCommands.activeCodeClear(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, masterGuid);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
-  
+
   //
   // Active code read test - see also the script mentioned below
   //
-
   /**
    *
    */
   @Test
   public void test_040_ActiveCodeCheckUnmodified() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // get the value of the field
-      String actual = client.fieldRead(masterGuid, FIELD);
+      String actual = clientCommands.fieldRead(masterGuid, FIELD);
       Assert.assertEquals(ORIGINAL_VALUE, actual);
-    } catch (Exception e) {
+    } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
   }
@@ -121,6 +125,10 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_050_ActiveCodeSetReadCode() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     byte[] readcode = null;
     try {
       // read in the code as a string
@@ -130,8 +138,7 @@ public class ActiveCodeTest {
     }
     try {
       // set up the code for on read operation
-      client.activeCodeSet(masterGuid.getGuid(), ActiveCode.READ_ACTION, readcode, masterGuid);
-      //client.activeCodeSet(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, writecode, masterGuid);
+      clientCommands.activeCodeSet(masterGuid.getGuid(), ActiveCode.READ_ACTION, readcode, masterGuid);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Setting active code: " + e);
     }
@@ -142,11 +149,15 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_060_ActiveCodeCheckModified() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // get the value of the field again
-      String actual = client.fieldRead(masterGuid, FIELD);
+      String actual = clientCommands.fieldRead(masterGuid, FIELD);
       Assert.assertEquals("updated value", actual);
-    } catch (Exception e) {
+    } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
   }
@@ -156,11 +167,15 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_070_ActiveCodeCheckOther() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // make sure the other field still works
-      String actual = client.fieldRead(masterGuid, OTHER_FIELD);
+      String actual = clientCommands.fieldRead(masterGuid, OTHER_FIELD);
       Assert.assertEquals(OTHER_RESULT, actual);
-    } catch (Exception e) {
+    } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
   }
@@ -174,6 +189,10 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_080_ActiveCodeSetWriteCode() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     byte[] writecode = null;
     try {
       // read in the code as a string
@@ -183,7 +202,7 @@ public class ActiveCodeTest {
     }
     try {
       // set up the code for on read operation
-      client.activeCodeSet(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, writecode, masterGuid);
+      clientCommands.activeCodeSet(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, writecode, masterGuid);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Setting active code: " + e);
     }
@@ -194,10 +213,14 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_090_ActiveCodeUpdate() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // get the value of the field again
-      client.update(masterGuid, new JSONObject("{\"test1\":\"value1\"}"));
-    } catch (Exception e) {
+      clientCommands.update(masterGuid, new JSONObject("{\"test1\":\"value1\"}"));
+    } catch (JSONException | IOException | ClientException e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
   }
@@ -207,11 +230,15 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_100_ActiveCodeCheckModifiedWrite() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // get the value of the field again
-      String actual = client.fieldRead(masterGuid, "test1");
+      String actual = clientCommands.fieldRead(masterGuid, "test1");
       Assert.assertEquals("updated value1", actual);
-    } catch (Exception e) {
+    } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
   }
@@ -221,10 +248,14 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_110_ActiveCodeClearCode() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // clear code for both read and write action
-      client.activeCodeClear(masterGuid.getGuid(), ActiveCode.READ_ACTION, masterGuid);
-      client.activeCodeClear(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, masterGuid);
+      clientCommands.activeCodeClear(masterGuid.getGuid(), ActiveCode.READ_ACTION, masterGuid);
+      clientCommands.activeCodeClear(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, masterGuid);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
@@ -235,10 +266,14 @@ public class ActiveCodeTest {
   // Another active code write test - see also the script mentioned below
   //
   /**
-   * 
+   *
    */
   @Test
   public void test_120_ActiveCodeSetWriteFromReadCode() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     byte[] writecode = null;
     try {
       // read in the code as a string
@@ -248,7 +283,7 @@ public class ActiveCodeTest {
     }
     try {
       // set up the code for on read operation
-      client.activeCodeSet(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, writecode, masterGuid);
+      clientCommands.activeCodeSet(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, writecode, masterGuid);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Setting active code: " + e);
     }
@@ -259,10 +294,14 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_130_ActiveCodeUpdateAgain() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // get the value of the field again
-      client.update(masterGuid, new JSONObject("{\"test2\":\"value2\"}"));
-    } catch (Exception e) {
+      clientCommands.update(masterGuid, new JSONObject("{\"test2\":\"value2\"}"));
+    } catch (JSONException | IOException | ClientException e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
   }
@@ -272,12 +311,16 @@ public class ActiveCodeTest {
    */
   @Test
   public void test_140_ActiveCodeCheckModifiedWriteFromRead() {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+      System.out.println("Active code is disabled!");
+      return;
+    }
     try {
       // get the value of the field again
-      System.out.println(client.read(masterGuid));
-      String actual = client.fieldRead(masterGuid, "test1");
+      System.out.println(clientCommands.read(masterGuid));
+      String actual = clientCommands.fieldRead(masterGuid, "test1");
       Assert.assertEquals("original value", actual);
-    } catch (Exception e) {
+    } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
   }

@@ -26,10 +26,13 @@ import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 import java.util.HashSet;
 
-import static org.hamcrest.Matchers.*;
+import org.hamcrest.Matchers;
+import org.json.JSONException;
 import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
@@ -37,27 +40,25 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS using the UniversalGnsClientFull.
+ * Test the alias functionality.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class AliasTestNew {
+public class AliasTestNew extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client = null;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
 
   /**
    *
    */
   public AliasTestNew() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        failWithStackTrace("Exception creating client: ", e);
+        Utils.failWithStackTrace("Exception creating client: ", e);
       }
     }
   }
@@ -68,9 +69,9 @@ public class AliasTestNew {
   @Test
   public void test_100_CreateGuid() {
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+      masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
     } catch (Exception e) {
-      failWithStackTrace("Exception while creating guid: ", e);
+      Utils.failWithStackTrace("Exception while creating guid: ", e);
     }
   }
 
@@ -86,11 +87,11 @@ public class AliasTestNew {
     try {
       // KEEP IN MIND THAT CURRENTLY ONLY ACCOUNT GUIDS HAVE ALIASES
       // add an alias to the masterGuid
-      client.addAlias(masterGuid, alias);
+      clientCommands.addAlias(masterGuid, alias);
       // lookup the guid using the alias
-      Assert.assertEquals(masterGuid.getGuid(), client.lookupGuid(alias));
-    } catch (Exception e) {
-      failWithStackTrace("Exception while adding alias: ", e);
+      Assert.assertEquals(masterGuid.getGuid(), clientCommands.lookupGuid(alias));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while adding alias: ", e);
     }
   }
 
@@ -102,18 +103,14 @@ public class AliasTestNew {
     //CHECKED FOR VALIDITY
     try {
       // grab all the alias from the guid
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(clientCommands
               .getAliases(masterGuid));
-
-      /* arun: This test has no reason to succeed because getAliases is
-			 * not coordinated or forceCoordinateable.
-       */
       // make sure our new one is in there
-      Assert.assertThat(actual, hasItem(alias));
+      Assert.assertThat(actual, Matchers.hasItem(alias));
       // now remove it
-      client.removeAlias(masterGuid, alias);
-    } catch (Exception e) {
-      failWithStackTrace("Exception removing alias: ", e);
+      clientCommands.removeAlias(masterGuid, alias);
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception removing alias: ", e);
     }
   }
 
@@ -126,20 +123,13 @@ public class AliasTestNew {
     try {
       // and make sure it is gone
       try {
-        client.lookupGuid(alias);
-        failWithStackTrace(alias + " should not exist");
+        clientCommands.lookupGuid(alias);
+        Utils.failWithStackTrace(alias + " should not exist");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      failWithStackTrace("Exception while checking alias: ", e);
+      Utils.failWithStackTrace("Exception while checking alias: ", e);
     }
-  }
-
-  private static final void failWithStackTrace(String message, Exception... e) {
-    if (e != null && e.length > 0) {
-      e[0].printStackTrace();
-    }
-    org.junit.Assert.fail(message);
   }
 
 }

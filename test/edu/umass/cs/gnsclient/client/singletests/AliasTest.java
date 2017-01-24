@@ -27,26 +27,26 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 import java.util.HashSet;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-
+import org.hamcrest.Matchers;
+import org.json.JSONException;
+import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS using the UniversalGnsClientFull.
+ * Test the alias functionality.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class AliasTest {
+public class AliasTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client = null;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
   private static final String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
 
@@ -54,12 +54,11 @@ public class AliasTest {
    *
    */
   public AliasTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        //client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
     }
   }
@@ -70,9 +69,9 @@ public class AliasTest {
   @Test
   public void test_01_CreateAccount() {
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+      masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -86,9 +85,9 @@ public class AliasTest {
       // KEEP IN MIND THAT CURRENTLY ONLY ACCOUNT GUIDS HAVE ALIASES
       //
       // add an alias to the masterGuid
-      client.addAlias(masterGuid, alias);
-    } catch (Exception e) {
-      fail("Exception when we adding alias: " + e);
+      clientCommands.addAlias(masterGuid, alias);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we adding alias: " + e);
     }
   }
 
@@ -99,15 +98,15 @@ public class AliasTest {
   public void test_03_AliasAddCheck() {
     try {
       // lookup the guid using the alias
-      assertEquals(masterGuid.getGuid(), client.lookupGuid(alias));
+      Assert.assertEquals(masterGuid.getGuid(), clientCommands.lookupGuid(alias));
 
       // grab all the aliases from the guid
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.getAliases(masterGuid));
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(clientCommands.getAliases(masterGuid));
       // make sure our new one is in there
-      assertThat(actual, hasItem(alias));
+      Assert.assertThat(actual, Matchers.hasItem(alias));
 
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (IOException | ClientException | JSONException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -118,9 +117,9 @@ public class AliasTest {
   public void test_04_AliasRemove() {
     try {
       // now remove it 
-      client.removeAlias(masterGuid, alias);
-    } catch (Exception e) {
-      fail("Exception while removing alias: " + e);
+      clientCommands.removeAlias(masterGuid, alias);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing alias: " + e);
     }
   }
 
@@ -133,18 +132,17 @@ public class AliasTest {
     try {
       do {
         try {
-          client.lookupGuid(alias);
+          clientCommands.lookupGuid(alias);
           if (cnt++ > 10) {
-            fail(alias + " should not exist (after 10 checks)");
+            Utils.failWithStackTrace(alias + " should not exist (after 10 checks)");
             break;
           }
 
         } catch (IOException e) {
-          fail("Exception while looking up alias: " + e);
+          Utils.failWithStackTrace("Exception while looking up alias: " + e);
         }
         ThreadUtils.sleep(10);
       } while (true);
-      // the lookup should fail and throw to here
     } catch (ClientException e) {
       System.out.println(alias + " was gone on " + (cnt + 1) + " read");
     }
