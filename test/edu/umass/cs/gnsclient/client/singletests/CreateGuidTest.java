@@ -19,15 +19,17 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -38,11 +40,9 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateGuidTest {
+public class CreateGuidTest extends DefaultGNSTest {
 
-  private static String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
 
   /**
@@ -50,17 +50,17 @@ public class CreateGuidTest {
    */
   public CreateGuidTest() {
 
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
 
     }
@@ -71,15 +71,20 @@ public class CreateGuidTest {
    */
   @Test
   public void test_01_CreateEntity() {
-    String alias = "testGUID" + RandomString.randomString(6);
+    String alias = "testGUID" + RandomString.randomString(12);
     GuidEntry guidEntry = null;
     try {
-      guidEntry = client.guidCreate(masterGuid, alias);
-    } catch (Exception e) {
-      fail("Exception while creating guid: " + e);
+      guidEntry = clientCommands.guidCreate(masterGuid, alias);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while creating guid: " + e);
     }
-    assertNotNull(guidEntry);
-    assertEquals(alias, guidEntry.getEntityName());
+    Assert.assertNotNull(guidEntry);
+    Assert.assertEquals(alias, guidEntry.getEntityName());
+    try {
+      clientCommands.guidRemove(masterGuid, guidEntry.getGuid());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while creating guid: " + e);
+    }
   }
 
 }

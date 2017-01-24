@@ -19,17 +19,19 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -40,31 +42,29 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateMultipleGuidsTest {
+public class CreateMultipleGuidsTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
 
-  private static final String fieldName = "_MultipleGuidsTestField_";
+  private static final String FIELD_NAME = "_MultipleGuidsTestField_";
   private List<GuidEntry> members = new ArrayList<>();
 
   /**
    *
    */
   public CreateMultipleGuidsTest() {
-    if (client == null) {
-       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+    if (clientCommands == null) {
+      try {
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception while creating account guid: " + e);
+        Utils.failWithStackTrace("Exception while creating account guid: " + e);
       }
     }
   }
@@ -75,17 +75,19 @@ public class CreateMultipleGuidsTest {
   @Test
   public void test_01_SetupGuids() {
     try {
-      for (int cnt = 0; cnt < 10; cnt++) {
-        GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
+      for (int cnt = 0; cnt < 50; cnt++) {
+        GuidEntry testEntry = clientCommands.guidCreate(
+                masterGuid, "guid" + RandomString.randomString(12));
         members.add(testEntry);
         // make unique name based on the guid
-        client.fieldUpdate(testEntry, fieldName, "value for " + testEntry.getEntityName());
+        clientCommands.fieldUpdate(testEntry, FIELD_NAME,
+                "value for " + testEntry.getEntityName());
       }
-    } catch (Exception e) {
-      fail("Exception while trying to create the guids: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
     }
   }
-  
+
   /**
    * Read back the values.
    */
@@ -93,12 +95,26 @@ public class CreateMultipleGuidsTest {
   public void test_02_TestGuids() {
     try {
       for (GuidEntry guidEntry : members) {
-        String actual = client.fieldRead(guidEntry, fieldName);
+        String actual = clientCommands.fieldRead(guidEntry, FIELD_NAME);
         String expected = "value for " + guidEntry.getEntityName();
-        assertEquals(expected, actual);
+        Assert.assertEquals(expected, actual);
       }
-    } catch (Exception e) {
-      fail("Exception while trying to read values: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while trying to read values: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_03_Cleanup() {
+    try {
+      for (GuidEntry guidEntry : members) {
+        clientCommands.guidRemove(masterGuid, guidEntry.getGuid());
+      }
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing test account guid: " + e);
     }
   }
 }
