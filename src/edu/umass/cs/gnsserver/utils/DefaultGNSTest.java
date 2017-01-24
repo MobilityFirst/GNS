@@ -384,6 +384,7 @@ public class DefaultGNSTest extends DefaultTest {
 		removeCreatedState();
 		closeServers(DefaultProps.FORCECLEAR.key);
 		closeClients();
+                //REVERSE_ENGINEER code is no longer relevant in GNSClientCommands - Westy  
 		//printReverseEngineeredType();
 	}
 

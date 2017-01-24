@@ -23,15 +23,20 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
+import java.util.HashSet;
+import java.util.Set;
 import static org.hamcrest.Matchers.*;
 
 import org.json.JSONArray;
 
+import org.json.JSONException;
 import static org.junit.Assert.*;
 
 import org.junit.FixMethodOrder;
@@ -39,43 +44,50 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Functionality test for core elements in the client using the UniversalGnsClientFull.
+ * Tests selectNear and selectWithin.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SelectGeoTest extends DefaultGNSTest {
 
-  private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static String password = "password";
-  private static GNSClientCommands client = null;
-  private static GuidEntry masterGuid;
-  private static GuidEntry westyEntry;
-  private static GuidEntry samEntry;
+  private static GNSClientCommands clientCommands = null;
+  private static GuidEntry globalMasterGuid;
 
   /**
    *
    */
   public SelectGeoTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
-      }
-      if (System.getProperty("alias") != null
-              && !System.getProperty("alias").isEmpty()) {
-        accountAlias = System.getProperty("alias");
-      }
-      if (System.getProperty("password") != null
-              && !System.getProperty("password").isEmpty()) {
-        password = System.getProperty("password");
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, password, true);
+        globalMasterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception while creating account guid: " + e);
+        Utils.failWithStackTrace("Exception while looking up account guid: " + e);
       }
+    }
+  }
+
+  private static final Set<GuidEntry> createdGuids = new HashSet<>();
+
+  /**
+   *
+   */
+  @Test
+  public void test_10_GeoSpatialSelectCreateGuids() {
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = clientCommands.guidCreate(globalMasterGuid, 
+                "geoTest-" + RandomString.randomString(6));
+        createdGuids.add(testEntry); // save them so we can delete them later
+        clientCommands.setLocation(testEntry, 0.0, 0.0);
+      }
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -83,30 +95,25 @@ public class SelectGeoTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_1_GeoSpatialSelect() {
+  public void test_20_GeoSpatialSelectSelectNear() {
     try {
-      for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = client.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(6));
-        client.setLocation(testEntry, 0.0, 0.0);
-      }
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-
-    try {
-
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
+      JSONArray result = clientCommands.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
-    } catch (Exception e) {
-      fail("Exception executing selectNear: " + e);
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception executing selectNear: " + e);
     }
+  }
 
+  /**
+   *
+   */
+  @Test
+  public void test_30_GeoSpatialSelectSelectWithin() {
     try {
-
       JSONArray rect = new JSONArray();
       JSONArray upperLeft = new JSONArray();
       upperLeft.put(1.0);
@@ -116,11 +123,26 @@ public class SelectGeoTest extends DefaultGNSTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
+      JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
-    } catch (Exception e) {
-      fail("Exception executing selectWithin: " + e);
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception executing selectWithin: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_40_GeoSpatialSelectCleanup() {
+    try {
+      for (GuidEntry guid : createdGuids) {
+        clientCommands.guidRemove(globalMasterGuid, guid.getGuid());
+      }
+      createdGuids.clear();
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception during cleanup: " + e);
     }
   }
 
