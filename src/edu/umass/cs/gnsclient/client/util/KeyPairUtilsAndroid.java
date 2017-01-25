@@ -39,8 +39,8 @@ import java.util.List;
 import android.os.Environment;
 import android.util.Log;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * Class to store and retrieve key value pairs in Android.
@@ -93,25 +93,21 @@ public class KeyPairUtilsAndroid {
     try {
       File origFile = new File(extStorageDirectory, GNS_KEYS_FILENAME);
       File destFile = new File(extStorageDirectory, "gnscopyremove");
-      FileOutputStream fOut = new FileOutputStream(destFile);
-      OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-
-      BufferedReader br = new BufferedReader(new FileReader(origFile));
-      String aliasKey = gnsName + "@" + username;
-      String line;
-
-      while ((line = br.readLine()) != null) {
-        if (line.equals(aliasKey)) { // skip that entry
-          br.readLine();
-          br.readLine();
-          br.readLine();
-          continue;
-        }
-        myOutWriter.append(line.trim() + "\n");
-      }
-
-      myOutWriter.close();
-      fOut.close();
+      BufferedReader br;
+      try (FileOutputStream fOut = new FileOutputStream(destFile); 
+              OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut)) {
+        br = new BufferedReader(new FileReader(origFile));
+        String aliasKey = gnsName + "@" + username;
+        String line;
+        while ((line = br.readLine()) != null) {
+          if (line.equals(aliasKey)) { // skip that entry
+            br.readLine();
+            br.readLine();
+            br.readLine();
+            continue;
+          }
+          myOutWriter.append(line.trim() + "\n");
+        }       }
       br.close();
 
       // Copy over, swap files
@@ -133,8 +129,10 @@ public class KeyPairUtilsAndroid {
    */
   public static void saveKeyPairToPreferences(String gnsName, String username, String guid, KeyPair keyPair) {
     String aliasKey = gnsName + "@" + username;
-    String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
-    String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
+    String publicString =  DatatypeConverter.printHexBinary(keyPair.getPublic().getEncoded());
+    String privateString =  DatatypeConverter.printHexBinary(keyPair.getPrivate().getEncoded());
+    //String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
+    //String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
 
     if (readGuidEntryFromFile(gnsName, username) != null) // entry already there just return
     {
@@ -363,8 +361,10 @@ public class KeyPairUtilsAndroid {
 
         if (aliasKey.contains(gnsName) && !publicString.isEmpty() && !privateString.isEmpty()) {
           try {
-            byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
-            byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
+            byte[] encodedPublicKey = DatatypeConverter.parseHexBinary(publicString);
+            byte[] encodedPrivateKey = DatatypeConverter.parseHexBinary(privateString);
+            //byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
+            //byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
             KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
             X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
             PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
@@ -373,9 +373,7 @@ public class KeyPairUtilsAndroid {
 
             // Strip gnsName from stored alias to only return the entity name
             guids.add(new GuidEntry(aliasKey.substring(gnsName.length() + 1), guid, publicKey, privateKey));
-          } catch (NoSuchAlgorithmException e) {
-            Log.e(KeyPairUtilsAndroid.class.getName(), "Cannot decode keys", e);
-          } catch (InvalidKeySpecException e) {
+          } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             Log.e(KeyPairUtilsAndroid.class.getName(), "Cannot decode keys", e);
           } catch (EncryptionException e) {
 			// TODO Auto-generated catch block
@@ -447,8 +445,10 @@ public class KeyPairUtilsAndroid {
 
           if (!publicString.isEmpty() && !privateString.isEmpty()) {
             try {
-              byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
-              byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
+              byte[] encodedPublicKey = DatatypeConverter.parseHexBinary(publicString);
+              byte[] encodedPrivateKey = DatatypeConverter.parseHexBinary(privateString);
+//              byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
+//              byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
               KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
               X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
               PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);

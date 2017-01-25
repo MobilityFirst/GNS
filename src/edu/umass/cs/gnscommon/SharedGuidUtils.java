@@ -20,10 +20,10 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
 import java.util.HashSet;
 import java.util.Set;
+import javax.xml.bind.DatatypeConverter;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -43,7 +43,8 @@ public class SharedGuidUtils {
    */
   public static String createGuidStringFromPublicKey(byte[] keyBytes) {
     byte[] publicKeyDigest = ShaOneHashFunction.getInstance().hash(keyBytes);
-    return ByteUtils.toHex(publicKeyDigest);
+    return DatatypeConverter.printHexBinary(publicKeyDigest);
+    //return ByteUtils.toHex(publicKeyDigest);
   }
 
   /**

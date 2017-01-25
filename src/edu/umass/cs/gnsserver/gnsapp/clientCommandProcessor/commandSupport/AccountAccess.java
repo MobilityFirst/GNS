@@ -22,7 +22,6 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.ServerRuntimeException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
@@ -54,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
+import javax.xml.bind.DatatypeConverter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -108,7 +108,7 @@ public class AccountAccess {
    */
   public static final String GUID_INFO = InternalField
           .makeInternalFieldString("guid_info");
-  
+
   /**
    * Defines the field name in the guid where the HRN is stored.
    */
@@ -133,6 +133,7 @@ public class AccountAccess {
    * Obtains the account info record for the given guid if that guid was used
    * to createField an account. Will do a remote query if needed.
    *
+   * @param header
    * @param guid
    * @param handler
    * @return the account info
@@ -556,9 +557,12 @@ public class AccountAccess {
 
   private static String createVerificationCode(String name) {
     // Don't really even need name here, but what the heck.
-    return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction.getInstance()
+    return DatatypeConverter.printHexBinary(Arrays.copyOf(ShaOneHashFunction.getInstance()
             .hash(name + new String(Util.getRandomAlphanumericBytes(128))),
             VERIFICATION_CODE_LENGTH));
+//    return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction.getInstance()
+//            .hash(name + new String(Util.getRandomAlphanumericBytes(128))),
+//            VERIFICATION_CODE_LENGTH));
   }
 
   private static boolean sendEmailAuthentication(String name, String guid,

@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
@@ -63,6 +62,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * Provides signing and ACL checks for commands.
@@ -158,7 +158,13 @@ public class NSAccessSupport {
       sigInstance.update(message.getBytes("UTF-8"));
       // Non secret uses ISO-8859-1, but the iOS client uses hex so 
       // we need to keep this for now.
-      return sigInstance.verify(ByteUtils.hexStringToByteArray(signature));
+      try {
+        return sigInstance.verify(DatatypeConverter.parseHexBinary(signature));
+        // This will get thrown if the signature is not a hex string.
+      } catch (IllegalArgumentException e) {
+        return false;
+      }
+      //return sigInstance.verify(ByteUtils.hexStringToByteArray(signature));
     }
   }
 
