@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -28,9 +27,11 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -41,11 +42,9 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ReadTest {
+public class ReadTest extends DefaultGNSTest {
 
-  private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
@@ -54,17 +53,17 @@ public class ReadTest {
    *
    */
   public ReadTest() {
-    if (client == null) {
-       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+    if (clientCommands == null) {
+      try {
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
     }
   }
@@ -75,9 +74,14 @@ public class ReadTest {
   @Test
   public void test_01_CreateEntity() {
     try {
-      client.guidCreate(masterGuid, "testGUID" + RandomString.randomString(6));
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      GuidEntry testGuid = clientCommands.guidCreate(masterGuid, "testGUID" + RandomString.randomString(6));
+      try {
+        clientCommands.guidRemove(masterGuid, testGuid.getGuid());
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Exception while removing guids: " + e);
+      }
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -87,42 +91,39 @@ public class ReadTest {
   @Test
   public void test_02_CreateField() {
     try {
-      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
-      System.out.println("Created: " + westyEntry);
-      System.out.println("Created: " + samEntry);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
     try {
       // remove default read acces for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
-      client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
-      client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
-      client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
-      client.fieldCreateOneElementList(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
+      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
 
       // read my own field
-      assertEquals("work",
-              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", westyEntry));
+      Assert.assertEquals("work",
+              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", westyEntry));
       // read another field
-      assertEquals("000-00-0000",
-              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "ssn", westyEntry));
+      Assert.assertEquals("000-00-0000",
+              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "ssn", westyEntry));
       // read another field
-      assertEquals("666flapJack",
-              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "password", westyEntry));
+      Assert.assertEquals("666flapJack",
+              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "password", westyEntry));
 
       try {
-        String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry);
-        fail("Result of read of westy's environment by sam is " + result
+        String result = clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry);
+        Utils.failWithStackTrace("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
-      } catch (Exception e) {
-        e.printStackTrace();
-        fail("Exception during read of westy's environment by sam: " + e);
+      } catch (IOException e) {
+        Utils.failWithStackTrace("Exception during read of westy's environment by sam: " + e);
       }
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -131,28 +132,35 @@ public class ReadTest {
    */
   @Test
   public void test_03_ACLPartOne() {
-    //testCreateField();
-
     try {
-      System.out.println("Using:" + westyEntry);
-      System.out.println("Using:" + samEntry);
       try {
-        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment",
+        clientCommands.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment",
                 samEntry.getGuid());
-      } catch (Exception e) {
-        fail("Exception adding Sam to Westy's readlist: " + e);
-        e.printStackTrace();
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Exception adding Sam to Westy's readlist: " + e);
       }
       try {
-        assertEquals("work",
-                client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry));
-      } catch (Exception e) {
-        fail("Exception while Sam reading Westy's field: " + e);
-        e.printStackTrace();
+        Assert.assertEquals("work",
+                clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry));
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Exception while Sam reading Westy's field: " + e);
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-      e.printStackTrace();
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_04_Cleanup() {
+    try {
+      clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
+      clientCommands.guidRemove(masterGuid, samEntry.getGuid());
+
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing guids: " + e);
     }
   }
 }

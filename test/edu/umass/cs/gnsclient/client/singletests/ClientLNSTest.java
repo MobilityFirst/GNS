@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
+import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -26,6 +27,7 @@ import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.junit.Assert;
@@ -50,7 +52,9 @@ public class ClientLNSTest extends DefaultGNSTest {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
-        clientCommands.setGNSProxy(new InetSocketAddress("127.0.0.1", 24598));
+        //PaxosConfig.getActives() works here because the server and client use the same properties file.
+        InetAddress lnsAddress = PaxosConfig.getActives().values().iterator().next().getAddress();
+        clientCommands.setGNSProxy(new InetSocketAddress(lnsAddress, 24598));
         clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: " + e);
