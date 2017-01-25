@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
+ * Test the fieldExists method.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

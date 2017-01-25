@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -27,47 +26,45 @@ import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import org.json.JSONException;
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
+ * Test adding and removing members from groups.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GroupSingleAddTest {
+public class GroupSingleAddTest extends DefaultGNSTest {
 
-  private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
   private static GuidEntry mygroupEntry;
 
-
   /**
    *
    */
   public GroupSingleAddTest() {
-    if (client == null) {
-       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+    if (clientCommands == null) {
+      try {
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: ", e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
         Utils.failWithStackTrace("Exception when we were not expecting it: ", e);
       }
@@ -78,10 +75,10 @@ public class GroupSingleAddTest {
    *
    */
   @Test
-  public void test_01_testCreateGuids() {
+  public void test_200_testCreateGuids() {
     try {
-      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -89,7 +86,7 @@ public class GroupSingleAddTest {
     }
   }
 
-   /**
+  /**
    *
    */
   @Test
@@ -97,24 +94,24 @@ public class GroupSingleAddTest {
     String mygroupName = "mygroup" + RandomString.randomString(6);
     try {
       try {
-        client.lookupGuid(mygroupName);
+        clientCommands.lookupGuid(mygroupName);
         Utils.failWithStackTrace(mygroupName + " entity should not exist");
       } catch (ClientException e) {
       }
-      
-      mygroupEntry = client.guidCreate(masterGuid, mygroupName);
-    } catch (Exception e) {
+
+      mygroupEntry = clientCommands.guidCreate(masterGuid, mygroupName);
+    } catch (IOException | ClientException e) {
       Utils.failWithStackTrace("Exception while creating guids: ", e);
     }
   }
-  
+
   /**
    *
    */
   @Test
   public void test_211_GroupAdd() {
     try {
-      client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
+      clientCommands.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
     } catch (IOException | ClientException e) {
       Utils.failWithStackTrace("Exception while adding to groups: ", e);
     }
@@ -128,14 +125,14 @@ public class GroupSingleAddTest {
     try {
       // Make sure the group has all the right members
       HashSet<String> expected = new HashSet<>(Arrays.asList(westyEntry.getGuid()));
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
-      assertEquals(expected, actual);
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(clientCommands.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
+      Assert.assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
       Utils.failWithStackTrace("Exception while getting members: ", e);
     }
   }
-  
+
   /**
    *
    */
@@ -144,11 +141,26 @@ public class GroupSingleAddTest {
     try {
       // and that each of the guids is in the right group
       HashSet<String> expected = new HashSet<>(Arrays.asList(mygroupEntry.getGuid()));
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(westyEntry.getGuid(), westyEntry));
-      assertEquals(expected, actual);
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(clientCommands.guidGetGroups(westyEntry.getGuid(), westyEntry));
+      Assert.assertEquals(expected, actual);
 
     } catch (IOException | ClientException | JSONException e) {
       Utils.failWithStackTrace("Exception while getting groups: ", e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_230_Cleanup() {
+    try {
+      clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
+      clientCommands.guidRemove(masterGuid, samEntry.getGuid());
+      clientCommands.guidRemove(masterGuid, mygroupEntry.getGuid());
+
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing guids: " + e);
     }
   }
 }

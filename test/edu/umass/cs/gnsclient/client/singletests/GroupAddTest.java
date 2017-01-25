@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
+ * Test adding and removing members from groups.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -256,12 +256,13 @@ public class GroupAddTest extends DefaultGNSTest {
     try {
       clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
       clientCommands.guidRemove(masterGuid, samEntry.getGuid());
-      clientCommands.guidRemove(masterGuid, mygroupEntry.getGuid());
       clientCommands.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
       clientCommands.guidRemove(masterGuid, oneEntry.getGuid());
       clientCommands.guidRemove(masterGuid, twoEntry.getGuid());
       clientCommands.guidRemove(masterGuid, threeEntry.getGuid());
+      clientCommands.guidRemove(masterGuid, mygroupEntry.getGuid());
       clientCommands.guidRemove(masterGuid, anotherGroupEntry.getGuid());
+
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while removing guids: " + e);
     }
