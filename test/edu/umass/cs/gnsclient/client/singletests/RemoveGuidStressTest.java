@@ -84,7 +84,7 @@ public class RemoveGuidStressTest {
     for (int i = 0; i < cnt; i++) {
       try {
         guids[i] = client.guidCreate(masterGuid, testGuidName + "-" + i);
-      } catch (NoSuchAlgorithmException | ClientException | IOException e) {
+      } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Exception while creating testGuid: " + e);
       }
     }
@@ -121,7 +121,7 @@ public class RemoveGuidStressTest {
     for (int i = 0; i < cnt; i++) {
       try {
         guids[i] = client.guidCreate(masterGuid, testGuidName + "-" + i);
-      } catch (NoSuchAlgorithmException | ClientException | IOException e) {
+      } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Exception while creating testGuid: " + e);
       }
     }

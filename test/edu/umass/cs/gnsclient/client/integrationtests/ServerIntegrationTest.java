@@ -67,6 +67,7 @@ import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Repeat;
 import edu.umass.cs.utils.Util;
 
+import edu.umass.cs.utils.Utils;
 import java.awt.geom.Point2D;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -93,7 +94,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   private static final String PASSWORD = "password";
   private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
-  
+
   private static final int REPEAT = 10;
 
   /**
@@ -185,13 +186,13 @@ public class ServerIntegrationTest extends DefaultGNSTest {
             GP_SERVER);
   }
 
-	private static void failWithStackTrace(String message, Exception... e) {
-		System.out.println("\n--" + RequestInstrumenter.getLog() + "--");
-		if (e != null && e.length > 0) {
-			e[0].printStackTrace();
-		}
-		org.junit.Assert.fail(message);
-	}
+  private static void failWithStackTrace(String message, Exception... e) {
+    System.out.println("\n--" + RequestInstrumenter.getLog() + "--");
+    if (e != null && e.length > 0) {
+      e[0].printStackTrace();
+    }
+    org.junit.Assert.fail(message);
+  }
 
   /* We need this below even though a majority being up suffices and account GNSProtocol.GUID.toString() 
 	 * creation success (with retransmission) auto-detects whether a majority is up,
@@ -206,29 +207,30 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   private static long WAIT_TILL_ALL_SERVERS_READY = 000;
 
   private static boolean singleJVM() {
-	return   (System.getProperty("singleJVM")!=null && System.getProperty("singleJVM").trim().toLowerCase().equals("true"));
-  
+    return (System.getProperty("singleJVM") != null && System.getProperty("singleJVM").trim().toLowerCase().equals("true"));
+
   }
+
   /**
- * @throws IOException 
- * @throws FileNotFoundException 
- * @throws InterruptedException 
+   * @throws IOException
+   * @throws FileNotFoundException
+   * @throws InterruptedException
    *
    */
-  @BeforeClass  
-	public static void setUpBeforeClass() throws FileNotFoundException,
-			IOException, InterruptedException {
-		DefaultGNSTest.setUpBeforeClass();
-		masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
-		clientCommands = (GNSClientCommands) new GNSClientCommands()
-				.setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
-                client = new GNSClient()
-                             .setNumRetriesUponTimeout(2)
-                             .setForceCoordinatedReads(true)
-                             .setForcedTimeout(8000);
-    
-	}
-  
+  @BeforeClass
+  public static void setUpBeforeClass() throws FileNotFoundException,
+          IOException, InterruptedException {
+    DefaultGNSTest.setUpBeforeClass();
+    masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
+    clientCommands = (GNSClientCommands) new GNSClientCommands()
+            .setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
+    client = new GNSClient()
+            .setNumRetriesUponTimeout(2)
+            .setForceCoordinatedReads(true)
+            .setForcedTimeout(8000);
+
+  }
+
   /**
    * @throws FileNotFoundException
    * @throws IOException
@@ -236,7 +238,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   @Deprecated
   public static void setUpBeforeClassOld() throws FileNotFoundException, IOException, InterruptedException {
-		/* The waitTillAllServersReady parameter is not needed for
+    /* The waitTillAllServersReady parameter is not needed for
 		 * single-machine tests as we check the logs explicitly below. It is
 		 * still useful for distributed tests as there is no intentionally
 		 * support in gigapaxos' async client to detect if all servrs are up. */
@@ -246,35 +248,36 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
 
     // get pattern for log files
-	Properties logProps = new Properties();
-	logProps.load(new FileInputStream(System.getProperty(DefaultProps.LOGGING_PROPERTIES.key)));
-	String logFiles = logProps.getProperty("java.util.logging.FileHandler.pattern");
+    Properties logProps = new Properties();
+    logProps.load(new FileInputStream(System.getProperty(DefaultProps.LOGGING_PROPERTIES.key)));
+    String logFiles = logProps.getProperty("java.util.logging.FileHandler.pattern");
 
-	if(logFiles!=null) logFiles = logFiles.replaceAll("%.*", "").trim() + "*";
-	new File(logFiles.replaceFirst("/[^/]*$", "")).mkdirs();
-	
     if (logFiles != null) {
-  	  System.out.print("Deleting log files " + logFiles);
-  	  RunCommand.command("rm -f " + logFiles, ".", false);
-  	  System.out.print(" ...done" + logFiles);
+      logFiles = logFiles.replaceAll("%.*", "").trim() + "*";
+    }
+    new File(logFiles.replaceFirst("/[^/]*$", "")).mkdirs();
+
+    if (logFiles != null) {
+      System.out.print("Deleting log files " + logFiles);
+      RunCommand.command("rm -f " + logFiles, ".", false);
+      System.out.print(" ...done" + logFiles);
     }
 
-
-	// start server
+    // start server
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
-        
+
       // clear explicitly if gigapaxos
       if (useGPScript()) {
 
-    	  // forceclear
+        // forceclear
         String forceClearCmd = System
-        		.getProperty(DefaultProps.SERVER_COMMAND.key)
-        		+ " "
-        		+ getGigaPaxosOptions() + " forceclear all";
+                .getProperty(DefaultProps.SERVER_COMMAND.key)
+                + " "
+                + getGigaPaxosOptions() + " forceclear all";
         System.out.println(forceClearCmd);
         RunCommand.command(
-        		forceClearCmd, ".");
+                forceClearCmd, ".");
 
         /* We need to do this to limit the number of files used by mongo.
          * Otherwise failed runs quickly lead to more failed runs because
@@ -287,66 +290,63 @@ public class ServerIntegrationTest extends DefaultGNSTest {
         options = SCRIPTS_OPTIONS;
       }
 
-
-      String startServerCmd =  System
-    		  .getProperty(DefaultProps.SERVER_COMMAND.key)
-    		  + " "
-    		  + options;
+      String startServerCmd = System
+              .getProperty(DefaultProps.SERVER_COMMAND.key)
+              + " "
+              + options;
       System.out.println(startServerCmd);
 
       // servers are being started here
-      if(singleJVM()) {
+      if (singleJVM()) {
         startServersSingleJVM();
       } else {
-    	  ArrayList<String> output = RunCommand.command(startServerCmd, ".");
+        ArrayList<String> output = RunCommand.command(startServerCmd, ".");
 
-    	  if (output != null) {
-            for (String line : output) {
-              System.out.println(line);
-            }
-              } else {
-            failWithStackTrace("Server command failure: ; aborting all tests.");
-              }
+        if (output != null) {
+          for (String line : output) {
+            System.out.println(line);
+          }
+        } else {
+          failWithStackTrace("Server command failure: ; aborting all tests.");
+        }
       }
     }
 
     int numServers = PaxosConfig.getActives().size() + ReconfigurationConfig.getReconfigurators().size();
 
     ArrayList<String> output;
-	int numServersUp=0;
-	// a little sleep ensures that there is time for at least one log file to get created
-	Thread.sleep(500);
-	if(!singleJVM()) {
-          do {
-            output = RunCommand.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
-            String temp = output.get(0);
-            temp = temp.replaceAll("\\s", "");
-            try {
-              numServersUp = Integer.parseInt(temp);
-            } catch(NumberFormatException e) {
-              // can happen if no files have yet gotten created
-              System.out.println(e);
-            }
-            System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
-            Thread.sleep(1000);
-          } while (numServersUp < numServers);
+    int numServersUp = 0;
+    // a little sleep ensures that there is time for at least one log file to get created
+    Thread.sleep(500);
+    if (!singleJVM()) {
+      do {
+        output = RunCommand.command("cat " + logFiles + " | grep -a \"server ready\" | wc -l ", ".", false);
+        String temp = output.get(0);
+        temp = temp.replaceAll("\\s", "");
+        try {
+          numServersUp = Integer.parseInt(temp);
+        } catch (NumberFormatException e) {
+          // can happen if no files have yet gotten created
+          System.out.println(e);
+        }
+        System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
+        Thread.sleep(1000);
+      } while (numServersUp < numServers);
     }
 
     System.out.println("Starting client");
 
     int numRetries = 2;
     boolean forceCoordinated = true;
-    
-    clientCommands = (GNSClientCommands)new GNSClientCommands()
-    .setNumRetriesUponTimeout(numRetries)
-    .setForceCoordinatedReads(forceCoordinated)
-    ;
-    
+
+    clientCommands = (GNSClientCommands) new GNSClientCommands()
+            .setNumRetriesUponTimeout(numRetries)
+            .setForceCoordinatedReads(forceCoordinated);
+
     client = new GNSClient()
-    .setNumRetriesUponTimeout(numRetries)
-    .setForceCoordinatedReads(forceCoordinated)
-    .setForcedTimeout(8000)
-    ;
+            .setNumRetriesUponTimeout(numRetries)
+            .setForceCoordinatedReads(forceCoordinated)
+            .setForcedTimeout(8000);
 
     System.out.println("Client created and connected to server.");
     //
@@ -361,7 +361,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
                 + " attempt remaining.");
         String createdGUID = client.execute(GNSCommand.createAccount(accountAlias)).getResultString();
         Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(accountAlias).guid);
-        
+
         // older code; okay to leave it hanging or to remove
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
                 accountAlias, PASSWORD, true);
@@ -376,44 +376,46 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
 
   }
-  
+
   private static void startServersSingleJVM() throws IOException {
-	  // all JVM properties should be already set above
-	  for(String server : ReconfigurationConfig.getReconfiguratorIDs()) {
-            ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
-          }
-	  for(String server : PaxosConfig.getActives().keySet()) {
-            ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
-          }
+    // all JVM properties should be already set above
+    for (String server : ReconfigurationConfig.getReconfiguratorIDs()) {
+      ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
+    }
+    for (String server : PaxosConfig.getActives().keySet()) {
+      ReconfigurableNode.main(new String[]{server, ReconfigurationConfig.CommandArgs.start.toString(), server});
+    }
   }
 
   public static void tearDownAfterClass() throws ClientException, IOException {
-	  // to allow more time for remove
-	  client.setForcedTimeout(TIMEOUT*2);
-	  DefaultGNSTest.tearDownAfterClass();
+    // to allow more time for remove
+    client.setForcedTimeout(TIMEOUT * 2);
+    DefaultGNSTest.tearDownAfterClass();
   }
+
   /**
    *
    */
 //  @AfterClass
   @Deprecated
   public static void tearDownAfterClassOld() {
-    if(clientCommands!=null) clientCommands.close();
-    System.out.println("--"+RequestInstrumenter.getLog()+"--");
-		/* arun: need a more efficient, parallel implementation of removal of
+    if (clientCommands != null) {
+      clientCommands.close();
+    }
+    System.out.println("--" + RequestInstrumenter.getLog() + "--");
+    /* arun: need a more efficient, parallel implementation of removal of
 		 * sub-guids, otherwise this times out. */
     //client.accountGuidRemove(masterGuid);
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
-    	if(singleJVM()) {
-    		for(String server : PaxosConfig.getActives().keySet()) {
-                  ReconfigurableNode.forceClear(server);
-                    }
-    		for(String server: ReconfigurationConfig.getReconfiguratorIDs()) {
-                  ReconfigurableNode.forceClear(server);
-                    }
-    	}
-    	else if (useGPScript()) {
+      if (singleJVM()) {
+        for (String server : PaxosConfig.getActives().keySet()) {
+          ReconfigurableNode.forceClear(server);
+        }
+        for (String server : ReconfigurationConfig.getReconfiguratorIDs()) {
+          ReconfigurableNode.forceClear(server);
+        }
+      } else if (useGPScript()) {
         String stopCmd = System
                 .getProperty(DefaultProps.SERVER_COMMAND.key)
                 + " "
@@ -447,14 +449,6 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
 
     dropAllDatabases();
-
-    System.out.println("\nPrinting reverse-engineered return types:");
-    for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
-      System.out.println(type + " returns "
-              + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
-              + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
-
-    }
   }
 
   private static void dropAllDatabases() {
@@ -487,17 +481,16 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * its cache, re-query, and pick randomly upon an active replica error; and
    * pick the replica closest by distance and load otherwise.
    */
-	private static void waitSettle(long wait) {
-		try {
-			if (wait > 0) {
-                          Thread.sleep(wait);
-                        }
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+  private static void waitSettle(long wait) {
+    try {
+      if (wait > 0) {
+        Thread.sleep(wait);
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
 
-	
   /* TODO:
    * Brendan: I've begun checking tests to make sure that logically
    * they should pass every time in a distributed setting.
@@ -511,93 +504,93 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * TODO: Increase the timeout for these test commands so that they almost never fail due to timeout.
    * 
    */
+  /**
+   * Creates a guid.
+   *
+   * @throws Exception
+   */
+  @Test
+  @Repeat(times = REPEAT)
+  public void test_010_CreateEntity() throws Exception {
+    // CHECKED FOR VALIDITY
+    String alias = "testGUID" + RandomString.randomString(12);
+    String createdGUID = client.execute(GNSCommand.createGUID(masterGuid, alias))
+            .getResultString();
+    Assert.assertEquals(alias, GuidUtils.getGUIDKeys(alias).entityName);
+    Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
+    // deprecated client test
+    // GuidEntry guidEntry = clientCommands.guidCreate(masterGuid, alias);
+    // Assert.assertNotNull(guidEntry);
+    // Assert.assertEquals(alias, guidEntry.getEntityName());
+  }
 
-	/**
-	 * Creates a guid.
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	@Repeat( times = REPEAT )
-	public void test_010_CreateEntity() throws Exception {
-		// CHECKED FOR VALIDITY
-		String alias = "testGUID" + RandomString.randomString(12);
-		String createdGUID = client.execute(GNSCommand.createGUID(masterGuid, alias))
-						.getResultString();
-		Assert.assertEquals(alias, GuidUtils.getGUIDKeys(alias).entityName);
-		Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
-		// deprecated client test
-		// GuidEntry guidEntry = clientCommands.guidCreate(masterGuid, alias);
-		// Assert.assertNotNull(guidEntry);
-		// Assert.assertEquals(alias, guidEntry.getEntityName());
-	}
-	
-	/**
-	 * @throws Exception
-	 */
-	@Test
-	@Repeat(times = REPEAT*10)
-	public void test_001_CreateAndUpdate() throws Exception {
-		// CHECKED FOR VALIDITY
-		String alias = "testGUID" + RandomString.randomString(12);
-		String createdGUID = client.execute(
-				GNSCommand.createGUID(masterGuid, alias)).getResultString();
-		GuidEntry createdGUIDEntry = GuidUtils.getGUIDKeys(alias);
-		String key="key1", value="value1";
-		client.execute(GNSCommand.update(createdGUID,
-				new JSONObject().put(key, value), createdGUIDEntry));
-		Assert.assertEquals(value,
-				client.execute(GNSCommand.fieldRead(createdGUIDEntry, key)).getResultMap().get(key));
-	}
+  /**
+   * @throws Exception
+   */
+  @Test
+  @Repeat(times = REPEAT * 10)
+  public void test_001_CreateAndUpdate() throws Exception {
+    // CHECKED FOR VALIDITY
+    String alias = "testGUID" + RandomString.randomString(12);
+    String createdGUID = client.execute(
+            GNSCommand.createGUID(masterGuid, alias)).getResultString();
+    GuidEntry createdGUIDEntry = GuidUtils.getGUIDKeys(alias);
+    String key = "key1", value = "value1";
+    client.execute(GNSCommand.update(createdGUID,
+            new JSONObject().put(key, value), createdGUIDEntry));
+    Assert.assertEquals(value,
+            client.execute(GNSCommand.fieldRead(createdGUIDEntry, key)).getResultMap().get(key));
+  }
 
-	/**
-	 * Removes a guid.
-	 * 
-	 * @throws IOException
-	 * @throws ClientException
-	 * @throws NoSuchAlgorithmException
-	 */
-	@Test
-	public void test_020_RemoveCreated() throws NoSuchAlgorithmException,
-			ClientException, IOException {
-		// CHECKED FOR VALIDITY
-		String testGuidName = "testGUID" + RandomString.randomString(12);
-		GuidEntry testGuid;
+  /**
+   * Removes a guid.
+   *
+   * @throws IOException
+   * @throws ClientException
+   * @throws NoSuchAlgorithmException
+   */
+  @Test
+  public void test_020_RemoveCreated() throws NoSuchAlgorithmException,
+          ClientException, IOException {
+    // CHECKED FOR VALIDITY
+    String testGuidName = "testGUID" + RandomString.randomString(12);
+    GuidEntry testGuid;
 
-		testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
-		clientCommands.guidRemove(masterGuid, testGuid.getGuid());
+    testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
+    clientCommands.guidRemove(masterGuid, testGuid.getGuid());
 
-		try {
-			clientCommands.lookupGuidRecord(testGuid.getGuid());
-			failWithStackTrace("Lookup testGuid should have throw an exception.");
-		} catch (ClientException e) {
-			// expected
-		}
-	}
+    try {
+      clientCommands.lookupGuidRecord(testGuid.getGuid());
+      failWithStackTrace("Lookup testGuid should have throw an exception.");
+    } catch (ClientException e) {
+      // expected
+    }
+  }
 
   /**
    * Removes a guid not using an account guid.
- * @throws IOException 
- * @throws ClientException 
- * @throws NoSuchAlgorithmException 
+   *
+   * @throws IOException
+   * @throws ClientException
+   * @throws NoSuchAlgorithmException
    */
   @Test
   public void test_030_RemoveCreatedSansAccountInfo() throws NoSuchAlgorithmException, ClientException, IOException {
     //CHECKED FOR VALIDITY
     String testGuidName = "testGUID" + RandomString.randomString(12);
-    
-      String testGUID = client.execute(GNSCommand.createGUID(masterGuid, testGuidName)).getResultString();
-      client.execute(GNSCommand.removeGUID(GuidUtils.getGUIDKeys(testGuidName)));
+
+    String testGUID = client.execute(GNSCommand.createGUID(masterGuid, testGuidName)).getResultString();
+    client.execute(GNSCommand.removeGUID(GuidUtils.getGUIDKeys(testGuidName)));
 //    GuidEntry testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
 //    clientCommands.guidRemove(testGuid);
 
     try {
 //      clientCommands.lookupGuidRecord(testGuid.getGuid());
-    	client.execute(GNSCommand.lookupGUID(testGUID));
+      client.execute(GNSCommand.lookupGUID(testGUID));
       failWithStackTrace("Lookup testGuid should have throw an exception.");
     } catch (ClientException e) {
-    	// expected
-    } 
+      // expected
+    }
   }
 
   private static final String REMOVE_ACCOUNT_PASSWORD = "removalPassword";
@@ -608,7 +601,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * @throws Exception
    */
   @Test
-  @Repeat( times = 0) //Disabled temporarily
+  @Repeat(times = 0) //Disabled temporarily
   public void test_031_RemoveAccountWithPasswordTest() throws Exception {
     String accountToRemoveWithPassword = RandomString.randomString(12) + "-" + "passwordremovetest@gns.name";
     GuidEntry accountToRemoveGuid = test_035_RemoveAccountWithPasswordCreateAccount(accountToRemoveWithPassword);
@@ -629,11 +622,11 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 	 * greater than 3 replicas.
      */
 
-	  client.execute(
-			  GNSCommand.createAccount(accountToRemoveWithPassword,
-					  REMOVE_ACCOUNT_PASSWORD));
-	  return GuidUtils.getGUIDKeys(accountToRemoveWithPassword);
-	  //    return GuidUtils.lookupOrCreateAccountGuid(clientCommands, accountToRemoveWithPassword, REMOVE_ACCOUNT_PASSWORD, true);
+    client.execute(
+            GNSCommand.createAccount(accountToRemoveWithPassword,
+                    REMOVE_ACCOUNT_PASSWORD));
+    return GuidUtils.getGUIDKeys(accountToRemoveWithPassword);
+    //    return GuidUtils.lookupOrCreateAccountGuid(clientCommands, accountToRemoveWithPassword, REMOVE_ACCOUNT_PASSWORD, true);
   }
 
   /**
@@ -644,7 +637,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   private void test_036_RemoveAccountWithPasswordCheckAccount(GuidEntry accountToRemoveGuid) throws ClientException, IOException {
     //CHECKED FOR VALIDITY
-	  client.execute(GNSCommand.lookupAccountRecord(accountToRemoveGuid.getGuid()));
+    client.execute(GNSCommand.lookupAccountRecord(accountToRemoveGuid.getGuid()));
 //    clientCommands.lookupAccountRecord(accountToRemoveGuid.getGuid());
   }
 
@@ -655,7 +648,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   private void test_037_RemoveAccountWithPasswordRemoveAccount(String accountToRemoveWithPassword) throws Exception {
     //CHECKED FOR VALIDITY
-	  client.execute(GNSCommand.accountGuidRemoveWithPassword(accountToRemoveWithPassword, REMOVE_ACCOUNT_PASSWORD));
+    client.execute(GNSCommand.accountGuidRemoveWithPassword(accountToRemoveWithPassword, REMOVE_ACCOUNT_PASSWORD));
 //    clientCommands.accountGuidRemoveWithPassword(accountToRemoveWithPassword, REMOVE_ACCOUNT_PASSWORD);
   }
 
@@ -676,21 +669,22 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
   /**
    * Look up a primary guid.
- * @throws IOException 
- * @throws ClientException 
- * @throws NoSuchAlgorithmException 
+   *
+   * @throws IOException
+   * @throws ClientException
+   * @throws NoSuchAlgorithmException
    */
   @Test
-	public void test_040_LookupPrimaryGuid() throws NoSuchAlgorithmException,
-			ClientException, IOException {
-		// CHECKED FOR VALIDITY
-		String testGuidName = "testGUID" + RandomString.randomString(12);
-		GuidEntry testGuid;
-		testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
+  public void test_040_LookupPrimaryGuid() throws NoSuchAlgorithmException,
+          ClientException, IOException {
+    // CHECKED FOR VALIDITY
+    String testGuidName = "testGUID" + RandomString.randomString(12);
+    GuidEntry testGuid;
+    testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
 
-		Assert.assertEquals(masterGuid.getGuid(),
-				clientCommands.lookupPrimaryGuid(testGuid.getGuid()));
-	}
+    Assert.assertEquals(masterGuid.getGuid(),
+            clientCommands.lookupPrimaryGuid(testGuid.getGuid()));
+  }
 
   /**
    * Runs the Field tests as one independent unit.
@@ -786,9 +780,9 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 //    GuidEntry accountGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
 //    		RandomString.randomString(6) + "@gns.name", PASSWORD, true);
     String name = RandomString.randomString(6) + "@gns.name";
-	client.execute(GNSCommand.createAccount(name, PASSWORD));
+    client.execute(GNSCommand.createAccount(name, PASSWORD));
     GuidEntry accountGuid = GuidUtils.getGUIDKeys(name);
-    
+
     String testFieldName = TEST_FIELD_NAME + RandomString.randomString(6);
     test_101_ACLCreateField(accountGuid, testFieldName);
     test_110_ACLMaybeAddAllFields(accountGuid);
@@ -802,7 +796,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
   // shorthand
   private static void p(String s) {
-	  System.out.print(s+" ");
+    System.out.print(s + " ");
   }
 
   /**
@@ -811,8 +805,8 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    *
    */
   private void test_101_ACLCreateField(GuidEntry masterGuid, String testFieldName) throws ClientException, IOException {
-	    //CHECKED FOR VALIDITY
-	  //p("test_101_ACLCreateField:" + testFieldName);
+    //CHECKED FOR VALIDITY
+    //p("test_101_ACLCreateField:" + testFieldName);
     clientCommands.fieldCreateOneElementList(masterGuid.getGuid(), testFieldName, "testValue", masterGuid);
   }
 
@@ -827,7 +821,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   private void test_110_ACLMaybeAddAllFields(GuidEntry masterGuid) throws JSONException, Exception {
     //CHECKED FOR VALIDITY
-		p("test_110_ACLMaybeAddAllFields");
+    p("test_110_ACLMaybeAddAllFields");
     if (!JSONUtils.JSONArrayToArrayList(clientCommands.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
             GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid()))
             .contains(GNSProtocol.ALL_GUIDS.toString())) {
@@ -844,7 +838,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   private void test_111_ACLCheckForAllFieldsPass(GuidEntry masterGuid) throws JSONException, Exception {
     //CHECKED FOR VALIDITY
-	  p("test_111_ACLCheckForAllFieldsPass");
+    p("test_111_ACLCheckForAllFieldsPass");
     JSONArray expected = new JSONArray(Arrays.asList(GNSProtocol.ALL_GUIDS.toString()));
     JSONAssert.assertEquals(expected,
             clientCommands.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
@@ -853,7 +847,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
   private void test_112_ACLRemoveAllFields(GuidEntry masterGuid) throws Exception {
     //CHECKED FOR VALIDITY
-	  p("test_112_ACLRemoveAllFields");
+    p("test_112_ACLRemoveAllFields");
     // remove default read access for this test
     clientCommands.aclRemove(AclAccessType.READ_WHITELIST, masterGuid,
             GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
@@ -861,7 +855,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
   private void test_113_ACLCheckForAllFieldsMissing(GuidEntry masterGuid) throws JSONException, Exception {
     //CHECKED FOR VALIDITY
-	  p("test_113_ACLCheckForAllFieldsMissing");
+    p("test_113_ACLCheckForAllFieldsMissing");
     JSONArray expected = new JSONArray();
     JSONAssert.assertEquals(expected,
             clientCommands.aclGet(AclAccessType.READ_WHITELIST, masterGuid,
@@ -870,20 +864,20 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
   private void test_114_CheckAllFieldsAcl(GuidEntry masterGuid) throws Exception {
     //CHECKED FOR VALIDITY
-	  p("test_114_CheckAllFieldsAcl");
+    p("test_114_CheckAllFieldsAcl");
     Assert.assertTrue(clientCommands.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid,
             GNSProtocol.ENTIRE_RECORD.toString()));
   }
 
   private void test_115_DeleteAllFieldsAcl(GuidEntry masterGuid) throws Exception {
     //CHECKED FOR VALIDITY
-	  p("test_115_DeleteAllFieldsAcl");
+    p("test_115_DeleteAllFieldsAcl");
     clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString());
   }
 
   private void test_116_CheckAllFieldsAclGone(GuidEntry masterGuid) throws Exception {
     //CHECKED FOR VALIDITY
-	  p("test_116_CheckAllFieldsAclGone");
+    p("test_116_CheckAllFieldsAclGone");
     Assert.assertFalse(clientCommands.fieldAclExists(AclAccessType.READ_WHITELIST, masterGuid, GNSProtocol.ENTIRE_RECORD.toString()));
   }
 
@@ -894,7 +888,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * @throws JSONException
    */
   @Test
-  @Repeat (times = REPEAT*10)
+  @Repeat(times = REPEAT * 10)
   public void test_117_ACLTest_Single_Field() throws JSONException, Exception {
     final String TEST_FIELD_NAME = "testField";
     String testFieldName = TEST_FIELD_NAME + RandomString.randomString(6);
@@ -1006,49 +1000,49 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    *
    * @param westyEntry
    * @param samEntry
- * @throws Exception 
+   * @throws Exception
    */
   public void test_131_ACLRemoveAllFields(GuidEntry westyEntry, GuidEntry samEntry) throws Exception {
     //CHECKED FOR VALIDITY
-      // remove default read access for this test
-      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
-              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
-      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, samEntry,
-              GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+    // remove default read access for this test
+    clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
+            GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+    clientCommands.aclRemove(AclAccessType.READ_WHITELIST, samEntry,
+            GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
   }
 
   /**
    *
    * @param westyEntry
- * @throws IOException 
- * @throws ClientException 
+   * @throws IOException
+   * @throws ClientException
    */
   public void test_132_ACLCreateFields(GuidEntry westyEntry) throws ClientException, IOException {
     //CHECKED FOR VALIDITY
-      clientCommands.fieldUpdate(westyEntry.getGuid(), "environment", "work", westyEntry);
-      clientCommands.fieldUpdate(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
-      clientCommands.fieldUpdate(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
-      clientCommands.fieldUpdate(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
+    clientCommands.fieldUpdate(westyEntry.getGuid(), "environment", "work", westyEntry);
+    clientCommands.fieldUpdate(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
+    clientCommands.fieldUpdate(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
+    clientCommands.fieldUpdate(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
   }
 
-	/**
-	 *
-	 * @param westyEntry
-	 * @throws IOException
-	 * @throws JSONException
-	 * @throws ClientException
-	 */
-	public void test_135_ACLMaybeAddAllFieldsForMaster(GuidEntry westyEntry)
-			throws ClientException, JSONException, IOException {
-		// CHECKED FOR VALIDITY
-		if (!JSONUtils.JSONArrayToArrayList(
-				clientCommands.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
-						GNSProtocol.ENTIRE_RECORD.toString(),
-						westyEntry.getGuid())).contains(masterGuid.getGuid())) {
-			clientCommands.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
-					GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid());
-		}
-	}
+  /**
+   *
+   * @param westyEntry
+   * @throws IOException
+   * @throws JSONException
+   * @throws ClientException
+   */
+  public void test_135_ACLMaybeAddAllFieldsForMaster(GuidEntry westyEntry)
+          throws ClientException, JSONException, IOException {
+    // CHECKED FOR VALIDITY
+    if (!JSONUtils.JSONArrayToArrayList(
+            clientCommands.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+                    GNSProtocol.ENTIRE_RECORD.toString(),
+                    westyEntry.getGuid())).contains(masterGuid.getGuid())) {
+      clientCommands.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
+              GNSProtocol.ENTIRE_RECORD.toString(), masterGuid.getGuid());
+    }
+  }
 
   /**
    *
@@ -1658,7 +1652,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * Tests different DB substitute list methods.
    */
   @Test
-  @Repeat( times = REPEAT )
+  @Repeat(times = REPEAT)
   public void test_200_SubstituteList() {
     //CHECKED FOR VALIDITY
     String testSubstituteListGuid = "testSubstituteListGUID"
@@ -1727,7 +1721,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     GuidEntry guidToDeleteEntry = entries.get(0);
     GuidEntry mygroupEntry = entries.get(1);
     test_211_GroupAdd(westyEntry, samEntry, mygroupEntry, guidToDeleteEntry);
-    test_212_GroupRemoveGuid(guidToDeleteEntry);
+    test_212_GroupRemoveGuid(guidToDeleteEntry, mygroupEntry);
 
     GuidEntry groupAccessUserEntry = test_220_GroupAndACLCreateGuids(mygroupEntry);
     test_221_GroupAndACLTestBadAccess(groupAccessUserEntry, westyEntry);
@@ -1800,13 +1794,14 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * Remove a guid from a group.
    *
    * @param guidToDeleteEntry
+   * @param mygroupEntry
    */
-  public void test_212_GroupRemoveGuid(GuidEntry guidToDeleteEntry) {
+  public void test_212_GroupRemoveGuid(GuidEntry guidToDeleteEntry, GuidEntry mygroupEntry) {
     //CHECKED FOR VALIDITY
     // now remove a guid and check for group updates
     try {
       clientCommands.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
-    } catch (Exception e) {
+    } catch (ClientException | IOException e) {
       failWithStackTrace("Exception while removing testGuid: ", e);
     }
     try {
@@ -1816,6 +1811,14 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
     } catch (IOException e) {
       failWithStackTrace("Exception while doing Lookup testGuid: ", e);
+    }
+     try {
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(
+              clientCommands.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
+      Assert.assertThat(actual, Matchers.not(Matchers.hasItem(guidToDeleteEntry.getGuid())));
+
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception during remove guid group update test: " + e);
     }
   }
 
@@ -2103,7 +2106,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 //    GuidEntry unsignedReadAccountGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
 //            "unsignedReadAccountGuid249" + RandomString.randomString(12), PASSWORD, true);
     String name = "unsignedReadAccountGuid249" + RandomString.randomString(12);
-	client.execute(GNSCommand.createAccount(name, PASSWORD));
+    client.execute(GNSCommand.createAccount(name, PASSWORD));
     return GuidUtils.getGUIDKeys(name);
   }
 
@@ -2497,9 +2500,11 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   // fail("Exception when we were not expecting it: " , e);
   // }
   // }
-  
+  private static final Set<GuidEntry> createdGuids = new HashSet<>();
+
   // for use in SELECT test below.
   private static final long SELECT_WAIT = 500;
+
   /**
    * Tests that selectNear and selectWithin work.
    */
@@ -2517,6 +2522,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "geoTest-"
                 + RandomString.randomString(12));
+        createdGuids.add(testEntry); // save them so we can delete them later
         clientCommands.setLocation(testEntry, 0.0, 0.0);
 
         waitSettle(SELECT_WAIT); //See comment under the method header.
@@ -2526,12 +2532,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
                 testEntry);
         assert (location.getDouble(0) == 0.0 && location.getDouble(1) == 0.0);
       }
-    } catch (Exception e) {
+    } catch (ClientException | IOException | JSONException e) {
       failWithStackTrace("Exception while writing fields for GeoSpatialSelect: ", e);
     }
 
+    // select near
     try {
-
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
@@ -2539,12 +2545,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       // best we can do should be at least 5, but possibly more objects in
       // results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (Exception e) {
+    } catch (JSONException | ClientException | IOException e) {
       failWithStackTrace("Exception executing selectNear: ", e);
     }
 
+    // select within
     try {
-
       JSONArray rect = new JSONArray();
       JSONArray upperLeft = new JSONArray();
       upperLeft.put(1.0);
@@ -2558,8 +2564,17 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       // best we can do should be at least 5, but possibly more objects in
       // results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (Exception e) {
+    } catch (JSONException | ClientException | IOException e) {
       failWithStackTrace("Exception executing selectWithin: ", e);
+    }
+
+    try {
+      for (GuidEntry guid : createdGuids) {
+        clientCommands.guidRemove(masterGuid, guid.getGuid());
+      }
+      createdGuids.clear();
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception during cleanup: " + e);
     }
   }
 
@@ -2573,11 +2588,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid,
                 "queryTest-" + RandomString.randomString(12));
+        createdGuids.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName,
                 array, testEntry);
       }
-    } catch (Exception e) {
+    } catch (ClientException | IOException e) {
       failWithStackTrace("Exception while trying to create the guids: ", e);
     }
 
@@ -2585,33 +2601,23 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       waitSettle(SELECT_WAIT); //See comment under the method header for test_320_GeoSpatialSelect
       String query = "~" + fieldName + " : ($gt: 0)";
       JSONArray result = clientCommands.selectQuery(query);
-      for (int i = 0; i < result.length(); i++) {
-        System.out.print(result.get(i).toString() + "  ");
-      }
+//      for (int i = 0; i < result.length(); i++) {
+//        System.out.print("guid: " + result.get(i).toString() + "  ");
+//      }
       // best we can do should be at least 5, but possibly more objects in
       // results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (Exception e) {
-      failWithStackTrace("Exception executing selectNear: ", e);
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception executing selectQuery: ", e);
     }
 
     try {
-
-      JSONArray rect = new JSONArray();
-      JSONArray upperLeft = new JSONArray();
-      upperLeft.put(1.0);
-      upperLeft.put(1.0);
-      JSONArray lowerRight = new JSONArray();
-      lowerRight.put(-1.0);
-      lowerRight.put(-1.0);
-      rect.put(upperLeft);
-      rect.put(lowerRight);
-      JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
-      // best we can do should be at least 5, but possibly more objects in
-      // results
-      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (Exception e) {
-      failWithStackTrace("Exception executing selectWithin: ", e);
+      for (GuidEntry guid : createdGuids) {
+        clientCommands.guidRemove(masterGuid, guid.getGuid());
+      }
+      createdGuids.clear();
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception during cleanup: " + e);
     }
   }
 
@@ -3022,12 +3028,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * @throws Exception
    */
   @Test
-  @Repeat( times = 7 )
+  @Repeat(times = 7)
   public void test_500_Batch_Tests() throws Exception {
     GuidEntry accountGuidForBatch = test_510_CreateBatchAccountGuid();
     test_511_CreateBatch(accountGuidForBatch);
     test_512_CheckBatch(accountGuidForBatch);
-    numberToCreate*=2;
+    numberToCreate *= 2;
   }
 
   /**
@@ -3065,12 +3071,9 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       //Brendan: I added Integer.toString(i) to this to guarantee no collisions during creation.
       aliases.add("testGUID511" + Integer.toString(i) + RandomString.randomString(12));
     }
-    long oldTimeout = clientCommands.getReadTimeout();
     try {
-      clientCommands.setReadTimeout(20 * 1000); // 30 seconds
-      clientCommands.guidBatchCreate(accountGuidForBatch, aliases);
+      clientCommands.guidBatchCreate(accountGuidForBatch, aliases, 20 * 1000);
       //result = client.guidBatchCreate(accountGuidForBatch, aliases);
-      clientCommands.setReadTimeout(oldTimeout);
     } catch (Exception e) {
       failWithStackTrace("Exception while creating guids: ", e);
     }
@@ -3101,7 +3104,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * @throws ClientException
    */
   @Test
-  @Repeat( times = REPEAT )
+  @Repeat(times = REPEAT)
   public void test_530_Index_Tests() throws ClientException, IOException, JSONException {
     String createIndexTestField = test_540_CreateField();
     test_541_CreateIndex(createIndexTestField);
@@ -3151,7 +3154,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       JSONArray result = clientCommands.selectQuery(buildQuery(
               createIndexTestField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
-        System.out.print(result.get(i).toString()+" ");
+        System.out.print(result.get(i).toString() + " ");
       }
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
     } catch (Exception e) {
@@ -3169,7 +3172,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * @throws EncryptionException
    */
   @Test
-  @Repeat( times = REPEAT )
+  @Repeat(times = REPEAT)
   public void test_550_Query_Tests() throws EncryptionException, NoSuchAlgorithmException {
     String groupTestFieldName = "_SelectAutoGroupTestQueryField_" + RandomString.randomString(12);
     GuidEntry groupOneGuid;
@@ -3487,7 +3490,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   // these two attributes right now are supported by CS
   @Test
-  @Repeat( times = REPEAT )
+  @Repeat(times = REPEAT)
   public void test_620_contextServiceTest() {
     // run it only when CS is enabled
     // to check if context service is enabled.
@@ -3532,7 +3535,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   // FIXME: Maybe add something in here to insure that we're actually using an LNS?
   @Test
-  @Repeat( times = REPEAT )
+  @Repeat(times = REPEAT)
   public void test_630_CheckLNSProxy() {
     try {
       //PaxosConfig.getActives() works here because the server and client use the same properties file.
@@ -3564,7 +3567,6 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
     clientCommands.setGNSProxy(null);
   }
-
 
   // HELPER STUFF
   private static final String POLYGON = "Polygon";

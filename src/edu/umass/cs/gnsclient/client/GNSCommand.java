@@ -725,8 +725,8 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket removeGUID(GuidEntry targetGUID)
           throws ClientException {
-    return getCommand(CommandType.RemoveGuidNoAccount, targetGUID, GNSProtocol.GUID.toString(),
-            targetGUID.getGuid());
+    return getCommand(CommandType.RemoveGuidNoAccount, targetGUID,
+            GNSProtocol.GUID.toString(), targetGUID.getGuid());
   }
 
   /**
@@ -739,8 +739,9 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket removeGUID(GuidEntry accountGUID,
           String targetGUID) throws ClientException {
-    return getCommand(CommandType.RemoveGuid, accountGUID, GNSProtocol.ACCOUNT_GUID.toString(),
-            accountGUID.getGuid(), GNSProtocol.GUID.toString(), targetGUID);
+    return getCommand(CommandType.RemoveGuid, accountGUID, 
+            GNSProtocol.ACCOUNT_GUID.toString(), accountGUID.getGuid(), 
+            GNSProtocol.GUID.toString(), targetGUID);
   }
 
   // GROUP COMMANDS
@@ -2251,6 +2252,7 @@ public static final CommandPacket batchCreateGUIDs(
    * @throws ClientException
    */
   @Deprecated
+  // FIXME: This should probably go away.
   public static final CommandPacket fieldReadArrayFirstElement(String targetGUID, String field,
           GuidEntry reader) throws ClientException {
     return getCommand(reader != null ? CommandType.ReadArrayOne
@@ -2272,6 +2274,7 @@ public static final CommandPacket batchCreateGUIDs(
    * @throws ClientException
    */
   @Deprecated
+  // FIXME: This should probably go away.
   public static final CommandPacket fieldReadArrayFirstElement(GuidEntry targetGUID, String field)
           throws ClientException {
     return fieldReadArrayFirstElement(targetGUID.getGuid(), field, targetGUID);

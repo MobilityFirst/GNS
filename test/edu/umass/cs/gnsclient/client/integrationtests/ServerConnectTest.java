@@ -17,7 +17,6 @@ package edu.umass.cs.gnsclient.client.integrationtests;
 
 import edu.umass.cs.gnsserver.utils.RunCommand;
 import edu.umass.cs.gigapaxos.PaxosConfig;
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -313,12 +312,6 @@ public class ServerConnectTest extends DefaultTest {
 
     if (client != null) {
       client.close();
-    }
-    System.out.println("\nPrinting reverse-engineered return types:");
-    for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
-      System.out.println(type + " returns "
-              + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
-              + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
     }
   }
 

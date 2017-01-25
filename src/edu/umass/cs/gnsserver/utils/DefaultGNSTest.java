@@ -42,11 +42,9 @@ import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
@@ -386,7 +384,6 @@ public class DefaultGNSTest extends DefaultTest {
 		removeCreatedState();
 		closeServers(DefaultProps.FORCECLEAR.key);
 		closeClients();
-		printReverseEngineeredType();
 	}
 
 	private static void removeCreatedState() throws ClientException,
@@ -432,20 +429,6 @@ public class DefaultGNSTest extends DefaultTest {
 	private static void closeClients() {
 		if (client != null)
 			client.close();
-	}
-
-	private static void printReverseEngineeredType() {
-		System.out.println("\nPrinting reverse-engineered return types:");
-		for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
-			System.out.println(type
-					+ " returns "
-					+ GNSClientCommands.REVERSE_ENGINEER.get(type)
-					+ "; e.g., "
-					+ Util.truncate(
-							GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type),
-							64, 64));
-
-		}
 	}
 
 	private static void dropAllDatabases() {

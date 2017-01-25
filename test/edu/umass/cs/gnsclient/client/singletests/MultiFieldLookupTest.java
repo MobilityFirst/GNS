@@ -26,6 +26,7 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 
+import edu.umass.cs.utils.DefaultTest;
 import java.io.IOException;
 
 import org.json.JSONObject;
@@ -44,11 +45,11 @@ import java.util.Arrays;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MultiFieldLookupTest {
+public class MultiFieldLookupTest extends DefaultTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
 
@@ -56,15 +57,15 @@ public class MultiFieldLookupTest {
    *
    */
   public MultiFieldLookupTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
         fail("Exception when we were not expecting it: " + e);
       }
@@ -77,7 +78,7 @@ public class MultiFieldLookupTest {
   @Test
   public void test_01_JSONUpdate() {
     try {
-      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -92,7 +93,7 @@ public class MultiFieldLookupTest {
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
       json.put("gibberish", subJson);
-      client.update(westyEntry, json);
+      clientCommands.update(westyEntry, json);
     } catch (Exception e) {
       fail("Exception while updating JSON: " + e);
     }
@@ -104,7 +105,7 @@ public class MultiFieldLookupTest {
   @Test
   public void test_02_MultiFieldLookup() {
     try {
-      String actual = client.fieldRead(westyEntry, new ArrayList<String>(Arrays.asList("name", "occupation")));
+      String actual = clientCommands.fieldRead(westyEntry, new ArrayList<String>(Arrays.asList("name", "occupation")));
       JSONAssert.assertEquals("{\"name\":\"frank\",\"occupation\":\"busboy\"}", actual, true);
     } catch (Exception e) {
       fail("Exception while reading \"name\" and \"occupation\": " + e);

@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -21,7 +19,6 @@ import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
  * @author gaozy
@@ -95,9 +92,9 @@ public class TestActiveCodeRemoteQueryClient {
 		 * Case I: test a read followed by a read		
 		 */
 		try {
-			client.activeCodeSet(entries[0].getGuid(), ActiveCode.READ_ACTION, read_code, entries[0]);
+			client.activeCodeSet(entries[0].getGuid(), ActiveCode.READ_ACTION, read_code.getBytes("UTF-8"), entries[0]);
 			
-			client.activeCodeSet(entries[1].getGuid(), ActiveCode.READ_ACTION, noop_code, entries[1]);
+			client.activeCodeSet(entries[1].getGuid(), ActiveCode.READ_ACTION, noop_code.getBytes("UTF-8"), entries[1]);
 		} catch (ClientException e) {
 			e.printStackTrace();
 		}
@@ -118,7 +115,7 @@ public class TestActiveCodeRemoteQueryClient {
 		 */
 		try {
 			client.activeCodeClear(entries[0].getGuid(), ActiveCode.READ_ACTION, entries[0]);
-			client.activeCodeSet(entries[0].getGuid(), ActiveCode.WRITE_ACTION, read_code, entries[0]);
+			client.activeCodeSet(entries[0].getGuid(), ActiveCode.WRITE_ACTION, read_code.getBytes("UTF-8"), entries[0]);
 			
 		} catch (ClientException e) {
 			e.printStackTrace();
@@ -177,8 +174,8 @@ public class TestActiveCodeRemoteQueryClient {
 		try {
 			// target guid must set acl to allow accessor to write
 			client.aclAdd(AclAccessType.WRITE_WHITELIST, entries[1], GNSProtocol.ENTIRE_RECORD.toString(), entries[0].getGuid());
-			client.activeCodeSet(entries[0].getGuid(), ActiveCode.READ_ACTION, write_code, entries[0]);					
-			client.activeCodeSet(entries[1].getGuid(), ActiveCode.WRITE_ACTION, noop_code, entries[1]);		
+			client.activeCodeSet(entries[0].getGuid(), ActiveCode.READ_ACTION, write_code.getBytes("UTF-8"), entries[0]);					
+			client.activeCodeSet(entries[1].getGuid(), ActiveCode.WRITE_ACTION, noop_code.getBytes("UTF-8"), entries[1]);		
 		} catch ( Exception e ) {
 			e.printStackTrace();
 		}
@@ -218,7 +215,7 @@ public class TestActiveCodeRemoteQueryClient {
 		 */
 		try {
 			client.activeCodeClear(entries[0].getGuid(), ActiveCode.READ_ACTION, entries[0]);
-			client.activeCodeSet(entries[0].getGuid(), ActiveCode.WRITE_ACTION, write_code, entries[0]);
+			client.activeCodeSet(entries[0].getGuid(), ActiveCode.WRITE_ACTION, write_code.getBytes("UTF-8"), entries[0]);
 			
 		} catch (ClientException e) {
 			e.printStackTrace();

@@ -31,10 +31,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
+import javax.xml.bind.DatatypeConverter;
 import static org.junit.Assert.fail;
 
 /**
@@ -450,6 +450,9 @@ public class ConsoleBasedTest {
           + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
 
   private static String createVerificationCode(String name) {
-    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
+    return DatatypeConverter.printHexBinary(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), 
+            VERIFICATION_CODE_LENGTH));
+//    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), 
+//            VERIFICATION_CODE_LENGTH));
   }
 }
