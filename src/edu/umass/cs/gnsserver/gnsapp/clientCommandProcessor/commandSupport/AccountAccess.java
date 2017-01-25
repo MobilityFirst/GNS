@@ -1478,7 +1478,8 @@ public class AccountAccess {
     // Step 1 - remove any group links
     ResponseCode removedGroupLinksResponseCode;
     try {
-      removedGroupLinksResponseCode = GroupAccess.removeGuidFromGroups(header, commandPacket, guidInfo.getGuid(), handler);
+      removedGroupLinksResponseCode = GroupAccess.removeGuidFromGroups(
+              header, commandPacket, guidInfo.getGuid(), handler);
     } catch (IOException | InternalRequestException | JSONException e) {
       removedGroupLinksResponseCode = ResponseCode.UPDATE_ERROR;
     } catch (ClientException e) {

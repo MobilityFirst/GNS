@@ -1730,7 +1730,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     GuidEntry guidToDeleteEntry = entries.get(0);
     GuidEntry mygroupEntry = entries.get(1);
     test_211_GroupAdd(westyEntry, samEntry, mygroupEntry, guidToDeleteEntry);
-    test_212_GroupRemoveGuid(guidToDeleteEntry);
+    test_212_GroupRemoveGuid(guidToDeleteEntry, mygroupEntry);
 
     GuidEntry groupAccessUserEntry = test_220_GroupAndACLCreateGuids(mygroupEntry);
     test_221_GroupAndACLTestBadAccess(groupAccessUserEntry, westyEntry);
@@ -1803,13 +1803,14 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * Remove a guid from a group.
    *
    * @param guidToDeleteEntry
+   * @param mygroupEntry
    */
-  public void test_212_GroupRemoveGuid(GuidEntry guidToDeleteEntry) {
+  public void test_212_GroupRemoveGuid(GuidEntry guidToDeleteEntry, GuidEntry mygroupEntry) {
     //CHECKED FOR VALIDITY
     // now remove a guid and check for group updates
     try {
       clientCommands.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
-    } catch (Exception e) {
+    } catch (ClientException | IOException e) {
       failWithStackTrace("Exception while removing testGuid: ", e);
     }
     try {
@@ -1819,6 +1820,14 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 
     } catch (IOException e) {
       failWithStackTrace("Exception while doing Lookup testGuid: ", e);
+    }
+     try {
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(
+              clientCommands.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
+      Assert.assertThat(actual, Matchers.not(Matchers.hasItem(guidToDeleteEntry.getGuid())));
+
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception during remove guid group update test: " + e);
     }
   }
 

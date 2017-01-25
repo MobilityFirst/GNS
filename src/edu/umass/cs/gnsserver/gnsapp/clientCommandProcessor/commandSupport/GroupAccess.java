@@ -438,8 +438,8 @@ public class GroupAccess {
               null, handler, true).toStringSet()) {
         LOGGER.log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
         if (!GNSProtocol.OK_RESPONSE.toString().equals(
-                handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid,
-                        GroupAccess.GROUPS, groupGuid, header)).getResultString())) {
+                handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(groupGuid,
+                        GroupAccess.GROUP, memberGuid, header)).getResultString())) {
           allUpdatesOK = false;
         }
       }

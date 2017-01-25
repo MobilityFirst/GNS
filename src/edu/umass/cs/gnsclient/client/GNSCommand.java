@@ -725,8 +725,8 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket removeGUID(GuidEntry targetGUID)
           throws ClientException {
-    return getCommand(CommandType.RemoveGuidNoAccount, targetGUID, GNSProtocol.GUID.toString(),
-            targetGUID.getGuid());
+    return getCommand(CommandType.RemoveGuidNoAccount, targetGUID,
+            GNSProtocol.GUID.toString(), targetGUID.getGuid());
   }
 
   /**
@@ -739,8 +739,9 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket removeGUID(GuidEntry accountGUID,
           String targetGUID) throws ClientException {
-    return getCommand(CommandType.RemoveGuid, accountGUID, GNSProtocol.ACCOUNT_GUID.toString(),
-            accountGUID.getGuid(), GNSProtocol.GUID.toString(), targetGUID);
+    return getCommand(CommandType.RemoveGuid, accountGUID, 
+            GNSProtocol.ACCOUNT_GUID.toString(), accountGUID.getGuid(), 
+            GNSProtocol.GUID.toString(), targetGUID);
   }
 
   // GROUP COMMANDS
