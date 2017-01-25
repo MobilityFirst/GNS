@@ -384,8 +384,6 @@ public class DefaultGNSTest extends DefaultTest {
 		removeCreatedState();
 		closeServers(DefaultProps.FORCECLEAR.key);
 		closeClients();
-                //REVERSE_ENGINEER code is no longer relevant in GNSClientCommands - Westy  
-		//printReverseEngineeredType();
 	}
 
 	private static void removeCreatedState() throws ClientException,
@@ -432,21 +430,6 @@ public class DefaultGNSTest extends DefaultTest {
 		if (client != null)
 			client.close();
 	}
-
-//      REVERSE_ENGINEER code is no longer relevant in GNSClientCommands - Westy   
-//	private static void printReverseEngineeredType() {
-//		System.out.println("\nPrinting reverse-engineered return types:");
-//		for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
-//			System.out.println(type
-//					+ " returns "
-//					+ GNSClientCommands.REVERSE_ENGINEER.get(type)
-//					+ "; e.g., "
-//					+ Util.truncate(
-//							GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type),
-//							64, 64));
-//
-//		}
-//	}
 
 	private static void dropAllDatabases() {
 		for (String server : new DefaultNodeConfig<>(PaxosConfig.getActives(),

@@ -96,13 +96,4 @@ public class AdminBadAuthTest extends DefaultGNSTest {
     clientCommands.dump();
   }
 
-//  /**
-//   *
-//   * @throws Exception
-//   */
-//  @Test(expected = ClientException.class)
-//  public void test_14_Dump_ClientPort() throws Exception {
-//    badClient.dump();
-//  }
-
 }

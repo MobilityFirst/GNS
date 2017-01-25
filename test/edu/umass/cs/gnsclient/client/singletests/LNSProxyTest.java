@@ -16,7 +16,6 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -347,14 +346,6 @@ public class LNSProxyTest extends DefaultTest {
     if (client != null) {
       client.close();
     }
-    
-//    REVERSE_ENGINEER code is no longer relevant in GNSClientCommands - Westy
-//    System.out.println("\nPrinting reverse-engineered return types:");
-//    for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
-//      System.out.println(type + " returns "
-//              + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
-//              + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
-//    }
   }
 
   private static void dropAllDatabases() {
