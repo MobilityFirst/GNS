@@ -79,8 +79,8 @@ public class GroupTest extends DefaultGNSTest {
   @Test
   public void test_01_testCreateGuids() {
     try {
-      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -93,14 +93,14 @@ public class GroupTest extends DefaultGNSTest {
    */
   @Test
   public void test_210_GroupCreate() {
-    String mygroupName = "mygroup" + RandomString.randomString(6);
+    String mygroupName = "mygroup" + RandomString.randomString(12);
     try {
       try {
         clientCommands.lookupGuid(mygroupName);
         Utils.failWithStackTrace(mygroupName + " entity should not exist");
       } catch (ClientException e) {
       }
-      guidToDeleteEntry = clientCommands.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(6));
+      guidToDeleteEntry = clientCommands.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(12));
       mygroupEntry = clientCommands.guidCreate(masterGuid, mygroupName);
     } catch (IOException | ClientException e) {
       Utils.failWithStackTrace("Exception while creating guids: " + e);

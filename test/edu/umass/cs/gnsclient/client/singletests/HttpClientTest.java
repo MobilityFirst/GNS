@@ -92,8 +92,8 @@ public class HttpClientTest extends DefaultGNSTest {
   @Test
   public void test_901_Http_CreateGuids() {
     try {
-      httpOneEntry = httpClient.guidCreate(masterGuid, "httpOneEntry" + RandomString.randomString(6));
-      httpTwoEntry = httpClient.guidCreate(masterGuid, "httpTwoEntry" + RandomString.randomString(6));
+      httpOneEntry = httpClient.guidCreate(masterGuid, "httpOneEntry" + RandomString.randomString(12));
+      httpTwoEntry = httpClient.guidCreate(masterGuid, "httpTwoEntry" + RandomString.randomString(12));
       System.out.println("Created: " + httpOneEntry);
       System.out.println("Created: " + httpTwoEntry);
     } catch (IOException | ClientException | NoSuchAlgorithmException e) {
@@ -433,7 +433,7 @@ public class HttpClientTest extends DefaultGNSTest {
   public void test_961_Http_GeoSpatialSelect() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = httpClient.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = httpClient.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(12));
         createdGuids.add(testEntry); // save them so we can delete them later
         httpClient.setLocation(0.0, 0.0, testEntry);
       }
@@ -480,7 +480,7 @@ public class HttpClientTest extends DefaultGNSTest {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = httpClient.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = httpClient.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
         createdGuids.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
         httpClient.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
@@ -527,7 +527,7 @@ public class HttpClientTest extends DefaultGNSTest {
    */
   @Test
   public void test_970_Http_CreateField() {
-    createIndexTestField = "testField" + RandomString.randomString(6);
+    createIndexTestField = "testField" + RandomString.randomString(12);
     try {
       httpClient.fieldUpdate(masterGuid, createIndexTestField, createGeoJSONPolygon(AREA_EXTENT));
     } catch (JSONException | IOException | ClientException e) {
@@ -569,14 +569,14 @@ public class HttpClientTest extends DefaultGNSTest {
    */
   @Test
   public void test_980_Http_GroupCreate() {
-    String mygroupName = "mygroup" + RandomString.randomString(6);
+    String mygroupName = "mygroup" + RandomString.randomString(12);
     try {
       try {
         httpClient.lookupGuid(mygroupName);
         Utils.failWithStackTrace(mygroupName + " entity should not exist");
       } catch (ClientException e) {
       }
-      guidToDeleteEntry = httpClient.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(6));
+      guidToDeleteEntry = httpClient.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(12));
       mygroupEntry = httpClient.guidCreate(masterGuid, mygroupName);
     } catch (IOException | ClientException | NoSuchAlgorithmException e) {
       Utils.failWithStackTrace("Exception while creating guids: ", e);

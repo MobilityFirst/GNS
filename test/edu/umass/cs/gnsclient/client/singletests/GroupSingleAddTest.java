@@ -77,8 +77,8 @@ public class GroupSingleAddTest extends DefaultGNSTest {
   @Test
   public void test_200_testCreateGuids() {
     try {
-      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -91,7 +91,7 @@ public class GroupSingleAddTest extends DefaultGNSTest {
    */
   @Test
   public void test_210_GroupCreate() {
-    String mygroupName = "mygroup" + RandomString.randomString(6);
+    String mygroupName = "mygroup" + RandomString.randomString(12);
     try {
       try {
         clientCommands.lookupGuid(mygroupName);

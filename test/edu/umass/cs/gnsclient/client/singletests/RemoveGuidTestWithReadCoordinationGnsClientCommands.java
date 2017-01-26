@@ -35,7 +35,7 @@ public class RemoveGuidTestWithReadCoordinationGnsClientCommands
    */
   public RemoveGuidTestWithReadCoordinationGnsClientCommands() {
     super();
-    client.setForceCoordinatedReads(true);
+    clientCommands.setForceCoordinatedReads(true);
   }
   
 }

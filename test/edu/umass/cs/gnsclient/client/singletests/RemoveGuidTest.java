@@ -67,7 +67,7 @@ public class RemoveGuidTest extends DefaultGNSTest {
    */
   @Test
   public void test_10_RemoveGuidUsingAccount() {
-    String guidName = "testGUID" + RandomString.randomString(6);
+    String guidName = "testGUID" + RandomString.randomString(12);
     GuidEntry guid = null;
     try {
       guid = clientCommands.guidCreate(masterGuid, guidName);
@@ -94,7 +94,7 @@ public class RemoveGuidTest extends DefaultGNSTest {
     }
   }
 
-  private static final String testGuidName = "testGUID" + RandomString.randomString(6);
+  private static final String testGuidName = "testGUID" + RandomString.randomString(12);
   private static GuidEntry testGuid = null;
 
   /**

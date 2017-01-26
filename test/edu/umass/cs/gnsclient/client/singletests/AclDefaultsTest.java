@@ -259,8 +259,8 @@ public class AclDefaultsTest extends DefaultGNSTest {
   @Test
   public void test_130_ACLCreateGuids() {
     try {
-      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception registering guids in ACLCreateGuids: ", e);
     }
@@ -436,7 +436,7 @@ public class AclDefaultsTest extends DefaultGNSTest {
   @Test
   public void test_142_ACLCreateAnotherGuid() {
     try {
-      String barneyName = "barney" + RandomString.randomString(6);
+      String barneyName = "barney" + RandomString.randomString(12);
       try {
         clientCommands.lookupGuid(barneyName);
         Utils.failWithStackTrace(barneyName + " entity should not exist");
@@ -574,7 +574,7 @@ public class AclDefaultsTest extends DefaultGNSTest {
    */
   @Test
   public void test_149_ACLALLFields() {
-    String superUserName = "superuser" + RandomString.randomString(6);
+    String superUserName = "superuser" + RandomString.randomString(12);
     try {
       try {
         clientCommands.lookupGuid(superUserName);

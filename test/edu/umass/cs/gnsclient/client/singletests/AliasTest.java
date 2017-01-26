@@ -48,7 +48,7 @@ public class AliasTest extends DefaultGNSTest {
 
   private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
-  private static final String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
+  private static final String alias = "ALIAS-" + RandomString.randomString(12) + "@blah.org";
 
   /**
    *

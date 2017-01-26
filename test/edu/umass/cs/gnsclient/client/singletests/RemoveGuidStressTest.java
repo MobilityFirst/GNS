@@ -78,7 +78,7 @@ public class RemoveGuidStressTest extends DefaultGNSTest {
    */
   @Test
   public void test_20_RemoveGuidUsingAccountCreateGuids() {
-    String testGuidName = "testGUID" + RandomString.randomString(10);
+    String testGuidName = "testGUID" + RandomString.randomString(12);
     for (int i = 0; i < NUMBER_TO_CREATE; i++) {
       try {
         GUIDS[i] = clientCommands.guidCreate(masterGuid, testGuidName + "-" + i);
@@ -115,7 +115,7 @@ public class RemoveGuidStressTest extends DefaultGNSTest {
    */
   @Test
   public void test_40_RemoveGuidCreateGuids() {
-    String testGuidName = "testGUID" + RandomString.randomString(10);
+    String testGuidName = "testGUID" + RandomString.randomString(12);
     for (int i = 0; i < NUMBER_TO_CREATE; i++) {
       try {
         GUIDS[i] = clientCommands.guidCreate(masterGuid, testGuidName + "-" + i);
@@ -152,7 +152,7 @@ public class RemoveGuidStressTest extends DefaultGNSTest {
    */
   @Test
   public void test_60_RemoveAccountGuidCreateGuids() {
-    String testGuidName = "testGUID" + RandomString.randomString(10);
+    String testGuidName = "testGUID" + RandomString.randomString(12);
     for (int i = 0; i < NUMBER_TO_CREATE; i++) {
       try {
         GUIDS[i] = clientCommands.accountGuidCreate(testGuidName + "-" + i, PASSWORD);

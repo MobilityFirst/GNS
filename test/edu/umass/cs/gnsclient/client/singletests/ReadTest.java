@@ -74,7 +74,7 @@ public class ReadTest extends DefaultGNSTest {
   @Test
   public void test_01_CreateEntity() {
     try {
-      GuidEntry testGuid = clientCommands.guidCreate(masterGuid, "testGUID" + RandomString.randomString(6));
+      GuidEntry testGuid = clientCommands.guidCreate(masterGuid, "testGUID" + RandomString.randomString(12));
       try {
         clientCommands.guidRemove(masterGuid, testGuid.getGuid());
       } catch (ClientException | IOException e) {
@@ -91,8 +91,8 @@ public class ReadTest extends DefaultGNSTest {
   @Test
   public void test_02_CreateField() {
     try {
-      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }

@@ -52,6 +52,7 @@ public class SelectGeoTest extends DefaultGNSTest {
 
   private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
+  private static final Set<GuidEntry> createdGuids = new HashSet<>();
 
   /**
    *
@@ -72,8 +73,6 @@ public class SelectGeoTest extends DefaultGNSTest {
     }
   }
 
-  private static final Set<GuidEntry> createdGuids = new HashSet<>();
-
   /**
    *
    */
@@ -81,8 +80,8 @@ public class SelectGeoTest extends DefaultGNSTest {
   public void test_10_GeoSpatialSelectCreateGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, 
-                "geoTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid,
+                "geoTest-" + RandomString.randomString(12));
         createdGuids.add(testEntry); // save them so we can delete them later
         clientCommands.setLocation(testEntry, 0.0, 0.0);
       }

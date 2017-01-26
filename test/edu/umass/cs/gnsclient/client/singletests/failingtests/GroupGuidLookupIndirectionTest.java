@@ -83,7 +83,7 @@ public class GroupGuidLookupIndirectionTest extends DefaultGNSTest {
   public void test_10_SetupGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "guid-" + RandomString.randomString(6));
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "guid-" + RandomString.randomString(12));
         createdGuids.add(testEntry);
         indirectionGroupMembers.put(testEntry.getGuid());
         JSONArray array = new JSONArray(Arrays.asList(25));
@@ -100,7 +100,7 @@ public class GroupGuidLookupIndirectionTest extends DefaultGNSTest {
   @Test
   public void test_20_RegisterGroup() {
     try {
-      indirectionGroupGuid = clientCommands.guidCreate(masterGuid, "indirectionGroup-" + RandomString.randomString(6));
+      indirectionGroupGuid = clientCommands.guidCreate(masterGuid, "indirectionGroup-" + RandomString.randomString(12));
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
     }

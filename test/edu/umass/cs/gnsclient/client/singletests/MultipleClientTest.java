@@ -103,7 +103,7 @@ public class MultipleClientTest extends DefaultGNSTest {
    */
   @Test
   public void test_01_CreateEntity() {
-    String name = "testGUID" + RandomString.randomString(6);
+    String name = "testGUID" + RandomString.randomString(12);
     GuidEntry guidEntry = null;
     try {
       guidEntry = getRandomClient().guidCreate(masterGuid, name);
@@ -124,7 +124,7 @@ public class MultipleClientTest extends DefaultGNSTest {
    */
   @Test
   public void test_02_RemoveGuid() {
-    String testGuidName = "testGUID" + RandomString.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
       testGuid = getRandomClient().guidCreate(masterGuid, testGuidName);
@@ -167,7 +167,7 @@ public class MultipleClientTest extends DefaultGNSTest {
    */
   @Test
   public void test_03_RemoveGuidSansAccountInfo() {
-    String testGuidName = "testGUID" + RandomString.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
       testGuid = getRandomClient().guidCreate(masterGuid, testGuidName);
@@ -201,7 +201,7 @@ public class MultipleClientTest extends DefaultGNSTest {
    */
   @Test
   public void test_04_LookupPrimaryGuid() {
-    String testGuidName = "testGUID" + RandomString.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
       testGuid = getRandomClient().guidCreate(masterGuid, testGuidName);
@@ -228,7 +228,7 @@ public class MultipleClientTest extends DefaultGNSTest {
   @Test
   public void test_05_CreateSubGuid() {
     try {
-      subGuidEntry = getRandomClient().guidCreate(masterGuid, "subGuid" + RandomString.randomString(6));
+      subGuidEntry = getRandomClient().guidCreate(masterGuid, "subGuid" + RandomString.randomString(12));
       System.out.println("Created: " + subGuidEntry);
     } catch (IOException | ClientException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
@@ -293,8 +293,8 @@ public class MultipleClientTest extends DefaultGNSTest {
   @Test
   public void test_10_CreateFields() {
     try {
-      westyEntry = getRandomClient().guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = getRandomClient().guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = getRandomClient().guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = getRandomClient().guidCreate(masterGuid, "sam" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (IOException | ClientException e) {
@@ -363,7 +363,7 @@ public class MultipleClientTest extends DefaultGNSTest {
   @Test
   public void test_12_ACLPartTwo() {
     try {
-      String barneyName = "barney" + RandomString.randomString(6);
+      String barneyName = "barney" + RandomString.randomString(12);
       try {
         getRandomClient().lookupGuid(barneyName);
         Utils.failWithStackTrace(barneyName + " entity should not exist");
@@ -427,7 +427,7 @@ public class MultipleClientTest extends DefaultGNSTest {
   @Test
   public void test_13_ACLALLFields() {
     //testACL();
-    String superUserName = "superuser" + RandomString.randomString(6);
+    String superUserName = "superuser" + RandomString.randomString(12);
     try {
       try {
         getRandomClient().lookupGuid(superUserName);
@@ -577,7 +577,7 @@ public class MultipleClientTest extends DefaultGNSTest {
    */
   @Test
   public void test_16_Substitute() {
-    String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(6);
+    String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(12);
     String field = "people";
     GuidEntry testEntry = null;
     try {
@@ -627,7 +627,7 @@ public class MultipleClientTest extends DefaultGNSTest {
    */
   @Test
   public void test_17_SubstituteList() {
-    String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(6);
+    String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(12);
     String field = "people";
     GuidEntry testEntry = null;
     try {
@@ -682,14 +682,14 @@ public class MultipleClientTest extends DefaultGNSTest {
    */
   @Test
   public void test_18_Group() {
-    String mygroupName = "mygroup" + RandomString.randomString(6);
+    String mygroupName = "mygroup" + RandomString.randomString(12);
     try {
       try {
         getRandomClient().lookupGuid(mygroupName);
         Utils.failWithStackTrace(mygroupName + " entity should not exist");
       } catch (ClientException e) {
       }
-      guidToDeleteEntry = getRandomClient().guidCreate(masterGuid, "deleteMe" + RandomString.randomString(6));
+      guidToDeleteEntry = getRandomClient().guidCreate(masterGuid, "deleteMe" + RandomString.randomString(12));
       mygroupEntry = getRandomClient().guidCreate(masterGuid, mygroupName);
 
       getRandomClient().groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
@@ -741,7 +741,7 @@ public class MultipleClientTest extends DefaultGNSTest {
   @Test
   public void test_19_GroupAndACL() {
     //testGroup();
-    String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
+    String groupAccessUserName = "groupAccessUser" + RandomString.randomString(12);
     try {
       try {
         getRandomClient().lookupGuid(groupAccessUserName);
@@ -813,7 +813,7 @@ public class MultipleClientTest extends DefaultGNSTest {
     }
   }
 
-  private static final String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
+  private static final String alias = "ALIAS-" + RandomString.randomString(12) + "@blah.org";
 
   /**
    *
@@ -881,7 +881,7 @@ public class MultipleClientTest extends DefaultGNSTest {
     Set<GuidEntry> createdGuids = new HashSet<>();
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = getRandomClient().guidCreate(masterGuid, "geoTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = getRandomClient().guidCreate(masterGuid, "geoTest-" + RandomString.randomString(12));
         createdGuids.add(testEntry);
         getRandomClient().setLocation(testEntry, 0.0, 0.0);
       }
@@ -937,7 +937,7 @@ public class MultipleClientTest extends DefaultGNSTest {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = getRandomClient().guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = getRandomClient().guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
         createdGuids.add(testEntry);
         JSONArray array = new JSONArray(Arrays.asList(25));
         getRandomClient().fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
@@ -1167,7 +1167,7 @@ public class MultipleClientTest extends DefaultGNSTest {
   @Test
   public void test_71_JSONUpdate() {
     try {
-      updateEntry = getRandomClient().guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      updateEntry = getRandomClient().guidCreate(masterGuid, "westy" + RandomString.randomString(12));
       System.out.println("Created: " + updateEntry);
     } catch (IOException | ClientException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);

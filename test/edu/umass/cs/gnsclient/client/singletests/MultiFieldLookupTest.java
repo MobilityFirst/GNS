@@ -76,7 +76,7 @@ public class MultiFieldLookupTest extends DefaultGNSTest {
   @Test
   public void test_01_JSONUpdate() {
     try {
-      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);

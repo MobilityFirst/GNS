@@ -83,9 +83,9 @@ public class GroupAddTest extends DefaultGNSTest {
   @Test
   public void test_01_testCreateGuids() {
     try {
-      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
-      guidToDeleteEntry = clientCommands.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
+      guidToDeleteEntry = clientCommands.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -98,7 +98,7 @@ public class GroupAddTest extends DefaultGNSTest {
    */
   @Test
   public void test_210_GroupCreate() {
-    String mygroupName = "mygroup" + RandomString.randomString(6);
+    String mygroupName = "mygroup" + RandomString.randomString(12);
     try {
       try {
         clientCommands.lookupGuid(mygroupName);
@@ -158,9 +158,9 @@ public class GroupAddTest extends DefaultGNSTest {
   @Test
   public void test_220_testCreateSecondGuids() {
     try {
-      oneEntry = clientCommands.guidCreate(masterGuid, "one" + RandomString.randomString(6));
-      twoEntry = clientCommands.guidCreate(masterGuid, "two" + RandomString.randomString(6));
-      threeEntry = clientCommands.guidCreate(masterGuid, "three" + RandomString.randomString(6));
+      oneEntry = clientCommands.guidCreate(masterGuid, "one" + RandomString.randomString(12));
+      twoEntry = clientCommands.guidCreate(masterGuid, "two" + RandomString.randomString(12));
+      threeEntry = clientCommands.guidCreate(masterGuid, "three" + RandomString.randomString(12));
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception while creating guids: ", e);
     }
@@ -171,7 +171,7 @@ public class GroupAddTest extends DefaultGNSTest {
    */
   @Test
   public void test_221_GroupSecondCreate() {
-    String another = "anotherGroupEntry" + RandomString.randomString(6);
+    String another = "anotherGroupEntry" + RandomString.randomString(12);
     try {
       try {
         clientCommands.lookupGuid(another);
