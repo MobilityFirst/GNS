@@ -28,24 +28,24 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS using the UniversalGnsClientFull.
+ * Test unsigned writes.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class UnsignedWriteTest {
+public class UnsignedWriteTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client = null;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
 
@@ -53,17 +53,17 @@ public class UnsignedWriteTest {
    *
    */
   public UnsignedWriteTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
     }
   }
@@ -74,10 +74,10 @@ public class UnsignedWriteTest {
   @Test
   public void test_01_CreateField() {
     try {
-      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -90,22 +90,22 @@ public class UnsignedWriteTest {
     String standardReadFieldName = "standardreadaccess";
     try {
       // remove default access
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
 
-      client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedReadFieldName, "funkadelicread", westyEntry);
-      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSProtocol.ALL_GUIDS.toString());
-      assertEquals("funkadelicread", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedReadFieldName, null));
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), unsignedReadFieldName, "funkadelicread", westyEntry);
+      clientCommands.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSProtocol.ALL_GUIDS.toString());
+      Assert.assertEquals("funkadelicread", clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedReadFieldName, null));
 
-      client.fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
 
       try {
-        String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
-        fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
+        String result = clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
+        Utils.failWithStackTrace("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
       }
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -117,20 +117,33 @@ public class UnsignedWriteTest {
     String unsignedWriteFieldName = "allwriteaccess";
     String standardWriteFieldName = "standardwriteaccess";
     try {
-      client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedWriteFieldName, "default", westyEntry);
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
-      client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSProtocol.ALL_GUIDS.toString());
-      client.fieldReplaceFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, "funkadelicwrite", westyEntry);
-      assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, westyEntry));
+      clientCommands.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSProtocol.ALL_GUIDS.toString());
+      clientCommands.fieldReplaceFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, "funkadelicwrite", westyEntry);
+      Assert.assertEquals("funkadelicwrite", clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, westyEntry));
 
-      client.fieldCreateOneElementList(westyEntry.getGuid(), standardWriteFieldName, "bummer", westyEntry);
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), standardWriteFieldName, "bummer", westyEntry);
       try {
-        client.fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
-        fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
+        clientCommands.fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
+        Utils.failWithStackTrace("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
       } catch (ClientException e) {
+        // normal result
       }
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
+    }
+  }
+  
+  /**
+   *
+   */
+  @Test
+  public void test_04_Cleanup() {
+    try {
+      clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception during cleanup: " + e);
     }
   }
 

@@ -19,14 +19,16 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,13 +36,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
+import java.util.Set;
+import org.hamcrest.Matchers;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -51,38 +54,29 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SelectTest {
+public class SelectTest extends DefaultGNSTest {
 
-  private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static String password = "password";
-  private static GNSClientCommands client = null;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
+  private static final Set<GuidEntry> createdGuids = new HashSet<>();
 
   /**
    *
    */
   public SelectTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
-      }
-      if (System.getProperty("alias") != null
-              && !System.getProperty("alias").isEmpty()) {
-        accountAlias = System.getProperty("alias");
-      }
-      if (System.getProperty("password") != null
-              && !System.getProperty("password").isEmpty()) {
-        password = System.getProperty("password");
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, password, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception while creating account guid: " + e);
+        Utils.failWithStackTrace("Exception while creating account guid: " + e);
       }
     }
   }
@@ -91,14 +85,14 @@ public class SelectTest {
    *
    */
   @Test
-  public void test_1_CreateGuids() {
+  public void test_01_CreateGuids() {
     try {
-      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
-    } catch (Exception e) {
-      fail("Exception registering guids: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception registering guids: " + e);
     }
   }
 
@@ -106,61 +100,61 @@ public class SelectTest {
    *
    */
   @Test
-  public void test_2_cats() {
+  public void test_02_cats() {
     try {
-      client.fieldCreateOneElementList(westyEntry.getGuid(), "cats", "whacky", westyEntry);
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "cats", "whacky", westyEntry);
 
-      assertEquals("whacky",
-              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
+      Assert.assertEquals("whacky",
+              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
 
-      client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", new JSONArray(
+      clientCommands.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("hooch", "maya", "red", "sox", "toby")), westyEntry);
 
-      HashSet<String> expected = new HashSet<String>(Arrays.asList("hooch",
+      HashSet<String> expected = new HashSet<>(Arrays.asList("hooch",
               "maya", "red", "sox", "toby", "whacky"));
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(clientCommands
               .fieldReadArray(westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
-      client.fieldClear(westyEntry.getGuid(), "cats", new JSONArray(
+      clientCommands.fieldClear(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("maya", "toby")), westyEntry);
-      expected = new HashSet<String>(Arrays.asList("hooch", "red", "sox",
+      expected = new HashSet<>(Arrays.asList("hooch", "red", "sox",
               "whacky"));
-      actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
+      actual = JSONUtils.JSONArrayToHashSet(clientCommands.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
-      client.fieldReplaceFirstElement(westyEntry.getGuid(), "cats", "maya", westyEntry);
-      assertEquals("maya",
-              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
+      clientCommands.fieldReplaceFirstElement(westyEntry.getGuid(), "cats", "maya", westyEntry);
+      Assert.assertEquals("maya",
+              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
 
-      client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("maya", "fred"));
-      actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
+      clientCommands.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
+      expected = new HashSet<>(Arrays.asList("maya", "fred"));
+      actual = JSONUtils.JSONArrayToHashSet(clientCommands.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
-      client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("maya", "fred"));
-      actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
+      clientCommands.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
+      expected = new HashSet<>(Arrays.asList("maya", "fred"));
+      actual = JSONUtils.JSONArrayToHashSet(clientCommands.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting testing DB: " + e);
+      Assert.assertEquals(expected, actual);
+    } catch (IOException | ClientException | JSONException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting testing DB: " + e);
     }
   }
-  
+
   /**
    *
    */
   @Test
-  public void test_3_BasicSelect() {
+  public void test_03_BasicSelect() {
     try {
-      JSONArray result = client.select("cats", "fred");
+      JSONArray result = clientCommands.select("cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(1));
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -168,14 +162,15 @@ public class SelectTest {
    *
    */
   @Test
-  public void test_4_GeoSpatialSelect() {
+  public void test_04_GeoSpatialSelect() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = client.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(6));
-        client.setLocation(testEntry, 0.0, 0.0);
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(12));
+        createdGuids.add(testEntry); // save them so we can delete them later
+        clientCommands.setLocation(testEntry, 0.0, 0.0);
       }
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
 
     try {
@@ -183,11 +178,11 @@ public class SelectTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
+      JSONArray result = clientCommands.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
-    } catch (Exception e) {
-      fail("Exception executing selectNear: " + e);
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception executing selectNear: " + e);
     }
 
     try {
@@ -201,40 +196,41 @@ public class SelectTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
+      JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
-    } catch (Exception e) {
-      fail("Exception executing selectWithin: " + e);
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception executing selectWithin: " + e);
     }
   }
-  
+
   /**
    *
    */
   @Test
-  public void test_5_QuerySelect() {
+  public void test_05_QuerySelect() {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
+        createdGuids.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
-        client.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
+        clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
-    } catch (Exception e) {
-      fail("Exception while tryint to create the guids: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
 
     try {
       String query = "~" + fieldName + " : ($gt: 0)";
-      JSONArray result = client.selectQuery(query);
+      JSONArray result = clientCommands.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
-    } catch (Exception e) {
-      fail("Exception executing selectNear: " + e);
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing selectNear: " + e);
     }
 
     try {
@@ -248,27 +244,26 @@ public class SelectTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
+      JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
-    } catch (Exception e) {
-      fail("Exception executing selectWithin: " + e);
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception executing selectWithin: " + e);
     }
   }
-  
+
   private static String createIndexTestField;
-  
+
   /**
    *
    */
   @Test
-  public void test_6_CreateField() {
+  public void test_06_CreateField() {
     createIndexTestField = "testField" + RandomString.randomString(6);
     try {
-      client.fieldUpdate(masterGuid, createIndexTestField, createGeoJSONPolygon(AREA_EXTENT));
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception during create field: " + e);
+      clientCommands.fieldUpdate(masterGuid, createIndexTestField, createGeoJSONPolygon(AREA_EXTENT));
+    } catch (JSONException | IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception during create field: " + e);
     }
   }
 
@@ -276,11 +271,11 @@ public class SelectTest {
    *
    */
   @Test
-  public void test_7_CreateIndex() {
+  public void test_07_CreateIndex() {
     try {
-      client.fieldCreateIndex(masterGuid, createIndexTestField, "2dsphere");
-    } catch (Exception e) {
-      fail("Exception while creating index: " + e);
+      clientCommands.fieldCreateIndex(masterGuid, createIndexTestField, "2dsphere");
+    } catch (IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception while creating index: " + e);
     }
   }
 
@@ -288,16 +283,33 @@ public class SelectTest {
    *
    */
   @Test
-  public void test_8_SelectPass() {
+  public void test_08_SelectPass() {
     try {
-      JSONArray result = client.selectQuery(buildQuery(createIndexTestField, AREA_EXTENT));
+      JSONArray result = clientCommands.selectQuery(buildQuery(createIndexTestField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(1));
-    } catch (Exception e) {
-      fail("Exception executing second selectNear: " + e);
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception executing second selectNear: " + e);
+    }
+  }
+  
+  /**
+   *
+   */
+  @Test
+  public void test_09_SelectCleanup() {
+    try {
+      for (GuidEntry guid : createdGuids) {
+        clientCommands.guidRemove(masterGuid, guid.getGuid());
+      }
+      createdGuids.clear();
+      clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
+      clientCommands.guidRemove(masterGuid, samEntry.getGuid());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception during cleanup: " + e);
     }
   }
 
@@ -329,7 +341,7 @@ public class SelectTest {
   //private static final GlobalCoordinate UPPER_LEFT = new GlobalCoordinate(33.45, -98.08);
   private static final Point2D UPPER_RIGHT = new Point2D.Double(RIGHT, TOP);
   //private static final GlobalCoordinate UPPER_RIGHT = new GlobalCoordinate(33.45, -96.01);
-  private static final Point2D LOWER_RIGHT = new Point2D.Double( RIGHT, BOTTOM);
+  private static final Point2D LOWER_RIGHT = new Point2D.Double(RIGHT, BOTTOM);
   //private static final GlobalCoordinate LOWER_RIGHT = new GlobalCoordinate(32.23, -96.01);
   private static final Point2D LOWER_LEFT = new Point2D.Double(LEFT, BOTTOM);
   //private static final GlobalCoordinate LOWER_LEFT = new GlobalCoordinate(32.23, -98.08);
@@ -345,16 +357,5 @@ public class SelectTest {
             + "}"
             + "}";
   }
-
-  /**
-   *
-   */
-  @Test
-  public void test_999_Stop() {
-    try {
-      client.close();
-    } catch (Exception e) {
-      fail("Exception during stop: " + e);
-    }
-  }
+  
 }

@@ -19,19 +19,18 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 
-import edu.umass.cs.utils.DefaultTest;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
 import org.json.JSONObject;
-
-import static org.junit.Assert.*;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -39,16 +38,15 @@ import org.junit.runners.MethodSorters;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.json.JSONException;
 
 /**
  * JSON User update test for the GNS.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MultiFieldLookupTest extends DefaultTest {
+public class MultiFieldLookupTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
   private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
@@ -62,12 +60,12 @@ public class MultiFieldLookupTest extends DefaultTest {
         clientCommands = new GNSClientCommands();
         clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
     }
   }
@@ -78,24 +76,24 @@ public class MultiFieldLookupTest extends DefaultTest {
   @Test
   public void test_01_JSONUpdate() {
     try {
-      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
     try {
       JSONObject json = new JSONObject();
       json.put("name", "frank");
       json.put("occupation", "busboy");
       json.put("location", "work");
-      json.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
+      json.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
       json.put("gibberish", subJson);
       clientCommands.update(westyEntry, json);
-    } catch (Exception e) {
-      fail("Exception while updating JSON: " + e);
+    } catch (JSONException | IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception while updating JSON: " + e);
     }
   }
 
@@ -105,10 +103,22 @@ public class MultiFieldLookupTest extends DefaultTest {
   @Test
   public void test_02_MultiFieldLookup() {
     try {
-      String actual = clientCommands.fieldRead(westyEntry, new ArrayList<String>(Arrays.asList("name", "occupation")));
+      String actual = clientCommands.fieldRead(westyEntry, new ArrayList<>(Arrays.asList("name", "occupation")));
       JSONAssert.assertEquals("{\"name\":\"frank\",\"occupation\":\"busboy\"}", actual, true);
-    } catch (Exception e) {
-      fail("Exception while reading \"name\" and \"occupation\": " + e);
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception while reading \"name\" and \"occupation\": " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_03_Cleanup() {
+    try {
+      clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing guids: " + e);
     }
   }
 

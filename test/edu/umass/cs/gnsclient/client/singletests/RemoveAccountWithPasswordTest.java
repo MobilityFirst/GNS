@@ -24,36 +24,37 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
+import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-
-import static org.junit.Assert.*;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
+ * Test accountGuidRemoveWithPassword.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RemoveAccountWithPasswordTest {
+public class RemoveAccountWithPasswordTest extends DefaultGNSTest {
 
-  private static String ACCOUNT_TO_REMOVE_WITH_PASSWORD = "remove@gns.name";
-  private static final String REMOVE_ACCOUNT_PASSWORD = "removalPassword";
-  private static GNSClientCommands client;
+  private static final String ACCOUNT_TO_REMOVE = "remove" + RandomString.randomString(12) + "@gns.name";
+  private static final String PASSWORD = "removalPassword";
+  private static GNSClientCommands clientCommands;
   private static GuidEntry accountToRemoveGuid;
 
   /**
    *
    */
   public RemoveAccountWithPasswordTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client in RemoveAccountWithPasswordTest: " + e);
+        Utils.failWithStackTrace("Exception creating client in RemoveAccountWithPasswordTest: " + e);
       }
     }
   }
@@ -64,9 +65,10 @@ public class RemoveAccountWithPasswordTest {
   @Test
   public void test_35_RemoveAccountWithPasswordCreateAccount() {
     try {
-      accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD, true);
+      accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+              ACCOUNT_TO_REMOVE, PASSWORD, true);
     } catch (Exception e) {
-      fail("Exception creating account in RemoveAccountWithPasswordTest: " + e);
+      Utils.failWithStackTrace("Exception creating account in RemoveAccountWithPasswordTest: " + e);
     }
   }
 
@@ -77,11 +79,11 @@ public class RemoveAccountWithPasswordTest {
   public void test_36_RemoveAccountWithPasswordCheckAccount() {
     try {
       // this should be using the guid
-      client.lookupAccountRecord(accountToRemoveGuid.getGuid());
+      clientCommands.lookupAccountRecord(accountToRemoveGuid.getGuid());
     } catch (ClientException e) {
-      fail("lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " failed.");
+      Utils.failWithStackTrace("lookupAccountRecord for " + ACCOUNT_TO_REMOVE + " failed.");
     } catch (IOException e) {
-      fail("Exception while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
+      Utils.failWithStackTrace("Exception while lookupAccountRecord for " + ACCOUNT_TO_REMOVE + " :" + e);
     }
   }
 
@@ -91,9 +93,9 @@ public class RemoveAccountWithPasswordTest {
   @Test
   public void test_37_RemoveAccountWithPasswordRemoveAccount() {
     try {
-      client.accountGuidRemoveWithPassword(ACCOUNT_TO_REMOVE_WITH_PASSWORD, REMOVE_ACCOUNT_PASSWORD);
-    } catch (Exception e) {
-      fail("Exception while removing masterGuid in RemoveAccountWithPasswordTest: " + e);
+      clientCommands.accountGuidRemoveWithPassword(ACCOUNT_TO_REMOVE, PASSWORD);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing masterGuid in RemoveAccountWithPasswordTest: " + e);
     }
   }
 
@@ -103,12 +105,12 @@ public class RemoveAccountWithPasswordTest {
   @Test
   public void test_38_RemoveAccountWithPasswordCheckAccountAfterRemove() {
     try {
-      client.lookupGuid(ACCOUNT_TO_REMOVE_WITH_PASSWORD);
-      fail("lookupGuid for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " should have throw an exception.");
+      clientCommands.lookupGuid(ACCOUNT_TO_REMOVE);
+      Utils.failWithStackTrace("lookupGuid for " + ACCOUNT_TO_REMOVE + " should have throw an exception.");
     } catch (ClientException e) {
 
     } catch (IOException e) {
-      fail("Exception in RemoveAccountWithPasswordTest while lookupAccountRecord for " + ACCOUNT_TO_REMOVE_WITH_PASSWORD + " :" + e);
+      Utils.failWithStackTrace("Exception in RemoveAccountWithPasswordTest while lookupAccountRecord for " + ACCOUNT_TO_REMOVE + " :" + e);
     }
   }
 }

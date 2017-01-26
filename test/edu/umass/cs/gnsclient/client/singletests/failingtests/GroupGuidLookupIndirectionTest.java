@@ -17,12 +17,13 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.failingtests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
@@ -32,30 +33,34 @@ import java.util.Arrays;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.hamcrest.Matchers;
 import org.json.JSONArray;
 
 import org.json.JSONException;
-import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
+ * THIS TEST FAILS BECAUSE SUPPORT FOR INDIRECT FIELD READING WITH GROUPS
+ * WAS LOST A FEW HUNDRED COMMITS AGO
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SelectClientTest extends DefaultGNSTest {
+public class GroupGuidLookupIndirectionTest extends DefaultGNSTest {
 
   private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
+
+  private static final String indirectionGroupTestFieldName = "_IndirectionTestQueryField_";
+  private static GuidEntry indirectionGroupGuid;
+  private static JSONArray indirectionGroupMembers = new JSONArray();
+  
   private static final Set<GuidEntry> createdGuids = new HashSet<>();
 
   /**
    *
    */
-  public SelectClientTest() {
+  public GroupGuidLookupIndirectionTest() {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
@@ -66,7 +71,7 @@ public class SelectClientTest extends DefaultGNSTest {
       try {
         masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception while creating account guid: " + e);
       }
     }
   }
@@ -75,29 +80,29 @@ public class SelectClientTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_01_testQuerySelect() {
-    String fieldName = "testQuery";
+  public void test_10_SetupGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
-        createdGuids.add(testEntry); // save them so we can delete them later
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "guid-" + RandomString.randomString(12));
+        createdGuids.add(testEntry);
+        indirectionGroupMembers.put(testEntry.getGuid());
         JSONArray array = new JSONArray(Arrays.asList(25));
-        clientCommands.fieldReplaceOrCreateList(testEntry, fieldName, array);
+        clientCommands.fieldReplaceOrCreateList(testEntry, indirectionGroupTestFieldName, array);
       }
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
     }
+  }
 
+  /**
+   *
+   */
+  @Test
+  public void test_20_RegisterGroup() {
     try {
-      String query = "~" + fieldName + " : ($gt: 0)";
-      JSONArray result = clientCommands.selectQuery(query);
-      for (int i = 0; i < result.length(); i++) {
-        System.out.println(result.get(i).toString());
-      }
-      // best we can do should be at least 5, but possibly more objects in results
-      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (ClientException | IOException | JSONException e) {
-      Utils.failWithStackTrace("Exception executing selectNear: " + e);
+      indirectionGroupGuid = clientCommands.guidCreate(masterGuid, "indirectionGroup-" + RandomString.randomString(12));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
     }
   }
 
@@ -105,7 +110,35 @@ public class SelectClientTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_02_SelectCleanup() {
+  public void test_30_AddGroupMembers() {
+    try {
+      clientCommands.groupAddGuids(indirectionGroupGuid.getGuid(), 
+              indirectionGroupMembers, indirectionGroupGuid);
+    } catch (IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_40_TestRead() {
+    try {
+      String actual = clientCommands.fieldRead(indirectionGroupGuid, indirectionGroupTestFieldName);
+      System.out.println("Indirection Test Result = " + actual);
+      String expected = new JSONArray(Arrays.asList(Arrays.asList(25), Arrays.asList(25), Arrays.asList(25), Arrays.asList(25), Arrays.asList(25))).toString();
+      JSONAssert.assertEquals(expected, actual, true);
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception while trying to read the " + indirectionGroupTestFieldName + " of the group guid: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_50_Cleanup() {
     try {
       for (GuidEntry guid : createdGuids) {
         clientCommands.guidRemove(masterGuid, guid.getGuid());

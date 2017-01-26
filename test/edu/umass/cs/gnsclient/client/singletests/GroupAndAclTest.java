@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
+ * Test groups and ACLs.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

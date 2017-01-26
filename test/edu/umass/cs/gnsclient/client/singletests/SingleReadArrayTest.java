@@ -19,16 +19,18 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -39,11 +41,9 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SingleReadArrayTest {
+public class SingleReadArrayTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client = null;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
 
@@ -51,17 +51,17 @@ public class SingleReadArrayTest {
    *
    */
   public SingleReadArrayTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
     }
   }
@@ -72,9 +72,14 @@ public class SingleReadArrayTest {
   @Test
   public void test_01_CreateEntity() {
     try {
-      client.guidCreate(masterGuid, "testGUID" + RandomString.randomString(6));
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "testGUID" + RandomString.randomString(12));
+      try {
+        clientCommands.guidRemove(masterGuid, testEntry.getGuid());
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Exception during cleanup: " + e);
+      }
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -84,10 +89,10 @@ public class SingleReadArrayTest {
   @Test
   public void test_02_CreateSubGuid() {
     try {
-      subGuidEntry = client.guidCreate(masterGuid, "subGuid" + RandomString.randomString(6));
+      subGuidEntry = clientCommands.guidCreate(masterGuid, "subGuid" + RandomString.randomString(12));
       System.out.println("Created: " + subGuidEntry);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -97,10 +102,9 @@ public class SingleReadArrayTest {
   @Test
   public void test_03_CreateField() {
     try {
-      client.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception during create field: " + e);
+      clientCommands.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
+    } catch (IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception during create field: " + e);
     }
   }
 
@@ -111,15 +115,26 @@ public class SingleReadArrayTest {
   public void test_04_ReadFieldTwice() {
     try {
       // read my own field
-      assertEquals("work", client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
-      assertEquals("work", client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
+      Assert.assertEquals("work", clientCommands.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
+      Assert.assertEquals("work", clientCommands.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
       ThreadUtils.sleep(5);
-      assertEquals("work", client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
+      Assert.assertEquals("work", clientCommands.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
       ThreadUtils.sleep(5);
-      assertEquals("work", client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
-    } catch (Exception e) {
-      fail("Exception reading field: " + e);
-      e.printStackTrace();
+      Assert.assertEquals("work", clientCommands.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception reading field: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_05_Cleanup() {
+    try {
+      clientCommands.guidRemove(masterGuid, subGuidEntry.getGuid());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception during cleanup: " + e);
     }
   }
 }

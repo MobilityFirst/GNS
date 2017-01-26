@@ -93,7 +93,7 @@ public class CreateGuidBatchTestWithPublicKeys extends DefaultGNSTest {
     }
     Set<String> aliases = new HashSet<>();
     for (int i = 0; i < numberTocreate; i++) {
-      aliases.add("testGUID" + RandomString.randomString(6));
+      aliases.add("testGUID" + RandomString.randomString(12));
     }
     try {
       clientCommands.guidBatchCreate(batchAccountGuid, aliases, 15 * 1000);

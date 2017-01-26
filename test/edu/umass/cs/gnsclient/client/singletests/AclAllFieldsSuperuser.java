@@ -79,7 +79,7 @@ public class AclAllFieldsSuperuser extends DefaultGNSTest {
   @Test
   public void test_142_ACLCreateAnotherGuid() {
     try {
-      String barneyName = "barney" + RandomString.randomString(6);
+      String barneyName = "barney" + RandomString.randomString(12);
       try {
         clientCommands.lookupGuid(barneyName);
         Utils.failWithStackTrace(barneyName + " entity should not exist");
@@ -119,7 +119,7 @@ public class AclAllFieldsSuperuser extends DefaultGNSTest {
    */
   @Test
   public void test_144_ACLCreateSuperUser() {
-    String superUserName = "superuser" + RandomString.randomString(6);
+    String superUserName = "superuser" + RandomString.randomString(12);
     try {
       try {
         clientCommands.lookupGuid(superUserName);

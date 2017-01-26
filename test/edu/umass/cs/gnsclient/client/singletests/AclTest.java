@@ -83,8 +83,8 @@ public class AclTest extends DefaultGNSTest {
   @Test
   public void test_100_ACLCreateGuids() {
     try {
-      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (ClientException | IOException e) {
@@ -232,7 +232,7 @@ public class AclTest extends DefaultGNSTest {
   @Test
   public void test_120_ACLPartTwo() {
     try {
-      String barneyName = "barney" + RandomString.randomString(6);
+      String barneyName = "barney" + RandomString.randomString(12);
       try {
         clientCommands.lookupGuid(barneyName);
         Utils.failWithStackTrace(barneyName + " entity should not exist");
@@ -304,7 +304,7 @@ public class AclTest extends DefaultGNSTest {
   @Test
   public void test_130_ACLALLFields() {
     //testACL();
-    String superUserName = "superuser" + RandomString.randomString(6);
+    String superUserName = "superuser" + RandomString.randomString(12);
     try {
       try {
         clientCommands.lookupGuid(superUserName);
