@@ -118,7 +118,16 @@ public class CanonicalJSON {
           throw new JSONException("Bad value from toJSONString: " + object);
         }
         if (x instanceof Number) {
-          return JSONObject.numberToString((Number) x);
+          if (x instanceof Double || x instanceof Float) {
+            // This is a workaround for the issue described in MOB-1103 where the iOS and 
+            // potentially other clients have different printed representations for floating point numbers.
+            // This effectively removes floats from the canonical json string that is returned.
+            // A similar patch will be made on the ios client.
+            return "float";
+            //return String.format("%.8f", x);
+          } else {
+            return JSONObject.numberToString((Number) x);
+          }
         }
         if (x instanceof Boolean || x instanceof JSONObject
                 || x instanceof JSONArray) {
@@ -145,6 +154,7 @@ public class CanonicalJSON {
    * right places. A backslash will be inserted within &lt;/, allowing JSON
    * text to be delivered in HTML. In JSON text, a string cannot contain a
    * control character or an unescaped quote or backslash.
+   *
    * @param string A String
    * @return A String correctly formatted for insertion in a JSON text.
    */
