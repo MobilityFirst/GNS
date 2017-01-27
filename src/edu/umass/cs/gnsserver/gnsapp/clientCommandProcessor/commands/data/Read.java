@@ -81,7 +81,7 @@ public class Read extends AbstractCommand {
     // Reader can be one of three things:
     // 1) a guid - the guid attempting access
     // 2) the value GNSConfig.GNSC.INTERNAL_OP_SECRET - which means this is a request from another server
-    // 3) null (or missing from the JSON) - this is an unsigned read 
+    // 3) null (or missing from the JSON) - this is an unsigned read or a mutual auth command
     String reader = json.optString(GNSProtocol.READER.toString(), null);
     // signature and message can be empty for unsigned cases (reader should be null as well)
     String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
