@@ -16,14 +16,7 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsclient.client.CommandResultType;
-import edu.umass.cs.gnscommon.utils.StringUtil;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.utils.DefaultTest;
-import edu.umass.cs.utils.Util;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,7 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.junit.Test;
+import org.junit.Assert;
 
 /**
  * All the commands supported by the GNS server are listed here.
@@ -279,6 +272,23 @@ public enum CommandType {
   /**
    *
    */
+  ReadSecured(161, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.ReadSecured.class,
+          CommandResultType.MAP, true, false,
+          "Returns the value for the key from the GNS for the given guid after authenticating that "
+          + "READER making request has access authority. "
+          + "Field can use dot notation to access subfields. "
+          + "Specify +ALL+ as the <field> to return all fields as a JSON object. "
+          + "Sent on the mutual auth channel. "
+          + "Can only be sent from a client that has the correct ssl keys.",
+          new String[]{GNSProtocol.GUID.toString()},
+          // Optional parameters
+          new String[]{GNSProtocol.FIELD.toString(),
+            GNSProtocol.FIELDS.toString()},
+          CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
+  ),
+  /**
+   *
+   */
   ReadUnsigned(162, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadUnsigned.class,
           CommandResultType.MAP, true, false,
           "Returns the value for the key from the GNS for the given guid. Does not require authentication but "
@@ -474,7 +484,7 @@ public enum CommandType {
             GNSProtocol.VALUE.toString(),
             GNSProtocol.WRITER.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
@@ -487,7 +497,7 @@ public enum CommandType {
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, 
+            GNSProtocol.VALUE.toString()},
           new String[]{}),
   /**
    *
@@ -499,7 +509,7 @@ public enum CommandType {
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, 
+            GNSProtocol.VALUE.toString()},
           new String[]{}),
   /**
    *
@@ -510,7 +520,7 @@ public enum CommandType {
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, 
+            GNSProtocol.VALUE.toString()},
           new String[]{}),
   /**
    *
@@ -522,7 +532,7 @@ public enum CommandType {
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.USER_JSON.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
@@ -534,7 +544,7 @@ public enum CommandType {
           + "not specify the writer and is not signed. Doesn't touch top-level "
           + "fields that aren't in the given JSONObject.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.USER_JSON.toString()}, 
+            GNSProtocol.USER_JSON.toString()},
           new String[]{}),
   //Fixme: CREATE_INDEX should be an ADMIN_UPDATE command.
 
@@ -548,7 +558,7 @@ public enum CommandType {
             GNSProtocol.FIELD.toString(),
             GNSProtocol.VALUE.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
@@ -562,7 +572,7 @@ public enum CommandType {
             GNSProtocol.VALUE.toString(),
             GNSProtocol.OLD_VALUE.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
@@ -579,7 +589,7 @@ public enum CommandType {
             GNSProtocol.VALUE.toString(),
             GNSProtocol.OLD_VALUE.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
@@ -594,7 +604,7 @@ public enum CommandType {
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.FIELD.toString(),
             GNSProtocol.VALUE.toString(),
-            GNSProtocol.OLD_VALUE.toString()}, 
+            GNSProtocol.OLD_VALUE.toString()},
           new String[]{}),
   /**
    *
@@ -606,7 +616,7 @@ public enum CommandType {
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.FIELD.toString(),
             GNSProtocol.VALUE.toString(),
-            GNSProtocol.OLD_VALUE.toString()}, 
+            GNSProtocol.OLD_VALUE.toString()},
           new String[]{}),
   /**
    *
@@ -618,7 +628,7 @@ public enum CommandType {
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.FIELD.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
@@ -629,7 +639,7 @@ public enum CommandType {
           + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.FIELD.toString(),
-            GNSProtocol.WRITER.toString()}, 
+            GNSProtocol.WRITER.toString()},
           new String[]{}),
   /**
    *
@@ -643,7 +653,7 @@ public enum CommandType {
             GNSProtocol.VALUE.toString(),
             GNSProtocol.N.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
@@ -654,7 +664,7 @@ public enum CommandType {
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.FIELD.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   //
   // Basic select commands
@@ -669,7 +679,7 @@ public enum CommandType {
           + "Values are returned as a JSON array of guids. "
           + "This command is a shorthand for a mongo find query.",
           new String[]{GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, 
+            GNSProtocol.VALUE.toString()},
           new String[]{}),
   /**
    *
@@ -682,7 +692,7 @@ public enum CommandType {
           + "This command is a shorthand for a mongo $near query.",
           new String[]{GNSProtocol.FIELD.toString(),
             GNSProtocol.NEAR.toString(),
-            GNSProtocol.MAX_DISTANCE.toString()}, 
+            GNSProtocol.MAX_DISTANCE.toString()},
           new String[]{}),
   /**
    *
@@ -695,7 +705,7 @@ public enum CommandType {
           + "Values are returned as a JSON array of guids. "
           + "This command is a shorthand for a mongo $geoWithin query.",
           new String[]{GNSProtocol.FIELD.toString(),
-            GNSProtocol.WITHIN.toString()}, 
+            GNSProtocol.WITHIN.toString()},
           new String[]{}),
   /**
    *
@@ -705,7 +715,7 @@ public enum CommandType {
           "Returns the guids of all records that satisfy the query. "
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
-          new String[]{GNSProtocol.QUERY.toString()}, 
+          new String[]{GNSProtocol.QUERY.toString()},
           new String[]{}),
   //
   // Select commands that maintain a group guid
@@ -720,7 +730,7 @@ public enum CommandType {
           + "Returns all records for a group guid that was previously setup with SelectGroupSetupQuery. "
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
-          new String[]{GNSProtocol.GUID.toString()}, 
+          new String[]{GNSProtocol.GUID.toString()},
           new String[]{}),
   /**
    *
@@ -732,7 +742,7 @@ public enum CommandType {
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.QUERY.toString()}, 
+            GNSProtocol.QUERY.toString()},
           new String[]{}),
   /**
    *
@@ -744,7 +754,7 @@ public enum CommandType {
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString(),
-            GNSProtocol.GUID.toString()}, 
+            GNSProtocol.GUID.toString()},
           new String[]{}),
   /**
    *
@@ -758,7 +768,7 @@ public enum CommandType {
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.QUERY.toString(),
-            GNSProtocol.INTERVAL.toString()}, 
+            GNSProtocol.INTERVAL.toString()},
           new String[]{}),
   /**
    *
@@ -772,7 +782,7 @@ public enum CommandType {
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString(),
-            GNSProtocol.INTERVAL.toString()}, 
+            GNSProtocol.INTERVAL.toString()},
           new String[]{}),
   //
   // Account commands
@@ -788,7 +798,7 @@ public enum CommandType {
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.NAME.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
@@ -801,7 +811,7 @@ public enum CommandType {
             GNSProtocol.GUID.toString(),
             GNSProtocol.PUBLIC_KEY.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
@@ -814,7 +824,7 @@ public enum CommandType {
             GNSProtocol.GUID.toString(),
             GNSProtocol.PUBLIC_KEYS.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
@@ -828,7 +838,7 @@ public enum CommandType {
           new String[]{GNSProtocol.NAMES.toString(),
             GNSProtocol.GUID.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
@@ -842,7 +852,7 @@ public enum CommandType {
           new String[]{GNSProtocol.GUIDCNT.toString(),
             GNSProtocol.GUID.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
@@ -851,7 +861,7 @@ public enum CommandType {
           CommandResultType.MAP, true, false,
           "Returns the account info associated with the given GUID. "
           + "Returns +BADGUID+ if the guid has not been registered.",
-          new String[]{GNSProtocol.GUID.toString()}, 
+          new String[]{GNSProtocol.GUID.toString()},
           new String[]{}),
   /**
    *
@@ -861,7 +871,7 @@ public enum CommandType {
           "Returns some number of random subguids from and account guid. Only for testing purposes. "
           + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.GUIDCNT.toString()}, 
+            GNSProtocol.GUIDCNT.toString()},
           new String[]{}),
   /**
    *
@@ -870,7 +880,7 @@ public enum CommandType {
           CommandResultType.STRING, true, false,
           "Returns the guid associated with the name which is the human readable name (alias). "
           + "Returns +BADACCOUNT+ if the name has not been registered.",
-          new String[]{GNSProtocol.NAME.toString()}, 
+          new String[]{GNSProtocol.NAME.toString()},
           new String[]{}),
   /**
    *
@@ -878,7 +888,7 @@ public enum CommandType {
   LookupPrimaryGuid(423, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class,
           CommandResultType.STRING, true, false,
           "Returns the account guid associated the guid. Returns +BADGUID+ if the guid does not exist.",
-          new String[]{GNSProtocol.GUID.toString()}, 
+          new String[]{GNSProtocol.GUID.toString()},
           new String[]{}),
   /**
    *
@@ -887,7 +897,7 @@ public enum CommandType {
           CommandResultType.MAP, true, false,
           "Returns human readable name and public key associated with the given GUID. "
           + "Returns +BADGUID+ if the guid has not been registered.",
-          new String[]{GNSProtocol.GUID.toString()}, 
+          new String[]{GNSProtocol.GUID.toString()},
           new String[]{}),
   /**
    *
@@ -901,7 +911,7 @@ public enum CommandType {
             GNSProtocol.PUBLIC_KEY.toString(),
             GNSProtocol.PASSWORD.toString(),
             GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, 
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
@@ -910,7 +920,7 @@ public enum CommandType {
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RegisterAccountSecured.class,
           CommandResultType.NULL, false, false,
           "Creates an account guid associated with the human readable name and the supplied public key. "
-          + "Must be signed with the public key. Returns a guid. "
+          + "Returns a guid. "
           + "Sent on the mutual auth channel. "
           + "Can only be sent from a client that has the correct ssl keys.",
           new String[]{GNSProtocol.NAME.toString(),
@@ -921,7 +931,6 @@ public enum CommandType {
           new String[]{},
           CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
   ),
-
   /**
    *
    */
@@ -1233,18 +1242,18 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
-//  /**
-//   *
-//   */
-//  AddMembersToGroupSelf(611, CommandCategory.OTHER,
-//          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class,
-//          CommandResultType.NULL, false, false,
-//          "Adds the member guids to the group specified by guid. "
-//          + "Writer guid needs to have write access and sign the command.",
-//          new String[]{GNSProtocol.GUID.toString(),
-//            GNSProtocol.MEMBERS.toString(),
-//            GNSProtocol.SIGNATURE.toString(),
-//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+  //  /**
+  //   *
+  //   */
+  //  AddMembersToGroupSelf(611, CommandCategory.OTHER,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class,
+  //          CommandResultType.NULL, false, false,
+  //          "Adds the member guids to the group specified by guid. "
+  //          + "Writer guid needs to have write access and sign the command.",
+  //          new String[]{GNSProtocol.GUID.toString(),
+  //            GNSProtocol.MEMBERS.toString(),
+  //            GNSProtocol.SIGNATURE.toString(),
+  //            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1259,17 +1268,17 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
-//  /**
-//   *
-//   */
-//  AddToGroupSelf(613, CommandCategory.UPDATE,
-//          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
-//          CommandResultType.NULL, false, false,
-//          "Adds the member guid to the group specified by guid.",
-//          new String[]{GNSProtocol.GUID.toString(),
-//            GNSProtocol.MEMBER.toString(),
-//            GNSProtocol.SIGNATURE.toString(),
-//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+  //  /**
+  //   *
+  //   */
+  //  AddToGroupSelf(613, CommandCategory.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
+  //          CommandResultType.NULL, false, false,
+  //          "Adds the member guid to the group specified by guid.",
+  //          new String[]{GNSProtocol.GUID.toString(),
+  //            GNSProtocol.MEMBER.toString(),
+  //            GNSProtocol.SIGNATURE.toString(),
+  //            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1282,15 +1291,15 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.READER.toString()}),
-//  /**
-//   *
-//   */
-//  GetGroupMembersSelf(615, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
-//          CommandResultType.LIST, true, false,
-//          "Returns the members of the group formatted as a JSON Array.",
-//          new String[]{GNSProtocol.GUID.toString(),
-//            GNSProtocol.SIGNATURE.toString(),
-//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+  //  /**
+  //   *
+  //   */
+  //  GetGroupMembersSelf(615, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
+  //          CommandResultType.LIST, true, false,
+  //          "Returns the members of the group formatted as a JSON Array.",
+  //          new String[]{GNSProtocol.GUID.toString(),
+  //            GNSProtocol.SIGNATURE.toString(),
+  //            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1303,15 +1312,15 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.READER.toString()}),
-//  /**
-//   *
-//   */
-//  GetGroupsSelf(617, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
-//          CommandResultType.LIST, true, false,
-//          "Returns the groups that a guid is a member of formatted as a JSON Array.",
-//          new String[]{GNSProtocol.GUID.toString(),
-//            GNSProtocol.SIGNATURE.toString(),
-//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+  //  /**
+  //   *
+  //   */
+  //  GetGroupsSelf(617, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
+  //          CommandResultType.LIST, true, false,
+  //          "Returns the groups that a guid is a member of formatted as a JSON Array.",
+  //          new String[]{GNSProtocol.GUID.toString(),
+  //            GNSProtocol.SIGNATURE.toString(),
+  //            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1325,16 +1334,16 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
-//  /**
-//   *
-//   */
-//  RemoveFromGroupSelf(621, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class,
-//          CommandResultType.NULL, false, false,
-//          "Removes the member guid from the group specified by guid.",
-//          new String[]{GNSProtocol.GUID.toString(),
-//            GNSProtocol.MEMBER.toString(),
-//            GNSProtocol.SIGNATURE.toString(),
-//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+  //  /**
+  //   *
+  //   */
+  //  RemoveFromGroupSelf(621, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class,
+  //          CommandResultType.NULL, false, false,
+  //          "Removes the member guid from the group specified by guid.",
+  //          new String[]{GNSProtocol.GUID.toString(),
+  //            GNSProtocol.MEMBER.toString(),
+  //            GNSProtocol.SIGNATURE.toString(),
+  //            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1348,16 +1357,16 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
-//  /**
-//   *
-//   */
-//  RemoveMembersFromGroupSelf(623, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class,
-//          CommandResultType.NULL, false, false,
-//          "Removes the member guids from the group specified by guid.",
-//          new String[]{GNSProtocol.GUID.toString(),
-//            GNSProtocol.MEMBERS.toString(),
-//            GNSProtocol.SIGNATURE.toString(),
-//            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+  //  /**
+  //   *
+  //   */
+  //  RemoveMembersFromGroupSelf(623, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class,
+  //          CommandResultType.NULL, false, false,
+  //          "Removes the member guids from the group specified by guid.",
+  //          new String[]{GNSProtocol.GUID.toString(),
+  //            GNSProtocol.MEMBERS.toString(),
+  //            GNSProtocol.SIGNATURE.toString(),
+  //            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1636,7 +1645,7 @@ public enum CommandType {
   public String[] getCommandRequiredParameters() {
     return commandRequiredParameters;
   }
-  
+
   /**
    *
    * @return the optional command parameters
@@ -1740,6 +1749,7 @@ public enum CommandType {
    */
   static {
     Read.setChain(ReadUnsigned);
+    ReadSecured.setChain(ReadUnsigned);
     ReadUnsigned.setChain();
     ReadMultiField.setChain(ReadUnsigned);
     ReadMultiFieldUnsigned.setChain(ReadUnsigned);
@@ -1830,11 +1840,14 @@ public enum CommandType {
     ResetKey.setChain(ReadUnsigned);
     //
     AclAdd.setChain(ReadUnsigned);
+    AclAddSecured.setChain(ReadUnsigned);
     AclAddSelf.setChain(ReadUnsigned);
     AclRemoveSelf.setChain(ReadUnsigned);
     AclRetrieveSelf.setChain(ReadUnsigned);
     AclRetrieve.setChain(ReadUnsigned);
+    AclRetrieveSecured.setChain(ReadUnsigned);
     AclRemove.setChain(ReadUnsigned);
+    AclRemoveSecured.setChain(ReadUnsigned);
     FieldCreateAcl.setChain(ReadUnsigned);
     FieldDeleteAcl.setChain(ReadUnsigned);
     FieldAclExists.setChain(ReadUnsigned);
@@ -1856,6 +1869,7 @@ public enum CommandType {
     Dump.setChain();
     ConnectionCheck.setChain();
     Unknown.setChain();
+
   }
 
   /**
@@ -1871,9 +1885,6 @@ public enum CommandType {
     // Android doesn't like Lambdas (there's one hidden here) - 9/16
     //return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
   }
-
-
-
 
   private static String generateSwiftStructStaticConstants() {
     StringBuilder result = new StringBuilder();
@@ -1901,9 +1912,12 @@ public enum CommandType {
     return result.toString();
   }
 
-
-  private static void enforceChecks() {
-    HashSet<CommandType> curLevel, nextLevel = new HashSet<CommandType>(), cumulative = new HashSet<CommandType>();
+  /**
+   * *
+   * Run all checks on Command Type enums.
+   */
+  public static void enforceChecks() {
+    HashSet<CommandType> curLevel, nextLevel = new HashSet<>(), cumulative = new HashSet<>();
 
     for (CommandType ctype : CommandType.values()) {
       curLevel = new HashSet<CommandType>(Arrays.asList(ctype));
@@ -1917,13 +1931,13 @@ public enum CommandType {
           if (curLevelType.invokedCommands != null) {
             nextLevel.addAll(new HashSet<CommandType>(Arrays.asList(curLevelType.invokedCommands)));
           } else {
-            System.out.println("!!!!! Need to add " + curLevelType.name() + ".setChain(); !!!!!");
+            Assert.fail("!!!!! Need to add " + curLevelType.name() + ".setChain(); !!!!!");
           }
         }
         curLevel = nextLevel;
         cumulative.addAll(nextLevel);
         if (curLevel.size() > 256) {
-          Util.suicide("Likely cycle in chain for command " + ctype);
+          Assert.fail("Likely cycle in chain for command " + ctype);
         }
 
         GNSConfig.getLogger().log(Level.FINE,
@@ -1936,27 +1950,12 @@ public enum CommandType {
 
       for (CommandType downstream : cumulative) {
         if ((ctype.isUpdate() && downstream.isCoordinated())) {
-          throw new RuntimeException("Coordinated " + ctype
+          Assert.fail("Coordinated " + ctype
                   + " is invoking another coordinated command "
                   + downstream);
-
         }
       }
 
-    }
-  }
-
-  /**
-   * The CommandTypeTest.
-   */
-  public static class CommandTypeTest extends DefaultTest {
-
-    /**
-     * Enforce checks.
-     */
-    @Test
-    public void enforceChecks() {
-      CommandType.enforceChecks();
     }
   }
 
@@ -1967,7 +1966,7 @@ public enum CommandType {
   public static void main(String args[]) {
     //CommandType.enforceChecks();
     //System.out.println(generateSwiftEnum());
-    System.out.println(generateSwiftStructStaticConstants());
+    //System.out.println(generateSwiftStructStaticConstants());
     //System.out.println(generateEmptySetChains());
     //System.out.println(generateSwiftConstants());
     //System.out.println(generateCommandTypeCode());

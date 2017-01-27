@@ -273,6 +273,22 @@ public class GNSCommand extends CommandPacket {
             GNSProtocol.FIELD.toString(), GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.READER.toString(),
             querierGUID != null ? querierGUID.getGuid() : null);
   }
+  
+  /**
+   * Reads the entire record for {@code targetGUID}.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys.
+   *
+   * @param targetGUID
+   * The guid being queried.
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket readSecure(String targetGUID) throws ClientException {
+    return getCommand(CommandType.ReadSecured, 
+            GNSProtocol.GUID.toString(), targetGUID,
+            GNSProtocol.FIELD.toString(), GNSProtocol.ENTIRE_RECORD.toString());
+  }
 
   /**
    * Reads the entire record for {@code targetGUID} implicitly assuming that
@@ -521,6 +537,8 @@ public class GNSCommand extends CommandPacket {
    * @throws java.io.IOException
    * @throws java.security.NoSuchAlgorithmException
    */
+  //FIXME: The name this of these violates the NOUNVERB naming convention adopted
+  // almost everywhere else in here.
   public static final CommandPacket createAccount(
           String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
     @SuppressWarnings("deprecation") // FIXME
@@ -538,6 +556,8 @@ public class GNSCommand extends CommandPacket {
 	 * @throws IOException
 	 * @throws NoSuchAlgorithmException
 	 */
+        //FIXME: The name this of these violates the NOUNVERB naming convention adopted
+        // almost everywhere else in here.
 	public static final CommandPacket createAccount(
 			String alias) throws ClientException, IOException,
 			NoSuchAlgorithmException {
@@ -667,6 +687,8 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   @SuppressWarnings("deprecation") // FIXME:
+//FIXME: The name this of these violates the NOUNVERB naming convention adopted
+// almost everywhere else in here.
 public static final CommandPacket createGUID(
           GuidEntry accountGUID, String alias) throws ClientException {
     try {
@@ -737,6 +759,8 @@ public static final CommandPacket batchCreateGUIDs(
    * @return CommandPacket
    * @throws ClientException
    */
+  //FIXME: The name this of these violates the NOUNVERB naming convention adopted
+  // almost everywhere else in here.
   public static final CommandPacket removeGUID(GuidEntry accountGUID,
           String targetGUID) throws ClientException {
     return getCommand(CommandType.RemoveGuid, accountGUID, 

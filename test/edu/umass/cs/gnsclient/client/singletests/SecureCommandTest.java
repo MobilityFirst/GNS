@@ -21,7 +21,10 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -54,7 +57,7 @@ public class SecureCommandTest extends DefaultGNSTest {
   public void test_01_SecureCreateClient() {
     try {
       client = new GNSClient();
-      //client.setForceCoordinatedReads(true);
+      client.setForceCoordinatedReads(true);
     } catch (IOException e) {
       Utils.failWithStackTrace("Exception creating client: ", e);
     }
@@ -207,6 +210,38 @@ public class SecureCommandTest extends DefaultGNSTest {
       JSONAssert.assertEquals(expected, actual, true);
     } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception while retrieving account record acl: ", e);
+    }
+  }
+  
+  /**
+   * Remove the account.
+   */
+  @Test
+  public void test_15_SecureRead() {
+    GuidEntry masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+    try {
+      client.execute(GNSCommand.createGUID(masterGuid, "whatever"));
+      GuidEntry testGuid = GuidUtils.lookupGuidEntryFromDatabase(client, "whatever");
+      client.execute(GNSCommand.fieldUpdate(testGuid, "fred", "value"));
+      JSONObject actual = client.execute(GNSCommand.readSecure(testGuid.getGuid())).getResultJSONObject(); 
+      JSONAssert.assertEquals(new JSONObject().put("fred", "value"),
+              actual, JSONCompareMode.STRICT);
+      client.execute(GNSCommand.removeGUID(masterGuid, testGuid.getGuid()));
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception while removing account record: ", e);
+    }
+  }
+  
+  
+  /**
+   * Remove the account.
+   */
+  @Test
+  public void test_19_SecureRemoveAccount() {
+    try {
+      client.execute(GNSCommand.accountGuidRemoveSecure(secondAccountAlias));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing account record: ", e);
     }
   }
 

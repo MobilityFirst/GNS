@@ -176,6 +176,23 @@ public class GNSClientCommands extends GNSClient {
 
   /**
    * Reads the entire record from the GNS server for the given guid as a JSONObject.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys.
+   *
+   * @param targetGuid
+   * @return a JSONObject
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public JSONObject readSecure(String targetGuid)
+          throws ClientException, IOException {
+    return execute(GNSCommand.readSecure(targetGuid)).getResultJSONObject();
+  }
+
+  /**
+   * Reads the entire record from the GNS server for the given guid as a JSONObject.
    * Signs the query using the private key of the guid.
    *
    * @param guid
