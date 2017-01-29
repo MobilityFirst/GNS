@@ -9,6 +9,7 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
@@ -48,11 +49,8 @@ import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.nio.MessageExtractor;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
-import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.examples.AbstractReconfigurablePaxosApp;
@@ -69,7 +67,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.BindException;
@@ -77,7 +74,6 @@ import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -413,50 +409,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   }
 
 
-  public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
-          Stringifiable<String> unstringer) throws RequestParseException {
-    Request request = null;
-    try {
-      long t = System.nanoTime();
-      if (JSONPacket.couldBeJSON(msgBytes)) {
-        JSONObject json = new JSONObject(new String(msgBytes,
-                NIOHeader.CHARSET));
-        MessageExtractor.stampAddressIntoJSONObject(header.sndr,
-                header.rcvr, json);
-        request = (Request) Packet.createInstance(json, unstringer);
-      } else {
-        // parse non-JSON byteified form
-        return fromBytes(msgBytes);
-      }
-      if (Util.oneIn(100)) {
-        DelayProfiler.updateDelayNano(
-                "getRequest." + request.getRequestType(), t);
-      }
-    } catch (JSONException | UnsupportedEncodingException e) {
-      throw new RequestParseException(e);
-    }
-    return request;
-  }
-
-
-  private static Request fromBytes(byte[] msgBytes)
-          throws RequestParseException {
-    switch (Packet.PacketType.getPacketType(ByteBuffer.wrap(msgBytes)
-            .getInt())) {
-      case COMMAND:
-        return new CommandPacket(msgBytes);
-
-      default:
-        throw new RequestParseException(new RuntimeException(
-                "Unrecognizable request type"));
-    }
-  }
-
-
   @Override
   public Request getRequest(byte[] msgBytes, NIOHeader header)
           throws RequestParseException {
-    return getRequestStatic(msgBytes, header, nodeConfig);
+    return SharedGuidUtils.getRequestStatic(msgBytes, header, nodeConfig);
   }
 
 
