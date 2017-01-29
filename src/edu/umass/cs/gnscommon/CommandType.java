@@ -1212,7 +1212,7 @@ public enum CommandType {
   private final int number;
   private final CommandCategory category;
   private final CommandFlag[] flags;
-  private final Class<?> commandClass = null;
+  private Class<?> commandClass = null;
   private final CommandResultType returnType;
 
 
