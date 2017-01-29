@@ -1,18 +1,4 @@
-/* Copyright (c) 2016 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy */
+
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.http.HttpClient;
@@ -31,16 +17,7 @@ import java.util.Arrays;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/**
- * This example creates an account GUID record, performs a few reads and writes
- * to its fields, and deletes the record.
- * <p>
- * Note: This example assumes that the verification step (e.g., via email) to
- * verify an account GUID's human-readable name has been disabled on the server
- * using the ENABLE_EMAIL_VERIFICATION=false option.
- *
- * @author arun, westy
- */
+
 public class HTTPClientExample {
 
   // replace with your account alias
@@ -48,16 +25,7 @@ public class HTTPClientExample {
   private static HttpClient client;
   private static GuidEntry guid;
 
-  /**
-   * @param args
-   * @throws IOException
-   * @throws InvalidKeySpecException
-   * @throws NoSuchAlgorithmException
-   * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws Exception
-   */
+
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
@@ -65,15 +33,7 @@ public class HTTPClientExample {
     // Create the client will connect to GNS HTTP server running locally.	 
     client = new HttpClient("127.0.0.1", 8080);
     try {
-      /**
-       * Create an account GUID if one doesn't already exists. The true
-       * flag makes it verbosely print out what it is doing. The password
-       * is for future use.
-       * lookupOrCreateAccountGuid "cheats" by bypassing email-based or
-       * other verification mechanisms using a shared secret between the
-       * server and the client.
-       *
-       */
+
       System.out.println("// account GUID creation\n"
               + "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
               + " \"password\", true)");

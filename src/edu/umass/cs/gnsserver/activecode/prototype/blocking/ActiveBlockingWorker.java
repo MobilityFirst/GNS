@@ -18,10 +18,7 @@ import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.channels.ActiveNamedPipe;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 
-/**
- * @author gaozy
- *
- */
+
 public class ActiveBlockingWorker {
 	
 	private static final Logger logger = Logger.getLogger(ActiveBlockingWorker.class.getName());
@@ -35,14 +32,7 @@ public class ActiveBlockingWorker {
 	private final AtomicInteger counter = new AtomicInteger(0);		
 	
 	
-	/**
-	 * Initialize a worker with a named pipe
-	 * @param ifile
-	 * @param ofile
-	 * @param id 
-	 * @param numThread 
-	 * @param isTest
-	 */
+
 	protected ActiveBlockingWorker(String ifile, String ofile, int id, int numThread) {
 		this.id = id;
 		
@@ -98,16 +88,12 @@ public class ActiveBlockingWorker {
 		return this.getClass().getSimpleName()+id;
 	}
 	
-	/**
-	 * @return logger
-	 */
+
 	protected static Logger getLogger(){
 		return logger;
 	}
 	
-	/**
-	 * @param args
-	 */
+
 	public static void main(String[] args){
 		boolean pipeEnable = Boolean.parseBoolean(args[4]);
 		if(pipeEnable){

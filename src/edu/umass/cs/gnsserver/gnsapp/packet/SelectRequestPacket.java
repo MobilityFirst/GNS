@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
@@ -27,14 +9,7 @@ import edu.umass.cs.nio.interfaces.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * A SelectRequestPacket is like a DNS_SUBTYPE_QUERY packet without a GUID, but with a key and value.
- * The semantics is that we want to look up all the records that have a field named key with the given value.
- * We also use this to do automatic group GUID maintenence.
- *
- * @author westy
- * @param <NodeIDType>
- */
+
 public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDType> implements ClientRequest {
 
   private final static String ID = "id";
@@ -62,16 +37,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
   private String guid; // the group GUID we are maintaning or null for simple select
   private int minRefreshInterval; // minimum time between allowed refreshes of the guid
 
-  /**
-   * Constructs a new SelectRequestPacket
-   *
-   * @param id
-   * @param selectOperation
-   * @param key
-   * @param groupBehavior
-   * @param value
-   * @param otherValue
-   */
+
   @SuppressWarnings("unchecked")
   public SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupBehavior,
           String key, Object value, Object otherValue) {
@@ -87,17 +53,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
     this.guid = null;
   }
 
-  /**
-   * Helper to construct a SelectRequestPacket for a context aware group guid.
-   *
-   * @param id
-   * @param lns
-   * @param selectOperation
-   * @param groupOperation
-   * @param query
-   * @param guid
-   * @param minRefreshInterval
-   */
+
   @SuppressWarnings("unchecked")
   private SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupOperation,
           String query, String guid, int minRefreshInterval) {
@@ -114,52 +70,24 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
     this.minRefreshInterval = minRefreshInterval;
   }
 
-  /**
-   * Creates a request to search all name servers for GUIDs that match the given query.
-   *
-   * @param id
-   * @param query
-   * @return a SelectRequestPacket
-   */
+
   public static SelectRequestPacket<String> MakeQueryRequest(long id, String query) {
     return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.NONE, query, null, -1);
   }
 
-  /**
-   * Just like a MakeQueryRequest except we're creating a new group guid to maintain results.
-   * Creates a request to search all name servers for GUIDs that match the given query.
-   *
-   * @param id
-   * @param query
-   * @param guid
-   * @param refreshInterval
-   * @return a SelectRequestPacket
-   */
+
   public static SelectRequestPacket<String> MakeGroupSetupRequest(long id, String query, String guid,
           int refreshInterval) {
     return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP,
             query, guid, refreshInterval);
   }
 
-  /**
-   * Just like a MakeQueryRequest except we're potentially updating the group guid to maintain results.
-   * Creates a request to search all name servers for GUIDs that match the given query.
-   *
-   * @param id
-   * @param guid
-   * @return a SelectRequestPacket
-   */
+
   public static SelectRequestPacket<String> MakeGroupLookupRequest(long id, String guid) {
     return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, null, guid, -1);
   }
 
-  /**
-   * Constructs new SelectRequestPacket from a JSONObject
-   *
-   * @param json JSONObject representing this packet
-   * @param unstringer
-   * @throws org.json.JSONException
-   */
+
   @SuppressWarnings("unchecked")
   public SelectRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json, unstringer);
@@ -181,12 +109,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
     this.minRefreshInterval = json.optInt(REFRESH, -1);
   }
 
-  /**
-   * Converts a SelectRequestPacket to a JSONObject.
-   *
-   * @return JSONObject
-   * @throws org.json.JSONException
-   */
+
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
@@ -224,127 +147,72 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
     }
   }
 
-  /**
-   * Set the CCP Query ID.
-   *
-   * @param ccpQueryId
-   */
+
   public void setCCPQueryId(int ccpQueryId) {
     this.ccpQueryId = ccpQueryId;
   }
 
-  /**
-   * Set the NS Query ID.
-   *
-   * @param nsQueryId
-   */
+
   public void setNsQueryId(int nsQueryId) {
     this.nsQueryId = nsQueryId;
   }
 
-  /**
-   * Return the ID.
-   *
-   * @return the ID
-   */
+
   public long getId() {
     return requestId;
   }
 
-  /**
-   * Sets the request id.
-   *
-   * @param requestId
-   */
+
   public void setRequestId(long requestId) {
     this.requestId = requestId;
   }
 
-  /**
-   * Return the key.
-   *
-   * @return the key
-   */
+
   public String getKey() {
     return key;
   }
 
-  /**
-   * Return the value.
-   *
-   * @return the value
-   */
+
   public Object getValue() {
     return value;
   }
 
-  /**
-   * Return the CCP query requestId.
-   *
-   * @return the CCP query requestId
-   */
+
   public int getCcpQueryId() {
     return ccpQueryId;
   }
 
-  /**
-   * Return the NS query requestId.
-   *
-   * @return the NS query requestId
-   */
+
   public int getNsQueryId() {
     return nsQueryId;
   }
 
-  /**
-   * Return the select operation.
-   *
-   * @return the select operation
-   */
+
   public SelectOperation getSelectOperation() {
     return selectOperation;
   }
 
-  /**
-   * Return the group behavior.
-   *
-   * @return the group behavior
-   */
+
   public SelectGroupBehavior getGroupBehavior() {
     return groupBehavior;
   }
 
-  /**
-   * Return the other value.
-   *
-   * @return the other value
-   */
+
   public Object getOtherValue() {
     return otherValue;
   }
 
-  /**
-   * Return the query.
-   *
-   * @return the query
-   */
+
   public String getQuery() {
     return query;
   }
 
-  /**
-   * Set the query.
-   *
-   * @param query
-   */
+
   public void setQuery(String query) {
     this.query = query;
   }
 
-  /**
-   *
-   * @return the service name
-   */
+
   @Override
   public String getServiceName() {
     if (query != null) {
@@ -356,46 +224,29 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
     }
   }
 
-  /**
-   * Return the guid.
-   *
-   * @return the guid
-   */
+
   public String getGuid() {
     return guid;
   }
 
-  /**
-   * Get the min refresh interval.
-   *
-   * @return the min refresh interval
-   */
+
   public int getMinRefreshInterval() {
     return minRefreshInterval;
   }
 
-  /**
-   *
-   * @return the response
-   */
+
   @Override
   public ClientRequest getResponse() {
     return this.response;
   }
 
-  /**
-   *
-   * @return the request id
-   */
+
   @Override
   public long getRequestID() {
     return requestId;
   }
 
-  /**
-   *
-   * @return the summary object
-   */
+
   @Override
   public Object getSummary() {
     return new Object() {

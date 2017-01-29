@@ -1,18 +1,4 @@
-/* Copyright (c) 2015 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy */
+
 
 package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
@@ -42,55 +28,23 @@ import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-/**
- * This class maintains information that allows the LNS to communicate with
- * Active Replicas and Reconfigurators.
- *
- * It parses a hosts file to gather information about each name server in the
- * system.
- *
- * Also has support for checking to see if the hosts file changes. When that
- * happens the host info is reloaded and the
- * <code>ConsistentHashing.reInitialize</code> method is called.
- *
- * Also contains an implementation of the <code>Stringifiable</code> interface
- * which allows strings to be converted back to NodeIDTypes.
- *
- * The current implementation maintains three NodeIds for each node that is read
- * from the hosts file. A "top-level" id which is identical to the id read from
- * the file, plus to additional ids. One for the activeReplica and one for the
- * reconfigurator. See <code>LNSNodeInfo</code>, <code>addHostInfo</code> and
- * <code>readHostsFile</code> for the details on how those are generated.
- */
+
 public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
         GNSInterfaceNodeConfig<InetSocketAddress>, Shutdownable {
 
-  /**
-   * Represents an invalid ping latency.
-   */
+
   public static final long INVALID_PING_LATENCY = -1L;
 
-  /**
-   * Represents an invalid port number.
-   */
+
   public static final int INVALID_PORT = -1;
 
   private long version = 0l;
   //private final String hostsFile;
 
-  /**
-   * Contains information about each name server. <Key = HostID, Value =
-   * LNSNodeInfo>
-   *
-   */
+
   private ConcurrentMap<Object, LNSNodeInfo> hostInfoMapping;
 
-  /**
-   * arun: LNS doesn't need either of active replica IDs or all of their IPs.
-   * LNSAsyncClient obviates all such information. LNS only needs to know of
-   * reconfigurator addresses, or minimally, at least one alive reconfigurator
-   * address.
-   */
+
   public LNSNodeConfig() {
     Set<InetSocketAddress> reconfigurators = new HashSet<>(
             ReconfigurationConfig.getReconfiguratorAddresses());
@@ -105,13 +59,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     //this.hostsFile = null;
   }
 
-  /**
-   * Creates a LNSNodeConfig initializes it from a name server host file. This
-   * supports the new hosts.txt style format.
-   *
-   * @param hostsFile
-   * @throws java.io.IOException
-   */
+
 //  public LNSNodeConfig(String hostsFile) throws IOException {
 //    this.hostsFile = hostsFile;
 //    if (isOldStyleFile(hostsFile)) {
@@ -133,11 +81,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
 //    startCheckingForUpdates();
 //  }
 
-  /**
-   * Returns the set of active replica addresses.
-   *
-   * @return a set of addresses
-   */
+
   @Override
   public Set<InetSocketAddress> getActiveReplicas() {
     Set<InetSocketAddress> result = new HashSet<>();
@@ -149,11 +93,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     return result;
   }
 
-  /**
-   * Returns the set of reconfigurator addresses.
-   *
-   * @return a set of addresses
-   */
+
   @Override
   public Set<InetSocketAddress> getReconfigurators() {
     Set<InetSocketAddress> result = new HashSet<>();
@@ -165,12 +105,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     return result;
   }
 
-  /**
-   * Returns the "top-level" host ID for any given nodeID.
-   *
-   * @param id
-   * @return the node info
-   */
+
   private LNSNodeInfo getNodeInfoForAnyNode(InetSocketAddress address) {
     for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
       if (hostInfo.getIpAddress().equals(address.getAddress())) {
@@ -180,22 +115,12 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     return null;
   }
 
-  /**
-   * Returns the number of name server nodes.
-   *
-   * @return the number of nodes
-   */
+
   public int getNumberOfNodes() {
     return hostInfoMapping.size();
   }
 
-  /**
-   * Returns the ping latency between two servers. Will return
-   * INVALID_PING_LATENCY if the node doesn't exist.
-   *
-   * @param address
-   * @return a long
-   */
+
   @Override
   public long getPingLatency(InetSocketAddress address) {
     LNSNodeInfo nodeInfo = getNodeInfoForAnyNode(address);
@@ -203,13 +128,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
             .getPingLatency();
   }
 
-  /**
-   * Updates the ping latency table for a node. Only valid for top-level
-   * nodes.
-   *
-   * @param address
-   * @param responseTime
-   */
+
   @Override
   public void updatePingLatency(InetSocketAddress address, long responseTime) {
     LNSNodeInfo nodeInfo = getNodeInfoForAnyNode(address);
@@ -221,24 +140,14 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     }
   }
 
-  /**
-   * Returns true if the node exists. Works for "top-level" node ids and
-   * active-replica and reconfigurator nodes ids.
-   *
-   * @param address
-   * @return true if the node exists
-   */
+
   @Override
   public boolean nodeExists(InetSocketAddress address) {
     return address instanceof InetSocketAddress
             && getNodeInfoForAnyNode(address) != null;
   }
 
-  /**
-   *
-   * @param address
-   * @return an address
-   */
+
   @Override
   public InetAddress getNodeAddress(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
@@ -248,11 +157,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     }
   }
 
-  /**
-   *
-   * @param address
-   * @return an address
-   */
+
   @Override
   public InetAddress getBindAddress(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
@@ -262,11 +167,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     }
   }
 
-  /**
-   *
-   * @param address
-   * @return the port
-   */
+
   @Override
   public int getNodePort(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
@@ -276,10 +177,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     }
   }
 
-  /**
-   *
-   * @return a set of addresses
-   */
+
   @Override
   public Set<InetSocketAddress> getNodeIDs() {
     return getActiveReplicas();
@@ -293,15 +191,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
   // /
   // / READING AND RECHECKING OF HOSTS FILE
   // /
-  /**
-   *
-   * Read a host file to create a mapping of node information for name
-   * servers.
-   *
-   * @param hostsFile
-   * @param nameServerID
-   * @throws NumberFormatException
-   */
+
 //  @SuppressWarnings("unchecked")
 //  private void readHostsFile(String hostsFile) throws IOException {
 //    List<HostSpec> hosts = null;
@@ -329,16 +219,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
 //    // ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, getNodeIDs());
 //  }
 
-  /**
-   * Adds a LNSNodeInfo object to the list maintained by this config instance.
-   *
-   * @param id
-   * @param ipAddress
-   * @param startingPort
-   * @param pingLatency
-   * @param latitude
-   * @param longitude
-   */
+
   private void addHostInfo(ConcurrentMap<Object, LNSNodeInfo> mapping,
           Object id, String ipAddress, String externalIP, int startingPort,
           long pingLatency, double latitude, double longitude) {
@@ -353,12 +234,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     mapping.put(id, nodeInfo);
   }
 
-  /**
-   * Adds a LNSNodeInfo object to the list maintained by this config instance.
-   *
-   * @param id
-   * @param ipAddress
-   */
+
   private void addHostInfo(ConcurrentMap<Object, LNSNodeInfo> mapping,
           Object id, String ipAddress, String externalIP, Integer startingPort) {
     addHostInfo(
@@ -401,12 +277,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
 //
 //  }
 
-  /**
-   * Returns true if the file is the old style (has lots of fields).
-   *
-   * @param file
-   * @return true if the file is the old style
-   */
+
   private boolean isOldStyleFile(String file) throws IOException {
     try {
       BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -425,9 +296,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     }
   }
 
-  /**
-   * Handles LNS shutdown.
-   */
+
   @Override
   public void shutdown() {
 //    if (timerTask != null) {
@@ -441,32 +310,19 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
             + hostInfoMapping + '}';
   }
 
-  /**
-   *
-   * @param strValue
-   * @return an address
-   */
+
   @Override
   public InetSocketAddress valueOf(String strValue) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  /**
-   *
-   * @param strNodes
-   * @return a set of addresses
-   */
+
   @Override
   public Set<InetSocketAddress> getValuesFromStringSet(Set<String> strNodes) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  /**
-   *
-   * @param array
-   * @return a set of addresses
-   * @throws JSONException
-   */
+
   @Override
   public Set<InetSocketAddress> getValuesFromJSONArray(JSONArray array)
           throws JSONException {

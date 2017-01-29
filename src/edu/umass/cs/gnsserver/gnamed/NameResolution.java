@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -64,28 +46,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- *
- * @author westy
- */
+
 public class NameResolution {
 
   private static final Logger LOG = Logger.getLogger(NameResolution.class.getName());
 
-  /**
-   * @return Logger used by most of the client support package.
-   */
+
   public static final Logger getLogger() {
     return LOG;
   }
 
-  /**
-   * Sends the query to the DNS server.
-   *
-   * @param dnsServer
-   * @param query
-   * @return A message with either a good response or an error.
-   */
+
   public static Message forwardToDnsServer(SimpleResolver dnsServer, Message query) {
     try {
       Message dnsResponse = dnsServer.send(query);
@@ -104,13 +75,7 @@ public class NameResolution {
     return errorMessage(query, Rcode.NXDOMAIN);
   }
 
-  /**
-   * Sends the query to the GNS server.
-   *
-   * @param gnsServer
-   * @param query
-   * @return A message with either a good response or an error.
-   */
+
   public static Message forwardToGnsServer(SimpleResolver gnsServer, Message query) {
     try {
       Message dnsResponse = gnsServer.send(query);
@@ -132,13 +97,7 @@ public class NameResolution {
     return errorMessage(query, Rcode.NXDOMAIN);
   }
 
-  /**
-   * Lookup the query in the GNS server.
-   *
-   * @param query
-   * @param handler
-   * @return A message with either a good response or an error.
-   */
+
   public static Message lookupGnsServer(Message query, ClientRequestHandlerInterface handler) {
     // check for queries we can't handle
     int type = query.getQuestion().getType();
@@ -155,7 +114,7 @@ public class NameResolution {
 
     NameResolution.getLogger().log(Level.FINE, "Trying GNS lookup for domain {0}", domainName);
 
-    /* Create a response message and add records later */
+
     Message response = new Message(query.getHeader().getID());
     response.getHeader().setFlag(Flags.QR);
     if (query.getHeader().getFlag(Flags.RD)) {
@@ -164,7 +123,7 @@ public class NameResolution {
     response.addRecord(query.getQuestion(), Section.QUESTION);
     response.getHeader().setFlag(Flags.AA);
 
-    /* Request DNS fields of an alias and prepare a DNS response message */
+
     ArrayList<String> fields = new ArrayList<>(Arrays.asList("A", "NS", "CNAME", "SOA", "PTR", "MX"));
     Boolean nameResolved = false;
     String nameToResolve = domainName;
@@ -190,12 +149,7 @@ public class NameResolution {
 	        response.addRecord(gnsARecord, Section.ANSWER);
       	  }
           nameResolved = true;
-          /*
-          String ip = fieldResponseJson.getString("A");
-          ARecord gnsARecord = new ARecord(new Name(nameToResolve), DClass.IN, 60, InetAddress.getByName(ip));
-          response.addRecord(gnsARecord, Section.ANSWER);
-          nameResolved = true;
-          */
+
         }
         if (fieldResponseJson.has("NS")) {
           JSONObject recordObj = fieldResponseJson.getJSONObject("NS");	
@@ -212,24 +166,7 @@ public class NameResolution {
         	  response.addRecord(nsARecord, Section.ADDITIONAL);
           }
 
-          /*
-           * No need for looking up record again
-           * 
-          for(int i=0; i<records.length(); i++){
-        	  String ns = records.getString(i);        	  
-	          // Resolve NS Record name to an IP address and add it to ADDITIONAL section 
-	          JSONObject nsResponseJson = lookupGuidField(ns, fieldName, null, handler);
-	          
-	          if (nsResponseJson != null) {
-	            //if (nsResponse != null && !nsResponse.isError()) {
-	            String address = nsResponseJson.getString(ns);
-	            //String address = (new JSONArray(nsResponse.getReturnValue())).get(0).toString();
-	            NameResolution.getLogger().log(Level.FINE, "single field {0}", address);
-	            ARecord nsARecord = new ARecord(new Name(ns), DClass.IN, 60, InetAddress.getByName(address));
-	            response.addRecord(nsARecord, Section.ADDITIONAL);
-	          }
-          }
-          */
+
         }
         if (fieldResponseJson.has("MX")) {
           String mxname = fieldResponseJson.getString("MX");
@@ -275,26 +212,11 @@ public class NameResolution {
     return response;
   }
 
-  /**
-   * Lookup the field or fields in the guid.
-   * Returns a JSONObject containing the fields and values
-   * or null if the domainName doesn't exist.
-   *
-   * @param domain - the HRN of the guid
-   * @param field - the field to lookup (mutually exclusive with fieldNames)
-   * @param fields - the fields to lookup (mutually exclusive with fieldNames)
-   * @param handler
-   * @return a JSONObject containing the fields and values or null
-   */
+
   public static JSONObject lookupGuidField(String domain, String field, ArrayList<String> fields, ClientRequestHandlerInterface handler) {
-    /**
-     * Querying multiple types together is allowed in DNS protocol, but practically not supported.
-     * Therefore, no need for us to implement support for multi-type query.
-     */
+
     
-    /**
-     * 1. Lookup guid for the domain name
-     */
+
     String guid = null;
     try{
 	    ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, domain,
@@ -307,9 +229,7 @@ public class NameResolution {
                 "No guid for {0}: {1}", new Object[]{domain, e});
     }
     
-    /**
-     * 2. Lookup the record
-     */
+
     JSONObject value = null;
     if(guid != null){
     	//FIXME: the internal request header should not be null
@@ -325,66 +245,10 @@ public class NameResolution {
     }
     return value;
     
-    /**
-     * Zhaoyu: to trigger active code, this part needs to be discarded
-    
-    // First we lookup the guid from the HRN
-    GNSApp app = handler.getApp();
-    NameRecord hrnNameRecord = null;
-    try {
-      hrnNameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), domain,
-              ColumnFieldType.USER_JSON, HRN_GUID);
-    } catch (RecordNotFoundException e) {
-      // Normal result when the record doesn't exist
-    } catch (FailedDBOperationException e) {
-      NameResolution.getLogger().log(Level.SEVERE,
-              "Problem getting guid for {0}: {1}", new Object[]{domain, e});
-    }
-    DelayProfiler.updateDelay("lookupGuidField.guid", startTime);
-    long fieldTime = System.currentTimeMillis();
-    // If the HRS record isn't null we then get all the fields from the guid record
-    NameRecord guidNameRecord = null;
-    if (hrnNameRecord != null) {
-      String guid = null;
-      try {
-        guid = hrnNameRecord.getValuesMap().getString(HRN_GUID);
-      } catch (JSONException | FieldNotFoundException e) {
-      }
-      if (guid != null) {
-        try {
-          guidNameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), guid,
-                  ColumnFieldType.USER_JSON, fieldArray);
-        } catch (RecordNotFoundException e) {
-          // Normal result
-        } catch (FailedDBOperationException e) {
-          NameResolution.getLogger().log(Level.SEVERE,
-                  "Problem getting guid for {0}: {1}", new Object[]{domain, e});
-        }
-      }
-    }
-    DelayProfiler.updateDelay("lookupGuidField.field", fieldTime);
-    DelayProfiler.updateDelay("lookupGuidField", startTime);
-    // If the record actually exists we return all the values as a JSONObject
-    if (guidNameRecord != null) {
-      try {
-        return guidNameRecord.getValuesMap();
-      } catch (FieldNotFoundException e) {
-        return null;
-      }
-    } else {
-      return null;
-    }
-    */
+
   }
 
-  /**
-   * Look up the local dns server cache.
-   * Returns a {@link Message}.
-   *
-   * @param query
-   * @param dnsCache
-   * @return a Message
-   */
+
   public static Message lookupDnsCache(Message query, Cache dnsCache) {
     // check for queries we can't handle
     int type = query.getQuestion().getType();
@@ -446,12 +310,7 @@ public class NameResolution {
     }
   }
 
-  /**
-   * Returns a {@link Message} with an error in it if the query is not good.
-   *
-   * @param query
-   * @return a Message
-   */
+
   public static Message checkForErroneousQueries(Message query) {
     Header header = query.getHeader();
     // if there is an error we return an error
@@ -465,13 +324,7 @@ public class NameResolution {
     return null;
   }
 
-  /**
-   * Returns true if the response looks ok.
-   * Checks for errors and also 0 length answers.
-   *
-   * @param dnsResponse
-   * @return true if the response is OK
-   */
+
   public static boolean isReasonableResponse(Message dnsResponse) {
     Integer dnsRcode = null;
     if (dnsResponse != null) {
@@ -490,12 +343,7 @@ public class NameResolution {
     }
   }
 
-  /**
-   * Forms an error message from an incoming packet.
-   *
-   * @param in
-   * @return the error message
-   */
+
   public static Message formErrorMessage(byte[] in) {
     Header header;
     try {
@@ -506,25 +354,12 @@ public class NameResolution {
     return buildErrorMessage(header, Rcode.FORMERR, null);
   }
 
-  /**
-   * Forms an error message from a query and response code.
-   *
-   * @param query
-   * @param rcode
-   * @return the error message
-   */
+
   public static Message errorMessage(Message query, int rcode) {
     return buildErrorMessage(query.getHeader(), rcode, query.getQuestion());
   }
 
-  /**
-   * Creates an error message from a header, response code and a record.
-   *
-   * @param header
-   * @param rcode
-   * @param question
-   * @return the error message
-   */
+
   private static Message buildErrorMessage(Header header, int rcode, Record question) {
     Message response = new Message();
     response.setHeader(header);
@@ -538,14 +373,7 @@ public class NameResolution {
     return response;
   }
 
-  /**
-   * Builds a pretty string showing the query and response.
-   * Used for debugging purposes.
-   *
-   * @param query
-   * @param response
-   * @return a string
-   */
+
   public static String queryAndResponseToString(Message query, Message response) {
     StringBuilder result = new StringBuilder();
     result.append(query.getQuestion().getName());
@@ -572,26 +400,12 @@ public class NameResolution {
     return result.toString();
   }
 
-  /**
-   * Creates a string out of raw bytes[] from qname section
-   * of the DNS query message. This routine, when used, adds
-   * '.' at the end for using it for GNS lookups.
-   *
-   * @param qname
-   * @return questionString
-   */
+
   public static String querytoStringForGNS(byte[] qname) {
     return querytoStringForGNS(qname, false);
   }
 
-  /**
-   * Creates a string out of raw bytes[] from qname section
-   * of the DNS query message.
-   *
-   * @param qname
-   * @param omitFinalDot
-   * @return questionString
-   */
+
   public static String querytoStringForGNS(byte[] qname, boolean omitFinalDot) {
     int curPos = 0;
     int labelSize = 0;

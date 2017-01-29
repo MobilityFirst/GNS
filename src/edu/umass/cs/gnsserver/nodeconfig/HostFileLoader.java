@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.nodeconfig;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -29,11 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 
-/**
- * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
- *
- * @author westy
- */
+
 public class HostFileLoader {
 
   private static final Long INVALID_FILE_VERSION = -1L;
@@ -41,30 +19,7 @@ public class HostFileLoader {
 
   private static boolean hostFileHasNodeIds = false;
 
-  /**
-   * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
-   * The first line of the file can be a Long representing the file version.
-   * This will be read and saved by this call.
-   * To read that call <code>readVersionLine</code>.
-   *
-   * This currently supports these line formats (one of these per line):
-   * <code>
-   * {hostname}
-   * or
-   * {hostname}{whitespace}{ip Address} // mainly for LNS hosts files
-   * or
-   * {nodeId}{whitespace}{hostname}{whitespace}{startingport}
-   * or
-   * {nodeId}{whitespace}{hostname}{whitespace}{ip Address}
-   * or
-   * {nodeId}{whitespace}{hostname}{whitespace}{startingport}{whitespace}{ip Address}
-   * </code>
-   * Also, you can't mix the above line formats in one file.
-   *
-   * @param hostsFile
-   * @return a List of hostnames
-   * @throws java.lang.Exception
-   */
+
   public static List<HostSpec> loadHostFile(String hostsFile) throws Exception {
     hostFileHasNodeIds = false;
     List<HostSpec> result = new ArrayList<>();
@@ -91,21 +46,7 @@ public class HostFileLoader {
     return result;
   }
 
-  /**
-   * Parses a line from a host file.
-   *
-   * Handles these cases:
-   *
-   * hostname
-   * hostname ipAddressInDotNotation
-   * id hostname port
-   * id hostname ipAddressInDotNotation
-   * id hostname port ipAddressInDotNotation
-   *
-   * @param line
-   * @return a {@link HostSpec}
-   * @throws IOException
-   */
+
   private static HostSpec parseHostline(String line) throws IOException {
     String[] tokens = line.split("\\s+");
     if (tokens.length > 1) {
@@ -158,15 +99,7 @@ public class HostFileLoader {
     }
   }
 
-  /**
-   * Reads the version form the first line of the host file.
-   * Returns null if it doesn't exist.
-   *
-   * @param hostsFile
-   * @return a long
-   * @throws FileNotFoundException
-   * @throws IOException
-   */
+
   public static Long readVersionLine(String hostsFile) throws IOException {
     String line;
     try (BufferedReader br = new BufferedReader(new FileReader(hostsFile))) {
@@ -175,13 +108,7 @@ public class HostFileLoader {
     return getTheVersionFromLine(line);
   }
 
-  /**
-   * Returns true if the node file changed versions.
-   *
-   * @param hostsFile
-   * @return true if the node file changed versions
-   * @throws IOException
-   */
+
   public static boolean isChangedFileVersion(String hostsFile) throws IOException {
     Long newVersion = readVersionLine(hostsFile);
     GNSConfig.getLogger().log(Level.FINE, "Old version: {0} new version: {1}", 
@@ -208,11 +135,7 @@ public class HostFileLoader {
     return getTheVersionFromLine(line) != null;
   }
 
-  /**
-   * Returns the file version.
-   *
-   * @return a long
-   */
+
   public static Long getFileVersion() {
     return fileVersion;
   }

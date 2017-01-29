@@ -1,29 +1,7 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp;
 
-/*
- * Copyright (C) 2014
- * University of Massachusetts
- * All Rights Reserved
- */
+
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
@@ -61,58 +39,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
-/**
- * This class handles select operations which have a similar semantics to an SQL SELECT.
- * The base architecture of the select methods is that we broadcast a query 
- * to all the servers and collate the responses.
- * The most general purpose select method is implemented in SelectQuery. It takes a 
- * mongo-style query and returns all the records that match that query.
- * Select, SelectNear, SelectWithin all handle specific types of queries. 
- * They remove the need for the user to understand mongo syntax, but are really not necessary.
- * 
- * SelectGroupSetupQuery and SelectGroupLookupQuery were implemented as 
- * prototypes of a full-fledged Context Notification Service. They use the 
- * underlying select architecture, but add on to it the notion that the 
- * results of the query are stored in a group guid. Lookups return the 
- * current value of the group guid as determined by executing the query 
- * with the optimization that lookups done more often than user specified interval simply return the last value.
- * 
- * The idea is that we want to look up all the records with a given value or whose
- * value falls in a given range or that more generally match a query.
- *
- * For all select operations the NS which receive the broadcasted select packet execute the
- * appropriate query to collect all the guids that satisfy it. They then send the full records
- * from all these queries back to the collecting NS. The collecting NS then extracts the GUIDS
- * from all the results removing duplicates and then sends back JUST THE GUIDs, not the full
- * records.
- *
- * Here's the special handling the NS does for guid GROUPs:
- *
- * On the request side when we receive a GROUP_SETUP request we do the regular broadcast thing.
- *
- * On the response side for a GROUP_SETUP we do the regular collate thing and return the results,
- * plus we set the value of the group guid and the values of last_refreshed_time.
- * We need a GROUP info structure to hold these things.
- *
- * On the request side when we receive a GROUP_LOOKUP request we need to
- * 1) Check to see if enough time has passed since the last update
- * (current time greater than last_refreshed_time + min_refresh_interval). If it has we
- * do the usual query broadcast.
- * If not enough time has elapsed we send back the response with the current value of the group guid.
- *
- * On the response when see a GROUP_LOOKUP it means that enough time has passed since the last update
- * (in the other case the response is sent back on request side of things).
- * We handle this exactly the same as we do GROUP_SETUP (set group, return results, time bookkeeping).
- *
- * @author westy
- */
+
 public class Select {
 
   private static final Logger LOG = Logger.getLogger(Select.class.getName());
 
-  /**
-   * @return Logger used by most of the client support package.
-   */
+
   public static final Logger getLogger() {
     return LOG;
   }
@@ -125,16 +57,7 @@ public class Select {
   private static final ConcurrentMap<Integer, SelectResponsePacket<String>> QUERY_RESULT
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
-  /**
-   * Handles a select request that was received from a client.
-   *
-   * @param packet
-   *
-   * @param replica
-   * @throws JSONException
-   * @throws UnknownHostException
-   * @throws FailedDBOperationException
-   */
+
   public static void handleSelectRequest(SelectRequestPacket<String> packet,
           GNSApplicationInterface<String> replica) throws JSONException, UnknownHostException, FailedDBOperationException {
     //SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, replica.getGNSNodeConfig());
@@ -145,22 +68,10 @@ public class Select {
     }
   }
 
-  /* FIXME: arun: need to determine this timeout systematically, not an ad hoc constant.
-   */
+
   private static final long SELECT_REQUEST_TIMEOUT = Config.getGlobalInt(GNSConfig.GNSC.SELECT_REQUEST_TIMEOUT);
 
-  /**
-   * Handle a select request from a client.
-   * This node is the broadcaster and selector.
-   *
-   * @param packet
-   * @param app
-   * @return a select response packet
-   * @throws JSONException
-   * @throws UnknownHostException
-   * @throws FailedDBOperationException
- * @throws InternalRequestException 
-   */
+
   @SuppressWarnings("unchecked")
   public static SelectResponsePacket<String> handleSelectRequestFromClient(InternalRequestHeader header, SelectRequestPacket<String> packet,
           GNSApplicationInterface<String> app) throws JSONException, UnknownHostException, FailedDBOperationException, InternalRequestException {
@@ -264,16 +175,7 @@ public class Select {
     return response;
   }
 
-  /**
-   * Handle a select request from the collecting NS. This is what other NSs do when they
-   * get a SelectRequestPacket from the NS that originally received the packet (the one that is collecting
-   * all the records).
-   * This NS looks up the records and returns them.
-   *
-   * @param incomingJSON
-   * @param app
-   * @throws JSONException
-   */
+
   @SuppressWarnings("unchecked")
   private static void handleSelectRequestFromNS(SelectRequestPacket<String> request,
           GNSApplicationInterface<String> app) throws JSONException {
@@ -308,17 +210,7 @@ public class Select {
     }
   }
 
-  /**
-   * Handles a select response.
-   * This code runs in the collecting NS.
-   *
-   * @param packet
-   * @param replica
-   * @throws JSONException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws java.io.IOException
- * @throws InternalRequestException 
-   */
+
   public static void handleSelectResponse(SelectResponsePacket<String> packet,
           GNSApplicationInterface<String> replica) throws JSONException, ClientException, IOException, InternalRequestException {
     getLogger().log(Level.FINE,
@@ -344,8 +236,7 @@ public class Select {
     }
     // Remove the NS ID from the list to keep track of who has responded
     boolean allServersResponded = false;
-    /* synchronization needed, otherwise assertion in app.sendToClient
-     * implying that an outstanding request is always found gets violated. */
+
     synchronized (info) {
       // Remove the NS ID from the list to keep track of who has responded
       info.removeServerID(packet.getNameServerID());
@@ -487,12 +378,7 @@ public class Select {
     }
   }
 
-//  /**
-//   * Returns true if new local select code should be used.
-//   * Or obsolete remote local select should not be used.
-//   *
-//   * @return the USE_LOCAL_SELECT
-//   */
+//
 //  public static boolean useLocalSelect() {
 //    return useLocalSelect;
 //  }

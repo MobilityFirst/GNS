@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.utils;
 
 import edu.umass.cs.gigapaxos.interfaces.Summarizable;
@@ -34,29 +16,15 @@ import java.util.List;
 import java.util.logging.Level;
 import org.json.JSONArray;
 
-/**
- * This is the key / value representation for keys and values when
- * we are manipulating them in memory.
- *
- * This class also has some code that supports backwards compatability with older code.
- * In particular, in some older code result values are always a list.
- *
- * @author westy
- */
+
 public class ValuesMap extends JSONObject implements Summarizable {
 
-  /**
-   * Creates an empty ValuesMap.
-   */
+
   public ValuesMap() {
     super();
   }
 
-  /**
-   * Creates a ValuesMap from a JSONObject by copying the JSONObject.
-   *
-   * @param json
-   */
+
   // Might be redundant, but there's no obvious way to copy a JSONObject in the current lib.
   // Makes a fresh JSONObject
   public ValuesMap(JSONObject json) {
@@ -72,10 +40,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
     }
   }
 
-  /**
-   *
-   * @return the values map sans internals 
-   */
+
   public ValuesMap removeInternalFields() {
     ValuesMap copy = new ValuesMap(this);
     Iterator<?> keyIter = copy.keys();
@@ -88,14 +53,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
     return copy;
   }
 
-  /**
-   * Returns a JSONObject that contains just the first element of each JSONArray of the values list.
-   * Currently assumes each element of the JSONObject is a key / values[list].
-   * Used by the READONE command.
-   *
-   * @return a JSONObject
-   * @throws JSONException
-   */
+
   //
   public JSONObject toJSONObjectFirstOnes() throws JSONException {
     JSONObject json = new JSONObject();
@@ -111,11 +69,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
     }
   }
 
-  /**
-   *
-   * @return the keys
-   * @throws JSONException
-   */
+
   public List<String> getKeys() throws JSONException {
     List<String> result = new ArrayList<>();
     Iterator<?> keyIter = keys();
@@ -125,13 +79,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
     return result;
   }
 
-  /**
-   * Returns true if the ValuesMap contains the key.
-   * Supports dot notation.
-   *
-   * @param key
-   * @return true if the ValuesMap contains the key.
-   */
+
   @Override
   public boolean has(String key) {
     // if key is "flapjack.sally" this returns true if the map looks like this
@@ -141,14 +89,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
     return super.has(key) || JSONDotNotation.containsFieldDotNotation(key, this);
   }
 
-  /**
-   * Returns the value to which the specified key is mapped as an array,
-   * or null if this ValuesMap contains no mapping for the key.
-   * Supports dot notation.
-   *
-   * @param key
-   * @return a {@link ResultValue}
-   */
+
   public ResultValue getAsArray(String key) {
     try {
       // handles this case: // {"flapjack.sally":{"left":"eight","right":"seven"}}
@@ -174,13 +115,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
     }
   }
 
-  /**
-   * Associates the specified value which is an array with the specified key in this ValuesMap.
-   * Supports dot notation.
-   *
-   * @param key
-   * @param value
-   */
+
   public void putAsArray(String key, ResultValue value) {
     try {
       JSONDotNotation.putWithDotNotation(this, key, new JSONArray(value));
@@ -192,16 +127,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
     }
   }
 
-  /**
-   * Write the contents of this ValuesMap to the destination ValuesMap.
-   *
-   * Keys not contained in the source ValuesMap are not altered in the destination ValuesMap.
-   * Supports dot notation, that is the keys in the source ValuesMap can be dotted to
-   * index subfields in the destination.
-   *
-   * @param destination
-   * @return true if the destination was updated
-   */
+
   public boolean writeToValuesMap(ValuesMap destination) {
     boolean somethingChanged = false;
     Iterator<?> keyIter = keys();
@@ -219,10 +145,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
     return somethingChanged;
   }
 
-  /**
-   *
-   * @return the summary 
-   */
+
   @Override
   public Object getSummary() {
     return edu.umass.cs.utils.Util.truncate(ValuesMap.this.toString(), 64, 64).toString();

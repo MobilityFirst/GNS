@@ -1,64 +1,26 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- */
+
 package edu.umass.cs.gnsserver.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-/**
- * @author V. Arun
- * @param <KeyType>
- * @param <ValueType>
- */
-/**
- * This class implements a specific kind of a trie. The
- * key is a string concatenated with a version number.
- * In addition to get(key) that tries to retrieve an exact
- * match, it supports a match(keyPrefix) method that matches
- * the keyPrefix against the highest versioned key with
- * keyPrefix as a prefix. 'keyPrefix' must have a toString()
- * method but doesn't have to be a String. 'key' must be a
- * String and is computed as keyPrefix.toString()+version.
- * @param <KeyType>
- * @param <ValueType>
- */
+
+
 public class StringVersionedMap<KeyType, ValueType> {
 
   private static final String SEPARATOR = ":";
   private HashMap<String, ValueType> map = null;
   private HashMap<KeyType, ArrayList<Integer>> keyVersions = null;
 
-  /**
-   * Create a StringVersionedMap instance.
-   */
+
   public StringVersionedMap() {
     map = new HashMap<>();
     keyVersions = new HashMap<>();
   }
 
 	// Inserts [key = keyPrefix.toString()+version, value]
-  /**
-   *
-   * @param keyPrefix
-   * @param version
-   * @param value
-   */
+
   public synchronized void put(KeyType keyPrefix, int version, ValueType value) {
     this.map.put(StringVersionedMap.combineIDVersion(keyPrefix.toString(), version), value);
     ArrayList<Integer> versions = this.keyVersions.get(keyPrefix);
@@ -70,17 +32,9 @@ public class StringVersionedMap<KeyType, ValueType> {
     }
     this.keyVersions.put(keyPrefix, versions);
   }
-  /* Returns value corresponding to the highest version such 
-   * that [keyprefix.toString()+version, value] is in the map.
-   * If none is found, it will try to find an exact match for 
-   * some [keyPrefix.toString(), value] entry.
-   */
 
-  /**
-   *
-   * @param keyPrefix
-   * @return a ValueType
-   */
+
+
   public synchronized ValueType match(KeyType keyPrefix) {
     ValueType value = null;
     ArrayList<Integer> versions = this.keyVersions.get(keyPrefix);
@@ -99,21 +53,12 @@ public class StringVersionedMap<KeyType, ValueType> {
     return value;
   }
 
-  /**
-   *
-   * @param id
-   * @param version
-   * @return a string
-   */
+
   public static String combineIDVersion(String id, int version) {
     return id + StringVersionedMap.SEPARATOR + version;
   }
 
-  /**
-   *
-   * @param paxosID
-   * @return a string
-   */
+
   public static String getIDNoVersion(String paxosID) {
     if (paxosID == null) {
       return null;
@@ -123,11 +68,7 @@ public class StringVersionedMap<KeyType, ValueType> {
     return pieces[0];
   }
 
-  /**
-   *
-   * @param paxosID
-   * @return an int
-   */
+
   public static int getVersion(String paxosID) {
     if (paxosID == null) {
       return 0;
@@ -136,15 +77,9 @@ public class StringVersionedMap<KeyType, ValueType> {
     assert (pieces != null && pieces.length == 2);
     return Integer.parseInt(pieces[1]);
   }
-  /* Usual get with a String key. Called must know key or must
-   * use the combineIDVersion method above.
-   */
 
-  /**
-   *
-   * @param key
-   * @return a ValueType
-   */
+
+
   public synchronized ValueType get(String key) {
     return this.map.get(key);
   }
@@ -152,83 +87,53 @@ public class StringVersionedMap<KeyType, ValueType> {
   //
   //Standard map methods below
   //
-  /*
-   *
-   * @return  a string collection
-   */
+
   public synchronized Collection<String> keySet() {
     return this.map.keySet();
   }
 
-  /**
-   *
-   * @return a collection of KeyType
-   */
+
   public synchronized Collection<KeyType> keyPrefixSet() {
     return this.keyVersions.keySet();
   }
 
-  /**
-   *
-   * @return a collection of KeyType
-   */
+
   public synchronized Collection<ValueType> values() {
     return this.map.values();
   }
 
-  /**
-   *
-   * @param key
-   * @return true if it contains key
-   */
+
   public synchronized boolean containsKey(String key) {
     return this.map.containsKey(key);
   }
 
-  /**
-   *
-   * @param value
-   * @return true if it contains value
-   */
+
   public synchronized boolean containsValue(ValueType value) {
     return this.map.containsValue(value);
   }
 
-  /**
-   *
-   * @return an int
-   */
+
   public synchronized int size() {
     return this.map.size();
   }
 
-  /**
-   *
-   * @return an int
-   */
+
   public synchronized int numKeyPrefixes() {
     return this.keyVersions.size();
   }
 
-  /**
-   *
-   * @return true if it is empty
-   */
+
   public synchronized boolean isEmpty() {
     return this.map.isEmpty();
   }
 
-  /**
-   * Clear everything.
-   */
+
   public synchronized void clear() {
     this.keyVersions.clear();
     this.map.clear();
   }
 
-  /**
-   * @param args
-   */
+
   public static void main(String[] args) {
     StringVersionedMap<String, Integer> svmap = new StringVersionedMap<>();
     String key1 = "key1";
@@ -255,7 +160,7 @@ public class StringVersionedMap<KeyType, ValueType> {
             "Inserted but could not get <" + (key1 + 2) + "," + value3 + ">";
 
 
-    /* Space testing */
+
     int million = 1000000;
     int size = 22 * million;
 		//StringVersionedMap<String,String>[] svmarray = new StringVersionedMap[size];

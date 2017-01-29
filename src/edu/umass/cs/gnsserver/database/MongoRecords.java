@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.database;
 
 import com.mongodb.BasicDBList;
@@ -56,19 +38,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-/**
- * Provides insert, updateEntireRecord, removeEntireRecord and lookupEntireRecord operations for
- * guid, key, record triples using JSONObjects as the intermediate representation.
- * All records are stored in a document called NameRecord.
- *
- * @author westy, Abhigyan, arun
- */
+
 public class MongoRecords implements NoSQLRecords {
 
   private static final String DBROOTNAME = "UMASS_GNS_DB_";
-  /**
-   * The name of the document where name records are stored.
-   */
+
   public static final String DBNAMERECORD = "NameRecord";
 
   private DB db;
@@ -77,21 +51,12 @@ public class MongoRecords implements NoSQLRecords {
   private MongoClient mongoClient;
   private MongoCollectionSpecs mongoCollectionSpecs;
 
-  /**
-   * Creates database tables for nodeID, by connecting to mongoDB on default port.
-   *
-   * @param nodeID nodeID of name server
-   */
+
   public MongoRecords(String nodeID) {
     this(nodeID, -1);
   }
 
-  /**
-   * Creates database tables for nodeID, by connecting to mongoDB on given port.
-   *
-   * @param nodeID nodeID of name server
-   * @param port port at which mongo is running. if port = -1, mongo connects to default port.
-   */
+
   public MongoRecords(String nodeID, int port) {
     init(nodeID, port);
   }
@@ -375,13 +340,7 @@ public class MongoRecords implements NoSQLRecords {
     doUpdate(collectionName, guid, updates);
   }
 
-  /**
-   *
-   * @param collectionName
-   * @param values
-   * @throws FailedDBOperationException
-   * @throws RecordExistsException
-   */
+
   public void bulkUpdate(String collectionName, Map<String, JSONObject> values)
           throws FailedDBOperationException, RecordExistsException {
     //String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -488,18 +447,7 @@ public class MongoRecords implements NoSQLRecords {
     }
   }
 
-  /**
-   * Given a key and a value return all the records that have a *user* key with that value.
-   * User keys are stored in the valuesMap field.
-   * The key should be declared as an index otherwise this baby will be slow.
-   *
-   * @param collectionName
-   * @param key
-   * @param value
-   * // * @param explain
-   * @return a MongoRecordCursor
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
+
   @Override
   public MongoRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value)
           throws FailedDBOperationException {
@@ -671,19 +619,12 @@ public class MongoRecords implements NoSQLRecords {
     return "DB " + dbName;
   }
 
-  /**
-   * *
-   * Close mongo client before shutting down name server.
-   * As per mongo doc:
-   * "to dispose of an instance, make sure you call MongoClient.close() to clean up resources."
-   */
+
   public void close() {
     mongoClient.close();
   }
 
-  /**
-   * @param nodeID
-   */
+
   public static void dropNodeDatabase(String nodeID) {
     MongoClient mongoClient;
     try {

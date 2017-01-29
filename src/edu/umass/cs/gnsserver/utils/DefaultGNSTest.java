@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2016 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Arun
- *
- */
+
 package edu.umass.cs.gnsserver.utils;
 
 import java.io.File;
@@ -56,14 +38,9 @@ import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
-/**
- * @author arun
- * 
- *
- */
+
 public class DefaultGNSTest extends DefaultTest {
-	/* arun: Do not change stuff or hardcode any thing in this class without
-	 * consulting me. */
+
 
 	private static final String HOME = System.getProperty("user.home");
 	private static final String GNS_DIR = "GNS";
@@ -94,9 +71,7 @@ public class DefaultGNSTest extends DefaultTest {
 		return null;
 	}
 	
-	/**
-	 * Overriding parent watcher with {code tearDownAfterClass(boolean)} invocation.
-	 */
+
 	@Rule
 	public TestWatcher teardown = new TestWatcher() {
 		@Override
@@ -134,9 +109,7 @@ public class DefaultGNSTest extends DefaultTest {
 
 		STOP_SERVER("stopServer", "true"),
 
-		/**
-		 * If {@link #STOP_SERVER}, whether to forceclear or just stop.
-		 */
+
 		FORCECLEAR("forceclear", "false"),
 
 		;
@@ -186,12 +159,7 @@ public class DefaultGNSTest extends DefaultTest {
 		return ("true".equals(System.getProperty(DefaultProps.SINGLE_JVM.key)));
 	}
 
-	/**
-	 * @throws IOException
-	 * @throws FileNotFoundException
-	 * @throws InterruptedException
-	 *
-	 */
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws FileNotFoundException,
 			IOException, InterruptedException {
@@ -354,10 +322,7 @@ public class DefaultGNSTest extends DefaultTest {
 
 	private static boolean explicitlySleepTillServersReady()
 			throws InterruptedException {
-		/* The waitTillAllServersReady parameter is not needed for
-		 * single-machine tests as we check the logs explicitly below. It may
-		 * still be useful for distributed tests as there is no explicit support
-		 * in gigapaxos' async client to detect if all servrs are up. */
+
 		String waitServersProperty = "waitTillAllServersReady";
 		long sleepTime = 0;
 		if (System.getProperty(waitServersProperty) != null)
@@ -366,11 +331,7 @@ public class DefaultGNSTest extends DefaultTest {
 		return sleepTime > 0;
 	}
 
-	/**
-	 * @throws IOException
-	 * @throws ClientException
-	 *
-	 */
+
 	@AfterClass
 	public static void tearDownAfterClass() throws ClientException, IOException {
 		tearDownAfterClass(false);
@@ -520,14 +481,7 @@ public class DefaultGNSTest extends DefaultTest {
 
 	private int numExecutedTests = 0;
 
-	/**
-	 * Method to detect if all test methods have been completed so that we can
-	 * do any necessary cleanup.
-	 * 
-	 * @throws ClientException
-	 * @throws NoSuchAlgorithmException
-	 * @throws IOException
-	 */
+
 	@After
 	public void after() throws ClientException, NoSuchAlgorithmException,
 			IOException {
@@ -549,13 +503,9 @@ public class DefaultGNSTest extends DefaultTest {
 		removeMyAccountGUID();
 	}
 
-	/**
-	 * A stop-only version of {@link DefaultGNSTest}.
-	 */
+
 	public static class ZDefaultGNSTest extends DefaultGNSTest {
-		/**
-		 *
-		 */
+
 		public ZDefaultGNSTest() {
 		}
 

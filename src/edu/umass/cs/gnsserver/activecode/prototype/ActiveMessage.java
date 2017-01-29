@@ -12,18 +12,13 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 
-/**
- * @author gaozy
- *
- */
+
 public class ActiveMessage implements Message{
 	
 	private final static String CHARSET = "ISO-8859-1";
 	private final static AtomicLong counter = new AtomicLong();
 	
-	/**
-	 * Message type
-	 */
+
 	public Type type;
 	private long id;
 	private int ttl;
@@ -35,35 +30,18 @@ public class ActiveMessage implements Message{
 	private String targetGuid;
 	private String error;
 
-	/**
-	 * This enum represents the type of this ActiveMessage
-	 * @author gaozy
-	 *
-	 */
+
 	public static enum Type {
-		/**
-		 * This message is sent from GNS side to worker
-		 * to run a piece of active code
-		 */
+
 		REQUEST(0),
 		
-		/**
-		 * This message could be used for:
-		 * <p>1. worker to send back execution result to GNS
-		 * <p>2. GNS to send back query result to worker
-		 */
+
 		RESPONSE(1),
 		
-		/**
-		 * This message is used for worker to send a read query
-		 * to GNS to read a value of a field.
-		 */
+
 		READ_QUERY(2), 
 		
-		/**
-		 * This message is used for worker to send a write query
-		 * to GNS to update a field.
-		 */
+
 		WRITE_QUERY(3);
 		
 		private final int type;
@@ -71,27 +49,14 @@ public class ActiveMessage implements Message{
 			this.type = type;
 		}
 		
-		/**
-		 * @return the type of this message
-		 */
+
 		public int getType() {
 			return type;
 		}
 
 	}
 	
-	/**
-	 * @param type 
-	 * @param id 
-	 * @param guid
-	 * @param accessor
-	 * @param code
-	 * @param ttl
-	 * @param budget 
-	 * @param value  
-	 * @param targetGuid 
-	 * @param error 
-	 */
+
 	public ActiveMessage(Type type, long id, int ttl, long budget, String guid, String accessor, String code, String value, String targetGuid, String error){
 		this.type = type;
 		this.id = id;
@@ -105,122 +70,73 @@ public class ActiveMessage implements Message{
 		this.error = error;
 	}
 	
-	/**
-	 * This is a REQUEST message
-	 * @param guid
-	 * @param accessor
-	 * @param code
-	 * @param value
-	 * @param ttl
-	 * @param budget 
-	 */
+
 	public ActiveMessage(String guid, String accessor, String code, String value, int ttl, long budget){
 		this(Type.REQUEST, counter.getAndIncrement(), ttl, budget, guid, accessor, code, value, null, null);
 	}
 	
-	/**
-	 * This is a READ_QUERY message
-	 * @param ttl
-	 * @param guid
-	 * @param accessor
-	 * @param targetGuid
-	 * @param id 
-	 */
+
 	public ActiveMessage(int ttl, String guid, String accessor, String targetGuid, long id){
 		this(Type.READ_QUERY, id, ttl, 0, guid, accessor, null, null, targetGuid, null);
 	}
 	
 	
-	/**
-	 * This is a WRITE_QUERY message
-	 * @param ttl
-	 * @param guid
-	 * @param accessor
-	 * @param targetGuid
-	 * @param value
-	 * @param id 
-	 */
+
 	public ActiveMessage(int ttl, String guid, String accessor, String targetGuid, String value, long id){
 		this(Type.WRITE_QUERY, id, ttl, 0, guid, accessor, null, value, targetGuid, null);
 	}
 	
-	/**
-	 * This is a RESPONSE message
-	 * @param id 
-	 * @param value
-	 * @param error
-	 */
+
 	public ActiveMessage(long id, String value, String error){
 		this(Type.RESPONSE, id, 0, 0, null, null, null, value, null, error);
 	}
 	
-	/**
-	 * @return the TTL left for the request
-	 */
+
 	public int getTtl() {
 		return ttl;
 	}
 
-	/**
-	 * @return the GUID of the querier
-	 */
+
 	public String getGuid() {
 		return guid;
 	}
 
-	/**
-	 * @return the accessor who triggers the active code or the field to be operated on
-	 */
+
 	public String getAccessor() {
 		return accessor;
 	}
 	
-	/**
-	 * @return the GUID to be operated on
-	 */
+
 	public String getTargetGuid() {
 		return targetGuid;
 	}
 	
-	/**
-	 * @return the code to be run
-	 */
+
 	public String getCode() {
 		return code;
 	}
 
-	/**
-	 * @return value
-	 */
+
 	public String getValue() {
 		return value;
 	}
 	
-	/**
-	 * @return error
-	 */
+
 	public String getError(){
 		return error;
 	}
 	
-	/**
-	 * @return id of the message
-	 */
+
 	public long getId(){
 		return id;
 	}
 		
-	/**
-	 * @return the budget in terms of millisecond, i.e., the code can only run this amount of time
-	 */
+
 	public long getBudget() {
 		return budget;
 	}
 	
-	/**
-	 * 
-	 * @return an integer estimated length
-	 */
+
 	private int getEstimatedLengthExceptWithoutValue(){
 		int length = 0;
 		switch(type){
@@ -262,10 +178,7 @@ public class ActiveMessage implements Message{
 	}
 	
 	
-	/**
-	 * @return the byte array being serialized
-	 * @throws UnsupportedEncodingException
-	 */
+
 	@Override
 	public byte[] toBytes() throws UnsupportedEncodingException{
 		
@@ -405,20 +318,12 @@ public class ActiveMessage implements Message{
 		return exactBytes;
 	}
 	
-	/**
-	 * @param bytes
-	 * @throws UnsupportedEncodingException 
-	 * @throws JSONException 
-	 */
+
 	public ActiveMessage(byte[] bytes) throws UnsupportedEncodingException, JSONException {
 		this(ByteBuffer.wrap(bytes));
 	}
 	
-	/**
-	 * @param bbuf
-	 * @throws UnsupportedEncodingException 
-	 * @throws JSONException 
-	 */
+
 	public ActiveMessage(ByteBuffer bbuf) throws UnsupportedEncodingException, JSONException {
 		
 		this.type = Type.values()[bbuf.getInt()];	
@@ -542,11 +447,7 @@ public class ActiveMessage implements Message{
 				+"]";
 	}
 	
-	/**
-	 * @param args
-	 * @throws JSONException
-	 * @throws UnsupportedEncodingException 
-	 */
+
 	public static void main(String[] args) throws JSONException, UnsupportedEncodingException{
 		
 		String guid = "zhaoyu";

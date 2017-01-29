@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gnscommon.CommandType;
@@ -38,15 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-/**
- * This class helps to implement a unified set of client support commands that translate
- * between client support requests and core GNS commands that are sent to the server.
- * Specifically the CommandModule class maintains the list of commands, mechanisms
- * for looking up commands from the contents of JSONObject encoded command packets
- * as well as supporting generation of command documentation.
- *
- * @author westy
- */
+
 public class CommandModule {
 
   // Indicates if we're using the new command enums
@@ -54,11 +28,7 @@ public class CommandModule {
 
   private Map<CommandType, AbstractCommand> commandLookupTable;
 
-  /**
-   *
-   * @param commandType
-   * @param command
-   */
+
   public void addCommand(CommandType commandType, AbstractCommand command) {
     if (commandLookupTable.get(commandType) != null) {
       GNSConfig.getLogger().log(Level.SEVERE,
@@ -71,9 +41,7 @@ public class CommandModule {
   private TreeSet<AbstractCommand> commands;
   //private boolean adminMode = false;
 
-  /**
-   * Creates a CommandModule.
-   */
+
   public CommandModule() {
     initCommands();
   }
@@ -92,15 +60,7 @@ public class CommandModule {
             "{0} commands added.", commands.size());
   }
 
-  /**
-   *
-   * Add commands to this module. Commands instances are created by reflection
-   * based on the command class names passed in parameter
-   *
-   * @param commandClasses a String[] containing the class names of the command
-   * to instantiate
-   * @param commands Set where the commands are added
-   */
+
   protected void addCommands(List<Class<?>> commandClasses, Set<AbstractCommand> commands) {
     for (int i = 0; i < commandClasses.size(); i++) {
       Class<?> clazz = commandClasses.get(i);
@@ -113,15 +73,7 @@ public class CommandModule {
     }
   }
 
-  /**
-   *
-   * Add commands to this module. Commands instances are created by reflection
-   * based on the command class names passed in parameter
-   *
-   * @param commandClasses a String[] containing the class names of the command
-   * to instantiate
-   * @param commands Set where the commands are added
-   */
+
   protected void addCommands(Class<?>[] commandClasses, Set<AbstractCommand> commands) {
     for (int i = 0; i < commandClasses.length; i++) {
       Class<?> clazz = commandClasses[i];
@@ -159,20 +111,12 @@ public class CommandModule {
     return null;
   }
 
-  /**
-   *
-   * @param commandType
-   * @return the command
-   */
+
   public AbstractCommand lookupCommand(CommandType commandType) {
     return commandLookupTable.get(commandType);
   }
 
-  /**
-   *
-   * @param commandName
-   * @return the command
-   */
+
   public AbstractCommand lookupCommand(String commandName) {
     try {
       return CommandModule.this.lookupCommand(CommandType.valueOf(commandName));
@@ -183,12 +127,7 @@ public class CommandModule {
     }
   }
 
-  /**
-   * Finds the command that corresponds to the JSONObject which was received command packet.
-   *
-   * @param json
-   * @return the command or null if the command indicator is not valid
-   */
+
   public AbstractCommand lookupCommand(JSONObject json) {
     AbstractCommand command = null;
     if (json.has(GNSProtocol.COMMAND_INT.toString())) {
@@ -228,14 +167,7 @@ public class CommandModule {
     return lookupCommandFromCommandName(json);
   }
 
-  /**
-   * Finds the command that corresponds to the GNSProtocol.COMMANDNAME.toString() in the json.
-   * Old method for backward compatibility with older clients that
- aren't using the GNSProtocol.COMMAND_INT.toString() field.
-   *
-   * @param json
-   * @return the command or null if the GNSProtocol.COMMANDNAME.toString() is not valid
-   */
+
   public AbstractCommand lookupCommandFromCommandName(JSONObject json) {
     String action;
     try {
@@ -249,14 +181,10 @@ public class CommandModule {
     return CommandModule.this.lookupCommand(action);
   }
 
-  /**
-   *
-   */
+
   public static final String STANDARD_PREAMBLE = "COMMAND PACKAGE: %s";
 
-  /**
-   *
-   */
+
   public static final String WIKI_PREAMBLE = "{| class=\"wikitable\"\n"
           + "|+ Commands in %s\n"
           + "! scope=\"col\" | Command Name\n"
@@ -264,12 +192,7 @@ public class CommandModule {
           + "! scope=\"col\" | Optional Parameters\n"
           + "! scope=\"col\" | Description";
 
-  /**
-   * Return all the command descriptions.
-   *
-   * @param format
-   * @return a string
-   */
+
   public String allCommandDescriptions(CommandDescriptionFormat format) {
     StringBuilder result = new StringBuilder();
     List<AbstractCommand> commandList = new ArrayList<>(commands);
@@ -313,11 +236,7 @@ public class CommandModule {
     return JSONMissing(json, parameters) == null;
   }
 
-//  /**
-//   * Set admin mode.
-//   *
-//   * @param adminMode
-//   */
+//
 //  public void setAdminMode(boolean adminMode) {
 //    this.adminMode = adminMode;
 //  }
@@ -339,9 +258,7 @@ public class CommandModule {
 
   };
 
-  /**
-   *
-   */
+
   private static Comparator<AbstractCommand> CommandNameComparator
           = new Comparator<AbstractCommand>() {
 

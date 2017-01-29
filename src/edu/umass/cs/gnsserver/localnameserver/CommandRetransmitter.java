@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.localnameserver;
 
 import java.util.HashSet;
@@ -34,11 +16,7 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import org.json.JSONObject;
 
-/**
- * Handles resending of packets to active replicas.
- *
- * @author westy
- */
+
 public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
 
   private final long RESTART_PERIOD = 10000;
@@ -50,19 +28,10 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
   private final Set<InetSocketAddress> actives;
   private final Set<InetSocketAddress> activesAlreadyContacted = new HashSet<>();
 
-  /**
-   * The logger.
-   */
+
   public static final Logger LOG = Logger.getLogger(Reconfigurator.class.getName());
 
-  /**
-   * Create an instance of the CommandRetransmitter.
-   *
-   * @param requestId
-   * @param json
-   * @param actives
-   * @param handler
-   */
+
   public CommandRetransmitter(long requestId, JSONObject json, Set<InetSocketAddress> actives,
           RequestHandlerInterface handler) {
     this.requestId = requestId;
@@ -73,10 +42,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     LOG.log(Level.FINE, "CommandSender starting: {0}", key);
   }
 
-  /**
-   *
-   * @return the task
-   */
+
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
@@ -99,10 +65,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     }
   }
 
-  /**
-   *
-   * @return the task
-   */
+
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     InetSocketAddress address = handler.getClosestReplica(actives, activesAlreadyContacted);
@@ -120,30 +83,19 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     return Long.toString(requestId);
   }
 
-  /**
-   *
-   * @return a set of packet types
-   */
+
   @Override
   public Set<PacketType> getEventTypes() {
     return new HashSet<>();
   }
 
-  /**
-   *
-   * @return the key
-   */
+
   @Override
   public String getKey() {
     return this.key;
   }
 
-  /**
-   *
-   * @param event
-   * @param ptasks
-   * @return an array of tasks
-   */
+
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
           ProtocolEvent<PacketType, String> event,
@@ -156,10 +108,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     return this.getClass().getSimpleName() + " " + requestId;
   }
 
-  /**
-   *
-   * @return the period
-   */
+
   @Override
   public long getPeriod() {
     return RESTART_PERIOD;

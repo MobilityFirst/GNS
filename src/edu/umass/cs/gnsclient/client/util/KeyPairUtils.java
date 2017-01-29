@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.client.util;
 
 import java.io.DataInputStream;
@@ -47,14 +29,10 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.utils.Config;
 import javax.xml.bind.DatatypeConverter;
 
-/**
- * @author westy
- */
+
 public class KeyPairUtils {
 
-  /**
-   * Check whether we are on an Android platform or not
-   */
+
   public static final boolean IS_ANDROID = System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik");
 
   //private static final SimpleKeyStore KEYSTORE = new SimpleKeyStore();
@@ -70,13 +48,7 @@ public class KeyPairUtils {
 
   private static AbstractKeyStorage keyStorageObj = null;
 
-  /**
-   * Retrieves the public/private key pair for the given user.
-   *
-   * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   * @param username the user name
-   * @return the GNSProtocol.GUID.toString() entry if found, null otherwise
-   */
+
   public static GuidEntry getGuidEntry(String gnsName, String username) {
     if (username == null) {
       return null;
@@ -112,12 +84,7 @@ public class KeyPairUtils {
     }
   }
 
-  /**
-   * Remove the public/private key pair from preferences for the given user.
-   *
-   * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   * @param username the user name
-   */
+
   public static void removeKeyPair(String gnsName, String username) {
     if (IS_ANDROID) {
       KeyPairUtilsAndroid.removeKeyPairFromPreferences(gnsName, username);
@@ -131,14 +98,7 @@ public class KeyPairUtils {
     keyStorageObj.remove(generateKey(gnsName, username, GUID));
   }
 
-  /**
-   * Saves the public/private key pair to preferences for the given user.
-   *
-   * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   * @param username the user name or human readable name
-   * @param guid the GNSProtocol.GUID.toString() value
-   * @param keyPair public and private keys for that GNSProtocol.GUID.toString()
-   */
+
   public static void saveKeyPair(String gnsName, String username, String guid, KeyPair keyPair) {
     if (IS_ANDROID) {
       KeyPairUtilsAndroid.saveKeyPairToPreferences(gnsName, username, guid, keyPair);
@@ -156,26 +116,14 @@ public class KeyPairUtils {
     keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
   }
 
-  /**
-   * A useful tool when you want to use an existing guid with another gns server.
-   *
-   * @param sourceGNSName
-   * @param username
-   * @param destGNSName
-   */
+
   public static void copyKeyPair(String sourceGNSName, String username, String destGNSName) {
     GuidEntry entry = getGuidEntry(sourceGNSName, username);
     saveKeyPair(destGNSName, entry.getEntityName(), entry.getGuid(),
             new KeyPair(entry.getPublicKey(), entry.getPrivateKey()));
   }
 
-  /**
-   * Set the default GNSProtocol.GUID.toString() to use in the user preferences (usually the account
- GNSProtocol.GUID.toString())
-   *
-   * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   * @param username the alias of the default GNSProtocol.GUID.toString() to use
-   */
+
   public static void setDefaultGuidEntry(String gnsName, String username) {
     if (IS_ANDROID) {
       KeyPairUtilsAndroid.setDefaultGuidEntryToPreferences(gnsName, username);
@@ -186,12 +134,7 @@ public class KeyPairUtils {
     }
   }
 
-  /**
-   * Set the default GNSProtocol.GUID.toString() to use in the user preferences (usually the account
- GNSProtocol.GUID.toString())
-   *
-   * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   */
+
   public static void removeDefaultGuidEntry(String gnsName) {
     if (IS_ANDROID) {
       KeyPairUtilsAndroid.removeDefaultGuidEntryFromPreferences(gnsName);
@@ -202,13 +145,7 @@ public class KeyPairUtils {
     }
   }
 
-  /**
-   * Return the GNSProtocol.GUID.toString() entry for the default GNSProtocol.GUID.toString() set in the user preferences (if
- any)
-   *
-   * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
-   * @return the default GNSProtocol.GUID.toString() entry or null if not set or invalid
-   */
+
   public static GuidEntry getDefaultGuidEntry(String gnsName) {
     if (IS_ANDROID) {
       return KeyPairUtilsAndroid.getDefaultGuidEntryFromPreferences(gnsName);
@@ -218,13 +155,7 @@ public class KeyPairUtils {
     }
   }
 
-  /**
-   * Sets the default GNS to use in the user preferences. Syntax to use is with
-   * a colon between the host and port so that the string can be re-used as is
-   * in the GnsConnect command.
-   *
-   * @param gnsHostPort a string of host:port:disableSSLBoolean
-   */
+
   @Deprecated
   public static void setDefaultGns(String gnsHostPort) {
     if (IS_ANDROID) {
@@ -235,12 +166,7 @@ public class KeyPairUtils {
     }
   }
 
-  /**
-   * Return the default GNS Host:Port:disableSSLBoolean as a String if defined (null if not
-   * defined)
-   *
-   * @return the default GNS saved in the user prefences as a string of host:port:disableSSLBoolean
-   */
+
   @Deprecated
   public static String getDefaultGns() {
     if (IS_ANDROID) {
@@ -251,9 +177,7 @@ public class KeyPairUtils {
     }
   }
 
-  /**
-   * Remove the default GNS to use in the user preferences.
-   */
+
   @Deprecated
   public static void removeDefaultGns() {
     if (IS_ANDROID) {
@@ -264,15 +188,7 @@ public class KeyPairUtils {
     }
   }
 
-  /**
-   * Reads a private key from a PKCS#8 formatted file
-   *
-   * @param filename
-   * @return the private key
-   * @throws IOException
-   * @throws InvalidKeySpecException
-   * @throws NoSuchAlgorithmException
-   */
+
   public static PrivateKey getPrivateKeyFromPKCS8File(String filename) throws IOException, InvalidKeySpecException,
           NoSuchAlgorithmException {
     File f = new File(filename);
@@ -287,13 +203,7 @@ public class KeyPairUtils {
     return kf.generatePrivate(spec);
   }
 
-  /**
-   * Saves a private key to a PKCS#8 formatted file
-   *
-   * @param privateKey private key to save
-   * @param filename file to save the key to
-   * @return true if the key is written
-   */
+
   public static boolean writePrivateKeyToPKCS8File(PrivateKey privateKey, String filename) {
     byte[] keyBytes = privateKey.getEncoded();
     FileOutputStream fos = null;
@@ -323,15 +233,7 @@ public class KeyPairUtils {
     return true;
   }
 
-  /**
-   * Return the list of all GUIDs stored locally that belong to a particular GNS
-   * instance.
-   *
-   * This seems kind of hokey.
-   *
-   * @param gnsName the GNS host:port
-   * @return all matching GUIDs
-   */
+
   public static List<GuidEntry> getAllGuids(String gnsName) {
     if (IS_ANDROID) {
       return KeyPairUtilsAndroid.getAllGuids(gnsName);
@@ -390,11 +292,7 @@ public class KeyPairUtils {
     assert (keyStorageObj != null);
   }
 
-  /**
-   *
-   * @param args
-   * @throws BackingStoreException
-   */
+
   public static void main(String args[]) throws BackingStoreException {
     createSingleton();
     if ((args.length == 1) && "-clear".equals(args[0])) {

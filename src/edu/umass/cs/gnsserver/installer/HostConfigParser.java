@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.installer;
 
 
@@ -42,11 +24,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-/**
- * Parses an XML config file to get all info needed create hosts.
- * 
- * @author westy
- */
+
 public class HostConfigParser {
 
   private static final String USERNAME = "username";
@@ -70,66 +48,37 @@ public class HostConfigParser {
   private String installPath;
   private List<HostInfo> hosts = new ArrayList<HostInfo>();
 
-  /**
-   * Returns the keyname.
-   * 
-   * @return the keyname
-   */
+
   public String getKeyname() {
     return keyname;
   }
 
-  /**
-   * Returns the username.
-   * 
-   * @return a string
-   */
+
   public String getUsername() {
     return username;
   }
 
-  /**
-   * Returns the host type.
-   * 
-   * @return the host type.
-   */
+
   public String getHostType() {
     return hostType;
   }
 
-  /**
-   * Returns the dataStoreType.
-   * 
-   * @return the dataStoreType
-   */
+
   public DataStoreType getDataStoreType() {
     return dataStoreType;
   }
 
-  /**
-   * Returns the install path.
-   * 
-   * @return the install path.
-   */
+
   public String getInstallPath() {
     return installPath;
   }
 
-  /**
-   * Returns the list of hosts.
-   * 
-   * @return the list of hosts
-   */
+
   public List<HostInfo> getHosts() {
     return hosts;
   }
 
-  /**
-   * Creates a HostConfigParser instance.
-   * 
-   * @param filename
-   * @throws HostConfigParseException
-   */
+
   public HostConfigParser(String filename) throws HostConfigParseException {
     parseFile(filename);
   }

@@ -1,18 +1,4 @@
-/*
- * Copyright (C) 2010 Square, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 package edu.umass.cs.gnsserver.activecode.prototype.utils;
 
 import java.io.Closeable;
@@ -28,100 +14,39 @@ import java.util.logging.Logger;
 
 import static java.lang.Math.min;
 
-/**
- * A reliable, efficient, file-based, FIFO queue. Additions and removals are O(1). All operations
- * are atomic. Writes are synchronous; data will be written to disk before an operation returns.
- * The underlying file is structured to survive process and even system crashes. If an I/O
- * exception is thrown during a mutating change, the change is aborted. It is safe to continue to
- * use a {@code QueueFile} instance after an exception.
- *
- * <p>
- * All operations are synchronized. In a traditional queue, the remove operation returns an
- * element. In this queue, {@link #peek} and {@link #remove} are used in conjunction. Use
- * {@code peek} to retrieve the first element, and then {@code remove} to remove it after
- * successful processing. If the system crashes after {@code peek} and during processing, the
- * element will remain in the queue, to be processed when the system restarts.
- *
- */
+
 public class QueueFile implements Closeable {
 
   private static final Logger LOGGER = Logger.getLogger(QueueFile.class.getName());
 
-  /**
-   * Initial file size in bytes.
-   */
+
   private static final int INITIAL_LENGTH = 4096; // one file system block
 
-  /**
-   * A block of nothing to write over old data.
-   */
+
   private static final byte[] ZEROES = new byte[INITIAL_LENGTH];
 
-  /**
-   * Length of header in bytes.
-   */
+
   static final int HEADER_LENGTH = 16;
 
-  /**
-   * The underlying file. Uses a ring buffer to store entries. Designed so that a modification
-   * isn't committed or visible until we write the header. The header is much smaller than a
-   * segment. So long as the underlying file system supports atomic segment writes, changes to the
-   * queue are atomic. Storing the file length ensures we can recover from a failed expansion
-   * (i.e. if setting the file length succeeds but the process dies before the data can be copied).
-   * <p/>
-   * <
-   * pre>
-   *   Format:
-   *     Header              (16 bytes)
-   *     Element Ring Buffer (File Length - 16 bytes)
-   * <p/>
-   *   Header:
-   *     File Length            (4 bytes)
-   *     Element Count          (4 bytes)
-   *     First Element Position (4 bytes, =0 if null)
-   *     Last Element Position  (4 bytes, =0 if null)
-   * <p/>
-   *   Element:
-   *     Length (4 bytes)
-   *     Data   (Length bytes)
-   * </pre>
-   *
-   * Visible for testing.
-   */
+
   final RandomAccessFile raf;
 
-  /**
-   * Cached file length. Always a power of 2.
-   */
+
   private int fileLength;
 
-  /**
-   * Number of elements.
-   */
+
   private int elementCount;
 
-  /**
-   * Pointer to first (or eldest) element.
-   */
+
   private Element first;
 
-  /**
-   * Pointer to last (or newest) element.
-   */
+
   private Element last;
 
-  /**
-   * In-memory buffer. Big enough to hold the header.
-   */
+
   private final byte[] buffer = new byte[16];
 
-  /**
-   * Constructs a new queue backed by the given file. Only one instance should access a given file
-   * at a time.
-   *
-   * @param file
-   * @throws java.io.IOException
-   */
+
   public QueueFile(File file) throws IOException {
     if (!file.exists()) {
       initialize(file);
@@ -135,10 +60,7 @@ public class QueueFile implements Closeable {
     readHeader();
   }
 
-  /**
-   * Stores an {@code int} in the {@code byte[]}. The behavior is equivalent to calling
-   * {@link RandomAccessFile#writeInt}.
-   */
+
   private static void writeInt(byte[] buffer, int offset, int value) {
     buffer[offset] = (byte) (value >> 24);
     buffer[offset + 1] = (byte) (value >> 16);
@@ -146,9 +68,7 @@ public class QueueFile implements Closeable {
     buffer[offset + 3] = (byte) value;
   }
 
-  /**
-   * Reads an {@code int} from the {@code byte[]}.
-   */
+
   private static int readInt(byte[] buffer, int offset) {
     return ((buffer[offset] & 0xff) << 24)
             + ((buffer[offset + 1] & 0xff) << 16)
@@ -174,12 +94,7 @@ public class QueueFile implements Closeable {
     last = readElement(lastOffset);
   }
 
-  /**
-   * Writes header atomically. The arguments contain the updated values. The class member fields
-   * should not have changed yet. This only updates the state in the file. It's up to the caller to
-   * update the class member variables *after* this call succeeds. Assumes segment writes are
-   * atomic in the underlying file system.
-   */
+
   private void writeHeader(int fileLength, int elementCount, int firstPosition, int lastPosition)
           throws IOException {
     writeInt(buffer, 0, fileLength);
@@ -219,29 +134,18 @@ public class QueueFile implements Closeable {
     }
   }
 
-  /**
-   * Opens a random access file that writes synchronously.
-   */
+
   private static RandomAccessFile open(File file) throws FileNotFoundException {
     return new RandomAccessFile(file, "rw");
   }
 
-  /**
-   * Wraps the position if it exceeds the end of the file.
-   */
+
   private int wrapPosition(int position) {
     return position < fileLength ? position
             : HEADER_LENGTH + position - fileLength;
   }
 
-  /**
-   * Writes count bytes from buffer to position in file. Automatically wraps write if position is
-   * past the end of the file or if buffer overlaps it.
-   *
-   * @param position in file to write to
-   * @param buffer to write from
-   * @param count # of bytes to write
-   */
+
   private void ringWrite(int position, byte[] buffer, int offset, int count) throws IOException {
     position = wrapPosition(position);
     if (position + count <= fileLength) {
@@ -267,13 +171,7 @@ public class QueueFile implements Closeable {
     }
   }
 
-  /**
-   * Reads count bytes into buffer from file. Wraps if necessary.
-   *
-   * @param position in file to read from
-   * @param buffer to read into
-   * @param count # of bytes to read
-   */
+
   private void ringRead(int position, byte[] buffer, int offset, int count) throws IOException {
     position = wrapPosition(position);
     if (position + count <= fileLength) {
@@ -290,26 +188,12 @@ public class QueueFile implements Closeable {
     }
   }
 
-  /**
-   * Adds an element to the end of the queue.
-   *
-   * @param data to copy bytes from
-   * @throws java.io.IOException
-   */
+
   public void add(byte[] data) throws IOException {
     add(data, 0, data.length);
   }
 
-  /**
-   * Adds an element to the end of the queue.
-   *
-   * @param data to copy bytes from
-   * @param offset to start from in buffer
-   * @param count number of bytes to copy
-   * @throws java.io.IOException
-   * @throws IndexOutOfBoundsException if {@code offset < 0} or {@code count < 0}, or if {@code
-   * offset + count} is bigger than the length of {@code buffer}.
-   */
+
   public synchronized void add(byte[] data, int offset, int count) throws IOException {
     if (data == null) {
       throw new NullPointerException("data == null");
@@ -365,20 +249,12 @@ public class QueueFile implements Closeable {
     return fileLength - usedBytes();
   }
 
-  /**
-   * Returns true if this queue contains no entries.
-   *
-   * @return true if this queue contains no entries
-   */
+
   public synchronized boolean isEmpty() {
     return elementCount == 0;
   }
 
-  /**
-   * If necessary, expands the file to accommodate an additional element of the given length.
-   *
-   * @param dataLength length of data being added
-   */
+
   private void expandIfNecessary(int dataLength) throws IOException {
     int elementLength = Element.HEADER_LENGTH + dataLength;
     int remainingBytes = remainingBytes();
@@ -424,21 +300,14 @@ public class QueueFile implements Closeable {
     fileLength = newLength;
   }
 
-  /**
-   * Sets the length of the file.
-   */
+
   private void setLength(int newLength) throws IOException {
     // Set new file length (considered metadata) and sync it to storage.
     raf.setLength(newLength);
     raf.getChannel().force(true);
   }
 
-  /**
-   * Reads the eldest element. Returns null if the queue is empty.
-   *
-   * @return an array of bytes
-   * @throws java.io.IOException
-   */
+
   public synchronized byte[] peek() throws IOException {
     if (isEmpty()) {
       return null;
@@ -449,13 +318,7 @@ public class QueueFile implements Closeable {
     return data;
   }
 
-  /**
-   * Invokes reader with the eldest element, if an element is available.
-   *
-   * @param reader
-   * @throws java.io.IOException
-   * @deprecated use {@link #peek(ElementVisitor)}
-   */
+
   @Deprecated
   public synchronized void peek(ElementReader reader) throws IOException {
     if (elementCount > 0) {
@@ -463,26 +326,14 @@ public class QueueFile implements Closeable {
     }
   }
 
-  /**
-   * Invokes {@code visitor} with the eldest element, if an element is available.
-   *
-   * @param visitor
-   * @throws java.io.IOException
-   */
+
   public synchronized void peek(ElementVisitor visitor) throws IOException {
     if (elementCount > 0) {
       visitor.read(new ElementInputStream(first), first.length);
     }
   }
 
-  /**
-   * Invokes the given reader once for each element in the queue, from eldest to
-   * most recently added.
-   *
-   * @param reader
-   * @throws java.io.IOException
-   * @deprecated use {@link #forEach(ElementVisitor)}
-   */
+
   @Deprecated
   public synchronized void forEach(final ElementReader reader) throws IOException {
     forEach(new ElementVisitor() {
@@ -494,15 +345,7 @@ public class QueueFile implements Closeable {
     });
   }
 
-  /**
-   * Invokes the given reader once for each element in the queue, from eldest to most recently
-   * added. Continues until all elements are read or {@link ElementVisitor#read reader.read()}
-   * returns {@code false}.
-   *
-   * @param reader
-   * @return number of elements visited
-   * @throws java.io.IOException
-   */
+
   public synchronized int forEach(ElementVisitor reader) throws IOException {
     int position = first.position;
     for (int i = 0; i < elementCount; i++) {
@@ -556,32 +399,17 @@ public class QueueFile implements Closeable {
     }
   }
 
-  /**
-   * Returns the number of elements in this queue.
-   *
-   * @return the number of elements in this queue
-   */
+
   public synchronized int size() {
     return elementCount;
   }
 
-  /**
-   * Removes the eldest element.
-   *
-   * @throws java.io.IOException
-   * @throws NoSuchElementException if the queue is empty
-   */
+
   public synchronized void remove() throws IOException {
     remove(1);
   }
 
-  /**
-   * Removes the eldest {@code n} elements.
-   *
-   * @param n
-   * @throws java.io.IOException
-   * @throws NoSuchElementException if the queue is empty
-   */
+
   public synchronized void remove(int n) throws IOException {
     if (isEmpty()) {
       throw new NoSuchElementException();
@@ -623,11 +451,7 @@ public class QueueFile implements Closeable {
     ringErase(eraseStartPosition, eraseTotalLength);
   }
 
-  /**
-   * Clears this queue. Truncates the file to the initial size.
-   *
-   * @throws java.io.IOException
-   */
+
   public synchronized void clear() throws IOException {
     // Commit the header.
     writeHeader(INITIAL_LENGTH, 0, 0, 0);
@@ -645,9 +469,7 @@ public class QueueFile implements Closeable {
     fileLength = INITIAL_LENGTH;
   }
 
-  /**
-   * Closes the underlying file.
-   */
+
   @Override
   public synchronized void close() throws IOException {
     raf.close();
@@ -683,34 +505,21 @@ public class QueueFile implements Closeable {
     return builder.toString();
   }
 
-  /**
-   * A pointer to an element.
-   */
+
   static class Element {
 
     static final Element NULL = new Element(0, 0);
 
-    /**
-     * Length of element header in bytes.
-     */
+
     static final int HEADER_LENGTH = 4;
 
-    /**
-     * Position in file.
-     */
+
     final int position;
 
-    /**
-     * The length of the data.
-     */
+
     final int length;
 
-    /**
-     * Constructs a new element.
-     *
-     * @param position within file
-     * @param length of data
-     */
+
     Element(int position, int length) {
       this.position = position;
       this.length = length;
@@ -724,47 +533,19 @@ public class QueueFile implements Closeable {
     }
   }
 
-  /**
-   * Reads queue elements. Enables partial reads as opposed to reading all of the bytes into a
-   * {@code byte[]}.
-   *
-   * @deprecated use {@link ElementVisitor} instead.
-   */
+
   @Deprecated
   public interface ElementReader {
 
-    /*
-     * TODO: Support remove() call from read().
-     */
-    /**
-     * Called once per element.
-     *
-     * @param in stream of element data. Reads as many bytes as requested, unless fewer than the
-     * request number of bytes remains, in which case it reads all the remaining bytes. Not
-     * buffered.
-     * @param length of element data in bytes
-     * @throws java.io.IOException
-     */
+
+
     void read(InputStream in, int length) throws IOException;
   }
 
-  /**
-   * Reads queue elements. Enables partial reads as opposed to reading all of
-   * the bytes into a byte[]. Can opt to skip remaining elements.
-   */
+
   public interface ElementVisitor {
 
-    /**
-     * Called once per element.
-     *
-     * @param in stream of element data. Reads as many bytes as requested, unless fewer than the
-     * request number of bytes remains, in which case it reads all the remaining bytes. Not
-     * buffered.
-     * @param length of element data in bytes
-     * @return an indication whether the {@link #forEach} operation should continue; If
-     * {@code true}, continue, otherwise halt.
-     * @throws java.io.IOException
-     */
+
     boolean read(InputStream in, int length) throws IOException;
   }
 }

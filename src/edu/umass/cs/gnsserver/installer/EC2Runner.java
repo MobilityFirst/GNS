@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.installer;
 
 import com.amazonaws.auth.AWSCredentials;
@@ -54,16 +36,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-/**
- * Starts a set of EC2 instances.
- * Reads from a XML configuration file whose name is specified on the command line.
- *
- * Typical use:
- *
- * java -cp jars/GNS.jar edu.umass.cs.gnsserver.installer.EC2Runner -create dev
- *
- * @author westy
- */
+
 public class EC2Runner {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
@@ -72,13 +45,9 @@ public class EC2Runner {
   private static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   private static final AMIRecordType DEFAULT_AMI_RECORD_TYPE = AMIRecordType.Amazon_Linux_AMI_2013_03_1;
   private static final String DEFAULT_EC2_USERNAME = "ec2-user";
-  /**
-   * Contains information read from config file on what hosts we are trying to start.
-   */
+
   private static List<EC2RegionSpec> regionsList = new ArrayList<EC2RegionSpec>();
-  /**
-   * Stores information about instances that have started.
-   */
+
   private static ConcurrentHashMap<String, HostInfo> hostTable = new ConcurrentHashMap<String, HostInfo>();
   //
   private static final int STARTINGNODENUMBER = 0;
@@ -99,11 +68,7 @@ public class EC2Runner {
     amiRecordType = parser.getAmiRecordType();
   }
 
-  /**
-   * Starts a set of EC2 hosts running GNS that we call a runset.
-   *
-   * @param runSetName
-   */
+
   public static void createRunSetMulti(String runSetName) {
     int timeout = AWSEC2.DEFAULTREACHABILITYWAITTIME;
     System.out.println("EC2 User Name: " + ec2UserName);
@@ -209,17 +174,7 @@ public class EC2Runner {
           + "/usr/bin/mysqladmin -u root password 'toorbar'\n"
           + "mysqladmin -u root --password=toorbar -v create gns\n";
 
-  /**
-   * This is called to initialize an EC2 host for use as A GNS server in a region. It starts the host, loads all the necessary
-   * software and copies the JAR files over. We also collect info about this host, like it's IP address and geographic location.
-   * When every host is initialized and we have collected all the IPs, phase two is called.
-   *
-   * @param region - the EC2 region where we are starting this host
-   * @param runSetName - so we can terminate them all together
-   * @param id - the GNS ID of this server
-   * @param elasticIP
-   * @param timeout
-   */
+
   public static void initAndUpdateEC2Host(RegionRecord region, String runSetName, String id, String elasticIP, int timeout) {
     String installScript;
     AMIRecord amiRecord = AMIRecord.getAMI(amiRecordType, region);
@@ -308,11 +263,7 @@ public class EC2Runner {
   private static final String MongoRecordsClass = "edu.umass.cs.gnsserver.database.MongoRecords";
   private static final String CassandraRecordsClass = "edu.umass.cs.gnsserver.database.CassandraRecords";
 
-  /**
-   * Terminates all the hosts in the named run set.
-   *
-   * @param name
-   */
+
   public static void terminateRunSet(String name) {
     try {
       AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
@@ -517,11 +468,7 @@ public class EC2Runner {
     System.out.println("ShutdownHook removed.");
   }
 
-  /**
-   * The main routine.
-   *
-   * @param args
-   */
+
   public static void main(String[] args) {
     try {
       CommandLine parser = initializeOptions(args);

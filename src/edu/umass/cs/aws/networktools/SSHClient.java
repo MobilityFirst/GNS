@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.aws.networktools;
 
 import com.jcraft.jsch.Channel;
@@ -36,62 +18,30 @@ import java.util.logging.Level;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-/**
- * Implements SSH execute and copy commands.
- *
- * @author westy
- */
+
 public class SSHClient {
 
   private static boolean verbose = true;
 
-  /**
-   * Execute the command.
-   * 
-   * @param command
-   */
+
   public static void exec(String command) {
     exec(null, null, null, command, false, null);
   }
 
-  /**
-   * Execute the command.
-   * 
-   * @param user
-   * @param host
-   * @param keyFile
-   * @param command
-   */
+
   public static void exec(String user, String host, File keyFile, String command) {
     exec(user, host, keyFile, command, false, null);
   }
 
-  /**
-   * Execute the command.
-   * 
-   * @param user
-   * @param host
-   * @param keyFile
-   * @param command
-   */
+
   public static void execWithSudoNoPass(String user, String host, File keyFile, String command) {
     exec(user, host, keyFile, command, true, null);
   }
 
-  /**
-   *
-   */
+
   public static final int MAXCOMMANDBYTES = 4096;
 
-  /**
-   *
-   * @param user
-   * @param host
-   * @param keyFile
-   * @param command
-   * @param useSudo
-   * @param sudoPasswd
-   */
+
   public static void exec(String user, String host, File keyFile, String command, boolean useSudo, String sudoPasswd) {
     if (verbose) {
       System.out.println("Remote execute command on " + host + (useSudo ? " as root user: " : " as user " + user + ": ") + command);
@@ -182,14 +132,7 @@ public class SSHClient {
     }
   }
 
-  /**
-   *
-   * @param user
-   * @param host
-   * @param keyFile
-   * @param lfile
-   * @param rfile
-   */
+
   public static void scpTo(String user, String host, File keyFile, String lfile, String rfile) {
     if (verbose) {
       System.out.println("Remote copy file from " + lfile + " to " + host + "@" + user + ":" + rfile);
@@ -294,15 +237,7 @@ public class SSHClient {
     }
   }
 
-  /**
-   *
-   * @param jsch
-   * @param user
-   * @param host
-   * @param keyFile
-   * @return the session
-   * @throws JSchException
-   */
+
   public static Session authenticateWithKey(JSch jsch, String user, String host, File keyFile) throws JSchException {
     if (keyFile == null) {
       JFileChooser chooser = new JFileChooser();
@@ -325,14 +260,7 @@ public class SSHClient {
 
   }
 
-  /**
-   *
-   * @param jsch
-   * @param user
-   * @param host
-   * @return the session
-   * @throws JSchException
-   */
+
   public static Session authenticateWithPassword(JSch jsch, String user, String host) throws JSchException {
 
     if (host == null || user == null) {
@@ -383,26 +311,17 @@ public class SSHClient {
     return b;
   }
 
-  /**
-   *
-   * @return true if verbose
-   */
+
   public static boolean isVerbose() {
     return verbose;
   }
 
-  /**
-   *
-   * @param verbose
-   */
+
   public static void setVerbose(boolean verbose) {
     SSHClient.verbose = verbose;
   }
 
-  /**
-   *
-   * @param arg
-   */
+
   public static void main(String[] arg) {
     String host = "23.21.160.80";
     String scriptPath = "/Users/westy/Documents/Code/GNRS-westy/scripts/5nodesregions/";

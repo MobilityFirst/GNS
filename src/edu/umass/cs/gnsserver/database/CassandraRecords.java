@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.database;
 
 import com.datastax.driver.core.Cluster;
@@ -42,18 +24,12 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * An unfinished Cassandra implementation of NoSQLRecords.
- *
- * @author westy
- */
+
 public class CassandraRecords implements NoSQLRecords {
 
   private static final String DBROOTNAME = "GNS";
 
-  /**
-   * The name of the document where name records are stored.
-   */
+
   public static final String DBNAMERECORD = "NameRecord";
 
   private String dbName;
@@ -61,12 +37,7 @@ public class CassandraRecords implements NoSQLRecords {
   private Session session;
   private static Map<String, CassandraRecords.CollectionSpec> collectionSpecMap = new HashMap<String, CassandraRecords.CollectionSpec>();
 
-  /**
-   * Returns the CassandraRecords.CollectionSpec for the given name.
-   *
-   * @param name the name
-   * @return a CassandraRecords.CollectionSpec object
-   */
+
   public CassandraRecords.CollectionSpec getCollectionSpec(String name) {
     return collectionSpecMap.get(name);
   }
@@ -81,40 +52,25 @@ public class CassandraRecords implements NoSQLRecords {
 //    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //  }
   
-  /**
-   * Stores the name, primary key, and index of each collection we maintain in the mongo db.
-   */
+
   static class CollectionSpec {
 
     private final String name;
     private final String primaryKey;
 
-    /**
-     * Create a CollectionSpec instance.
-     *
-     * @param name
-     * @param primaryKey
-     */
+
     public CollectionSpec(String name, String primaryKey) {
       this.name = name;
       this.primaryKey = primaryKey;
       collectionSpecMap.put(name, this);
     }
 
-    /**
-     * Return the name of a collection.
-     *
-     * @return the name
-     */
+
     public String getName() {
       return name;
     }
 
-    /**
-     * Return the name of field that is the primary key of a collection.
-     *
-     * @return field name of primary key
-     */
+
     public String getPrimaryKey() {
       return primaryKey;
     }
@@ -125,11 +81,7 @@ public class CassandraRecords implements NoSQLRecords {
           //,new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getName())
           );
 
-  /**
-   * Create a CassandraRecords instance.
-   *
-   * @param nodeID
-   */
+
   public CassandraRecords(int nodeID) {
     dbName = DBROOTNAME + nodeID;
     DatabaseConfig.getLogger().log(Level.INFO, "CASSANDRA: {0} INIT", dbName);
@@ -150,26 +102,17 @@ public class CassandraRecords implements NoSQLRecords {
     session = cluster.connect();
   }
 
-  /**
-   * Close the database.
-   */
+
   public void close() {
     cluster.shutdown();
   }
 
-  /**
-   * CREATE A C_ase S_ensitive I_dentifier
-   *
-   * @param string
-   * @return an identifier
-   */
+
   private String CSI(String string) {
     return "\"" + string + "\"";
   }
 
-  /**
-   * Create a keyspace.
-   */
+
   public void createKeyspace() {
     try {
       session.execute("CREATE KEYSPACE " + CSI(dbName) + " WITH replication "

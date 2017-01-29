@@ -1,18 +1,4 @@
-/* Copyright (c) 2015 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Abhigyan Sharma, Westy */
+
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
@@ -48,11 +34,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.logging.Level;
 
-/**
- * Handles sending and receiving of commands.
- *
- * @author westy, arun
- */
+
 public class CommandHandler {
 
   // handles command processing
@@ -60,16 +42,7 @@ public class CommandHandler {
 
   private static long commandCount = 0;
 
-  /**
-   * Handles command packets coming in from the client.
-   *
-   * @param packet
-   * @param doNotReplyToClient
-   * @param app
-   *
-   * @throws JSONException
-   * @throws UnknownHostException
-   */
+
   public static void handleCommandPacket(CommandPacket packet,
           boolean doNotReplyToClient, GNSApp app) throws JSONException,
           UnknownHostException {
@@ -169,14 +142,7 @@ public class CommandHandler {
     return commandPacket;
   }
 
-  /**
-   * Execute the commandPacket.
-   *
-   * @param commandHandler
-   * @param commandPacket
-   * @param handler
-   * @return Result of executing {@code commandPacket}.
-   */
+
   public static CommandResponse executeCommand(AbstractCommand commandHandler,
           CommandPacket commandPacket, ClientRequestHandlerInterface handler) {
     try {
@@ -213,27 +179,13 @@ public class CommandHandler {
     }
     // The checks below are unnecessary and are only expositionary.
 
-    /* TTL expiration, but should never expire here as the sender would
-		 * have not sent an expiring request in the first place.
-     */
+
     if (header.getTTL() == 0) {
       throw new InternalRequestException(
               ResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
     }
 
-    /**
-     * Note: It is pointless to try to check whether a previous request in this
-     * chain was already coordinated and this request is also coordinated
-     * because if we are here, it is too late. This check must be done at
-     * the sender side. Indeed most any reasonable check we can do to restrict
-     * the capabilities of active code at the receiver might as well be
-     * done at the sender. We can not detect node cycles at the sender
-     * but it is unclear that we even care to prevent node cycles.
-     *
-     * It is unclear how to disallow targetGUID cycles unless we carry the
-     * entire chain information, which seems like too much work given that
-     * we already have TTLs to limit cycles.
-     */
+
 
     // nothing suspicious detected
     return header;
@@ -241,17 +193,7 @@ public class CommandHandler {
 
   private static long lastStatsTime = 0;
 
-  /**
-   * Called when a command return value packet is received by the app.
- * @param command 
-   *
-   * @param returnPacket
-   * @param doNotReplyToClient
-   *
-   * @param app
-   * @throws JSONException
-   * @throws IOException
-   */
+
   public static void handleCommandReturnValuePacketForApp(CommandPacket command, 
           ResponsePacket returnPacket, boolean doNotReplyToClient,
           GNSApp app) throws JSONException, IOException {

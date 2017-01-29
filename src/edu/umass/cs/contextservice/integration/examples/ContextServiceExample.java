@@ -8,82 +8,50 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
-/**
- * @author westy
- */
+
 public class ContextServiceExample {
   // dallas region in texas area, for which we have weather alerts.
 
-  /**
-   *
-   */
+
   public static final double LONGITUDE_MIN = -98.08;
 
-  /**
-   *
-   */
+
   public static final double LONGITUDE_MAX = -96.01;
 
-  /**
-   *
-   */
+
   public static final double LATITUDE_MAX = 33.635;
 
-  /**
-   *
-   */
+
   public static final double LATITUDE_MIN = 31.854;
 
-  /**
-   *
-   */
+
   public static final double LEFT = LONGITUDE_MIN;
 
-  /**
-   *
-   */
+
   public static final double RIGHT = LONGITUDE_MAX;
 
-  /**
-   *
-   */
+
   public static final double TOP = LATITUDE_MAX;
 
-  /**
-   *
-   */
+
   public static final double BOTTOM = LATITUDE_MIN;
 
-  /**
-   *
-   */
+
   public static final long QUERY_EXPIRY_TIME = 5 * 60 * 1000; // 5 min in ms
 
-  /**
-   *
-   */
+
   public static final String ACCOUNT_ALIAS = "admincontextservice@gns.name";
 
-  /**
-   *
-   */
+
   public static GNSClientCommands client;
 
-  /**
-   *
-   */
+
   public static ContextServiceClient<Integer> csClient;
 
-  /**
-   *
-   */
+
   public static GuidEntry account_guid;
 
-  /**
-   *
-   * @param args
-   * @throws Exception
-   */
+
   public static void main(String[] args) throws Exception {
     String csHost = args[0];
     int csPort = Integer.parseInt(args[1]);
@@ -92,16 +60,7 @@ public class ContextServiceExample {
     System.out.println("[Client connected to GNS]\n");
 
     try {
-      /**
-       * Create an account GUID if one doesn't already exists. The true
-       * flag makes it verbosely print out what it is doing. The password
-       * is for future use and is needed mainly if the keypair is
-       * generated on the server in order to retrieve the private key.
-       * lookupOrCreateAccountGuid "cheats" by bypassing email-based or
-       * other verification mechanisms using a shared secret between the
-       * server and the client.
-       *
-       */
+
       System.out
               .println("// account GUID creation\n"
                       + "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"

@@ -1,28 +1,7 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.httpserver;
 
-/**
- *
- * @author westy
- */
+
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
@@ -46,28 +25,18 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
-/**
- *
- *
- * @author westy
- */
+
 public class GNSHttpsServer extends GNSHttpServer {
   private HttpsServer httpsServer = null;
 
   private final static Logger LOG = Logger.getLogger(GNSHttpsServer.class.getName());
 
-  /**
-   *
-   * @param port
-   * @param requestHandler
-   */
+
   public GNSHttpsServer(int port, ClientRequestHandlerInterface requestHandler) {
     super(port, requestHandler);
   }
 
-  /**
-   *
-   */
+
   @Override
   public final void stop() {
     if (httpsServer != null) {
@@ -75,12 +44,7 @@ public class GNSHttpsServer extends GNSHttpServer {
     }
   }
 
-  /**
-   * Try to start the http server at the port.
-   *
-   * @param port
-   * @return true if it was started
-   */
+
   @Override
   public boolean tryPort(int port) {
     try {

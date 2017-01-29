@@ -29,10 +29,7 @@ import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 
-/**
- * @author gaozy
- *
- */
+
 public class ActiveBlockingRunner implements Runner {
 	
 	final private ScriptEngine engine;
@@ -45,9 +42,7 @@ public class ActiveBlockingRunner implements Runner {
 	
 	private final ScriptObjectMirror JSON;
 		
-	/**
-         * @param channel
-	 */
+
 	public ActiveBlockingRunner(Channel channel){
 		this.channel = channel; 
 		
@@ -80,26 +75,7 @@ public class ActiveBlockingRunner implements Runner {
 	    }
 	}
 	
-	/**
-	 * This method first update the cache of code, 
-	 * then set the context with the cached code 
-	 * for the script engine, finally invokes the
-	 * "run" method.
-	 * 
-	 * <p>Based on the answer of Nashorn builder on stackoverflow:
-	 * http://stackoverflow.com/questions/30140103/should-i-use-a-separate-scriptengine-and-compiledscript-instances-per-each-threa/30159424#30159424
-	 * there is no need to make this method synchronized any more.
-	 * 
-	 * @param guid the owner of the active code, it is used as the key to cache the code
-	 * @param accessor
-	 * @param code
-	 * @param value
-	 * @param ttl
-	 * @param id 
-	 * @return ValuesMap result 
-	 * @throws ScriptException
-	 * @throws NoSuchMethodException
-	 */
+
 	public String runCode(String guid, String accessor, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
@@ -128,13 +104,7 @@ public class ActiveBlockingRunner implements Runner {
 		
 	}
 	
-	/**
-	 * Test throughput with multithread worker with multiple script engine
-	 * @param args
-	 * @throws JSONException 
-	 * @throws ExecutionException 
-	 * @throws InterruptedException 
-	 */
+
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
 		
 		int numThread = 10; 		
@@ -177,9 +147,7 @@ public class ActiveBlockingRunner implements Runner {
 		
 		
 		
-		/**
-		 * Test runner's protected method
-		 */
+
 		ActiveBlockingRunner runner = new ActiveBlockingRunner(null);
 		String chain_code = null;
 		try {

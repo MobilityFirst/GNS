@@ -7,10 +7,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
-/**
- * @author gaozy
- *
- */
+
 public class ActiveTask implements Callable<JSONObject> {
 	Client client;
 	String guid;

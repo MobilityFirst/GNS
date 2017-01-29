@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, arun
- *
- */
+
 package edu.umass.cs.gnsserver.nodeconfig;
 
 import com.google.common.collect.ImmutableSet;
@@ -47,40 +29,13 @@ import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-/**
- * This class maintains information that allows different nodes to communicate with each other.
- * It parses a hosts file to gather information about each name server in the system.
- *
- * Also has support for checking to see if the hosts file changes. When that happens the host info is
- * reloaded and the <code>ConsistentHashing.reInitialize</code> method is called.
- *
- * Also contains an implementation of the <code>Stringifiable</code> interface which allows
- * strings to be converted back to NodeIDTypes.
- *
- * This also implements InterfaceReconfigurableNodeConfig which entails a separation of the activeReplica
- * and reconfigurator network ports.
- *
- * The current implementation maintains three NodeIds for each node that is read from the hosts file.
- * A "top-level" id which is identical to the id read from the file, plus to additional ids.
- * One for the activeReplica and one for the reconfigurator. See <code>NodeInfo</code>,
- * <code>addHostInfo</code> and <code>readHostsFile</code> for the details on
- * how those are generated.
- *
- * One caveat of the current implementation is that despite the use of NodeIDType throughout the code,
- * we only currently support String NodeIDTypes in this class.
- *
- * @param <NodeIDType>
- */
+
 public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDType>, Shutdownable, InterfaceDelayEmulator<NodeIDType> {
 
-  /**
-   * An invalid latency.
-   */
+
   public static final long INVALID_PING_LATENCY = -1L;
 
-  /**
-   * An invalid port.
-   */
+
   public static final int INVALID_PORT = -1;
 
   private long version = 0l;
@@ -88,20 +43,13 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   private boolean isCPP = false;
   //private final String hostsFile;
 
-  /**
-   * Contains information about each name server. <Key = HostID, Value = NodeInfo>
-   *
-   */
+
   private ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> hostInfoMapping;
 
   // arun: to correct legacy hack
   private boolean addSuffix = false;
 
-  /**
-   * arun: For use with gigapaxos createApp.
-   *
-   * @throws IOException
-   */
+
   public GNSNodeConfig() throws IOException {
     Map<String, InetSocketAddress> activeMap = PaxosConfig.getActives();
     hostInfoMapping = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>();
@@ -115,14 +63,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     //hostsFile = null;
   }
 
-  /**
-   * Creates a GNSNodeConfig for the given nameServerID and initializes it from a name server host file.
-   * This supports the new hosts.txt style format.
-   *
-   * @param hostsFile
-   * @param nameServerID - specify null to mean the CPP
-   * @throws java.io.IOException
-   */
+
   public GNSNodeConfig(String hostsFile, NodeIDType nameServerID) throws IOException {
     if (nameServerID == null) {
       this.isCPP = true;
@@ -148,44 +89,24 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     //startCheckingForUpdates();
   }
 
-//  /**
-//   * Creates a GNSNodeConfig for the LocalNameServer and initializes it from a name server host file.
-//   *
-//   * @param hostsFile
-//   * @param isCCP
-//   * @throws IOException
-//   */
+//
 //  public GNSNodeConfig(String hostsFile, boolean isCCP) throws IOException {
 //    this(hostsFile, null);
 //  }
 
   // Currently only used by GNSINstaller
-  /**
-   * Creates an empty GNSNodeConfig
-   */
+
 //  public GNSNodeConfig() {
 //    this.nodeID = null;
 //    hostsFile = null;
 //  }
-  /**
-   * Returns the complete set of "top-level" IDs for all name servers (not local name servers).
-   * *** ONLY FOR USE IN INSTRUMENTATION ***
-   * "top-level" as in not active-replica or reconfigurator node ids.
-   *
-   * If you want those use <code>getActiveReplicas</code> and <code>getReconfigurators</code>.
-   *
-   * @return the set of IDs.
-   */
+
   @Override
   public Set<NodeIDType> getNodeIDs() {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }
 
-  /**
-   * Returns the set of active replica ids.
-   *
-   * @return a set of node ids
-   */
+
   @Override
   public Set<NodeIDType> getActiveReplicas() {
     Set<NodeIDType> result = new HashSet<>();
@@ -204,22 +125,12 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return null;
   }
 
-  /**
-   *
-   * Returns true if this node is an active replica, otherwise false.
-   *
-   * @param id
-   * @return true if this node is an active replica
-   */
+
   public boolean isActiveReplica(NodeIDType id) {
     return getActiveReplicaInfo(id) != null;
   }
 
-  /**
-   * Returns the set of reconfigurator ids.
-   *
-   * @return a set of node ids
-   */
+
   @Override
   public Set<NodeIDType> getReconfigurators() {
     Set<NodeIDType> result = new HashSet<>();
@@ -238,12 +149,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return null;
   }
 
-  /**
-   * Returns the "top-level" host ID for any given nodeID.
-   *
-   * @param id
-   * @return a {@link NodeInfo}
-   */
+
   private NodeInfo<NodeIDType> getNodeInfoForAnyNode(NodeIDType id) {
     for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
       if (hostInfo.getId().equals(id)
@@ -264,12 +170,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return null;
   }
 
-  /**
-   * Returns the active replica associated with this node id.
-   *
-   * @param id
-   * @return a node id
-   */
+
   public NodeIDType getReplicaNodeIdForTopLevelNode(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo;
     if ((nodeInfo = getNodeInfoForTopLevelNode(id)) != null) {
@@ -278,12 +179,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return null;
   }
 
-  /**
-   * Returns the reconfigurator associated with this node id.
-   *
-   * @param id
-   * @return a node id
-   */
+
   public NodeIDType getReconfiguratorNodeIdForTopLevelNode(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo;
     if ((nodeInfo = getNodeInfoForTopLevelNode(id)) != null) {
@@ -292,23 +188,12 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return null;
   }
 
-  /**
-   * Returns the number of name server nodes.
-   *
-   * @return the number of nodes
-   */
+
   public int getNumberOfNodes() {
     return hostInfoMapping.size();
   }
 
-  /**
-   * Returns the TCP port of a Node.
-   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
-   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
-   *
-   * @param id
-   * @return an int
-   */
+
   @Override
   public int getNodePort(NodeIDType id) {
     // handle special case for CCP node
@@ -331,14 +216,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
   }
 
-  /**
-   * Returns the associated Admin port for any node.
-   * Will return INVALID_PORT if the node doesn't exist.
-   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
-   *
-   * @param id Nameserver id
-   * @return the active nameserver information port of a nameserver. *
-   */
+
   @Override
   public int getAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
@@ -366,14 +244,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
   }
 
-  /**
-   * Returns the IP address of a node.
-   * Will return null if the node doesn't exist.
-   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
-   *
-   * @param id Server id
-   * @return IP address of a server
-   */
+
   @Override
   public InetAddress getNodeAddress(NodeIDType id) {
     // handle special case for CCP node
@@ -394,11 +265,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
   }
 
-  /**
-   *
-   * @param id
-   * @return an address
-   */
+
   @Override
   public InetAddress getBindAddress(NodeIDType id) {
     // handle special case for CCP node
@@ -419,26 +286,14 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
   }
 
-  /**
-   * Returns the ping latency between two servers.
-   * Will return INVALID_PING_LATENCY if the node doesn't exist.
-   *
-   * @param id Server id
-   * @return a long
-   */
+
   @Override
   public long getPingLatency(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     return (nodeInfo == null) ? INVALID_PING_LATENCY : nodeInfo.getPingLatency();
   }
 
-  /**
-   * Updates the ping latency table for a node.
-   * Only valid for top-level nodes.
-   *
-   * @param id
-   * @param responseTime
-   */
+
   @Override
   public void updatePingLatency(NodeIDType id, long responseTime) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
@@ -449,29 +304,13 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
   }
 
-  /**
-   * Returns true if the node exists.
-   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
-   *
-   * @param id
-   * @return true if the node exists
-   */
+
   @Override
   public boolean nodeExists(NodeIDType id) {
     return getNodeInfoForAnyNode(id) != null;
   }
 
-  /**
-   * **
-   * Returns port number for the specified port type.
-   * Return -1 if the specified port type does not exist.
-   * Only for "top-level" nodes, not active-replica and reconfigurator nodes.
-   *
-   * @param nameServerId Name server id //
-   * @param portType	GNS port type
-   *
-   * @return the port
-   */
+
   public int getPortForTopLevelNode(NodeIDType nameServerId, OldHackyConstants.PortType portType) {
     switch (portType) {
       case NS_TCP_PORT:
@@ -486,35 +325,18 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return -1;
   }
 
-  /**
-   * Returns the Name Server (not including Local Name Servers) with lowest latency.
-   *
-   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
-   */
+
   @Deprecated
   public NodeIDType getClosestServer() {
     return GNSNodeConfig.this.getClosestServer(getNodeIDs());
   }
 
-  /**
-   * Selects the closest Name Server from a set of Name Servers.
-   *
-   * @param servers
-   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
-   */
+
   public NodeIDType getClosestServer(Set<NodeIDType> servers) {
     return getClosestServer(servers, null);
   }
 
-  /**
-   * Selects the closest Name Server from a set of Name Servers.
-   * excludeNameServers is a set of Name Servers from the first list to not consider.
-   * If the local server is one of the serverIds and not excluded this will return it.
-   *
-   * @param serverIds
-   * @param excludeServers
-   * @return id of closest server or null if one can't be found
-   */
+
   public NodeIDType getClosestServer(Set<NodeIDType> serverIds, Set<NodeIDType> excludeServers) {
     if (serverIds == null || serverIds.isEmpty()) {
       return null;
@@ -555,12 +377,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   }
 
   // Implement the Stringifiable interface
-  /**
-   * Converts a string representation of a node id into the appropriate node id type.
-   *
-   * @param nodeAsString
-   * @return the node id
-   */
+
   @SuppressWarnings("unchecked")
   @Override
   public NodeIDType valueOf(String nodeAsString) throws IllegalArgumentException {
@@ -580,11 +397,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
   }
 
-  /**
-   *
-   * @param strNodes
-   * @return a set of nodes
-   */
+
   @Override
   public Set<NodeIDType> getValuesFromStringSet(Set<String> strNodes
   ) {
@@ -595,12 +408,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return nodes;
   }
 
-  /**
-   *
-   * @param array
-   * @return a set of nodes
-   * @throws JSONException
-   */
+
   @Override
   public Set<NodeIDType> getValuesFromJSONArray(JSONArray array) throws JSONException {
     Set<NodeIDType> nodes = new HashSet<>();
@@ -610,11 +418,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return nodes;
   }
 
-  /**
-   * Returns the appropriate NodeIDClass corresponding to the NodeIDType.
-   *
-   * @return NodeIDClass enum
-   */
+
   private NodeIDClass getNodeIDType() {
     //FIXME: FOR NOW WE ONLY SUPPORT STRINGS
     return NodeIDClass.valueOf(String.class.getSimpleName());
@@ -633,14 +437,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 //  ///
 //  /// READING AND RECHECKING OF HOSTS FILE
 //  ///
-//  /**
-//   *
-//   * Read a host file to create a mapping of node information for name servers.
-//   *
-//   * @param hostsFile
-//   * @param nameServerID
-//   * @throws NumberFormatException
-//   */
+//
 //  @SuppressWarnings("unchecked")
 //  private void readHostsFile(String hostsFile) throws IOException {
 //    List<HostSpec> hosts = null;
@@ -673,16 +470,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 //    //ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, getNodeIDs());
 //  }
 
-  /**
-   * Adds a NodeInfo object to the list maintained by this config instance.
-   *
-   * @param id
-   * @param ipAddress
-   * @param startingPort
-   * @param pingLatency
-   * @param latitude
-   * @param longitude
-   */
+
   private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
           String externalIP, int startingPort, long pingLatency, double latitude, double longitude) {
     // FIXME: THIS IS GOING TO BLOW UP FOR NON-STRING IDS!
@@ -695,12 +483,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     mapping.put(id, nodeInfo);
   }
 
-  /**
-   * Adds a NodeInfo object to the list maintained by this config instance.
-   *
-   * @param id
-   * @param ipAddress
-   */
+
   private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
           String externalIP, Integer startingPort) {
     addHostInfo(mapping, id, ipAddress, externalIP, startingPort != null ? startingPort 
@@ -739,12 +522,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 //
 //  }
 
-  /**
-   * Returns true if the file is the old style (has lots of fields).
-   *
-   * @param file
-   * @return true if the file is the old style
-   */
+
   private boolean isOldStyleFile(String file) throws IOException {
     try {
       BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -774,12 +552,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return "GNSNodeConfig{" + "nodeID=" + nodeID + ", isLocalNameServer=" + isCPP + '}';
   }
 
-  /**
-   * Tests
-   *
-   * @param args
-   * @throws java.lang.Exception
-   */
+
 //  @SuppressWarnings("unchecked")
 //  public static void main(String[] args) throws Exception {
 //    String filename = "conf/single-server-info.txt";
@@ -796,11 +569,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 //    System.exit(0);
 //  }
 
-  /**
-   *
-   * @param node2
-   * @return the delay
-   */
+
   @Override
   public long getEmulatedDelay(NodeIDType node2) {
     return this.getPingLatency(node2);

@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.aws.support;
 
 import edu.umass.cs.aws.networktools.Pinger;
@@ -77,21 +59,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-/**
- *
- * @author westy
- */
+
 public class AWSEC2 {
 
-  /*
-   *            AwsCredentials.properties file before you try to run this
-   *            sample.
-   * http://aws.amazon.com/security-credentials
-   */
 
-  /**
-   *
-   */
+
+
   public static final String DEFAULT_SECURITY_GROUP_NAME = "aws";
 
   private static String currentTab = "";
@@ -112,21 +85,12 @@ public class AWSEC2 {
   private static final String PRIVATEKEYFILEEXTENSION = ".pem";
   private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
 
-  /**
-   * Set the EC2 Region. All commands use the current region.
-   *
-   * @param ec2
-   * @param region
-   */
+
   public static void setRegion(AmazonEC2 ec2, RegionRecord region) {
     ec2.setEndpoint(region.getURL());
   }
 
-  /**
-   * Describe Availability Zones
-   *
-   * @param ec2
-   */
+
   public static void describeAvailabilityZones(AmazonEC2 ec2) {
     StringBuilder output = new StringBuilder();
     String prefix = currentTab + "Availability Zones: ";
@@ -140,12 +104,7 @@ public class AWSEC2 {
     System.out.println(output);
   }
 
-  /**
-   * Returns a list of strings of all the availability zones in the current region.
-   *
-   * @param ec2
-   * @return a list of zone strings
-   */
+
   public static List<String> getAvailabilityZones(AmazonEC2 ec2) {
     ArrayList<String> result = new ArrayList<>();
     DescribeAvailabilityZonesResult availabilityZonesResult = ec2.describeAvailabilityZones();
@@ -155,11 +114,7 @@ public class AWSEC2 {
     return result;
   }
 
-  /**
-   * Describe Security Groups
-   *
-   * @param ec2
-   */
+
   public static void describeSecurityGroups(AmazonEC2 ec2) {
     StringBuilder output = new StringBuilder();
     String prefix = currentTab + "Security Groups: ";
@@ -172,11 +127,7 @@ public class AWSEC2 {
     System.out.println(output);
   }
 
-  /**
-   * Describe Key Pairs
-   *
-   * @param ec2
-   */
+
   public static void describeKeyPairs(AmazonEC2 ec2) {
     StringBuilder output = new StringBuilder();
     String prefix = currentTab + "Key Pairs: ";
@@ -189,11 +140,7 @@ public class AWSEC2 {
     System.out.println(output);
   }
 
-  /**
-   * Describe Current Instances
-   *
-   * @param ec2
-   */
+
   public static void describeInstances(AmazonEC2 ec2) {
     StringBuilder output = new StringBuilder();
     String prefix = currentTab + "Current Instances: ";
@@ -219,13 +166,7 @@ public class AWSEC2 {
     System.out.println(output);
   }
 
-  /**
-   * Create a New Security Group with our standard permissions
-   *
-   * @param ec2
-   * @param name
-   * @return the name of the new group
-   */
+
   public static String createSecurityGroup(AmazonEC2 ec2, String name) {
     CreateSecurityGroupRequest securityGroupRequest = new CreateSecurityGroupRequest(name, name + " security group");
     ec2.createSecurityGroup(securityGroupRequest);
@@ -281,13 +222,7 @@ public class AWSEC2 {
     return name;
   }
 
-  /**
-   * Returns the name of an existing security group of the given name or null if one does not exist.
-   *
-   * @param ec2
-   * @param name
-   * @return the same name if it exists, null otherwise
-   */
+
   public static SecurityGroup findSecurityGroup(AmazonEC2 ec2, String name) {
     DescribeSecurityGroupsResult describeSecurityGroupsResult = ec2.describeSecurityGroups();
     for (SecurityGroup securityGroup : describeSecurityGroupsResult.getSecurityGroups()) {
@@ -299,13 +234,7 @@ public class AWSEC2 {
     return null;
   }
 
-  /**
-   * Returns an existing security group of the given name or creates one if it does not exist.
-   *
-   * @param ec2
-   * @param name
-   * @return the name of the group
-   */
+
   public static SecurityGroup findOrCreateSecurityGroup(AmazonEC2 ec2, String name) {
     SecurityGroup result = findSecurityGroup(ec2, name);
     if (result == null) {
@@ -315,27 +244,17 @@ public class AWSEC2 {
     return findSecurityGroup(ec2, name);
   }
 
-  /**
-   * Create a New Key Pair
-   *
-   * @param ec2
-   * @param name
-   * @return the keypair
-   */
+
   public static KeyPair createKeyPair(AmazonEC2 ec2, String name) {
     CreateKeyPairRequest newKeyRequest = new CreateKeyPairRequest();
     newKeyRequest.setKeyName(name);
     CreateKeyPairResult keyresult = ec2.createKeyPair(newKeyRequest);
 
-    /**
-     * **********************print the properties of this key****************
-     */
+
     KeyPair keyPair = keyresult.getKeyPair();
     System.out.println("The key we created is = " + keyPair.toString());
 
-    /**
-     * ***************store the key in a .pem file ***************
-     */
+
     try {
       String fileName = KEYHOME + FILESEPARATOR + name + PRIVATEKEYFILEEXTENSION;
       File distFile = new File(fileName);
@@ -355,24 +274,13 @@ public class AWSEC2 {
     return keyPair;
   }
 
-  /**
-   *
-   * @param ec2
-   * @param name
-   * @param publicKeyMaterial
-   */
+
   public static void importKeyPair(AmazonEC2 ec2, String name, String publicKeyMaterial) {
     ImportKeyPairRequest newKeyRequest = new ImportKeyPairRequest(name, publicKeyMaterial);
     ec2.importKeyPair(newKeyRequest);
   }
 
-  /**
-   * Returns the name of an existing key pair of the given name or null if it does not exist.
-   *
-   * @param ec2
-   * @param name
-   * @return the name of the keypair or null
-   */
+
   public static String findKeyPairInfo(AmazonEC2 ec2, String name) {
     DescribeKeyPairsResult dkr = ec2.describeKeyPairs();
     for (KeyPairInfo keyPairInfo : dkr.getKeyPairs()) {
@@ -384,13 +292,7 @@ public class AWSEC2 {
     return null;
   }
 
-  /**
-   * Returns the name of an existing key pair of the given name or creates one if it does not exist.
-   *
-   * @param ec2
-   * @param name
-   * @return the name of the keypair or null
-   */
+
   public static String findOrCreateKeyPair(AmazonEC2 ec2, String name) {
     String result = findKeyPairInfo(ec2, name);
     if (result == null) {
@@ -432,10 +334,7 @@ public class AWSEC2 {
     // JAVA7 return new String(Files.readAllBytes(FileSystems.getDefault().getPath(filename)));
   }
 
-  /**
-   *
-   * @param ec2
-   */
+
   public static void describeElasticIPs(AmazonEC2 ec2) {
     StringBuilder output = new StringBuilder();
     String prefix = currentTab + "Elastic IPs: ";
@@ -448,12 +347,7 @@ public class AWSEC2 {
     System.out.println(output);
   }
 
-  /**
-   *
-   * @param ec2
-   * @param ip
-   * @return the address
-   */
+
   public static Address findElasticIP(AmazonEC2 ec2, String ip) {
     DescribeAddressesResult describeAddressesResult = ec2.describeAddresses();
     for (Address address : describeAddressesResult.getAddresses()) {
@@ -464,12 +358,7 @@ public class AWSEC2 {
     return null;
   }
 
-  /**
-   *
-   * @param ec2
-   * @param ip
-   * @param instance
-   */
+
   public static void associateAddress(AmazonEC2 ec2, String ip, Instance instance) {
     Address address;
     if ((address = findElasticIP(ec2, ip)) != null) {
@@ -485,15 +374,7 @@ public class AWSEC2 {
     }
   }
 
-  /**
-   * Create an Instance
-   *
-   * @param ec2
-   * @param amiRecord
-   * @param key
-   * @param securityGroup
-   * @return the instanceID string
-   */
+
   public static String createInstanceAndWait(AmazonEC2 ec2, AMIRecord amiRecord, String key, SecurityGroup securityGroup) {
     RunInstancesRequest runInstancesRequest;
     if (amiRecord.getVpcSubnet() != null) {
@@ -539,31 +420,15 @@ public class AWSEC2 {
     return createdInstanceId;
   }
 
-  /**
-   *
-   */
+
   public static String DEFAULTSECONDMOUNTPOINT = "/dev/sda2";
 
-  /**
-   * Creates a volume and attaches and mounts it on the instance at the default secondary mount point
-   * DEFAULTSECONDMOUNTPOINT. SO DON'T CALL THIS TWICE ON THE SAME INSTANCE!!
-   *
-   * @param ec2
-   * @param instanceId
-   * @return the id of the volume
-   */
+
   public static String createAndAttachVolume(AmazonEC2 ec2, String instanceId) {
     return createAndAttachVolume(ec2, instanceId, DEFAULTSECONDMOUNTPOINT);
   }
 
-  /**
-   * Creates a volume and attaches and mounts it on the instance at the specified mount point.
-   *
-   * @param ec2
-   * @param instanceId
-   * @param mountPoint
-   * @return the id of the volume
-   */
+
   public static String createAndAttachVolume(AmazonEC2 ec2, String instanceId, String mountPoint) {
     // ATTACH A VOLUME
     Instance instance = findInstance(ec2, instanceId);
@@ -585,13 +450,7 @@ public class AWSEC2 {
     return (volumeID);
   }
 
-  /**
-   * Find an instance
-   *
-   * @param ec2
-   * @param createdInstanceId
-   * @return the name of the instance or null
-   */
+
   public static Instance findInstance(AmazonEC2 ec2, String createdInstanceId) {
     DescribeInstancesResult describeInstancesResult = ec2.describeInstances();
     List<Reservation> reservations = describeInstancesResult.getReservations();
@@ -608,12 +467,7 @@ public class AWSEC2 {
     return null;
   }
 
-  /**
-   * Returns all the instances in this region.
-   *
-   * @param ec2
-   * @return a set of instance instances
-   */
+
   public static Set<Instance> getInstances(AmazonEC2 ec2) {
     Set<Instance> instances = new HashSet<>();
     DescribeInstancesResult describeInstancesResult = ec2.describeInstances();
@@ -626,12 +480,7 @@ public class AWSEC2 {
     return instances;
   }
 
-  /**
-   * Print public DNS and IP of an instance
-   *
-   * @param ec2
-   * @param createdInstanceId
-   */
+
   public static void describeInstanceDNSAndIP(AmazonEC2 ec2, String createdInstanceId) {
     Instance instance = findInstance(ec2, createdInstanceId);
     if (instance != null) {
@@ -645,14 +494,7 @@ public class AWSEC2 {
     }
   }
 
-  /**
-   * Adds the key and value as a 'tag' for the instance.
-   *
-   * @param ec2
-   * @param createdInstanceId
-   * @param key
-   * @param value
-   */
+
   public static void addInstanceTag(AmazonEC2 ec2, String createdInstanceId, String key, String value) {
     List<String> resources = new LinkedList<>();
     resources.add(createdInstanceId);
@@ -665,13 +507,7 @@ public class AWSEC2 {
     ec2.createTags(ctr);
   }
 
-  /**
-   * Adds keys and values from tagmap to the tags of the given instance.
-   *
-   * @param ec2
-   * @param createdInstanceId
-   * @param tagmap
-   */
+
   public static void addInstanceTags(AmazonEC2 ec2, String createdInstanceId, Map<String, String> tagmap) {
     List<String> resources = new LinkedList<>();
     resources.add(createdInstanceId);
@@ -685,12 +521,7 @@ public class AWSEC2 {
     ec2.createTags(ctr);
   }
 
-  /**
-   * Stop an instance
-   *
-   * @param ec2
-   * @param createdInstanceId
-   */
+
   public static void stopInstance(AmazonEC2 ec2, String createdInstanceId) {
     System.out.println("Stopping Instance:" + createdInstanceId);
     List<String> instanceIds = new LinkedList<>();
@@ -700,12 +531,7 @@ public class AWSEC2 {
     ec2.stopInstances(stopIR);
   }
 
-  /**
-   * Start an instance
-   *
-   * @param ec2
-   * @param createdInstanceId
-   */
+
   public static void startInstance(AmazonEC2 ec2, String createdInstanceId) {
     System.out.println("Starting Instance:" + createdInstanceId);
     List<String> instanceIds = new LinkedList<>();
@@ -714,12 +540,7 @@ public class AWSEC2 {
     ec2.startInstances(startIR);
   }
 
-  /**
-   * Terminate an instance
-   *
-   * @param ec2
-   * @param createdInstanceId
-   */
+
   public static void terminateInstance(AmazonEC2 ec2, String createdInstanceId) {
     System.out.println("Terminating Instance:" + createdInstanceId);
     List<String> instanceIds = new LinkedList<>();
@@ -728,10 +549,7 @@ public class AWSEC2 {
     ec2.terminateInstances(tir);
   }
 
-  /**
-   *
-   * @param ec2
-   */
+
   public static void describeAllEndpoints(AmazonEC2 ec2) {
     for (RegionRecord endpoint : RegionRecord.values()) {
       System.out.println("*** " + endpoint.getURL() + " (" + endpoint.getLocation() + ") ***");
@@ -746,45 +564,16 @@ public class AWSEC2 {
     }
   }
 
-  /**
-   *
-   */
+
   public static int DEFAULTREACHABILITYWAITTIME = 240000; // FOUR minutes...
 
-  /**
-   * Creates an EC2 instance in the region given.
-   *
-   * @param ec2
-   * @param region
-   * @param ami
-   * @param instanceName
-   * @param keyName
-   * @param securityGroupName
-   * @param script
-   * @param tags
-   * @param elasticIP - an IP string or null to indicate that we're just using the address assigned by AWS
-   * @return a new instance instance
-   */
+
   public static Instance createAndInitInstance(AmazonEC2 ec2, RegionRecord region, AMIRecord ami, String instanceName,
           String keyName, String securityGroupName, String script, Map<String, String> tags, String elasticIP) {
     return createAndInitInstance(ec2, region, ami, instanceName, keyName, securityGroupName, script, tags, elasticIP, DEFAULTREACHABILITYWAITTIME);
   }
 
-  /**
-   * Creates an EC2 instance in the region given. Timeout in milleseconds can be specified.
-   *
-   * @param ec2
-   * @param region
-   * @param amiRecord
-   * @param instanceName
-   * @param keyName
-   * @param securityGroupName
-   * @param script
-   * @param tags
-   * @param elasticIP
-   * @param timeout
-   * @return a new instance instance
-   */
+
   public static Instance createAndInitInstance(AmazonEC2 ec2, RegionRecord region, AMIRecord amiRecord, String instanceName,
           String keyName, String securityGroupName, String script, Map<String, String> tags, String elasticIP, int timeout) {
 
@@ -863,11 +652,7 @@ public class AWSEC2 {
     return null;
   }
 
-  /**
-   *
-   * @param args
-   * @throws Exception
-   */
+
   public static void main(String[] args) throws Exception {
     AWSCredentials credentials = new PropertiesCredentials(
             AWSEC2.class.getResourceAsStream(System.getProperty("user.home")

@@ -1,31 +1,11 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.client.util;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-/**
- * A modal dialog to let the user choose one string from a list.
- */
+
 public class ChooserDialog extends JDialog implements ActionListener {
   
   private static final long serialVersionUID = 2326392043474125897L;
@@ -34,18 +14,7 @@ public class ChooserDialog extends JDialog implements ActionListener {
   private static String returnValue = "";
   private final JList<Object> list;
 
-  /**
-   * Set up and show the dialog.
-   *
-   * @param frameComp frame that this dialog depends on, can be null
-   * @param locationComp component on which this dialog should appear, can be null
-   * @param labelText label for the window
-   * @param title title for the selection list
-   * @param possibleValues the array of String values to choose from
-   * @param initialValue the default returnValue
-   * @param longestValue the longest returnValue (used for dialog sizing), can be null
-   * @return the returnValue selected
-   */
+
   public static String showDialog(Component frameComp,
           Component locationComp,
           String labelText,

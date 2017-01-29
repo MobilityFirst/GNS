@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
 import java.net.InetSocketAddress;
@@ -28,14 +10,7 @@ import edu.umass.cs.reconfiguration.interfaces.ModifiableActiveConfig;
 import edu.umass.cs.reconfiguration.interfaces.ModifiableRCConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
-/**
- * This class is a wrapper around NodeConfig to ensure that it is consistent,
- * i.e., it returns consistent results even if it changes midway. In particular,
- * it does not allow the use of a method like getNodeIDs().
- *
- * It also has consistent hashing utility methods.
- *
- */
+
 public class LNSConsistentReconfigurableNodeConfig extends
         LNSConsistentNodeConfig implements
         ModifiableActiveConfig<InetSocketAddress>, ModifiableRCConfig<InetSocketAddress> {
@@ -51,11 +26,7 @@ public class LNSConsistentReconfigurableNodeConfig extends
 
   private Set<InetSocketAddress> reconfiguratorsSlatedForRemoval = new HashSet<InetSocketAddress>();
 
-  /**
-   * Create a LNSConsistentReconfigurableNodeConfig instance.
-   *
-   * @param nc
-   */
+
   public LNSConsistentReconfigurableNodeConfig(
           LNSNodeConfig nc) {
     super(nc);
@@ -66,62 +37,39 @@ public class LNSConsistentReconfigurableNodeConfig extends
     this.CH_AR = new ConsistentHashing<>(this.activeReplicas); 
   }
 
-  /**
-   *
-   * @param strNodes
-   * @return a set of addresses
-   */
+
   @Override
   public Set<InetSocketAddress> getValuesFromStringSet(Set<String> strNodes) {
     return this.nodeConfig.getValuesFromStringSet(strNodes);
   }
 
-  /**
-   *
-   * @param array
-   * @return a set of addresses
-   * @throws JSONException
-   */
+
   @Override
   public Set<InetSocketAddress> getValuesFromJSONArray(JSONArray array)
           throws JSONException {
     return this.nodeConfig.getValuesFromJSONArray(array);
   }
 
-  /**
-   *
-   * @return a set of addresses
-   */
+
   @Override
   public Set<InetSocketAddress> getNodeIDs() {
     return this.nodeConfig.getNodeIDs();
     //throw new RuntimeException("The use of this method is not permitted");
   }
 
-  /**
-   *
-   * @return a set of addresses
-   */
+
   @Override
   public Set<InetSocketAddress> getActiveReplicas() {
     return this.nodeConfig.getActiveReplicas();
   }
 
-  /**
-   *
-   * @return a set of addresses
-   */
+
   @Override
   public Set<InetSocketAddress> getReconfigurators() {
     return this.nodeConfig.getReconfigurators();
   }
 
-  /**
-   * Returns the set of reconfigurators.
-   *
-   * @param name
-   * @return a set of addresses
-   */
+
   public Set<InetSocketAddress> getReplicatedReconfigurators(String name) {
     // refresh before returning
     this.refreshReconfigurators();
@@ -129,12 +77,7 @@ public class LNSConsistentReconfigurableNodeConfig extends
   }
 
   
-  /**
-   * Returns the set of active replicas.
-   * 
-   * @param name
-   * @return a set of addresses
-   */
+
   public Set<InetSocketAddress> getReplicatedActives(String name) {
     // refresh before returning
     this.refreshActives();
@@ -182,45 +125,27 @@ public class LNSConsistentReconfigurableNodeConfig extends
     return this.reconfigurators = curReconfigurators;
   }
 
-  /**
-   *
-   * @param id
-   * @param sockAddr
-   * @return an address
-   */
+
   @Override
   public InetSocketAddress addReconfigurator(InetSocketAddress id,
           InetSocketAddress sockAddr) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  /**
-   *
-   * @param id
-   * @return an address
-   */
+
   @Override
   public InetSocketAddress removeReconfigurator(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  /**
-   *
-   * @param id
-   * @param sockAddr
-   * @return an address
-   */
+
   @Override
   public InetSocketAddress addActiveReplica(InetSocketAddress id,
           InetSocketAddress sockAddr) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  /**
-   *
-   * @param id
-   * @return an address
-   */
+
   @Override
   public InetSocketAddress removeActiveReplica(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet.");

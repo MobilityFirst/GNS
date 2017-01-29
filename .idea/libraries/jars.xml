@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="jars">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/jars/GNS-CLI.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jars/GNS.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jars/gnsserver-1.19.11.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jars/gnsclient-1.19.11.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jars/GNSClient.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jars/gns-cli-1.19.11.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

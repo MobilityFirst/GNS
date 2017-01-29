@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.client.http;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
@@ -67,24 +49,11 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
-/**
- * This class defines a HttpClient to communicate with a GNS instance
- * over HTTP. This class works on both Android and Desktop platforms.
- * This class contains a subset of all available server operations.
- * For a more complete set see UniversalGnsClientExtended.
- *
- * MANY USER ACCESIBLE METHODS IN HERE ARE EXACT DUPLICATES OF THE
- * ONES IN GNS CLIENT. THERE COULD REALLY BE A GNSClientInterface class.
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
- * @version 1.0
- */
+
 public class HttpClient {
 
   private static final java.util.logging.Logger LOGGER = GNSConfig.getLogger();
-  /**
-   * Check whether we are on an Android platform or not
-   */
+
   public static final boolean IS_ANDROID = System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik");
 
   private final static String QUERYPREFIX = "?";
@@ -92,144 +61,67 @@ public class HttpClient {
   private final static String KEYSEP = "&";
 
   private static final String GNS_KEY = "GNS";
-  /**
-   * The host address used when attempting to connect to the HTTP service.
-   * Initialized in the default constructor.
-   */
+
   private final String host;
-  /**
-   * The port number used when attempting to connect to the HTTP service.
-   * Initialized in the default constructor.
-   */
+
   private final int port;
-  /**
-   * The timeout used when attempting to connect to the HTTP service.
-   */
+
   private int readTimeout = 10000;
-  /**
-   * The number of retries on timeout attempted when connecting to the HTTP
-   * service.
-   */
+
   private int readRetries = 1;
 
   private static final boolean includeTimestamp = false;
 
-  /**
-   * Creates a new <code>AbstractGnrsClient</code> object
-   *
-   * @param host Hostname of the GNS instance
-   * @param port Port number of the GNS instance
-   */
+
   public HttpClient(String host, int port) {
 
     this.host = host;
     this.port = port;
   }
 
-  /**
-   * This name represents the service to which this client connects. Currently
-   * this name is unused as the reconfigurator(s) are read from a properties
-   * file, but it is conceivable also to use a well known service to query for
-   * the reconfigurators given this name. This name is currently also used by
-   * the client key database to distinguish between stores corresponding to
-   * different GNS services.
-   *
-   * <p>
-   *
-   * This name can be changed by setting the system property "GNS" as "-DGNS=".
-   *
-   * @return GNS service instance
-   */
+
   public String getGNSProvider() {
     return System.getProperty(GNS_KEY) != null ? System.getProperty(GNS_KEY)
             : host + ":" + port;
   }
 
-  /**
-   * Returns the timeout value (milliseconds) used when sending commands to the
-   * server.
-   *
-   * @return value in milliseconds
-   */
+
   public int getReadTimeout() {
     return readTimeout;
   }
 
-  /**
-   * Sets the timeout value (milliseconds) used when sending commands to the
-   * server.
-   *
-   * @param readTimeout in milliseconds
-   */
+
   public void setReadTimeout(int readTimeout) {
     this.readTimeout = readTimeout;
   }
 
-  /**
-   * Returns the number of potential retries used when sending commands to the
-   * server.
-   *
-   * @return the number of retries
-   */
+
   public int getReadRetries() {
     return readRetries;
   }
 
-  /**
-   * Sets the number of potential retries used when sending commands to the
-   * server.
-   *
-   * @param readRetries
-   */
+
   public void setReadRetries(int readRetries) {
     this.readRetries = readRetries;
   }
 
-  /**
-   * Return the help message of the GNS. Can be used to check connectivity
-   *
-   * @return the help string
-   * @throws IOException
-   */
+
   public String getHelp() throws IOException {
     return sendGetCommand("help");
   }
 
-  /**
-   * Obtains the guid of the alias from the GNS server.
-   *
-   * @param alias
-   * @return guid
-   * @throws IOException
-   * @throws UnsupportedEncodingException
-   * @throws ClientException
-   */
+
   public String lookupGuid(String alias) throws UnsupportedEncodingException, IOException, ClientException {
     return getResponse(CommandType.LookupGuid,
             GNSProtocol.NAME.toString(), alias);
   }
 
-  /**
-   * If this is a sub guid returns the account guid it was created under.
-   *
-   * @param guid
-   * @return the guid
-   * @throws UnsupportedEncodingException
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public String lookupPrimaryGuid(String guid) throws UnsupportedEncodingException, IOException, ClientException {
     return getResponse(CommandType.LookupPrimaryGuid, GNSProtocol.GUID.toString(), guid);
   }
 
-  /**
-   * Returns a JSON object containing all of the guid information.
-   *
-   * @param guid
-   * @return the JSONObject containing the guid record
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public JSONObject lookupGuidRecord(String guid) throws IOException, ClientException {
     try {
       return new JSONObject(getResponse(CommandType.LookupGuidRecord, GNSProtocol.GUID.toString(), guid));
@@ -238,15 +130,7 @@ public class HttpClient {
     }
   }
 
-  /**
-   * Returns a JSON object containing all of the account information for an
-   * account guid.
-   *
-   * @param gaccountGuid
-   * @return the JSON Object containing the account record
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public JSONObject lookupAccountRecord(String gaccountGuid) throws IOException, ClientException {
     try {
       return new JSONObject(getResponse(CommandType.LookupAccountRecord, GNSProtocol.GUID.toString(), gaccountGuid));
@@ -255,29 +139,13 @@ public class HttpClient {
     }
   }
 
-  /**
-   * Get the public key for a given alias
-   *
-   * @param alias
-   * @return the public key registered for the alias
-   * @throws InvalidGuidException
-   * @throws ClientException
-   * @throws IOException
-   */
+
   public PublicKey publicKeyLookupFromAlias(String alias) throws InvalidGuidException, ClientException, IOException {
     String guid = lookupGuid(alias);
     return publicKeyLookupFromGuid(guid);
   }
 
-  /**
-   * Get the public key for a given GNSProtocol.GUID.toString()
-   *
-   * @param guid
-   * @return the publickey
-   * @throws InvalidGuidException
-   * @throws ClientException
-   * @throws IOException
-   */
+
   public PublicKey publicKeyLookupFromGuid(String guid) throws InvalidGuidException, ClientException, IOException {
     JSONObject guidInfo = lookupGuidRecord(guid);
     try {
@@ -294,19 +162,7 @@ public class HttpClient {
 
   }
 
-  /**
-   * Register a new account guid with the corresponding alias on the GNS server.
-   * This generates a new guid and a public / private key pair. Returns a
-   * GuidEntry for the new account which contains all of this information.
-   *
-   * @param alias - a human readable alias to the guid - usually an email
-   * address
-   * @param password
-   * @return the GuidEntry for the new account
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws java.security.NoSuchAlgorithmException
-   */
+
   public GuidEntry accountGuidCreate(String alias, String password)
           throws IOException, ClientException, NoSuchAlgorithmException {
 
@@ -341,43 +197,20 @@ public class HttpClient {
     return entry;
   }
 
-  /**
-   * Verify an account by sending the verification code back to the server.
-   *
-   * @param guid the account GNSProtocol.GUID.toString() to verify
-   * @param code the verification code
-   * @return ?
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public String accountGuidVerify(GuidEntry guid, String code) throws IOException, ClientException {
     return getResponse(CommandType.VerifyAccount, guid, GNSProtocol.GUID.toString(), guid.getGuid(),
             GNSProtocol.CODE.toString(), code);
   }
 
-  /**
-   * Deletes the account given by name
-   *
-   * @param guid GuidEntry
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void accountGuidRemove(GuidEntry guid) throws IOException, ClientException {
     getResponse(CommandType.RemoveAccount, guid,
             GNSProtocol.GUID.toString(), guid.getGuid(),
             GNSProtocol.NAME.toString(), guid.getEntityName());
   }
 
-  /**
-   * Creates an new GNSProtocol.GUID.toString() associated with an account on the GNS server.
-   *
-   * @param accountGuid
-   * @param alias the alias
-   * @return the newly created GNSProtocol.GUID.toString() entry
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws java.security.NoSuchAlgorithmException
-   */
+
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias)
           throws IOException, ClientException, NoSuchAlgorithmException {
 
@@ -391,26 +224,13 @@ public class HttpClient {
     return entry;
   }
 
-  /**
-   * Removes a guid (not for account Guids - use removeAccountGuid for them).
-   *
-   * @param guid the guid to remove
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void guidRemove(GuidEntry guid) throws IOException, ClientException {
     getResponse(CommandType.RemoveGuid, guid,
             GNSProtocol.GUID.toString(), guid.getGuid());
   }
 
-  /**
-   * Removes a guid given the guid and the associated account guid.
-   *
-   * @param accountGuid
-   * @param guidToRemove
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void guidRemove(GuidEntry accountGuid, String guidToRemove) throws IOException, ClientException {
     getResponse(CommandType.RemoveGuid, accountGuid,
             GNSProtocol.ACCOUNT_GUID.toString(), accountGuid.getGuid(),
@@ -420,52 +240,20 @@ public class HttpClient {
   //
   // BASIC READS AND WRITES
   //
-  /**
-   * Updates the JSONObject associated with targetGuid using the given
-   * JSONObject. Top-level fields not specified in the given JSONObject are
-   * not modified. The writer is the guid of the user attempting access. Signs
-   * the query using the private key of the user associated with the writer
-   * guid.
-   *
-   * @param targetGuid
-   * @param json
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void update(String targetGuid, JSONObject json, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.ReplaceUserJSON, writer, GNSProtocol.GUID.toString(), targetGuid,
             GNSProtocol.USER_JSON.toString(), json, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Replaces the JSON in guid with JSONObject. Signs the query using the
-   * private key of the given guid.
-   *
-   * @param guid
-   * @param json
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void update(GuidEntry guid, JSONObject json) throws IOException,
           ClientException {
     update(guid.getGuid(), json, guid);
   }
 
-  /**
-   * Updates the field in the targetGuid. The writer is the guid of the user
-   * attempting access. Signs the query using the private key of the writer
-   * guid.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   * @throws JSONException
-   */
+
   public void fieldUpdate(String targetGuid, String field, Object value,
           GuidEntry writer) throws IOException, ClientException,
           JSONException {
@@ -473,52 +261,20 @@ public class HttpClient {
             GNSProtocol.USER_JSON.toString(), new JSONObject().put(field, value), GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Creates an index for a field. The guid is only used for authentication
-   * purposes.
-   *
-   * @param guid
-   * @param field
-   * @param index
-   * @throws IOException
-   * @throws ClientException
-   * @throws JSONException
-   */
+
   public void fieldCreateIndex(GuidEntry guid, String field, String index)
           throws IOException, ClientException, JSONException {
     getResponse(CommandType.CreateIndex, guid, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(),
             field, GNSProtocol.VALUE.toString(), index, GNSProtocol.WRITER.toString(), guid.getGuid());
   }
 
-  /**
-   * Updates the field in the targetGuid. Signs the query using the private
-   * key of the given guid.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @throws IOException
-   * @throws ClientException
-   * @throws JSONException
-   */
+
   public void fieldUpdate(GuidEntry targetGuid, String field, Object value)
           throws IOException, ClientException, JSONException {
     fieldUpdate(targetGuid.getGuid(), field, value, targetGuid);
   }
 
-  /**
-   * Reads the JSONObject for the given targetGuid. The reader is the guid of
-   * the user attempting access. Signs the query using the private key of the
-   * user associated with the reader guid (unsigned if reader is null).
-   *
-   * @param targetGuid
-   * @param reader
-   * if null guid must be all fields readable for all users
-   * @return a JSONObject
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONObject read(String targetGuid, GuidEntry reader)
           throws IOException, ClientException, JSONException {
     return new JSONObject(getResponse(reader != null ? CommandType.ReadArray
@@ -527,35 +283,12 @@ public class HttpClient {
             reader != null ? reader.getGuid() : null));
   }
 
-  /**
-   * Reads the entire record from the GNS server for the given guid. Signs the
-   * query using the private key of the guid.
-   *
-   * @param guid
-   * @return a JSONObject containing the values in the field
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONObject read(GuidEntry guid) throws IOException, ClientException, JSONException {
     return read(guid.getGuid(), guid);
   }
 
-  /**
-   * Returns true if the field exists in the given targetGuid. Field is a
-   * string the naming the field. Field can use dot notation to indicate
-   * subfields. The reader is the guid of the user attempting access. This
-   * method signs the query using the private key of the user associated with
-   * the reader guid (unsigned if reader is null).
-   *
-   * @param targetGuid
-   * @param field
-   * @param reader
-   * if null the field must be readable for all
-   * @return a boolean indicating if the field exists
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public boolean fieldExists(String targetGuid, String field, GuidEntry reader)
           throws IOException, ClientException {
     try {
@@ -575,38 +308,13 @@ public class HttpClient {
     }
   }
 
-  /**
-   * Returns true if the field exists in the given targetGuid. Field is a
-   * string the naming the field. Field can use dot notation to indicate
-   * subfields. This method signs the query using the private key of the
-   * targetGuid.
-   *
-   * @param targetGuid
-   * @param field
-   * @return a boolean indicating if the field exists
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public boolean fieldExists(GuidEntry targetGuid, String field)
           throws IOException, ClientException {
     return fieldExists(targetGuid.getGuid(), field, targetGuid);
   }
 
-  /**
-   * Reads the value of field for the given targetGuid. Field is a string the
-   * naming the field. Field can use dot notation to indicate subfields. The
-   * reader is the guid of the user attempting access. This method signs the
-   * query using the private key of the user associated with the reader guid
-   * (unsigned if reader is null).
-   *
-   * @param targetGuid
-   * @param field
-   * @param reader
-   * if null the field must be readable for all
-   * @return a string containing the values in the field
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public String fieldRead(String targetGuid, String field, GuidEntry reader)
           throws IOException, ClientException {
     if (reader != null) {
@@ -618,37 +326,13 @@ public class HttpClient {
     }
   }
 
-  /**
-   * Reads the value of field from the targetGuid. Field is a string the
-   * naming the field. Field can use dot notation to indicate subfields. This
-   * method signs the query using the private key of the targetGuid.
-   *
-   * @param targetGuid
-   * @param field
-   * @return field value
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public String fieldRead(GuidEntry targetGuid, String field)
           throws IOException, ClientException {
     return fieldRead(targetGuid.getGuid(), field, targetGuid);
   }
 
-  /**
-   * Reads the value of fields for the given targetGuid. Fields is a list of
-   * strings the naming the field. Fields can use dot notation to indicate
-   * subfields. The reader is the guid of the user attempting access. This
-   * method signs the query using the private key of the user associated with
-   * the reader guid (unsigned if reader is null).
-   *
-   * @param targetGuid
-   * @param fields
-   * @param reader
-   * if null the field must be readable for all
-   * @return a JSONObject containing the values in the fields
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public String fieldRead(String targetGuid, ArrayList<String> fields,
           GuidEntry reader) throws IOException, ClientException {
     return getResponse(reader != null ? CommandType.ReadMultiField
@@ -657,34 +341,13 @@ public class HttpClient {
                     : null);
   }
 
-  /**
-   * Reads the value of fields for the given guid. Fields is a list of strings
-   * the naming the field. Fields can use dot notation to indicate subfields.
-   * This method signs the query using the private key of the guid.
-   *
-   * @param targetGuid
-   * @param fields
-   * @return values of fields
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public String fieldRead(GuidEntry targetGuid, ArrayList<String> fields)
           throws IOException, ClientException {
     return fieldRead(targetGuid.getGuid(), fields, targetGuid);
   }
 
-  /**
-   * Creates a new field with value being the list. Allows a a different guid as
-   * the writer. If the writer is different use addToACL first to allow other
-   * the guid to write this field.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.CreateList, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -692,35 +355,14 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Removes a field. Allows a a different guid as the writer.
-   *
-   * @param targetGuid
-   * @param field
-   * @param writer
-   * @throws IOException
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   * @throws ClientException
-   */
+
   public void fieldRemove(String targetGuid, String field, GuidEntry writer) throws IOException, InvalidKeyException,
           NoSuchAlgorithmException, SignatureException, ClientException {
     getResponse(CommandType.RemoveField, writer, GNSProtocol.GUID.toString(), targetGuid,
             GNSProtocol.FIELD.toString(), field, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Appends the values of the field onto list of values or creates a new field
-   * with values in the list if it does not exist.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldAppendOrCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.AppendOrCreateList, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -728,17 +370,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Replaces the values of the field with the list of values or creates a new
-   * field with values in the list if it does not exist.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldReplaceOrCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.ReplaceOrCreateList, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -746,16 +378,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Appends a list of values onto a field.
-   *
-   * @param targetGuid GNSProtocol.GUID.toString() where the field is stored
-   * @param field field name
-   * @param value list of values
-   * @param writer GNSProtocol.GUID.toString() entry of the writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldAppendList(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.AppendListWithDuplication, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -763,16 +386,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Replaces all the values of field with the list of values.
-   *
-   * @param targetGuid GNSProtocol.GUID.toString() where the field is stored
-   * @param field field name
-   * @param value list of values
-   * @param writer GNSProtocol.GUID.toString() entry of the writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldReplaceList(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.ReplaceList, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -780,16 +394,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Removes all the values in the list from the field.
-   *
-   * @param targetGuid GNSProtocol.GUID.toString() where the field is stored
-   * @param field field name
-   * @param value list of values
-   * @param writer GNSProtocol.GUID.toString() entry of the writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldClear(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.RemoveList, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -797,34 +402,13 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Removes all values from the field.
-   *
-   * @param targetGuid GNSProtocol.GUID.toString() where the field is stored
-   * @param field field name
-   * @param writer GNSProtocol.GUID.toString() entry of the writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldClear(String targetGuid, String field, GuidEntry writer) throws IOException, ClientException {
     getResponse(CommandType.Clear, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
             field, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Reads all the values value for a key from the GNS server for the given
-   * guid. The guid of the user attempting access is also needed. Signs the
-   * query using the private key of the user associated with the reader guid
-   * (unsigned if reader is null).
-   *
-   * @param guid
-   * @param field
-   * @param reader if null the field must be readable for all
-   * @return a JSONArray containing the values in the field
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONArray fieldReadArray(String guid, String field, GuidEntry reader)
           throws IOException, ClientException, JSONException {
     String response;
@@ -839,18 +423,7 @@ public class HttpClient {
     return CommandUtils.commandResponseToJSONArray(field, response);
   }
 
-  /**
-   * Sets the nth value (zero-based) indicated by index in the list contained in
-   * field to newValue. Index must be less than the current size of the list.
-   *
-   * @param targetGuid
-   * @param field
-   * @param newValue
-   * @param index
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldSetElement(String targetGuid, String field, String newValue, int index, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.Set, writer, GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(),
@@ -858,18 +431,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Sets a field to be null. That is when read field is called a null will be returned.
-   *
-   * @param targetGuid
-   * @param field
-   * @param writer
-   * @throws IOException
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   * @throws ClientException
-   */
+
   public void fieldSetNull(String targetGuid, String field, GuidEntry writer) throws IOException,
           InvalidKeyException, NoSuchAlgorithmException, SignatureException,
           ClientException {
@@ -879,18 +441,7 @@ public class HttpClient {
   }
 
   /// GROUPS AND ACLS
-  /**
-   * Return a list of the groups that the guid is a member of. Signs the query
-   * using the private key of the user associated with the guid.
-   *
-   * @param groupGuid the guid of the group to lookup
-   * @param reader the guid of the entity doing the lookup
-   * @return the list of groups as a JSONArray
-   * @throws IOException if a communication error occurs
-   * @throws ClientException if a protocol error occurs or the list cannot be
-   * parsed
-   * @throws InvalidGuidException if the group guid is invalid
-   */
+
   public JSONArray guidGetGroups(String groupGuid, GuidEntry reader) throws IOException, ClientException,
           InvalidGuidException {
     try {
@@ -901,36 +452,14 @@ public class HttpClient {
     }
   }
 
-  /**
-   * Add a guid to a group guid. Any guid can be a group guid. Signs the query
-   * using the private key of the user associated with the writer.
-   *
-   * @param groupGuid guid of the group
-   * @param guidToAdd guid to add to the group
-   * @param writer the guid doing the add
-   * @throws IOException
-   * @throws InvalidGuidException if the group guid does not exist
-   * @throws ClientException
-   */
+
   public void groupAddGuid(String groupGuid, String guidToAdd, GuidEntry writer) throws IOException,
           InvalidGuidException, ClientException {
     getResponse(CommandType.AddToGroup, writer, GNSProtocol.GUID.toString(), groupGuid,
             GNSProtocol.MEMBER.toString(), guidToAdd, GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Add multiple members to a group
-   *
-   * @param groupGuid guid of the group
-   * @param members guids of members to add to the group
-   * @param writer the guid doing the add
-   * @throws IOException
-   * @throws InvalidGuidException
-   * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   */
+
   public void groupAddGuids(String groupGuid, JSONArray members, GuidEntry writer) throws IOException,
           InvalidGuidException, ClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     getResponse(CommandType.AddToGroup, writer,
@@ -939,17 +468,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Removes a guid from a group guid. Any guid can be a group guid. Signs the
-   * query using the private key of the user associated with the writer.
-   *
-   * @param guid guid of the group
-   * @param guidToRemove guid to remove from the group
-   * @param writer the guid of the entity doing the remove
-   * @throws IOException
-   * @throws InvalidGuidException if the group guid does not exist
-   * @throws ClientException
-   */
+
   public void groupRemoveGuid(String guid, String guidToRemove, GuidEntry writer) throws IOException,
           InvalidGuidException, ClientException {
     getResponse(CommandType.RemoveFromGroup, writer, GNSProtocol.GUID.toString(), guid,
@@ -957,19 +476,7 @@ public class HttpClient {
 
   }
 
-  /**
-   * Remove a list of members from a group
-   *
-   * @param guid guid of the group
-   * @param members guids to remove from the group
-   * @param writer the guid of the entity doing the remove
-   * @throws IOException
-   * @throws InvalidGuidException
-   * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   */
+
   public void groupRemoveGuids(String guid, JSONArray members, GuidEntry writer) throws IOException,
           InvalidGuidException, ClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     getResponse(CommandType.RemoveFromGroup, writer, GNSProtocol.GUID.toString(), guid,
@@ -978,18 +485,7 @@ public class HttpClient {
 
   }
 
-  /**
-   * Return the list of guids that are member of the group. Signs the query
-   * using the private key of the user associated with the guid.
-   *
-   * @param groupGuid the guid of the group to lookup
-   * @param reader the guid of the entity doing the lookup
-   * @return the list of guids as a JSONArray
-   * @throws IOException if a communication error occurs
-   * @throws ClientException if a protocol error occurs or the list cannot be
-   * parsed
-   * @throws InvalidGuidException if the group guid is invalid
-   */
+
   public JSONArray groupGetMembers(String groupGuid, GuidEntry reader) throws IOException, ClientException,
           InvalidGuidException {
     try {
@@ -1000,129 +496,39 @@ public class HttpClient {
     }
   }
 
-  /**
-   * Authorize guidToAuthorize to add/remove members from the group groupGuid.
-   * If guidToAuthorize is null, everyone is authorized to add/remove members to
-   * the group. Note that this method can only be called by the group owner
-   * (private key required) Signs the query using the private key of the group
-   * owner.
-   *
-   * @param groupGuid the group GNSProtocol.GUID.toString() entry
-   * @param guidToAuthorize the guid to authorize to manipulate group membership
-   * or null for anyone
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void groupAddMembershipUpdatePermission(GuidEntry groupGuid, String guidToAuthorize) throws IOException, ClientException {
     aclAdd(AclAccessType.WRITE_WHITELIST, groupGuid, GNSProtocol.GROUP_ACL.toString(), guidToAuthorize);
   }
 
-  /**
-   * Unauthorize guidToUnauthorize to add/remove members from the group
-   * groupGuid. If guidToUnauthorize is null, everyone is forbidden to
-   * add/remove members to the group. Note that this method can only be called
-   * by the group owner (private key required). Signs the query using the
-   * private key of the group owner.
-   *
-   * @param groupGuid the group GNSProtocol.GUID.toString() entry
-   * @param guidToUnauthorize the guid to authorize to manipulate group
-   * membership or null for anyone
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void groupRemoveMembershipUpdatePermission(GuidEntry groupGuid, String guidToUnauthorize) throws IOException, ClientException {
     aclRemove(AclAccessType.WRITE_WHITELIST, groupGuid, GNSProtocol.GROUP_ACL.toString(), guidToUnauthorize);
   }
 
-  /**
-   * Authorize guidToAuthorize to get the membership list from the group
-   * groupGuid. If guidToAuthorize is null, everyone is authorized to list
-   * members of the group. Note that this method can only be called by the group
-   * owner (private key required). Signs the query using the private key of the
-   * group owner.
-   *
-   * @param groupGuid the group GNSProtocol.GUID.toString() entry
-   * @param guidToAuthorize the guid to authorize to manipulate group membership
-   * or null for anyone
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void groupAddMembershipReadPermission(GuidEntry groupGuid, String guidToAuthorize) throws IOException, ClientException {
     aclAdd(AclAccessType.READ_WHITELIST, groupGuid, GNSProtocol.GROUP_ACL.toString(), guidToAuthorize);
   }
 
-  /**
-   * Unauthorize guidToUnauthorize to get the membership list from the group
-   * groupGuid. If guidToUnauthorize is null, everyone is forbidden from
-   * querying the group membership. Note that this method can only be called by
-   * the group owner (private key required). Signs the query using the private
-   * key of the group owner.
-   *
-   * @param groupGuid the group GNSProtocol.GUID.toString() entry
-   * @param guidToUnauthorize the guid to authorize to manipulate group
-   * membership or null for anyone
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void groupRemoveMembershipReadPermission(GuidEntry groupGuid, String guidToUnauthorize) throws IOException, ClientException {
     aclRemove(AclAccessType.READ_WHITELIST, groupGuid, GNSProtocol.GROUP_ACL.toString(), guidToUnauthorize);
   }
 
-  /**
-   * Adds to an access control list of the given field. The accesser can be a
-   * guid of a user or a group guid or null which means anyone can access the
-   * field. The field can be also be +ALL+ which means all fields can be read by
-   * the reader. Signs the query using the private key of the user associated
-   * with the guid.
-   *
-   * @param accessType a value from GnrsProtocol.AclAccessType
-   * @param targetGuid guid of the field to be modified
-   * @param field field name
-   * @param accesserGuid guid to add to the ACL
-   * @throws java.io.IOException
-   * @throws ClientException if the query is not accepted by the server.
-   */
+
   public void aclAdd(AclAccessType accessType, GuidEntry targetGuid, String field, String accesserGuid)
           throws IOException, ClientException {
     aclAdd(accessType.name(), targetGuid, field, accesserGuid);
   }
 
-  /**
-   * Removes a GNSProtocol.GUID.toString() from an access control list of the given user's field on the
-   * GNS server to include the guid specified in the accesser param. The
-   * accesser can be a guid of a user or a group guid or null which means anyone
-   * can access the field. The field can be also be +ALL+ which means all fields
-   * can be read by the reader. Signs the query using the private key of the
-   * user associated with the guid.
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accesserGuid
-   * @throws java.io.IOException
-   * @throws ClientException if the query is not accepted by the server.
-   */
+
   public void aclRemove(AclAccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws IOException, ClientException {
     aclRemove(accessType.name(), guid, field, accesserGuid);
   }
 
-  /**
-   * Get an access control list of the given user's field on the GNS server to
-   * include the guid specified in the accesser param. The accesser can be a
-   * guid of a user or a group guid or null which means anyone can access the
-   * field. The field can be also be +ALL+ which means all fields can be read by
-   * the reader. Signs the query using the private key of the user associated
-   * with the guid.
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accesserGuid
-   * @return list of GUIDs for that ACL
-   * @throws java.io.IOException
-   * @throws ClientException if the query is not accepted by the server.
-   */
+
   public JSONArray aclGet(AclAccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws IOException, ClientException {
     return aclGet(accessType.name(), guid, field, accesserGuid);
@@ -1131,54 +537,19 @@ public class HttpClient {
   //
   // SELECT
   //
-  /**
-   * Returns all GUIDs that have a field that contains the given value as a
-   * JSONArray containing guids. Also note that the GNS currently does not enforce any
-   * ACL checking for this operation - everything is accessible and no
-   * signatures are required. This might change.
-   *
-   * @param field
-   * @param value
-   * @return a JSONArray containing all the matched records as JSONObjects
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONArray select(String field, String value) throws IOException, ClientException, JSONException {
     return new JSONArray(getResponse(CommandType.Select, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value));
   }
 
-  /**
-   * If field is a GeoSpatial field returns all guids that have fields that are within value
-   * which is a bounding box specified as a nested
-   * JSONArrays of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
-   *
-   * @param field
-   * @param value - [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
-   * @return a JSONArray containing the guids of all the matched records
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONArray selectWithin(String field, JSONArray value)
           throws IOException, ClientException, JSONException {
     return new JSONArray(getResponse(CommandType.SelectWithin, GNSProtocol.FIELD.toString(), field,
             GNSProtocol.WITHIN.toString(), value));
   }
 
-  /**
-   * If field is a GeoSpatial field returns all guids that have fields that are near value
-   * which is a point specified as a two element
-   * JSONArray: [LONG, LAT]. Max Distance is in meters.
-   *
-   * @param field
-   * @param value - [LONG, LAT]
-   * @param maxDistance - distance in meters
-   * @return a JSONArray containing the guids of all the matched records
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONArray selectNear(String field, JSONArray value, Double maxDistance)
           throws IOException, ClientException, JSONException {
     return new JSONArray(getResponse(CommandType.SelectNear, GNSProtocol.FIELD.toString(), field,
@@ -1186,112 +557,48 @@ public class HttpClient {
             GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance)));
   }
 
-  /**
-   * Selects all records that match query.
-   *
-   * @param query
-   * @return a JSONArray containing all the guids
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONArray selectQuery(String query) throws IOException, ClientException, JSONException {
     return new JSONArray(getResponse(CommandType.SelectQuery, GNSProtocol.QUERY.toString(), query));
   }
 
-  /**
-   * Set up a context aware group guid using a query.
-   *
-   * @param guid
-   * @param query
-   * @return a JSONArray containing all the guids
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONArray selectSetupGroupQuery(String guid, String query)
           throws IOException, ClientException, JSONException {
     return new JSONArray(getResponse(CommandType.SelectGroupSetupQuery, GNSProtocol.GUID.toString(), guid,
             GNSProtocol.QUERY.toString(), query));
   }
 
-  /**
-   * Look up the value of a context aware group guid using a query.
-   *
-   * @param guid
-   * @return a JSONArray containing all the guids
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONArray selectLookupGroupQuery(String guid) throws IOException, ClientException, JSONException {
     return new JSONArray(getResponse(CommandType.SelectGroupLookupQuery, GNSProtocol.GUID.toString(), guid));
   }
 
-  /**
-   * Update the location field for the given GNSProtocol.GUID.toString()
-   *
-   * @param longitude the GNSProtocol.GUID.toString() longitude
-   * @param latitude the GNSProtocol.GUID.toString() latitude
-   * @param guid the GNSProtocol.GUID.toString() to update
-   * @throws java.io.IOException if a GNS error occurs
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void setLocation(double longitude, double latitude, GuidEntry guid) throws IOException, ClientException {
     JSONArray array = new JSONArray(Arrays.asList(longitude, latitude));
     fieldReplaceOrCreateList(guid.getGuid(), GNSProtocol.LOCATION_FIELD_NAME.toString(), array, guid);
   }
 
-  /**
-   * Get the location of the target GNSProtocol.GUID.toString() as a JSONArray: [LONG, LAT]
-   *
-   * @param readerGuid the GNSProtocol.GUID.toString() issuing the request
-   * @param targetGuid the GNSProtocol.GUID.toString() that we want to know the location
-   * @return a JSONArray: [LONGITUDE, LATITUDE]
-   * @throws java.io.IOException if a GNS error occurs
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws org.json.JSONException
-   */
+
   public JSONArray getLocation(GuidEntry readerGuid, String targetGuid)
           throws IOException, ClientException, JSONException {
     return fieldReadArray(targetGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), readerGuid);
   }
 
-  /**
-   * Creates an alias entity name for the given guid. The alias can be used just
-   * like the original entity name.
-   *
-   * @param guid
-   * @param name - the alias
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void addAlias(GuidEntry guid, String name) throws IOException, ClientException {
     getResponse(CommandType.AddAlias, guid,
             GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.NAME.toString(), name);
   }
 
-  /**
-   * Removes the alias for the given guid.
-   *
-   * @param guid
-   * @param name - the alias
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public void removeAlias(GuidEntry guid, String name) throws IOException, ClientException {
     getResponse(CommandType.RemoveAlias, guid,
             GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.NAME.toString(), name);
   }
 
-  /**
-   * Retrieve the aliases associated with the given guid.
-   *
-   * @param guid
-   * @return - a JSONArray containing the aliases
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public JSONArray getAliases(GuidEntry guid) throws IOException, ClientException {
     try {
       return new JSONArray(getResponse(CommandType.RetrieveAliases, guid,
@@ -1304,15 +611,7 @@ public class HttpClient {
   // ///////////////////////////////
   // // PRIVATE METHODS BELOW /////
   // /////////////////////////////
-  /**
-   * Creates a new GNSProtocol.GUID.toString() associated with an account.
-   *
-   * @param accountGuid
-   * @param name
-   * @param publicKey
-   * @return the guid
-   * @throws java.io.IOException
-   */
+
   private String guidCreate(GuidEntry accountGuid, String name, PublicKey publicKey) throws IOException, ClientException {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
@@ -1322,18 +621,7 @@ public class HttpClient {
             GNSProtocol.PUBLIC_KEY.toString(), publicKeyString);
   }
 
-  /**
-   * Register a new account guid with the corresponding alias and the given
-   * public key on the GNS server. Returns a new guid.
-   *
-   * @param alias the alias to register (usually an email address)
-   * @param publicKey the public key associate with the account
-   * @return guid the GNSProtocol.GUID.toString() generated by the GNS
-   * @throws IOException
-   * @throws UnsupportedEncodingException
-   * @throws ClientException
-   * @throws InvalidGuidException if the user already exists
-   */
+
   private String accountGuidCreate(String alias, GuidEntry guidEntry, String password) throws UnsupportedEncodingException, IOException,
           ClientException, InvalidGuidException, NoSuchAlgorithmException {
     byte[] publicKeyBytes = guidEntry.getPublicKey().getEncoded();
@@ -1347,14 +635,7 @@ public class HttpClient {
                     : "");
   }
 
-  /**
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accesserGuid
-   * @throws java.io.IOException
-   */
+
   private void aclAdd(String accessType, GuidEntry guid, String field, String accesserGuid) throws IOException, ClientException {
     getResponse(accesserGuid == null ? CommandType.AclAdd : CommandType.AclAddSelf, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType, GNSProtocol.GUID.toString(),
@@ -1363,14 +644,7 @@ public class HttpClient {
                     : accesserGuid);
   }
 
-  /**
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accesserGuid
-   * @throws java.io.IOException
-   */
+
   private void aclRemove(String accessType, GuidEntry guid, String field, String accesserGuid) throws IOException, ClientException {
     getResponse(accesserGuid == null ? CommandType.AclRemove : CommandType.AclRemoveSelf, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType,
@@ -1380,15 +654,7 @@ public class HttpClient {
                     : accesserGuid);
   }
 
-  /**
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accesserGuid
-   * @return the acl as a JSON array
-   * @throws java.io.IOException
-   */
+
   private JSONArray aclGet(String accessType, GuidEntry guid, String field, String accesserGuid) throws IOException, ClientException {
     try {
       return new JSONArray(getResponse(accesserGuid == null ? CommandType.AclRetrieve : CommandType.AclRetrieveSelf, guid,
@@ -1405,18 +671,7 @@ public class HttpClient {
   //
   // Extended Methods
   //
-  /**
-   * Creates a new one element field with single element value being the string. Allows a a different guid as
-   * the writer. If the writer is different use addToACL first to allow other
-   * the guid to write this field.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldCreateSingleElementList(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.Create, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -1424,31 +679,13 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Creates a new one element field in the given guid with single element value being the string.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldCreateSingleElementList(GuidEntry targetGuid, String field, String value) throws IOException,
           ClientException {
     HttpClient.this.fieldCreateSingleElementList(targetGuid.getGuid(), field, value, targetGuid);
   }
 
-  /**
-   * Appends the single value of the field onto list of values or creates a new field
-   * with a single value list if it does not exist.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldAppendOrCreate(String targetGuid, String field, String value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.AppendOrCreateList, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -1456,17 +693,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Replaces the values of the field with the single value or creates a new
-   * field with a single value list if it does not exist.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldReplaceOrCreate(String targetGuid, String field, String value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.ReplaceOrCreateList, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -1474,16 +701,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * * Appends a single value onto a field.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldAppend(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.AppendListWithDuplication, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -1491,16 +709,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Appends a list of values onto a field but converts the list to set removing duplicates.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldAppendWithSetSemantics(String targetGuid, String field, JSONArray value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.AppendList, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -1508,16 +717,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Appends a single value onto a field but converts the list to set removing duplicates.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldAppendWithSetSemantics(String targetGuid, String field, String value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.Append, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -1525,16 +725,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Replaces all the first element of field with the value.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldReplaceFirstElement(String targetGuid, String field, String value, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.ReplaceList, writer, GNSProtocol.GUID.toString(), targetGuid,
@@ -1542,17 +733,7 @@ public class HttpClient {
             GNSProtocol.WRITER.toString(), writer.getGuid());
   }
 
-  /**
-   * Substitutes the value for oldValue in the list of values of a field.
-   *
-   * @param targetGuid GNSProtocol.GUID.toString() where the field is stored
-   * @param field field name
-   * @param newValue
-   * @param oldValue
-   * @param writer GNSProtocol.GUID.toString() entry of the writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldSubstitute(String targetGuid, String field, String newValue,
           String oldValue, GuidEntry writer) throws IOException, ClientException {
     getResponse(CommandType.SubstituteList, writer,
@@ -1561,17 +742,7 @@ public class HttpClient {
             GNSProtocol.OLD_VALUE.toString(), oldValue);
   }
 
-  /**
-   * Pairwise substitutes all the values for the oldValues in the list of values of a field.
-   *
-   * @param targetGuid GNSProtocol.GUID.toString() where the field is stored
-   * @param field
-   * @param newValue list of new values
-   * @param oldValue list of old values
-   * @param writer GNSProtocol.GUID.toString() entry of the writer
-   * @throws IOException
-   * @throws ClientException
-   */
+
   public void fieldSubstitute(String targetGuid, String field,
           JSONArray newValue, JSONArray oldValue, GuidEntry writer) throws IOException, ClientException {
     getResponse(CommandType.SubstituteList, writer, GNSProtocol.GUID.toString(),
@@ -1579,19 +750,7 @@ public class HttpClient {
             GNSProtocol.OLD_VALUE.toString(), oldValue);
   }
 
-  /**
-   * Reads the first value for a key from the GNS server for the given
-   * guid. The guid of the user attempting access is also needed. Signs the
-   * query using the private key of the user associated with the reader guid
-   * (unsigned if reader is null).
-   *
-   * @param guid
-   * @param field
-   * @param reader
-   * @return first value as a string
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
+
   public String fieldReadFirstElement(String guid, String field, GuidEntry reader) throws IOException, ClientException {
     if (reader == null) {
       return getResponse(CommandType.ReadArrayOneUnsigned,
@@ -1621,26 +780,12 @@ public class HttpClient {
     return checkResponse(command, response);
   }
 
-  /**
-   *
-   * @param command
-   * @param response
-   * @return the response
-   * @throws ClientException
-   */
+
   private String checkResponse(String command, String response) throws ClientException {
     return CommandUtils.checkResponseOldSchool(response);
   }
 
-  /**
-   * Creates a http query string from the given action string and a variable
-   * number of key and value pairs.
-   *
-   * @param commandType
-   * @param keysAndValues
-   * @return the query string
-   * @throws IOException
-   */
+
   private String createQuery(CommandType commandType, Object... keysAndValues) throws IOException {
     String key;
     String value;
@@ -1656,17 +801,7 @@ public class HttpClient {
     return result.toString();
   }
 
-  /**
-   * Creates a http query string from the given action string and a variable
-   * number of key and value pairs with a signature parameter. The signature is
-   * generated from the query signed by the given guid.
-   *
-   * @param guid
-   * @param commandType
-   * @param keysAndValues
-   * @return the query string
-   * @throws ClientException
-   */
+
   // This code is similar to what is in CommandUtils.createAndSignCommand but has a little
   // more hair because of need for URLs and also JSON. Maybe just send JSON?
   // The big difference is that it creates a URI String to send to the server, but it also
@@ -1746,11 +881,7 @@ public class HttpClient {
   // /////////////////////////////////////////
   // // PLATFORM DEPENDENT METHODS BELOW /////
   // /////////////////////////////////////////
-  /**
-   * Check that the connectivity with the host:port can be established
-   *
-   * @throws IOException throws exception if a communication error occurs
-   */
+
   public void checkConnectivity() throws IOException {
     if (IS_ANDROID) {
       String urlString = "http://" + host + ":" + port + "/";
@@ -1770,14 +901,7 @@ public class HttpClient {
     }
   }
 
-  /**
-   * Sends a HTTP get with given queryString to the host specified by the
-   * {@link host} field.
-   *
-   * @param queryString
-   * @return result of get as a string
-   * @throws IOException if an error occurs
-   */
+
   private String sendGetCommand(String queryString) throws IOException {
     if (IS_ANDROID) {
       return androidSendGetCommand(queryString);
@@ -1786,14 +910,7 @@ public class HttpClient {
     }
   }
 
-  /**
-   * Sends a HTTP get with given queryString to the host specified by the
-   * {@link host} field.
-   *
-   * @param queryString
-   * @return result of get as a string
-   * @throws IOException if an error occurs
-   */
+
   private String desktopSendGetCommmand(String queryString) throws IOException {
     HttpURLConnection connection = null;
     try {
@@ -1863,18 +980,14 @@ public class HttpClient {
     }
   }
 
-  /**
-   *
-   */
+
   public void close() {
     // nothing to stop
   }
 
   private class AndroidHttpGet extends DownloadTask {
 
-    /**
-     * Creates a new <code>httpGet</code> object
-     */
+
     public AndroidHttpGet() {
       super();
     }

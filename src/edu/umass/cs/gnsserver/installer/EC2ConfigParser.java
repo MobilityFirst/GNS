@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.installer;
 
 import edu.umass.cs.aws.support.AMIRecordType;
@@ -37,12 +19,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-/**
- * Parses an XML formatted EC2 config file.
- * 
- * 
- * @author westy
- */
+
 public class EC2ConfigParser {
   
   private static final String fileExtension = ".xml";
@@ -53,47 +30,27 @@ public class EC2ConfigParser {
   private DataStoreType dataStoreType;
   private List<EC2RegionSpec> regions = new ArrayList<EC2RegionSpec>();
 
-  /**
-   * Returns the ec2username.
-   * 
-   * @return the ec2username
-   */
+
   public String getEc2username() {
     return ec2username;
   }
 
-  /**
-   * Returns the amiRecordType.
-   * 
-   * @return the amiRecordType
-   */
+
   public AMIRecordType getAmiRecordType() {
     return amiRecordType;
   }
 
-  /**
-   * Returns the dataStoreType.
-   * 
-   * @return the dataStoreType
-   */
+
   public DataStoreType getDataStoreType() {
     return dataStoreType;
   }
 
-  /**
-   * Returns the list of regions.
-   * 
-   * @return list of regions
-   */
+
   public List<EC2RegionSpec> getRegions() {
     return regions;
   }
 
-  /**
-   * Creates an EC2ConfigParser.
-   * 
-   * @param filename
-   */
+
   public EC2ConfigParser(String filename) {
     parseFile(filename);
   }

@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnscommon.utils;
 
 import java.util.Collection;
@@ -28,31 +10,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONString;
 
-/**
- * Generates canonical JSON strings.
- * Identical to the standard code to render a JSON object,
- * except it forces the keys for maps to be listed in sorted order.
- *
- * @author westy
- */
+
 public class CanonicalJSON {
 
-  /**
-   * Main function to generate canonical strings for JSON objects.
-   *
-   * @param json
-   * @return a string
-   */
+
   public static String getCanonicalForm(JSONObject json) {
     return renderSimpleCanonicalJSON(json);
   }
 
-  /**
-   * Helper function to generate canonical strings for JSON strings.
-   *
-   * @param json
-   * @return a string
-   */
+
   public static String getCanonicalForm(String json) {
     try {
       return getCanonicalForm(new JSONObject(json));
@@ -61,8 +27,7 @@ public class CanonicalJSON {
     }
   }
 
-  /* This should be identical to the standard code to render the JSON object,
-   * except it forces the keys for maps to be listed in sorted order. */
+
   private static String renderSimpleCanonicalJSON(Object x) {
     try {
       if (x instanceof JSONObject) {
@@ -140,14 +105,7 @@ public class CanonicalJSON {
     }
   }
 
-  /**
-   * Produce a string in double quotes with backslash sequences in all the
-   * right places. A backslash will be inserted within &lt;/, allowing JSON
-   * text to be delivered in HTML. In JSON text, a string cannot contain a
-   * control character or an unescaped quote or backslash.
-   * @param string A String
-   * @return A String correctly formatted for insertion in a JSON text.
-   */
+
 //   This is an exact copy of JSONObject.quote() method from the org.json package.
 //   This method was added to fix the Android behavior of escaping forward slashes
 //   always in contrast with the open source org.json that escapes forward slashes

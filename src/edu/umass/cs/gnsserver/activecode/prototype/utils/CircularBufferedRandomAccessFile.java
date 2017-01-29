@@ -9,39 +9,19 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import static java.lang.Math.toIntExact;
 
-/**
- * This is a simple implementation of a circular buffer with {@code RandomAccessFile}.
- * <p> The writer writes the data into the shared memory from the current position of the
- * writer, if the end of the file is about to be reached, set a negative integer and
- * write from the beginning of the file. To write from the beginning, the writer needs
- * to make sure the reader has already read the data. 
- * 
- * <p> The reader reads the data from the shared memory from the current position of the
- * reader, of it reads a negative value of the length of the target array, it knows 
- * 
- * @author gaozy
- *
- */
+
 public class CircularBufferedRandomAccessFile {
 	
 	private boolean enableDebug = true;
 	
-	/**
-	 * Only write operation will increase the value of this variable.
-	 */
+
 	private AtomicLong writerPosition = new AtomicLong();
-	/**
-	 * Only read operation will increase the value of this variable.
-	 */
+
 	private AtomicLong readerPosition = new AtomicLong();
-	/**
-	 * The size of the file
-	 */
+
 	private final long size;
 	
-	/**
-	 * Underlying file
-	 */
+
 	private RandomAccessFile mem;
 	private RandomAccessFile header;
 	private String file;
@@ -53,17 +33,10 @@ public class CircularBufferedRandomAccessFile {
 	
 	private final String id;
 	
-	/**
-	 * The first 32 byte is used for writing header of the channel
-	 */
+
 	private final static long HEADER_LENGTH = Long.BYTES;
 	
-	/**
-	 * @param file
-	 * @param size
-	 * @param enableDebug
-   * @param id
-	 */
+
 	public CircularBufferedRandomAccessFile(String file, long size, boolean enableDebug, String id){
 		this.file = file;
 		this.size = size;
@@ -90,52 +63,32 @@ public class CircularBufferedRandomAccessFile {
 		
 	}
 	
-	/**
-	 * @param file
-	 */
+
 	public CircularBufferedRandomAccessFile(String file){
 		this(file, MAX_SIZE, false, "");	
 	}
 	
 	
-	/**
-	 * @param file
-	 * @param enableDebug
-   * @param id
-	 */
+
 	public CircularBufferedRandomAccessFile(String file, boolean enableDebug, String id){
 		this(file, MAX_SIZE, enableDebug, id);
 	}
 	
-	/**
-	 * Delete the file if it already exists
-	 * @param file
-	 */
+
 	private static void cleanup(String file){
 		if((new File(file)).exists()){
 			(new File(file)).delete();
 		}		
 	}
 	
-	/**
-	 * @param data data to write
-	 * @throws IOException
-	 */
+
 	public synchronized void write(byte[] data) throws IOException {
-		/**
-		 * The total length of bytes to be written, there should a
-		 * integer byte left for the writer to inform reader that
-		 * the end of the file has been reached.
-		 */
+
 		int length = data.length + Integer.BYTES + Integer.BYTES;		
 		
 		waitUntilWritable(length);
 		
-		/**
-		 * If the written length of data is longer than the 
-		 * file length from the current position, set a length
-		 * to negative then write from the beginning of the file.
-		 */
+
 		if(length + writerPosition.get() > size ){
 			byte[] buf = ByteBuffer.allocate(Integer.BYTES).putInt(-1).array();
 			mem.write(buf, 0, buf.length);
@@ -152,9 +105,7 @@ public class CircularBufferedRandomAccessFile {
 	
 	
 	private void waitUntilWritable(int length){
-		/**
-		 * If the writer position will exceed the reader position, wait until the reader catches up
-		 */
+
 		
 		while( ((writerPosition.get() >= readerPosition.get())&&(writerPosition.get()+length>size)&&(HEADER_LENGTH+length-Integer.BYTES >= readerPosition.get()))
 				|| ((writerPosition.get() < readerPosition.get()) && (writerPosition.get()+length - Integer.BYTES >= readerPosition.get()))){
@@ -172,10 +123,7 @@ public class CircularBufferedRandomAccessFile {
 		writerPosition.set(writerPosition.get()+Integer.BYTES+data.length);
 	}
 	
-	/**
-	 * @return bytes read
-	 * @throws IOException
-	 */
+
 	public byte[] read() throws IOException {
 		byte[] buffer = new byte[Integer.BYTES];
 		mem.read(buffer);
@@ -223,14 +171,7 @@ public class CircularBufferedRandomAccessFile {
 		}
 	}
 	
-	/**
-	 * The reason we do not use this reset method is because the read method is
-	 * relatively slower than write method, and write can always catch up read.
-	 * But if it is not true, the bug will happen immediately
-	 * @param pos
-	 * @param length
-	 * @throws IOException
-	 */
+
 	private synchronized void reset(long pos, int length) throws IOException{
 		if(enableDebug)
 			System.out.println(id+" reset:"+pos+" "+length);
@@ -256,9 +197,7 @@ public class CircularBufferedRandomAccessFile {
 		return buf;
 	}
 	
-	/**
-	 * Shut things down.
-	 */
+
 	public void shutdown() {
 		try {
 			mem.close();
@@ -268,27 +207,9 @@ public class CircularBufferedRandomAccessFile {
 		cleanup(file);
 	}
 	
-	/**
-	 * @param args
-	 * @throws InterruptedException 
-	 * @throws IOException 
-	 */
+
 	public static void main(String[] args) throws InterruptedException, IOException{
-		/*
-		byte[] buf1 = "hello world!4".getBytes();
-		ByteBuffer bbuf = ByteBuffer.allocate(Integer.BYTES+13);
-		bbuf.putInt(13).put(buf1).flip();
-		int l = bbuf.getInt();
-		System.out.println(l);
-		
-		// test for the bug
-		ByteBuffer bbuf1 = ByteBuffer.allocate(1+Integer.BYTES);
-		bbuf1.put("0".getBytes());
-		bbuf1.putInt(13);
-		bbuf1.flip();
-		int l = bbuf1.getInt();
-		System.out.println(l);
-		*/
+
 		
 		String cfile = "/tmp/test";
 		

@@ -1,18 +1,4 @@
-/* Copyright (c) 2015 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy */
+
 package edu.umass.cs.gnscommon.packets;
 
 import java.io.IOException;
@@ -48,12 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * @author arun
- *
- * Packet format sent from a client and handled by a local name server.
- *
- */
+
 public class CommandPacket extends BasicPacketWithClientAddress implements
         ClientRequest, ReplicableRequest, Byteable {
 
@@ -64,48 +45,28 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   private final static String OLD_COMMAND_PACKET_REQUESTID = "clientreqID";
   private final static String OLD_COMMAND_PACKET_COMMAND = "command";
 
-  /**
-   * Refer {@link GNSProtocol#UNKNOWN_NAME}.
-   */
+
   public final static String BOGUS_SERVICE_NAME = GNSProtocol.UNKNOWN_NAME
           .toString();
 
-  /**
-   * Identifier of the request on the client. Serialized.
-   */
+
   private final long clientRequestId;
 
-  /**
-   * The JSON form of the command. Always includes a GNSProtocol.COMMANDNAME.toString() field. Almost
-   * always has a GNSProtocol.GUID.toString() field or GNSProtocol.NAME.toString() (for HRN records) field. Serialized.
-   */
+
   private final JSONObject command;
 
-  /**
-   * True means that this request should be forcibly coordinated.
-   */
+
   private boolean forceCoordination = false;
 
   // never serialized
   private Object result = null;
 
-  /**
-   * Create a CommandPacket instance.
-   *
-   * @param requestId
-   * @param command
-   */
+
   public CommandPacket(long requestId, JSONObject command) {
     this(requestId, command, true);
   }
 
-  /**
-   * Create a CommandPacket instance.
-   *
-   * @param requestId
-   * @param command
-   * @param validate
-   */
+
   public CommandPacket(long requestId, JSONObject command, boolean validate) {
     this.setType(Packet.PacketType.COMMAND);
     this.clientRequestId = requestId;
@@ -115,12 +76,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
   }
 
-  /**
-   * Creates a CommandPacket instance from a JSONObject.
-   *
-   * @param json
-   * @throws JSONException
-   */
+
   public CommandPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
 
@@ -150,23 +106,11 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     validateCommandType();
   }
 
-  /**
-   * Reconstructs a CommandPacket from a given byte array.
-   *
-   * @param bytes
-   * The bytes given by the toBytes method.
-   * @throws RequestParseException
-   */
+
   public CommandPacket(byte[] bytes) throws RequestParseException {
     ByteBuffer buf = ByteBuffer.wrap(bytes);
 
-    /**
-     * We will come here only if this class implements Byteable and the
-     * sender also implements Byteable. If the sender used toJSONObject(),
-     * we won't come here because
-     * {@link GNSApp#getRequest(byte[],NIOHeader)} will directly invoke
-     * {@link Packet#createInstance(JSONObject, Stringifiable<String>)}
-     */
+
     // packet type
     this.setType(Packet.getPacketType(buf.getInt()));
     // requestID
@@ -182,12 +126,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     validateCommandType();
   }
 
-  /**
-   * Checks that the command type of the packet is not MUTUAL_AUTH
-   * as those should be an AdminCommandPacket instead.
-   * This being a separate method allows AdminCommandPacket
-   * to override it to change its validation while still reusing the constructor code here.
-   */
+
   // Note that this implementation of this method will do nothing in production code because
   // assertions will be disabled.
   protected void validateCommandType() {
@@ -261,18 +200,12 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   private static final ByteMode byteMode = ByteMode.byteModeMap.get(Config
           .getGlobalInt(GNSClientConfig.GNSCC.BYTE_MODE));
 
-  /**
-   * Converts the CommandPacket to bytes. Assumes that all fields other than
-   * GNSProtocol.COMMAND_INT.toString() have strings for values.
-   *
-   * @return Refer {@link Byteable#toBytes()}
-   */
+
   @Override
   public final byte[] toBytes() {
     try {
       switch (byteMode) {
-        /* There is little point in using JSON just for this.command instead
-	 * of the default toJSONObject() method, so we just do that. */
+
         case ORG_JSON:
           return this.toJSONObject().toString()
                   .getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
@@ -323,11 +256,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
             .put(bbuf.array(), 0, bbuf.position()).put(inner).array();
   }
 
-  /* This is a hack attempt that assumes that almost all values as strings.
-	 * Hack because field "values" in general are not meant to be strings and we
-	 * will just be putting the overhead elsewhere if we try to ensure that they
-	 * are strings. But this still works and is useful for instrumentation
-	 * purposes. */
+
   private byte[] toBytesWingItAsString(ByteBuffer buf, JSONObject json) {
     // can we still get integer-less packets from iOS devices?
     Integer commandType = (Integer) command
@@ -348,8 +277,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
         byte[] keyBytes = key
                 .getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
         objVal = command.get(key);
-        /* We rely on the assumption that if it's not a String, it will
-				 * throw a ClassCastException */
+
         byte[] valueBytes = ((String) objVal)
                 .getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
 
@@ -372,10 +300,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
               .put(buf.array(), 0, buf.position()).array();
 
     } catch (UnsupportedEncodingException | JSONException | ClassCastException e) {
-      /* arun: Uncomment to check with "ant test" that many values are not
-			 * strings. This usually does not break code because the server
-			 * decodes the strings correctly, but it is unwise to rely on that
-			 * behavior and difficult to correctly maintain in code. */
+
       // System.err.println(e + " for " + key + ":" + objVal);
       return this.handleSerializationException(e, commandType);
     } finally {
@@ -421,12 +346,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
   }
 
-  /**
-   * Converts the command object into a JSONObject.
-   *
-   * @return the JSONObject
-   * @throws org.json.JSONException
-   */
+
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
@@ -439,41 +359,24 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return json;
   }
 
-  /**
-   * Return the client request id as a long.
-   *
-   * @return the client request id
-   */
+
   @Override
   public long getRequestID() {
     return clientRequestId;
   }
 
-  /**
-   * For ClientRequest.
-   *
-   * @return the response
-   */
+
   @Override
   public ClientRequest getResponse() {
     return this.response;
   }
 
-  /**
-   * Return the command.
-   *
-   * @return the command
-   */
+
   public JSONObject getCommand() {
     return command;
   }
 
-  /**
-   * The service name is the name of the GNSProtocol.GUID.toString()/HRN that is being written to or
-   * read.
-   *
-   * @return the service name
-   */
+
   @Override
   public String getServiceName() {
     try {
@@ -491,9 +394,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return BOGUS_SERVICE_NAME;
   }
 
-  /**
-   * @return CommandType as Integer.
-   */
+
   public int getCommandInteger() {
     try {
       if (command != null) {
@@ -506,28 +407,18 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return -1;
   }
 
-  /**
-   *
-   * @return true if needs coordination is true
-   */
+
   @Override
   public boolean needsCoordination() {
     return this.forceCoordination || getCommandType().isUpdate();
   }
 
-  /**
-   * @return CommandType
-   */
+
   public CommandType getCommandType() {
     return getJSONCommandType(command);
   }
 
-  /**
-   * Used to determine the type of a JSONObject formatted command.
-   *
-   * @param command
-   * @return CommandType
-   */
+
   public static CommandType getJSONCommandType(JSONObject command) {
     try {
       if (command != null) {
@@ -545,10 +436,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return CommandType.Unknown;
   }
 
-  /**
-   * @param force
-   * @return Set coordination mode to true if this is a read command.
-   */
+
   public ClientRequest setForceCoordinatedReads(boolean force) {
     if (force && (getCommandType().isRead())) {
       this.forceCoordination = true;
@@ -556,10 +444,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return this;
   }
 
-  /* ********************** Start of result-related methods **************** */
-  /**
-   * Waits till this command has finished execution.
-   */
+
+
   public void finish() {
     synchronized (this) {
       while (!this.executed) {
@@ -591,13 +477,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
   private boolean executed = false;
 
-  /**
-   * Used to set the response obtained by executing this request.
-   *
-   *
-   * @param responseStr
-   * @return this
-   */
+
   CommandPacket setResult(ResponsePacket responsePacket) {
     // Note: this method has nothing to do with setResponse(ClientRequest)
     synchronized (this) {
@@ -613,27 +493,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return this;
   }
 
-  /**
-   * arun: The getResult methods below must satisfy the following invariants:
-   * (1) A successful (without exceptions) invocation of the method can return
-   * a non-null value at most once. This invariant implies that this.result
-   * should be set to null upon a successful invocation.
-   *
-   * (2) The method is atomic (all-or-none), i.e., exceptions because of the
-   * caller expecting the wrong result type, e.g., invoking getResultList when
-   * the response is a Map, should not change any state and still allow the
-   * caller to still call other getResult methods until one is successful.
-   * This invariant implies that @code{this.result} should be reset to null
-   * only for successful calls.
-   *
-   * The above invariants are not implemented here. JDBC implementations discourage
-   * repeat calls for performance reasons, but we don't currently have this concern
-   * because we fetch and store the entire result.
-   */
-  /**
-   * @return The result of executing this command.
-   * @throws ClientException
-   */
+
+
   public Object getResult() throws ClientException {
     // else
     String responseStr = this.getRespStr();
@@ -652,18 +513,12 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
   }
 
-  /**
-   * @return The String result of executing this command.
-   * @throws ClientException
-   */
+
   public String getResultString() throws ClientException {
     return this.getRespStr();
   }
 
-  /**
-   * @return The JSONObject result of executing this command.
-   * @throws ClientException
-   */
+
   public JSONObject getResultJSONObject() throws ClientException {
     String responseStr = this.getRespStr();
     try {
@@ -676,10 +531,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
   }
 
-  /**
-   * @return The Map<String,?> result of executing this command.
-   * @throws ClientException
-   */
+
   public Map<String, ?> getResultMap() throws ClientException {
     String responseStr = this.getRespStr();
     try {
@@ -691,10 +543,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
   }
 
-  /**
-   * @return The JSONObject result of executing this command.
-   * @throws ClientException
-   */
+
   public List<?> getResultList() throws ClientException {
     String responseStr = this.getRespStr();
     try {
@@ -706,10 +555,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
   }
 
-  /**
-   * @return The JSONArray result of executing this command.
-   * @throws ClientException
-   */
+
   public JSONArray getResultJSONArray() throws ClientException {
     String responseStr = this.getRespStr();
     try {
@@ -720,10 +566,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
   }
 
-  /**
-   * @return boolean result value of executing this command.
-   * @throws ClientException
-   */
+
   public boolean getResultBoolean() throws ClientException {
     Object obj = this.getResult();
     if (obj != null && obj instanceof Boolean) {
@@ -733,10 +576,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
             "Unable to parse response as boolean");
   }
 
-  /**
-   * @return int result value of executing this command.
-   * @throws ClientException
-   */
+
   public int getResultInt() throws ClientException {
     Object obj = this.getResult();
     if (obj != null && obj instanceof Integer) {
@@ -746,10 +586,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
             "Unable to parse response as boolean");
   }
 
-  /**
-   * @return long result value of executing this command.
-   * @throws ClientException
-   */
+
   public long getResultLong() throws ClientException {
     Object obj = this.getResult();
     if (obj != null && obj instanceof Long) {
@@ -759,10 +596,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
             "Unable to parse response as boolean");
   }
 
-  /**
-   * @return double result value of executing this command.
-   * @throws ClientException
-   */
+
   public double getResultDouble() throws ClientException {
     Object obj = this.getResult();
     if (obj != null && obj instanceof Double) {
@@ -777,18 +611,13 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return JSONObject.stringToValue(str);
   }
 
-  /**
-   * @return True if this command has the result of its execution.
-   */
+
   public boolean hasResult() {
     return this.result != null;
   }
 
-  /* ********************** End of result-related methods **************** */
-  /**
-   *
-   * @return the summary
-   */
+
+
   @Override
   public Object getSummary() {
     return new Object() {

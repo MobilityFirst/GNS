@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.localnameserver;
 
 import java.util.HashSet;
@@ -34,11 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-/**
- * Sends create and delete requests to a reconfigurator with retransmission.
- *
- * @author westy
- */
+
 public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
 
   private final long RESTART_PERIOD = 1000;
@@ -49,17 +27,10 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
   private final List<InetSocketAddress> reconfigurators;
   private int requestCount = 0; // number of times we have requested
 
-  /**
-   * The logger.
-   */
+
   public static final Logger LOG = Logger.getLogger(SendCreateDelete.class.getName());
 
-  /**
-   * Create a SendCreateDelete instance.
-   *
-   * @param lnsRequestInfo
-   * @param handler
-   */
+
   public SendCreateDelete(LNSRequestInfo lnsRequestInfo,
           RequestHandlerInterface handler) {
 
@@ -72,10 +43,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
 
   }
 
-  /**
-   *
-   * @return an array of tasks
-   */
+
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
@@ -97,10 +65,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
     }
   }
 
-  /**
-   *
-   * @return an array of tasks
-   */
+
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
@@ -119,30 +84,19 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
     return lnsRequestInfo.getServiceName() + " | " + Long.toString(lnsRequestInfo.getLNSReqID());
   }
 
-  /**
-   *
-   * @return a set of packet types
-   */
+
   @Override
   public Set<PacketType> getEventTypes() {
     return new HashSet<>();
   }
 
-  /**
-   *
-   * @return the key
-   */
+
   @Override
   public String getKey() {
     return this.key;
   }
 
-  /**
-   *
-   * @param event
-   * @param ptasks
-   * @return an array of packet types
-   */
+
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
           ProtocolEvent<PacketType, String> event,
@@ -155,10 +109,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
     return this.getClass().getSimpleName() + " " + lnsRequestInfo.getServiceName() + " " + lnsRequestInfo.getLNSReqID();
   }
 
-  /**
-   *
-   * @return the period
-   */
+
   @Override
   public long getPeriod() {
     return RESTART_PERIOD;

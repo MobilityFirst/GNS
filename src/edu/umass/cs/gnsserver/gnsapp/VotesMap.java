@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -32,38 +14,22 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * A map between InetAddress OR InetSocketAddress and access counts.
- * Note: This supports both InetAddress and InetSocketAddress as keys,
- * but not in the same VotesMap.
- *
- * @author westy
- */
+
 public class VotesMap {
 
   private JSONObject storage;
 
-  /**
-   * Creates a new empty VotesMap.
-   */
+
   public VotesMap() {
     this.storage = new JSONObject();
   }
 
-  /**
-   * Creates a new VotesMap by copying a VotesMap.
-   *
-   * @param votesMap
-   */
+
   public VotesMap(VotesMap votesMap) {
     this(votesMap.storage);
   }
 
-  /**
-   * Creates a new VotesMap from a JSON Object.
-   *
-   * @param json
-   */
+
   public VotesMap(JSONObject json) {
     this();
     Iterator<?> keyIter = json.keys();
@@ -77,20 +43,12 @@ public class VotesMap {
     }
   }
 
-  /**
-   * Converts a VotesMap object into a JSONObject.
-   *
-   * @return a JSONObject
-   */
+
   public JSONObject toJSONObject() {
     return storage;
   }
 
-  /**
-   * Increments the value corresponding to the sender InetAddress by 1.
-   *
-   * @param sender
-   */
+
   public void increment(InetAddress sender) {
     if (storage == null) {
       throw new RuntimeException("STORAGE IS NULL");
@@ -104,11 +62,7 @@ public class VotesMap {
     }
   }
 
-  /**
-   * Increments the value corresponding to the sender InetAddress by 1.
-   *
-   * @param sender
-   */
+
   public void increment(InetSocketAddress sender) {
     if (storage == null) {
       throw new RuntimeException("STORAGE IS NULL");
@@ -120,13 +74,7 @@ public class VotesMap {
     }
   }
 
-  /**
-   * Returns the top N vote getting InetAddresses in the map.
-   * Will return less if there are not N distinct entries.
-   *
-   * @param n
-   * @return an ArrayList of the top n
-   */
+
   public ArrayList<InetAddress> getTopN(int n) {
     ArrayList<InetAddress> result = new ArrayList<>();
     // convert the JSONObject into a Map and sort it by value decreasing
@@ -146,13 +94,7 @@ public class VotesMap {
     return result;
   }
 
-  /**
-   * Returns the top N vote getting InetSocketAddress in the map.
-   * Will return less if there are not N distinct entries.
-   *
-   * @param n
-   * @return an ArrayList of the top n
-   */
+
   public ArrayList<InetSocketAddress> getTopNIPSocket(int n) {
     ArrayList<InetSocketAddress> result = new ArrayList<>();
     // convert the JSONObject into a Map and sort it by value decreasing
@@ -172,13 +114,7 @@ public class VotesMap {
     return result;
   }
 
-  /**
-   * Parses a string of the form host:port into an InetSocketAddress.
-   *
-   * @param string
-   * @return an InetSocketAddress
-   * @throws UnknownHostException
-   */
+
   private InetSocketAddress parseIPSocketString(String string) throws UnknownHostException {
     String tokens[] = string.split(":");
     if (tokens.length != 2) {
@@ -187,11 +123,7 @@ public class VotesMap {
     return new InetSocketAddress(InetAddress.getByName(tokens[0]), Integer.parseInt(tokens[1]));
   }
 
-  /**
-   * Adds the votes from update to the votes in this object.
-   *
-   * @param update
-   */
+
   public void combine(VotesMap update) {
     Iterator<?> keyIter = update.storage.keys();
     while (keyIter.hasNext()) {
@@ -210,13 +142,7 @@ public class VotesMap {
     return toJSONObject().toString();
   }
 
-  /**
-   * Main routine. For testing only.
-   *
-   * @param args
-   * @throws JSONException
-   * @throws UnknownHostException
-   */
+
   public static void main(String[] args) throws JSONException, UnknownHostException {
     System.out.println("InetAddress");
     VotesMap votesMap1 = new VotesMap();
@@ -264,12 +190,7 @@ public class VotesMap {
     System.out.println(votesMap11.getTopNIPSocket(10));
   }
 
-  /**
-   * Converts a JSONObject with integer values into a map.
-   *
-   * @param json
-   * @return a map
-   */
+
   private static Map<String, Integer> toMap(JSONObject json) {
     Map<String, Integer> map = new HashMap<>();
     try {

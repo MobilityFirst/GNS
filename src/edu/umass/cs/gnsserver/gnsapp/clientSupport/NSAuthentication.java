@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import com.google.common.cache.Cache;
@@ -43,36 +25,13 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
-/**
- *
- * @author westy
- */
+
 public class NSAuthentication {
 
   private static final Cache<String, String> PUBLIC_KEY_CACHE
           = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
 
-  /**
-   * Does access and signature checking for a field OR fields in a guid.
-   * For explicit multi-field access all fields must be accessible or
-   * ACL check fails.
-   *
-   * @param guid - the guid containing the field being accessed
-   * @param field - the field being accessed (one of this or fields should be non-null)
-   * @param fields - or the fields being accessed (one of this or field should be non-null)
-   * @param accessorGuid - the guid doing the access
-   * @param signature
-   * @param message
-   * @param access - the type of access
-   * @param gnsApp
-   * @return an {@link ResponseCode}
-   * @throws InvalidKeyException
-   * @throws InvalidKeySpecException
-   * @throws SignatureException
-   * @throws NoSuchAlgorithmException
-   * @throws FailedDBOperationException
-   * @throws UnsupportedEncodingException
-   */
+
   public static ResponseCode signatureAndACLCheck(InternalRequestHeader header, String guid,
           String field, List<String> fields,
           String accessorGuid, String signature,
@@ -253,21 +212,7 @@ public class NSAuthentication {
     return new AclCheckResult(publicKey, ResponseCode.NO_ERROR);
   }
 
-  /**
-   * Attempts to look up the public key for a accessorGuid using the
-   * ACL of the guid for the given field.
-   * Will resort to a lookup on another server in certain circumstances.
-   * Like when an ACL uses the GNSProtocol.EVERYONE.toString() flag.
-   *
-   * @param guid
-   * @param field
-   * @param accessorGuid
-   * @param access
-   * @param gnsApp
-   * @param lnsAddress
-   * @return the public key
-   * @throws FailedDBOperationException
-   */
+
   private static String lookupPublicKeyInACL(InternalRequestHeader header, String guid, String field, String accessorGuid,
           MetaDataTypeName access, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {

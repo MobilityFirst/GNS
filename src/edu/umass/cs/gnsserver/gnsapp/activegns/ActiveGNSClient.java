@@ -22,23 +22,10 @@ import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
-/**
- * @author arun
- * 
- *         This client is designed to be used either by an active request worker
- *         process or by the main GNS process to issue read or write requests to
- *         the GNS on behalf of active request JS. This implementation is
- *         agnostic to whether the GUID being queried resides on the same
- *         machine or a remote machine.
- *
- */
+
 public class ActiveGNSClient extends GNSClient implements ActiveDBInterface {
 
-	/**
-	 * Refer {@link GNSClient#GNSClient()}.
-	 * 
-	 * @throws IOException
-	 */
+
 	public ActiveGNSClient() throws IOException {
 		super();
 	}
@@ -84,14 +71,7 @@ public class ActiveGNSClient extends GNSClient implements ActiveDBInterface {
 		}
 	}
 
-	/** Overrides {@link GNSClient#execute(CommandPacket)} with internal 
-	 * request checks that can only be determined with a {@link GNSClient}
-	 * instance, e.g, dynamically force-coordinated read requests.
-   * @param commandPacket
-   * @return the executed command
-   * @throws java.io.IOException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-	 */
+
 	public Request executeCommand(CommandPacket commandPacket) throws IOException,
 			ClientException {
 		if (((GNSCommandInternal) commandPacket).hasBeenCoordinatedOnce()

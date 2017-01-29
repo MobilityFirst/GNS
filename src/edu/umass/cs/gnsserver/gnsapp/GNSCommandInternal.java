@@ -17,32 +17,16 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 
-/**
- * @author arun
- *
- */
+
 public class GNSCommandInternal extends InternalCommandPacket {
 
-  /**
-   *
-   * @param header
-   * @param command
-   * @throws JSONException
-   */
+
   protected GNSCommandInternal(InternalRequestHeader header,
           JSONObject command) throws JSONException {
     super(header, command);
   }
 
-  /**
-   * This magic makes the command obviate signature checks. This command is
-   * usable only at a server because only servers can know of or generate the
-   * correct {@link GNSConfig.GNSC#INTERNAL_OP_SECRET}.
-   *
-   * @param command
-   * @return a JSON Object
-   * @throws JSONException
-   */
+
   private static JSONObject makeInternal(CommandType type,
           InternalRequestHeader header, JSONObject command)
           throws JSONException {
@@ -61,25 +45,10 @@ public class GNSCommandInternal extends InternalCommandPacket {
                     GNSConfig.getInternalOpSecret());
   }
 
-  /**
-   * If this is true, the querier is internal by default. Active requests must
-   * explicitly set the querier to
-   * {@link InternalRequestHeader#getQueryingGUID()} so that ACL (but no
-   * signature) checks can be performed on the querier.
-   */
+
   private static boolean DEFAULT_INTERNAL = true;
 
-  /**
-   * The querier is always null in internal commands as it is implicitly a
-   * trusted server or client.
-   *
-   * @param type
-   * @param header
-   * @param keysAndValues
-   * @return GNSCommandInternal
-   * @throws JSONException
-   * @throws InternalRequestException
-   */
+
   private static GNSCommandInternal getCommand(CommandType type,
           InternalRequestHeader header, Object... keysAndValues)
           throws JSONException, InternalRequestException {
@@ -116,24 +85,7 @@ public class GNSCommandInternal extends InternalCommandPacket {
     return gnsCommandInternal;
   }
 
-  /**
-   * Identical to {@link GNSCommand#fieldReadArray(String, String, GuidEntry)}
-   * except that the last {@code querierGUID} argument is replaced by an
-   * internal request {@code header}. For internal operations, we need the
-   * {@link GNSProtocol#ORIGINATING_GUID} to perform ACL checks or to "charge"
-   * it an operation (for accounting purposes) but we don't need to generate
-   * or verify its signatures. This and other information is in
-   * {@link InternalRequestHeader}.
-   *
-   * @param targetGUID
-   * @param field
-   * The queried field.
-   * @param header
-   * The internal request header.
-   * @return Refer {@link GNSCommand#fieldRead(String, String, GuidEntry)}.
-   * @throws JSONException
-   * @throws InternalRequestException
-   */
+
   public static final InternalCommandPacket fieldRead(String targetGUID,
           String field, InternalRequestHeader header) throws JSONException,
           InternalRequestException {
@@ -142,16 +94,7 @@ public class GNSCommandInternal extends InternalCommandPacket {
             GNSProtocol.FIELD.toString(), field);
   }
 
-  /**
-   * @param targetGUID
-   * @param fields
-   * The queried fields.
-   * @param header
-   * The internal request header.
-   * @return InternalCommandPacket
-   * @throws JSONException
-   * @throws InternalRequestException
-   */
+
   public static final InternalCommandPacket fieldRead(String targetGUID,
           ArrayList<String> fields, InternalRequestHeader header)
           throws JSONException, InternalRequestException {
@@ -160,24 +103,7 @@ public class GNSCommandInternal extends InternalCommandPacket {
             GNSProtocol.FIELDS.toString(), fields);
   }
 
-  /**
-   * Identical to
-   * {@link GNSCommand#fieldUpdate(String, String, Object, GuidEntry)} except
-   * that the last {@code querierGUID} argument is an InternalRequestHeader.
-   * For internal operations, we need the identity of {@code querierGUID} to
-   * perform ACL checks or to "charge" it an operation for accounting
-   * purposes, but we don't need to generate or verify its signatures.
-   *
-   * @param header
-   *
-   * @param field
-   * @param value
-   * @param targetGUID
-   * @return InternalCommandPacket
-   *
-   * @throws JSONException
-   * @throws InternalRequestException
-   */
+
   public static InternalCommandPacket fieldUpdate(String targetGUID,
           String field, Object value, InternalRequestHeader header)
           throws JSONException, InternalRequestException {
@@ -186,31 +112,14 @@ public class GNSCommandInternal extends InternalCommandPacket {
             GNSProtocol.USER_JSON.toString(), new JSONObject().put(field, value));
   }
 
-  /**
-   * Generalized update with configurable {@code CommandType} argument.
-   *
-   * @param type
-   * @param header
-   * @param keysAndValues
-   * @return InternalCommandPacket
-   * @throws JSONException
-   * @throws InternalRequestException
-   */
+
   public static InternalCommandPacket fieldUpdate(InternalRequestHeader header, CommandType type,
           Object... keysAndValues) throws JSONException,
           InternalRequestException {
     return getCommand(type, header, keysAndValues);
   }
 
-  /**
-   * @param guid
-   * @param field
-   * @param value
-   * @param header
-   * @return InternalCommandPacket
-   * @throws JSONException
-   * @throws InternalRequestException
-   */
+
   public static InternalCommandPacket fieldRemove(String guid,
           String field, String value, InternalRequestHeader header)
           throws InternalRequestException, JSONException {
@@ -220,15 +129,7 @@ public class GNSCommandInternal extends InternalCommandPacket {
             GNSProtocol.VALUE.toString(), value);
   }
   
-  /**
- * @param guid
- * @param field
- * @param value
- * @param header
- * @return InternalCommandPacket
- * @throws InternalRequestException
- * @throws JSONException
- */
+
 public static InternalCommandPacket fieldRemoveList(String guid, String field, ResultValue value, 
           InternalRequestHeader header) throws InternalRequestException, JSONException {
     return getCommand(CommandType.RemoveListUnsigned, header,

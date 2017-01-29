@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.installer;
 
 import edu.umass.cs.gnsserver.nodeconfig.HostFileLoader;
@@ -43,32 +25,14 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-/**
- * Installs n instances of the GNS Jars on remote hosts and executes them.
- * More specifically this copies the GNS JAR and all the required config files
- * to the remote host then starts a Name Server and a Local Name server
- * on each host.
- *
- * Typical uses:
- *
- * First time install:
- * java -cp jars/GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller -scriptFile conf/ec2_mongo_java8_install.bash -update kittens.name
- *
- * Later updates:
- * java -cp jars/GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller -update kittens.name
- *
- *
- * @author westy
- */
+
 public class GNSInstaller {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String CONF_FOLDER = FILESEPARATOR + "conf";
   private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
 
-  /**
-   * The default datastore type.
-   */
+
   public static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   private static final String DEFAULT_USERNAME = "ec2-user";
   private static final String DEFAULT_KEYNAME = "id_rsa";
@@ -90,10 +54,7 @@ public class GNSInstaller {
 // should make this a config parameter
   //private static final String JAVA_COMMAND = "java -ea";
 
-  /**
-   * Stores information about the hosts we're using.
-   * Contains info for both NS and LNS hosts. Could be split up onto one table for each.
-   */
+
   private static final ConcurrentHashMap<String, HostInfo> hostTable = new ConcurrentHashMap<String, HostInfo>();
   //
   private static DataStoreType dataStoreType = DEFAULT_DATA_STORE_TYPE;
@@ -197,21 +158,7 @@ public class GNSInstaller {
     }
   }
 
-  /**
-   * Copies the latest version of the JAR files to the all the hosts in the installation given by name and restarts all the servers.
-   * Does this using a separate Thread for each host.
-   *
-   *
-   * @param name
-   * @param action
-   * @param removeLogs
-   * @param deleteDatabase
-   * @param lnsHostsFile
-   * @param nsHostsFile
-   * @param scriptFile
-   * @param runAsRoot
-   * @param noopTest
-   */
+
   public static void updateRunSet(String name, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
           String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot, boolean noopTest) {
     ArrayList<Thread> threads = new ArrayList<>();
@@ -235,50 +182,20 @@ public class GNSInstaller {
     System.out.println("Finished " + name + " " + action.name() + " at " + Format.formatDateTimeOnly(new Date()));
   }
 
-  /**
-   * What action to perform on the servers.
-   */
+
   public enum InstallerAction {
 
-    /**
-     * Makes the installer kill the servers, update all the relevant files on the remote hosts and restart.
-     */
+
     UPDATE,
-    /**
-     * Makes the installer just kill and restart all the servers.
-     */
+
     RESTART,
-    /**
-     * Makes the installer just run the install script.
-     */
+
     SCRIPT_ONLY,
-    /**
-     * Makes the installer kill the servers.
-     */
+
     STOP,
   };
 
-  /**
-   * This is called to install and run the GNS on a single host. This is called concurrently in
-   * one thread per each host. LNSs will be run on hosts according to the contents of the lns hosts
-   * file.
-   * Copies the JAR and conf files and optionally resets some other stuff depending on the
-   * update action given.
-   * Then the various servers are started on the host.
-   *
-   * @param nsId
-   * @param createLNS
-   * @param hostname
-   * @param action
-   * @param removeLogs
-   * @param deleteDatabase
-   * @param scriptFile
-   * @param lnsHostsFile
-   * @param nsHostsFile
-   * @param runAsRoot
-   * @param noopTest
-   * @throws java.net.UnknownHostException
-   */
+
   public static void updateAndRunGNS(String nsId, boolean createLNS, String hostname, InstallerAction action,
           boolean removeLogs, boolean deleteDatabase,
           String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot,
@@ -343,13 +260,7 @@ public class GNSInstaller {
     }
   }
 
-  /**
-   * Starts a pair of active replica / reconfigurator on each host in the ns hosts file
-   * plus lns servers on each host in the lns hosts file.
-   *
-   * @param id
-   * @param hostname
-   */
+
   private static void startServers(String nsId, boolean createLNS, String hostname, boolean runAsRoot) {
     File keyFileName = getKeyFile();
     if (createLNS) {
@@ -409,13 +320,7 @@ public class GNSInstaller {
     System.out.println("All servers started");
   }
 
-  /**
-   * Starts a noop test server.
-   *
-   * @param nsId
-   * @param hostname
-   * @param runAsRoot
-   */
+
   private static void startNoopServers(String nsId, String hostname, boolean runAsRoot) {
     File keyFileName = getKeyFile();
     if (nsId != null) {
@@ -435,12 +340,7 @@ public class GNSInstaller {
     System.out.println("Noop server started");
   }
 
-  /**
-   * Runs the script file on the remote host.
-   *
-   * @param id
-   * @param hostname
-   */
+
   private static void executeScriptFile(String hostname, String scriptFileLocation) {
     File keyFileName = getKeyFile();
     System.out.println("Copying script file");
@@ -453,12 +353,7 @@ public class GNSInstaller {
     SSHClient.exec(userName, hostname, keyFileName, "." + FILESEPARATOR + buildInstallFilePath(remoteFile));
   }
   
-  /**
-   * Runs the script file on the remote host.
-   *
-   * @param id
-   * @param hostname
-   */
+
   private static void executeScriptFileTopLevel(String hostname, String scriptFileLocation) {
     File keyFileName = getKeyFile();
     System.out.println("Copying script file");
@@ -478,12 +373,7 @@ public class GNSInstaller {
     }
   }
 
-  /**
-   * Deletes the database on the remote host.
-   *
-   * @param id
-   * @param hostname
-   */
+
   private static void deleteDatabase(String hostname) {
     ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("deleteDatabase.sh"),
             "#!/bin/bash\n"
@@ -492,12 +382,7 @@ public class GNSInstaller {
     );
   }
 
-  /**
-   * Kills all servers on the remote host.
-   *
-   * @param id
-   * @param hostname
-   */
+
   private static void killAllServers(String hostname, boolean runAsRoot) {
     System.out.println("Killing GNS servers");
     ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
@@ -509,12 +394,7 @@ public class GNSInstaller {
     //"#!/bin/bash\nkillall java");
   }
 
-  /**
-   * Removes log files on the remote host.
-   *
-   * @param id
-   * @param hostname
-   */
+
   private static void removeLogFiles(String hostname, boolean runAsRoot) {
     System.out.println("Removing log files");
     ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
@@ -556,12 +436,7 @@ public class GNSInstaller {
     }
   }
 
-  /**
-   * Copies the JAR and configuration files to the remote host.
-   *
-   * @param id
-   * @param hostname
-   */
+
   private static void makeConfAndcopyJarAndConfFiles(String hostname, boolean createLNS, boolean noopTest) {
     if (installPath != null) {
       System.out.println("Creating conf, keystore and truststore directories");
@@ -611,11 +486,7 @@ public class GNSInstaller {
             buildInstallFilePath("conf" + FILESEPARATOR + TRUSTSTORE_FOLDER_NAME + FILESEPARATOR + "node100.cer"));
   }
 
-  /**
-   * Figures out the locations of the JAR and conf files.
-   *
-   * @return true if it found them
-   */
+
   private static void determineJarAndMasterPaths() {
     File jarPath = getLocalJarPath();
     System.out.println("Jar path: " + jarPath);
@@ -692,11 +563,7 @@ public class GNSInstaller {
     return true;
   }
 
-  /**
-   * Returns the location of the JAR that is running.
-   *
-   * @return the path
-   */
+
   private static File getLocalJarPath() {
     try {
       return new File(GNSConfig.class.getProtectionDomain().getCodeSource().getLocation().toURI());
@@ -706,11 +573,7 @@ public class GNSInstaller {
     }
   }
 
-  /**
-   * Returns the location of the key file (probably in the users .ssh home).
-   *
-   * @return a File
-   */
+
   private static File getKeyFile() {
     // check using full path
     return new File(keyFile).exists() ? new File(keyFile)
@@ -777,11 +640,7 @@ public class GNSInstaller {
     formatter.printHelp("java -cp GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller <options>", commandLineOptions);
   }
 
-  /**
-   * The main routine.
-   *
-   * @param args
-   */
+
   public static void main(String[] args) {
     try {
       CommandLine parser = initializeOptions(args);
@@ -864,9 +723,7 @@ public class GNSInstaller {
     System.exit(0);
   }
 
-  /**
-   * The thread we use to run a copy of the updater for each host we're updating.
-   */
+
   private static class UpdateThread extends Thread {
 
     private final String hostname;

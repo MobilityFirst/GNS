@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Abhigyan Sharma, Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
@@ -46,49 +28,17 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * Methods for reading field information in guids on NameServers.
- *
- * Similar code for getting values from the database exists in GnsReconLookup.
- *
- * @author westy, arun
- */
+
 public class NSFieldAccess {
 
-  /**
-   * Looks up the value of a field in the guid on this NameServer.
-   * Active code is automatically handled during this call.
-   *
-   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap.
-   *
-   * @param header
-   *
-   * @param guid
-   * @param field
-   * @param gnsApp
-   * @return ResultValue
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
+
   public static ValuesMap lookupJSONFieldLocally(InternalRequestHeader header, String guid, String field,
           GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     return lookupJSONFieldLocalNoAuth(header, guid, field, gnsApp, true);
   }
 
-  /**
-   * Looks up the value of a field in the guid on this NameServer.
-   * Active code is handled if handleActiveCode is true.
-   *
-   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap.
-   *
-   * @param header
-   * @param guid
-   * @param field
-   * @param gnsApp
-   * @param handleActiveCode
-   * @return ResultValue
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
+
   public static ValuesMap lookupJSONFieldLocalNoAuth(InternalRequestHeader header, String guid, String field,
           GNSApplicationInterface<String> gnsApp, boolean handleActiveCode)
           throws FailedDBOperationException {
@@ -145,16 +95,7 @@ public class NSFieldAccess {
     return null;
   }
 
-  /**
-   *
-   * @param header
-   * @param guid
-   * @param fields
-   * @param returnFormat
-   * @param handler
-   * @return a values map
-   * @throws FailedDBOperationException
-   */
+
   public static ValuesMap lookupFieldsLocalNoAuth(InternalRequestHeader header, String guid, List<String> fields,
           ColumnFieldType returnFormat, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
@@ -192,20 +133,7 @@ public class NSFieldAccess {
     return null;
   }
 
-  /**
-   * Looks up the value of an old-style list field
-   * in the guid in the local replica.
-   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue or
-   * an empty ResultValue if field cannot be found.
-   *
-   * @param guid
-   * @param field
-   * @param database
-   * @return ResultValue
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
-   */
+
   public static ResultValue lookupListFieldLocallyNoAuth(String guid, String field,
           BasicRecordMap database)
           throws FailedDBOperationException, FieldNotFoundException, RecordNotFoundException {
@@ -224,19 +152,7 @@ public class NSFieldAccess {
     }
   }
 
-  /**
-   * Looks up the value of an old-style list field
-   * in the guid in the local replica. Differs from lookupListFieldLocally
-   * in that it doesn't throw any exceptions and just returns an empty result
-   * if there are exceptions.
-   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue or
-   * an empty ResultValue if field cannot be found.
-   *
-   * @param guid
-   * @param field
-   * @param database
-   * @return ResultValue
-   */
+
   public static ResultValue lookupListFieldLocallySafe(String guid, String field,
           BasicRecordMap database) {
     ResultValue result = null;
@@ -261,15 +177,7 @@ public class NSFieldAccess {
     }
   }
 
-  /**
-   * Looks up the first element of field in the guid on this NameServer as a String.
-   * Returns null if the field or the record cannot be found.
-   *
-   * @param guid
-   * @param field
-   * @param database
-   * @return a string representing the first value in field
-   */
+
   public static String lookupSingletonFieldLocal(String guid, String field,
           BasicRecordMap database) {
     ResultValue guidResult = lookupListFieldLocallySafe(guid, field, database);
@@ -280,19 +188,7 @@ public class NSFieldAccess {
     }
   }
 
-  /**
-   * Looks up the value of an old-style list field in the guid.
-   * If allowQueryToOtherNSs is true and guid doesn't exists on this Name Server,
-   * sends a read query from this Name Server to a Local Name Server.
-   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue.
-   *
-   * @param guid
-   * @param field
-   * @param allowRemoteQuery
-   * @param handler
-   * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
+
   public static ResultValue lookupListFieldAnywhere(InternalRequestHeader header, String guid, String field,
           boolean allowRemoteQuery, ClientRequestHandlerInterface handler) throws FailedDBOperationException {
     ResultValue result = lookupListFieldLocallySafe(guid, field, handler.getApp().getDB());
@@ -319,18 +215,7 @@ public class NSFieldAccess {
     return result;
   }
 
-  /**
-   * Looks up the value of a field in the guid.
-   * If guid doesn't exists on this Name Server,
-   * sends a read query from this Name Server to a Local Name Server.
-   * Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap
-   *
-   * @param guid
-   * @param field
-   * @param gnsApp
-   * @return ValuesMap containing the value of the field or null if field cannot be found
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
+
   public static ValuesMap lookupJSONFieldAnywhere(InternalRequestHeader header, String guid, String field,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
     ValuesMap result = lookupJSONFieldLocally(null, guid, field, gnsApp);

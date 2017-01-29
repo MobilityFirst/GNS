@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
@@ -45,38 +27,12 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
-/**
- * In this example we demonstrate the asynchronous client.
- *
- * It sends read or update requests for one field in a guid.
- * If you supply the -write arg it updates otherwise reads.
- * You’ll want to run it once with the -write arg before running
- * it with read to actually put a value in the field.
- * It runs forever so hit CTRL-C to stop it.
- * <p>
- * Invoke it like this:
- * <p>
- * ./scripts/client/runClient edu.umass.cs.gnsclient.examples.ClientAsynchExample -write
- * <p>
- * It prints out the latency seen by the client.
- *
- * @author westy
- */
+
 public class ClientAsynchExample {
 
   private static final String ACCOUNT_ALIAS = "gnstest@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
 
-  /**
-   *
-   * @param args
-   * @throws IOException
-   * @throws InvalidKeySpecException
-   * @throws NoSuchAlgorithmException
-   * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws Exception
-   */
+
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {

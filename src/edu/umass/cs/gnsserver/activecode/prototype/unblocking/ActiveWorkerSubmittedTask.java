@@ -13,10 +13,7 @@ import com.maxmind.geoip2.DatabaseReader;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 
-/**
- * @author gaozy
- *
- */
+
 public class ActiveWorkerSubmittedTask implements Runnable {
 	
 	final ThreadPoolExecutor executor;

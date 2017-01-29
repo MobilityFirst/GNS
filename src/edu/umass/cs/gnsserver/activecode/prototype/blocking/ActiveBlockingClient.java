@@ -32,21 +32,7 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
-/**
- * This is a Client implementation with unix named pipe as the way
- * to communicate with workers.
- * 
- * This client send requests to its worker and block the sending thread. 
- * Until it receives the response, the runCode is done. 
- * <p> If it receives a query, it call QueryHandler to handle the query.
- * <p> If it receives a null value, it knows the worker is crashed and
- * it needs to restart a new worker. This design relies on the fact that
- * if the writer end of a named pipe is closed, the
- * reader end will also be closed, and return a {@code null} value.
- *
- * @author gaozy
- *
- */
+
 public class ActiveBlockingClient implements Client {
 	
 	private final static int DEFAULT_HEAP_SIZE = ActiveCodeConfig.activeWorkerHeapSize;
@@ -69,33 +55,20 @@ public class ActiveBlockingClient implements Client {
 	
 	private AtomicBoolean isRestarting = new AtomicBoolean();
 	
-	/********************* For test **********************/
-	/**
-	 * @return current worker process
-	 */
+
+
 	public Process getWorker(){
 		return workerProc;
 	}
 	
 	private AtomicInteger counter = new AtomicInteger(0);
 	
-	/**
-	 * 
-	 * @return the total number of received responses
-	 */
+
 	public int getRecv(){
 		return counter.get();
 	}
 	
-	/**
-	 * @param nodeId 
-	 * @param app 
-	 * @param ifile
-	 * @param ofile
-	 * @param id 
-	 * @param workerNumThread 
-	 * @param heapSize 
-	 */
+
 	public ActiveBlockingClient(String nodeId, ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread, int heapSize){
 		this.nodeId = nodeId;
 		this.id = id;
@@ -111,14 +84,7 @@ public class ActiveBlockingClient implements Client {
 		
 	}
 	
-	/**
-	 * @param app
-	 * @param ifile
-	 * @param ofile
-	 * @param id
-	 * @param workerNumThread
-	 * @param nodeId 
-	 */
+
 	public ActiveBlockingClient(String nodeId, ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
 		this(nodeId, app, ifile, ofile, id, workerNumThread, DEFAULT_HEAP_SIZE);
 	}
@@ -139,15 +105,7 @@ public class ActiveBlockingClient implements Client {
 		channel = new ActiveNamedPipe(ifile, ofile);				
 	}
 	
-	/**
-	 * Initialize a client with a UDP channel
-	 * @param nodeId 
-	 * @param app
-	 * @param port
-	 * @param serverPort
-	 * @param id
-	 * @param workerNumThread
-	 */
+
 	public ActiveBlockingClient(String nodeId, ActiveDBInterface app, int port, int serverPort, int id, int workerNumThread){
 		this.nodeId = nodeId;
 		this.pipeEnable = false;
@@ -169,20 +127,12 @@ public class ActiveBlockingClient implements Client {
 		
 	}
 	
-	/**
-   * @param nodeId
-	 * @param app 
-	 * @param ifile
-	 * @param ofile
-	 */
+
 	public ActiveBlockingClient(String nodeId, ActiveDBInterface app, String ifile, String ofile){
 		this(nodeId, app, ifile, ofile, 0, 1);
 	}
 	
-	/**
-	 * Destroy the worker process if it's still running,
-	 * delete the 
-	 */
+
 	@Override
 	public void shutdown(){
 		
@@ -199,15 +149,7 @@ public class ActiveBlockingClient implements Client {
 		channel.close();
 	}
 	
-	/**
-	 * Create a worker with named pipe
-	 * @param ifile
-	 * @param ofile
-	 * @param id
-	 * @param workerNumThread
-	 * @return a Process
-	 * @throws IOException
-	 */
+
 	private Process startWorker(String ifile, String ofile, int id) throws IOException{
 		List<String> command = new ArrayList<>();
 		String classpath = System.getProperty("java.class.path");
@@ -240,14 +182,7 @@ public class ActiveBlockingClient implements Client {
 		return process;
 	}
 	
-	/**
-	 * Create a worker with UDP channel
-	 * 
-	 * @param port1
-	 * @param id
-	 * @return a Process
-	 * @throws IOException
-	 */
+
 	private Process startWorker(int port1, int port2, int id) throws IOException{
 		List<String> command = new ArrayList<>();
 		String classpath = System.getProperty("java.class.path");
@@ -306,26 +241,7 @@ public class ActiveBlockingClient implements Client {
 		return ++numReq;
 	}
 	
-	/**
-	 * This runCode method sends the request to worker, and
-	 * wait for worker to finish the request. If the worker
-	 * crashed during the request execution, this method
-	 * will resend the request to a new created worker, and
-	 * the new worker will execute this request again. 
-	 * <p>If the worker fails to execute the request, it will 
-	 * send back an error to inform this method that the execution
-	 * gets accomplished with an error. This method will raise
-	 * an ActiveException, and the method which calls this method
-	 * needs to handle this exception.
-	 * 
-	 * @param guid
-	 * @param accessor
-	 * @param code
-	 * @param value
-	 * @param ttl
-	 * @return executed result sent back from worker
-         * @throws edu.umass.cs.gnsserver.activecode.prototype.ActiveException
-	 */
+
 	@Override
 	public synchronized JSONObject runCode(InternalRequestHeader header, String guid, String accessor, 
 			String code, JSONObject value, int ttl, long budget) throws ActiveException {
@@ -342,10 +258,7 @@ public class ActiveBlockingClient implements Client {
 			}
 			
 			if(response == null){
-				/**
-				 *  The worker is crashed, restart the
-				 *  worker.
-				 */
+
 				if(!isRestarting.getAndSet(true)){
 					this.shutdown();
 					this.initializeChannelAndStartWorker();
@@ -394,12 +307,7 @@ public class ActiveBlockingClient implements Client {
 	}
 	
 	
-	/**
-	 * @param args
-	 * @throws InterruptedException 
-	 * @throws JSONException 
-	 * @throws ActiveException 
-	 */
+
 	public static void main(String[] args) throws InterruptedException, JSONException, ActiveException{
 		final String suffix = "";
 		String cfile = "/tmp/client"+suffix;

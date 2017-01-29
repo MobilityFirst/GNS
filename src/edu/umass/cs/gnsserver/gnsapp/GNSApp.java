@@ -1,18 +1,4 @@
-/* Copyright (c) 2015 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy, arun */
+
 package edu.umass.cs.gnsserver.gnsapp;
 
 import edu.umass.cs.contextservice.integration.ContextServiceGNSClient;
@@ -103,9 +89,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
-/**
- * @author Westy, arun
- */
+
 public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         GNSApplicationInterface<String>, Replicable, Reconfigurable,
         ClientMessenger, AppRequestParserBytes, Shutdownable {
@@ -113,13 +97,9 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   private String nodeID;
   private GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
   private boolean constructed = false;
-  /**
-   * Object provides interface to the database table storing name records
-   */
+
   private BasicRecordMap nameRecordDB;
-  /**
-   * The Nio server
-   */
+
   private SSLMessenger<String, JSONObject> messenger;
   private ClientRequestHandlerInterface requestHandler;
   private static final long DEFAULT_REQUEST_TIMEOUT = 8000;
@@ -130,68 +110,39 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     }
   }, DEFAULT_REQUEST_TIMEOUT);
   
-  /* It's silly to enqueue requests when all GNS calls are blocking anyway. We
-   * now use a simpler and more sensible sendToClient method that tracks the
-   * original CommandPacket explicitly throughout the execution chain.
-   */
+
   private static final boolean enqueueCommand() {
 	  return false;
   }
-  /**
-   * Active code handler
-   */
+
   private ActiveCodeHandler activeCodeHandler;
 
-  /**
-   * context service interface
-   */
+
   private ContextServiceGNSInterface contextServiceGNSClient;
 
-  /**
-   * The non-secure http server
-   */
+
   GNSHttpServer httpServer = null;
-  /**
-   * The secure http server
-   */
+
   GNSHttpsServer httpsServer = null;
-  /**
-   *
-   */
+
   LocalNameServer localNameServer = null;
-  /**
-   * The UdpDnsServer that serves DNS requests through UDP.
-   */
+
   private UdpDnsServer udpDnsServer = null;
-  /**
-   * The DnsTranslator that serves DNS requests through UDP.
-   */
+
   private DnsTranslator dnsTranslator = null;
 
   // FIXME: Which one doesn't need to exists anymore?
-  /**
-   * Handles admin requests from the client
-   */
+
   ListenerAdmin ccpListenerAdmin = null;
-  /**
-   * Handles admin requests for each replica
-   */
+
   AppAdmin appAdmin = null;
 
-  /**
-   * Constructor invoked via reflection by gigapaxos.
-   *
-   * @param args
-   * @throws IOException
-   */
+
   public GNSApp(String[] args) throws IOException {
     //AppReconfigurableNode.initOptions(args);
   }
 
-  /**
-   *
-   * @param messenger
-   */
+
   @Override
   @SuppressWarnings("unchecked")
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
@@ -214,11 +165,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
   private static PacketType[] mutualAuthTypes = {PacketType.ADMIN_COMMAND};
 
-  /**
-   * arun: The code below {@link #incrResponseCount(ClientRequest)} and
-   * {@link #executeNoop(Request)} is for instrumentation only and will go
-   * away soon.
-   */
+
   private static final int RESPONSE_COUNT_THRESHOLD = 100;
   private static boolean doneOnce = false;
 
@@ -261,12 +208,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return false;
   }
 
-  /**
-   *
-   * @param request
-   * @param doNotReplyToClient
-   * @return true if the command is successfully executed
-   */
+
   @SuppressWarnings("unchecked")
   // we explicitly check type
   @Override
@@ -378,13 +320,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     	this.requestHandler.getInternalClient().close();
   }
 
-  /**
-   * Actually creates the application. This strange way of constructing the application
-   * is because of legacy code that used the createAppCoordinator interface.
-   *
-   * @param messenger
-   * @throws java.io.IOException
-   */
+
   private void GnsAppConstructor(JSONMessenger<String> messenger) throws IOException {
     this.nodeID = messenger.getMyID();
     GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<>();
@@ -460,12 +396,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   }
 
   // For InterfaceApplication
-  /**
-   *
-   * @param string
-   * @return the request
-   * @throws RequestParseException
-   */
+
   @Override
   public Request getRequest(String string) throws RequestParseException {
     GNSConfig.getLogger().log(Level.FINEST, ">>>>>>>>>>>>>>> GET REQUEST: {0}", string);
@@ -486,17 +417,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     }
   }
 
-  /**
-   * This method avoids an unnecessary restringification (as is the case with
-   * {@link #getRequest(String)} above) by decoding the JSON, stamping it with
-   * the sender information, and then creating a packet out of it.
-   *
-   * @param msgBytes
-   * @param header
-   * @param unstringer
-   * @return Request constructed from msgBytes.
-   * @throws RequestParseException
-   */
+
   public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
           Stringifiable<String> unstringer) throws RequestParseException {
     Request request = null;
@@ -522,54 +443,34 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return request;
   }
 
-  /**
-   * This method should invert the implementation of the
-   * {@link Byteable#toBytes()} method for GNSApp packets.
-   *
-   * @param msgBytes
-   * @return a request
-   * @throws RequestParseException
-   */
+
   private static Request fromBytes(byte[] msgBytes)
           throws RequestParseException {
     switch (Packet.PacketType.getPacketType(ByteBuffer.wrap(msgBytes)
             .getInt())) {
       case COMMAND:
         return new CommandPacket(msgBytes);
-      /* Currently only CommandPacket is Byteable, so we shouldn't come
-			 * here for anything else. */
+
       default:
         throw new RequestParseException(new RuntimeException(
                 "Unrecognizable request type"));
     }
   }
 
-  /**
-   *
-   * @param msgBytes
-   * @param header
-   * @return the request
-   * @throws RequestParseException
-   */
+
   @Override
   public Request getRequest(byte[] msgBytes, NIOHeader header)
           throws RequestParseException {
     return getRequestStatic(msgBytes, header, nodeConfig);
   }
 
-  /**
-   *
-   * @return a set of packet types
-   */
+
   @Override
   public Set<IntegerPacketType> getRequestTypes() {
     return new HashSet<>(Arrays.asList(types));
   }
 
-  /**
-   *
-   * @return a set of packet types
-   */
+
   @Override
   public Set<IntegerPacketType> getMutualAuthRequestTypes() {
     Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(mutualAuthTypes));
@@ -579,11 +480,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return maTypes;
   }
 
-  /**
-   *
-   * @param request
-   * @return true if the command successfully executes
-   */
+
   @Override
   public boolean execute(Request request) {
     return this.execute(request, false);
@@ -595,11 +492,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     curValueRequestFields.add(NameRecord.VALUES_MAP);
   }
 
-  /**
-   *
-   * @param name
-   * @return the record
-   */
+
   @Override
   public String checkpoint(String name) {
     try {
@@ -625,13 +518,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return null;
   }
 
-  /**
-   * Updates the state for the given named record.
-   *
-   * @param name
-   * @param state
-   * @return true if we were able to updateEntireRecord the state
-   */
+
   @Override
   public boolean restore(String name, String state) {
     GNSConfig.getLogger().log(Level.FINE,
@@ -679,59 +566,32 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return false;
   }
 
-  /**
-   * Returns a stop request packet.
-   *
-   * @param name
-   * @param epoch
-   * @return the stop request packet
-   */
+
   @Override
   public ReconfigurableRequest getStopRequest(String name, int epoch) {
-    /* A nontrivial stop request is not needed unless the app wants to do
-		 * specific cleanup activities in case of a stop. The default action of
-		 * restoring state to null is automatically done by gigapaxos. */
+
     return null; // new StopPacket(name, epoch);
   }
 
-  /**
-   *
-   * @param name
-   * @param epoch
-   * @return the state
-   */
+
   @Override
   public String getFinalState(String name, int epoch) {
     throw new RuntimeException("This method should not have been called");
   }
 
-  /**
-   *
-   * @param name
-   * @param epoch
-   * @param state
-   */
+
   @Override
   public void putInitialState(String name, int epoch, String state) {
     throw new RuntimeException("This method should not have been called");
   }
 
-  /**
-   *
-   * @param name
-   * @param epoch
-   * @return the state
-   */
+
   @Override
   public boolean deleteFinalState(String name, int epoch) {
     throw new RuntimeException("This method should not have been called");
   }
 
-  /**
-   *
-   * @param name
-   * @return the epoch
-   */
+
   @Override
   public Integer getEpoch(String name) {
     throw new RuntimeException("This method should not have been called");
@@ -755,17 +615,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return nodeConfig;
   }
 
-  /**
-   *
-   */
+
   protected static final boolean DELEGATE_CLIENT_MESSAGING = true;
 
-  /**
-   * Delegates client messaging to gigapaxos.
-   *
-   * @param responseJSON
-   * @throws java.io.IOException
-   */
+
   @Override
   public void sendToClient(Request response, JSONObject responseJSON)
           throws IOException {
@@ -796,12 +649,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     } // else
   }
 
-  /**
-   * @param originalRequest
-   * @param response
-   * @param responseJSON
-   * @throws IOException
-   */
+
   public void sendToClient(CommandPacket originalRequest, Request response, JSONObject responseJSON)
 		  throws IOException {
 
@@ -857,9 +705,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     return requestHandler;
   }
 
-  /**
-   * @return ContextServiceGNSInterface
-   */
+
   public ContextServiceGNSInterface getContextServiceGNSClient() {
     return contextServiceGNSClient;
   }

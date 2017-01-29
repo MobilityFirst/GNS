@@ -22,35 +22,20 @@ import edu.umass.cs.gnsserver.activecode.prototype.unblocking.ActiveNonBlockingC
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
-/**
- * This class is used for executing the queries sent from
- * ActiveWorker and sending response back.
- * @author gaozy
- *
- */
+
 public class ActiveQueryHandler {
 	private static ActiveDBInterface app;
 	private final ThreadPoolExecutor queryExecutor;
 	private final int numThread = 100;
 	
-	/**
-	 * Initialize a query handler
-	 * @param app
-	 */
+
 	public ActiveQueryHandler(ActiveDBInterface app){
 		ActiveQueryHandler.app = app;
 		this.queryExecutor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		queryExecutor.prestartAllCoreThreads();		
 	}
 	
-	/**
-	 * This method handles the incoming requests from ActiveQuerier,
-	 * the query could be a read or write request.
-	 * 
-	 * @param am the query to handle
-	 * @param header 
-	 * @return an ActiveMessage being sent back to worker as a response to the query
-	 */
+
 	public ActiveMessage handleQuery(ActiveMessage am, InternalRequestHeader header){
 		ActiveCodeHandler.getLogger().log(ActiveCodeHandler.DEBUG_LEVEL, "################ {0} receives:{1} ", new Object[]{this, am} );
 		ActiveMessage response;
@@ -104,24 +89,13 @@ public class ActiveQueryHandler {
 		
 	}
 	
-	/**
-	 * Submit this task to a thread pool
-	 * @param am
-	 * @param header
-	 * @param monitor
-	 */
+
 	public void handleQueryAsync(ActiveMessage am, InternalRequestHeader header, Monitor monitor){
 		queryExecutor.execute(new ActiveQuerierTask(am, header, monitor));
 				
 	}
 	
-	/**
-	 * This method handles read query from the worker. 
-	 * 
-	 * @param am 
-	 * @param header 
-	 * @return the response ActiveMessage
-	 */
+
 	public ActiveMessage handleReadQuery(ActiveMessage am, InternalRequestHeader header) {		
 		ActiveMessage resp = null;
 		try {
@@ -135,13 +109,7 @@ public class ActiveQueryHandler {
 	}
 
 	
-	/**
-	 * This method handles write query from the worker. 
-	 * 
-	 * @param am 
-	 * @param header 
-	 * @return the response ActiveMessage
-	 */
+
 	public ActiveMessage handleWriteQuery(ActiveMessage am, InternalRequestHeader header) {
 		ActiveMessage resp;
 		try {
@@ -155,12 +123,7 @@ public class ActiveQueryHandler {
 	}
 	
 	
-	  /**
-	   * This class is used to send a http request
-	   *
-	   * @param url
-	   * @return response as a string
-	   */
+
 	public String httpRequest(String url){
 	  StringBuilder response = new StringBuilder();
 	  BufferedReader br = null;
@@ -198,11 +161,7 @@ public class ActiveQueryHandler {
 		return this.getClass().getSimpleName();
 	}
 	
-	/**
-	 * @param args
-	 * @throws JSONException
-	 * @throws ActiveException 
-	 */
+
 	public static void main(String[] args) throws JSONException, ActiveException{
 		
 		String guid = "zhaoyu gao";

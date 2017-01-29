@@ -1,28 +1,9 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *
- */
+
 package edu.umass.cs.gnscommon.utils;
 
 import java.util.Arrays;
 
-/**
- * Encoding and decoding of Base64 strings.
- */
+
 public class Base64 {
 
   private static final char[] CHARACTER_ARRAY = 
@@ -37,16 +18,7 @@ public class Base64 {
     INTEGER_ARRAY['='] = 0;
   }
 
-  /**
-   * Encodes a byte array into a BASE64 <code>char[]</code> representation in accordance with RFC 2045.
-   *
-   * @param sourceArray The bytes to convert. 
-   * If <code>null</code> or length 0 an empty array will be returned.
-   * @param lineSep Optional "\r\n" after 76 characters, unless end of file.<br>
-   * No line separator will be in breach of RFC 2045 which specifies max 76 per line but will be a
-   * little faster.
-   * @return A BASE64 encoded array. Never <code>null</code>.
-   */
+
   public final static char[] encodeToChar(byte[] sourceArray, boolean lineSep) {
     // Check special case
     int sourceLength = sourceArray != null ? sourceArray.length : 0;
@@ -93,17 +65,7 @@ public class Base64 {
     return destArray;
   }
 
-  /**
-   * Decodes a BASE64 encoded char array. 
-   * All illegal characters will be ignored and can handle both arrays with
-   * and without line separators.
-   *
-   * @param sourceArray The source array. 
-   * <code>null</code> or length 0 will return an empty array.
-   * @return The decoded array of bytes. May be of length 0. 
-   * Will be <code>null</code> if the legal characters
-   * (including '=') isn't dividable by 4. (I.e. definitely corrupted).
-   */
+
   public final static byte[] decode(char[] sourceArray) {
     // Check special case
     int sourceLength = sourceArray != null ? sourceArray.length : 0;
@@ -160,16 +122,7 @@ public class Base64 {
     return destArray;
   }
 
-  /**
-   * Encodes a byte array into a BASE64 <code>byte[]</code> representation in accordance with RFC 2045.
-   *
-   * @param sourceArray The bytes to convert. 
-   * If <code>null</code> or length 0 an empty array will be returned.
-   * @param lineSep Optional "\r\n" after 76 characters, unless end of file.<br>
-   * No line separator will be in breach of RFC 2045 which specifies max 76 per line but will be a
-   * little faster.
-   * @return A BASE64 encoded array. Never <code>null</code>.
-   */
+
   public final static byte[] encodeToByte(byte[] sourceArray, boolean lineSep) {
     // Check special case
     int sourceLength = sourceArray != null ? sourceArray.length : 0;
@@ -216,17 +169,7 @@ public class Base64 {
     return destArray;
   }
 
-  /**
-   * Decodes a BASE64 encoded byte array. 
-   * All illegal characters will be ignored and can handle both arrays with
-   * and without line separators.
-   *
-   * @param sourceArray The source array. Length 0 will return an empty array. 
-   * <code>null</code> will throw an exception.
-   * @return The decoded array of bytes. May be of length 0. 
-   * Will be <code>null</code> if the legal characters
-   * (including '=') isn't dividable by 4. (I.e. definitely corrupted).
-   */
+
   public final static byte[] decode(byte[] sourceArray) {
     // Check special case
     int sourceLength = sourceArray.length;
@@ -282,30 +225,13 @@ public class Base64 {
     return destArray;
   }
 
-  /**
-   * Encodes a raw byte array into a BASE64 <code>String</code> representation i accordance with RFC 2045.
-   *
-   * @param sourceArray The bytes to convert. If <code>null</code> or length 0 an empty array will be returned.
-   * @param lineSep Optional "\r\n" after 76 characters, unless end of file.<br>
-   * No line separator will be in breach of RFC 2045 which specifies max 76 per line but will be a
-   * little faster.
-   * @return A BASE64 encoded array. Never <code>null</code>.
-   */
+
   public final static String encodeToString(byte[] sourceArray, boolean lineSep) {
     // Reuse char[] since we can't create a String incrementally anyway and StringBuffer/Builder would be slower.
     return new String(encodeToChar(sourceArray, lineSep));
   }
 
-  /**
-   * Decodes a BASE64 encoded <code>String</code>. All illegal characters will be ignored and can handle both strings with
-   * and without line separators.<br>
-   * <b>Note!</b> It can be up to about 2x the speed to call <code>decode(str.toCharArray())</code> instead. That
-   * will create a temporary array though. This version will use <code>str.charAt(i)</code> to iterate the string.
-   *
-   * @param str The source string. <code>null</code> or length 0 will return an empty array.
-   * @return The decoded array of bytes. May be of length 0. Will be <code>null</code> if the legal characters
-   * (including '=') isn't divideable by 4. (I.e. definitely corrupted).
-   */
+
   public final static byte[] decode(String str) {
     // Check special case
     int sourceLength = str != null ? str.length() : 0;

@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.installer;
 
 import java.io.File;
@@ -40,25 +22,10 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-/**
- * Writes out configuration files for an set of running EC2 hosts created by
- * {@link EC2Runner}.
- *
- * @author westy
- */
+
 public class WriteConfFile {
 
-  /**
-   * Write all the config files.
-   *
-   * @param configName
-   * @param directory
-   * @param keyName
-   * @param ec2UserName
-   * @param hostType
-   * @param datastore
-   * @param idTable
-   */
+
   public static void writeConfFiles(String configName, String directory, String keyName, String ec2UserName, String hostType, String datastore,
           ConcurrentHashMap<String, HostInfo> idTable) {
     System.out.println("Config directory: " + directory);
@@ -202,11 +169,7 @@ public class WriteConfFile {
     }
   }
 
-  /**
-   * The main routine. For testing only.
-   * 
-   * @param argv
-   */
+
   @SuppressWarnings("unchecked")
   public static void main(String argv[]) {
     ConcurrentHashMap<String, HostInfo> idTable = new ConcurrentHashMap<>();

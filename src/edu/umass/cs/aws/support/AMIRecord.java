@@ -1,33 +1,11 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.aws.support;
 
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Implements a AWS AMIRecord.
- * 
- * @author westy
- */
+
 public class AMIRecord {
   private final String name;
   private final String description;
@@ -51,54 +29,34 @@ public class AMIRecord {
     this.securityGroup = securityGroup;
   }
 
-  /**
-   *
-   * @return the name
-   */
+
   public String getName() {
     return name;
   }
 
-  /**
-   *
-   * @return the description
-   */
+
   public String getDescription() {
     return description;
   }
 
-  /**
-   *
-   * @return the instance type
-   */
+
   public String getInstanceType() {
     return instanceType;
   }
 
-  /**
-   *
-   * @return the vpc subnet
-   */
+
   public String getVpcSubnet() {
     return vpcSubnet;
   }
 
-  /**
-   *
-   * @return the security group
-   */
+
   public String getSecurityGroup() {
     return securityGroup;
   }
   
   private static Map<AMIRecordType, Map<RegionRecord, AMIRecord>> records = null;
 
-  /**
-   *
-   * @param type
-   * @param region
-   * @return the AMIRecord
-   */
+
   public static AMIRecord getAMI(AMIRecordType type, RegionRecord region) {
     if (records == null) {
       init();
@@ -110,9 +68,7 @@ public class AMIRecord {
     return result;
   }
 
-  /**
-   * Initialize the record.
-   */
+
   public static void init() {
     records = new EnumMap<>(AMIRecordType.class);
     // our new mongo AMI

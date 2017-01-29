@@ -16,13 +16,7 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.DNSQuerier;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
-/**
- * This class is an implementation of Querier, Querier only contains
- * readGuid and writeGuid method, so the protected methods will not be
- * exposed to the javascript code.
- * @author gaozy
- *
- */
+
 public class ActiveBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 	private final Channel channel;
 	private final ScriptObjectMirror JSON;
@@ -30,13 +24,7 @@ public class ActiveBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 	private final String currentGuid;
 	private final long currentID;
 	
-	/**
-	 * @param channel
-	 * @param JSON 
-	 * @param ttl 
-	 * @param guid 
-	 * @param id 
-	 */
+
 	public ActiveBlockingQuerier(Channel channel, ScriptObjectMirror JSON, int ttl, String guid, long id){
 		this.channel = channel;
 		this.JSON = JSON;
@@ -46,20 +34,13 @@ public class ActiveBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 	}
 	
 	
-	/**
-	 * @param channel
-	 */
+
 	public ActiveBlockingQuerier(Channel channel, ScriptObjectMirror JSON){
 		this(channel, JSON, 0, null, 0);
 	}
 
 	
-	/**
-	 * @param queriedGuid
-	 * @param field
-	 * @return ValuesMap the code trying to read
-	 * @throws ActiveException
-	 */
+
 	@Override
 	public ScriptObjectMirror readGuid(String queriedGuid, String field) throws ActiveException{
 		if(currentTTL <=0)
@@ -69,12 +50,7 @@ public class ActiveBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 		return readValueFromField(currentGuid, queriedGuid, field, currentTTL);
 	}
 	
-	/**
-	 * @param queriedGuid
-	 * @param field
-	 * @param value
-	 * @throws ActiveException
-	 */
+
 	@Override
 	public void writeGuid(String queriedGuid, String field, ScriptObjectMirror value) throws ActiveException{
 		if(currentTTL <=0)
@@ -148,9 +124,7 @@ public class ActiveBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 		return (String) JSON.callMember("stringify", obj);
 	}
 	
-	/**
-	 * @param args
-	 */
+
 	public static void main(String[] args){
 		ActiveBlockingQuerier querier = new ActiveBlockingQuerier(null, null);
 		int ttl = 1;

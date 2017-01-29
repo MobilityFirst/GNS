@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
@@ -53,47 +35,27 @@ import java.util.TreeSet;
 
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 
-/**
- * Implements some administrative functions for accessing the GNS.
- *
- * @author westy
- */
+
 public class Admintercessor {
 
   private final String LINE_SEPARATOR = System.getProperty("line.separator");
   private final Random randomID;
 
-  /**
-   * Used for the general admin wait / notify handling
-   */
+
   private final Object adminResponseMonitor = new Object();
-  /**
-   * This is where the admin response results are put.
-   */
+
   private final ConcurrentMap<Integer, JSONObject> adminResult;
-  /**
-   * Used for the dump wait / notify handling
-   */
+
   private final Object dumpMonitor = new Object();
-  /**
-   * This is where dump response records are collected while we're waiting for all them to come in.
-   */
+
   private final ConcurrentMap<Integer, Map<String, TreeSet<NameRecord>>> dumpStorage;
-  /**
-   * This is where the final dump response results are put once we see the sentinel packet.
-   */
+
   private final ConcurrentMap<Integer, Map<String, TreeSet<NameRecord>>> dumpResult;
 
-  /**
-   *
-   */
+
   private ListenerAdmin listenerAdmin = null;
 
-  /**
-   * Sets the listener admin.
-   *
-   * @param listenerAdmin
-   */
+
   public void setListenerAdmin(ListenerAdmin listenerAdmin) {
     this.listenerAdmin = listenerAdmin;
   }
@@ -105,12 +67,7 @@ public class Admintercessor {
     adminResult = new ConcurrentHashMap<>(10, 0.75f, 3);
   }
 
-  /**
-   * Clears the database and reinitializes all indices.
-   *
-   * @param handler
-   * @return true if we were successful
-   */
+
   public boolean sendResetDB(ClientRequestHandlerInterface handler) {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject(), handler);
@@ -121,12 +78,7 @@ public class Admintercessor {
     return false;
   }
 
-  /**
-   * Sends the delete all records command.
-   *
-   * @param handler
-   * @return true if we were successful
-   */
+
   public boolean sendDeleteAllRecords(ClientRequestHandlerInterface handler) {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject(), handler);
@@ -137,12 +89,7 @@ public class Admintercessor {
     return false;
   }
 
-  /**
-   * Sends the clear cache command.
-   *
-   * @param handler
-   * @return true if we were successful
-   */
+
   // Keep this around for future use.
   public boolean sendClearCache(ClientRequestHandlerInterface handler) {
 //    try {
@@ -154,12 +101,7 @@ public class Admintercessor {
     return false;
   }
 
-  /**
-   * Sends the dump cache command.
-   *
-   * @param handler
-   * @return a string containing the cache
-   */
+
   // Keep this around for future use.
   public String sendDumpCache(ClientRequestHandlerInterface handler) {
 //    int id = nextAdminRequestID();
@@ -179,13 +121,7 @@ public class Admintercessor {
     return "Currently not supported.";
   }
 
-  /**
-   * Sends the change log level command.
-   *
-   * @param level
-   * @param handler
-   * @return true if we were successful
-   */
+
   public boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface handler) {
     try {
       AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
@@ -211,11 +147,7 @@ public class Admintercessor {
     }
   }
 
-  /**
-   * Processes incoming AdminResponse packets.
-   *
-   * @param json
-   */
+
   public void handleIncomingAdminResponsePackets(JSONObject json) {
     try {
       switch (Packet.getPacketType(json)) {
@@ -242,12 +174,7 @@ public class Admintercessor {
   }
 
   // DUMP
-  /**
-   * Sends the dump command to the LNS.
-   *
-   * @param handler
-   * @return a string containing the contents of the GNS
-   */
+
   public CommandResponse sendDump(ClientRequestHandlerInterface handler) {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
@@ -342,12 +269,7 @@ public class Admintercessor {
     return result.toString();
   }
 
-  /**
-   * Processes incoming Dump packets.
-   *
-   * @param json
-   * @param handler
-   */
+
   public void handleIncomingDumpResponsePackets(JSONObject json, ClientRequestHandlerInterface handler) {
     try {
       switch (Packet.getPacketType(json)) {
@@ -394,13 +316,7 @@ public class Admintercessor {
     }
   }
 
-  /**
-   * Sends a command to collect all guids that contain the given tag.
-   *
-   * @param tagName
-   * @param handler
-   * @return a set of strings
-   */
+
   public Set<String> collectTaggedGuids(String tagName, ClientRequestHandlerInterface handler) {
     int id;
     if ((id = sendDumpOutputHelper(tagName, handler)) == -1) {

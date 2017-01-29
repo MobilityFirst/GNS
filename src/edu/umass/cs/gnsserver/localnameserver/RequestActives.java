@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.localnameserver;
 
 import java.util.HashSet;
@@ -41,11 +23,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.json.JSONException;
 
-/**
- * Handles the requesting of active replicas from a reconfigurator.
- *
- * @author westy
- */
+
 public class RequestActives implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
 
   private final long RESTART_PERIOD = 1000;
@@ -56,17 +34,10 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   private final List<InetSocketAddress> reconfigurators;
   private int requestCount = 0; // number of times we have requested
 
-  /**
-   * The logger.
-   */
+
   public static final Logger LOG = Logger.getLogger(RequestActives.class.getName());
 
-  /**
-   * Creates a RequestActives instance.
-   *
-   * @param lnsRequestInfo
-   * @param handler
-   */
+
   public RequestActives(LNSRequestInfo lnsRequestInfo,
           RequestHandlerInterface handler) {
 
@@ -77,10 +48,7 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     LOG.log(Level.FINE, "~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: {0}", key);
   }
 
-  /**
-   *
-   * @return a list of tasks
-   */
+
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
@@ -126,10 +94,7 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     }
   }
 
-  /**
-   *
-   * @return a list of tasks
-   */
+
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
@@ -155,30 +120,19 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     return lnsRequestInfo.getServiceName() + " | " + Long.toString(lnsRequestInfo.getLNSReqID());
   }
 
-  /**
-   *
-   * @return a set of packet types
-   */
+
   @Override
   public Set<PacketType> getEventTypes() {
     return new HashSet<>();
   }
 
-  /**
-   *
-   * @return the key
-   */
+
   @Override
   public String getKey() {
     return this.key;
   }
 
-  /**
-   *
-   * @param event
-   * @param ptasks
-   * @return an array of tasks
-   */
+
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
           ProtocolEvent<PacketType, String> event,
@@ -191,10 +145,7 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     return this.getClass().getSimpleName() + " " + lnsRequestInfo.getServiceName() + " " + lnsRequestInfo.getLNSReqID();
   }
 
-  /**
-   *
-   * @return the period
-   */
+
   @Override
   public long getPeriod() {
     return RESTART_PERIOD;

@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -26,11 +8,7 @@ import java.util.concurrent.Callable;
 import org.xbill.DNS.Message;
 import org.xbill.DNS.SimpleResolver;
 
-/**
- * Implements the callable that we use to implement parallel GNS and DNS lookups.
- * 
- * @author westy
- */
+
 public class LookupTask implements Callable<Message> {
 
   private final WorkerClass workerClass;
@@ -39,11 +17,7 @@ public class LookupTask implements Callable<Message> {
   private final SimpleResolver nameServer; // It is used for both dnsServer and gnsServer
   private final ClientRequestHandlerInterface handler;
 
-  /**
-   * Creates a worker task that handles a query using the GNS.
-   * 
-   * @param query 
-   */
+
   LookupTask(Message query, ClientRequestHandlerInterface handler) {
     this.workerClass = WorkerClass.GNSLOCAL;
     this.query = query;
@@ -51,12 +25,7 @@ public class LookupTask implements Callable<Message> {
     this.handler = handler;
   }
   
-  /**
-   * Creates a worker task that handles a query using the DNS
-   * 
-   * @param query 
-   * @param dnsServer
-   */
+
   LookupTask(Message query, SimpleResolver dnsServer, ClientRequestHandlerInterface handler) {
     this.workerClass = WorkerClass.DNS;
     this.query = query;
@@ -64,12 +33,7 @@ public class LookupTask implements Callable<Message> {
     this.handler = handler;
   }
 
-  /**
-   * Creates a worker task that handles a query using the DNS
-   *
-   * @param query
-   * @param nameServer
-   */
+
   LookupTask(Message query, SimpleResolver nameServer, Boolean isGNS, ClientRequestHandlerInterface handler) {
     if (isGNS) {
       this.workerClass = WorkerClass.GNS;
@@ -97,11 +61,7 @@ public class LookupTask implements Callable<Message> {
     return response;
   }
 
-  /**
-   * Returns the response.
-   * 
-   * @return the response
-   */
+
   public Message getResponse() {
     return response;
   }

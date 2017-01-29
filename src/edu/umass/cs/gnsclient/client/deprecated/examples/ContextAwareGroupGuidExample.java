@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
@@ -39,42 +21,7 @@ import java.util.Arrays;
 
 import org.json.JSONArray;
 
-/**
- * In this example we show how to create and use context aware group guids.
- *
- * The context aware group guid functionality allows one to create a group guid using
- * a query. The GNS will automatically maintain the membership of this group guid using
- * the query. Queries are specified using a syntax similar to that used by MongoDB. See
- * https://gns.name/wiki/index.php?title=Query_Syntax for a description of the
- * query syntax.
- * <p>
- * The main method in this class will create five example guids that have a field containing
- * a value of 25. We then create two context aware group guids that have are set up
- * with queries that look for that same field having a value of greater than 20 or zero
- * respectively. We will then retrieve those guid records and change the value of the
- * field in question to be zero. Then we will show how the two different context aware
- * group guids will retrieve the guids that correspond to their differeing queries.
- * <p>
- * The <code>AbstractGNSClient</code> class contains two methods for creating and
- * looking up the value of a context aware group guid:
- * <p>
- * <code>JSONArray selectSetupGroupQuery(String guid, String query, int interval)</code>  - given
- * a guid and a query string this initializes the guid to automatically maintain it as
- * a context group guid. The interval specifies when a new lookup will get a fresh result.
- * This method also returns a JSONArray containing guids of records that match the
- * query.
- * <p>
- * <code>JSONArray selectLookupGroupQuery(String guid)</code>  - retrieves the current value of the
- * group guid. The result might be stale if the value was updated less than the time
- * interval specified in the setup call. The results as a JSONArray containing guids
- * of records that match the query.
- * <p>
- * Note: This example cheats during account guid creation in that it creates the account
- * guid and then uses the known secret to verify the account instead of making the user
- * verify the account manually deal with the private key.
- *
- * @author westy
- */
+
 public class ContextAwareGroupGuidExample {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
@@ -84,17 +31,7 @@ public class ContextAwareGroupGuidExample {
   private static GuidEntry groupOneGuidEntry;
   private static GuidEntry groupTwoGuidEntry;
 
-  /**
-   *
-   * @param args
-   * @throws IOException
-   * @throws InvalidKeySpecException
-   * @throws NoSuchAlgorithmException
-   * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws Exception
-   */
+
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
@@ -178,13 +115,7 @@ public class ContextAwareGroupGuidExample {
   //
   // private helper methods
   //
-  /**
-   * Prints out the values of fields name field in the guids given in the guids list.
-   *
-   * @param guids
-   * @param field
-   * @throws Exception
-   */
+
   private static void showFieldValuesInGuids(JSONArray guids, String field) throws Exception {
     for (int i = 0; i < guids.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(guids.getString(i)));
@@ -194,11 +125,7 @@ public class ContextAwareGroupGuidExample {
     }
   }
 
-  /**
-   * Removes all the sub guids we use in this example.
-   *
-   * @throws Exception
-   */
+
   private static void cleanupAllGuids() throws Exception {
     // Remove the two group guids
     client.guidRemove(masterGuid, groupOneGuidEntry.getGuid());
@@ -213,15 +140,7 @@ public class ContextAwareGroupGuidExample {
     }
   }
 
-  /**
-   * Creates and verifies an account GUID. Yes it cheats on verification
-   * using a backdoor built into the GNS server.
-   *
-   * @param client
-   * @param name
-   * @return the GuidEntry
-   * @throws Exception
-   */
+
   private static GuidEntry lookupOrCreateAccountGuid(GNSClientCommands client,
           String name, String password) throws Exception {
     GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGNSProvider(), name);

@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Misha Badov, Westy
- *
- */
+
 package edu.umass.cs.gnsserver.activecode;
 
 import java.io.File;
@@ -51,34 +33,21 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 
-/**
- * This class is the entry of activecode, it provides
- * the interface for GNS to run active code. It's creates
- * a threadpool to connect the real isolated active worker
- * to run active code. It also handles the misbehaviours.
- *
- * @author Zhaoyu Gao, Westy
- */
+
 public class ActiveCodeHandler {
 
   private final String nodeId;
 
   private static final Logger LOGGER = Logger.getLogger(ActiveCodeHandler.class.getName());
 
-  /**
-   * Debug level
-   */
+
   public static final Level DEBUG_LEVEL = Level.FINE;
 
   private static ActiveHandler handler;
 
   private static String gigapaxoConfig = PaxosConfig.GIGAPAXOS_CONFIG_FILE_KEY;
 
-  /**
-   * Initializes an ActiveCodeHandler
-   *
-   * @param nodeId
-   */
+
   public ActiveCodeHandler(String nodeId) {
     this.nodeId = nodeId;
     String configFile = System.getProperty(gigapaxoConfig);
@@ -93,14 +62,7 @@ public class ActiveCodeHandler {
     handler = new ActiveHandler(nodeId, new ActiveCodeDB(), ActiveCodeConfig.activeCodeWorkerCount, ActiveCodeConfig.activeWorkerThreads, ActiveCodeConfig.acitveCodeBlockingEnabled);
   }
 
-  /**
-   * Checks to see if this guid has active code for the specified action.
-   * This function is only used for test, not used in system any more.
-   *
-   * @param valuesMap
-   * @param action can be 'read' or 'write'
-   * @return whether or not there is active code
-   */
+
   private static boolean hasCode(ValuesMap valuesMap, String action) {
 
     try {
@@ -114,9 +76,7 @@ public class ActiveCodeHandler {
     return false;
   }
 
-  /**
-   * Check if the value contains an internal field
-   */
+
   private static boolean containInternalField(JSONObject value) {
     boolean contained = false;
     Iterator<?> iter = value.keys();
@@ -129,48 +89,19 @@ public class ActiveCodeHandler {
     return contained;
   }
 
-  /**
-   * @param header
-   * @param code
-   * @param guid
-   * @param accessor
-   * @param action
-   * @param value
-   * @param activeCodeTTL current default is 10
-   * @return executed result
-   * @throws InternalRequestException
-   */
+
   private static JSONObject runCode(InternalRequestHeader header, String code, String guid, String accessor, 
           String action, JSONObject value, int activeCodeTTL) throws InternalRequestException {
     try {
       return handler.runCode(header, guid, accessor, code, value, activeCodeTTL);
     } catch (ActiveException e) {
       ActiveCodeHandler.getLogger().log(Level.INFO, "ActiveGNS request execution failed", e);
-      /**
-       * return the original value without executing, as there is an error
-       * returned from the worker. The error indicates that the code failed
-       * to execute on worker.
-       * Note: cannot return null as specified by gigapaxos execute method
-       */
+
       throw new InternalRequestException(ResponseCode.INTERNAL_REQUEST_EXCEPTION, "ActiveGNS request execution failed:" + e.getMessage());
     }
   }
 
-  /**
-   * This interface is used for the class out of activecode package to trigger active code.
-   * It requires the parameters for running active code such as guid, field, and value.
-   * It runs the requests and returns the processed result to the caller.
-   *
-   *
-   * @param header header is needed for depth query
-   * @param guid
-   * @param field
-   * @param action the actions in {@code ActiveCode}
-   * @param value
-   * @param db db is needed for fetching active code to run
-   * @return the processed result as an JSONObject, the original value is returned if there is an error with code execution
-   * @throws InternalRequestException
-   */
+
   public static JSONObject handleActiveCode(InternalRequestHeader header,
           String guid, String field, String action, JSONObject value, BasicRecordMap db) 
           throws InternalRequestException {
@@ -183,17 +114,7 @@ public class ActiveCodeHandler {
     ActiveCodeHandler.getLogger().log(DEBUG_LEVEL,
             "OOOOOOOOOOOOO handles:[guid:{0},field:{1},action:{2},value:{3},header:{4}]",
             new Object[]{guid, field, action, value, header});
-    /**
-     * Only execute active code for user field
-     * FIXME:
-     * <p>
-     * Read can be a single-field read or multi-field read.
-     * If it's a single-field read, then the field can not be a internal field.
-     * If it's a multi-feild read, then there may be some field is internal.
-     * <p>
-     * Write has no field value, but if there should not be an internal
-     * field in the JSONObject value.
-     */
+
     if (action.equals(ActiveCode.READ_ACTION) && field != null && InternalField.isInternalField(field)
             || (action.equals(ActiveCode.WRITE_ACTION) && value != null && containInternalField(value))) {
       return value;
@@ -237,24 +158,13 @@ public class ActiveCodeHandler {
     return newResult;
   }
 
-  /**
-   * @return LOGGER
-   */
+
   public static Logger getLogger() {
     return LOGGER;
   }
 
-  /**
-   * *************************** TEST CODE ********************
-   */
-  /**
-   * @param args
-   * @throws InterruptedException
-   * @throws ExecutionException
-   * @throws IOException
-   * @throws JSONException
-   * @throws InternalRequestException
-   */
+
+
   public static void main(String[] args) throws InterruptedException, ExecutionException, IOException, JSONException, InternalRequestException {
     ActiveCodeHandler handler = new ActiveCodeHandler("Test");
 

@@ -1,18 +1,4 @@
-/* Copyright (1c) 2016 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (1the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy */
+
 package edu.umass.cs.gnscommon.utils;
 
 import java.io.ByteArrayOutputStream;
@@ -42,10 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- *
- * @author westy
- */
+
 public class JSONByteConverter {
 	//private static ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory()).setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 	private static ObjectMapper objectMapperJackson = new ObjectMapper().setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
@@ -68,12 +51,7 @@ public class JSONByteConverter {
 	//private static ByteBuffer eightByteBuffer = ByteBuffer.allocate(8);
 	
 	
-	/**
-	 * 
-	 * @param json The JSONObject to be converted to bytes.
-	 * @return The byte array representation of the JSONObject.
-	 * @throws JsonProcessingException 
-	 */
+
 	public static byte[] toBytesJackson(JSONObject json) throws JsonProcessingException{
 		byte[] bytes = objectMapperJackson.writeValueAsBytes(json);
 		return bytes;
@@ -82,15 +60,7 @@ public class JSONByteConverter {
 	
 	
 	
-	/**
-	 * 
-	 * @param bytes The byte array representation of the JSONObject created by JSONByteConverter.toBytesJackson()
-	 * @return The JSONObject represented by the byte array.
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws IOException
-	 * @throws JSONException 
-	 */
+
 	public static JSONObject fromBytesJackson(byte[] bytes) throws JsonParseException, JsonMappingException, IOException, JSONException{
 		//ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
 		//@SuppressWarnings("rawtypes") //We cast to Map so JSONObject can use the correct constructor.
@@ -98,26 +68,12 @@ public class JSONByteConverter {
 		
 		//JSONObject json = objectMapper.readValue(bytes, typeRef);
 		
-		/*JSONObject json = new JSONObject();
-		Map<String, Object> map = objectMapper.readValue(bytes, typeRef;
-		for (Entry<String, Object> entry : map.entrySet()){
-			json.put(entry.getKey(),entry.getValue());
-		}*/
+
 		JSONObject json = objectMapperJackson.readValue(bytes, jsonClass);
 		return json;
 	}
 
-	/**
-	 * Isn't there a way to give readValue either (byte[], offset, length) or a ByteBuffer
-	 * without having to Arrays.copyOfRange?
-	 * 
-	 * @param bbuf
-	 * @return JSONObject from {@link ByteBuffer}.
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws IOException
-	 * @throws JSONException
-	 */
+
 	public static JSONObject fromBytesJackson(ByteBuffer bbuf)
 			throws JsonParseException, JsonMappingException, IOException,
 			JSONException {
@@ -127,13 +83,7 @@ public class JSONByteConverter {
 								bbuf.limit()), jsonClass);
 	}
 
-	/**
-	 * Checks the type of the value object and either packs it or recursively packs its elements.
-	 * @param value The value to be parsed recursively and packed into the byte array.
-	 * @param packer The MessageBufferPacker that is constructing the byte array.
-	 * @throws JSONException
-	 * @throws IOException
-	 */
+
 	private static void packJSONValue(Object value, MessageBufferPacker packer) throws JSONException, IOException{
 		if (value instanceof JSONArray){
 			packJSONArray((JSONArray)value, packer);
@@ -161,13 +111,7 @@ public class JSONByteConverter {
 		}
 	}
 	
-	/**
-	 * A helper method to pack JSONArrays into the byte array.
-	 * @param json The JSONObject to pack
-	 * @param packer THe MessageBufferPacker that is building the byte array
-	 * @throws JSONException
-	 * @throws IOException
-	 */
+
 	private static void packJSONArray(JSONArray array, MessageBufferPacker packer) throws JSONException, IOException{
 		int length = array.length();
 		packer.packArrayHeader(length);
@@ -177,13 +121,7 @@ public class JSONByteConverter {
 		}
 	}
 	
-	/**
-	 * A helper method to pack JSONObjects into the byte array.
-	 * @param json The JSONObject to pack
-	 * @param packer THe MessageBufferPacker that is building the byte array
-	 * @throws JSONException
-	 * @throws IOException
-	 */
+
 	private static void packJSONObject(JSONObject json, MessageBufferPacker packer) throws JSONException, IOException{
 		@SuppressWarnings("unchecked") // Assumption: All keys in the json are strings.
 		Iterator<String> iterator = json.keys();
@@ -197,13 +135,7 @@ public class JSONByteConverter {
 		}
 	}
 	
-	/**
-	 * Creates a new MessageBufferPacker and recursively constructs the byte array output of the JSONObject given.
-	 * @param json The JSONObject to be converted to bytes.
-	 * @return The byte array representation of the JSONObject.
-	 * @throws JSONException 
-	 * @throws IOException 
-	 */
+
 	@SuppressWarnings("unchecked") //JSON keys are assumed to be strings.
 	public static byte[] toBytesMsgpack(JSONObject json) throws JSONException, IOException{
 		MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
@@ -211,13 +143,7 @@ public class JSONByteConverter {
 		return packer.toByteArray();
 	}
 	
-	/**
-	 * A helper method for getting java values from the generic msgpack value class.
-	 * @param value The value to be parsed and returned as a java object.
-	 * @param unpacker The messageUnpacker being used to parse the byte array.
-	 * @return The object represented by the given value.
-	 * @throws JSONException
-	 */
+
 	private static Object unpackValue(Value value, MessageUnpacker unpacker) throws JSONException{
 		switch (value.getValueType()) {
         case BOOLEAN:
@@ -257,13 +183,7 @@ public class JSONByteConverter {
 			throw new JSONException("Unknown type to pack into json!");
 		 }
 	}
-	/**
-	 * A helper method to recreate a JSONArray from the Msgpack type ArrayValue.
-	 * @param av The arrayValue to be parsed into a JSONArray
-	 * @param unpacker The MessageUnpacker that's parsing the byte array.
-	 * @return The reconstructed JSONArray
-	 * @throws JSONException
-	 */
+
 	private static JSONArray unpackArray(ArrayValue av, MessageUnpacker unpacker) throws JSONException{
 		JSONArray array = new JSONArray();
 		for (Value v : av){
@@ -273,13 +193,7 @@ public class JSONByteConverter {
 		return array;
 	}
 	
-	/**
-	 * A helper method to reconstruct a JSONObject from a msgpack MapValue.
-	 * @param mv The MapValue to be parsed
-	 * @param unpacker The MessageUnpacker that is parsing the byte array.
-	 * @return Returns a JSONObject reconstructed from the given MapValue.
-	 * @throws JSONException
-	 */
+
 	private static JSONObject unpackMap(MapValue mv, MessageUnpacker unpacker) throws JSONException{
 		JSONObject json = new JSONObject();
 		for (Entry<Value,Value> entry : mv.entrySet()){
@@ -291,15 +205,7 @@ public class JSONByteConverter {
 		return json;
 	}
 	
-	/**
-	 * Recreates a JSONObject recursively from the given byte array.
-	 * @param bytes The byte array representation of the JSONObject created by JSONByteConverter.toBytesMsgpack()
-	 * @return The JSONObject represented by the byte array.
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws IOException
-	 * @throws JSONException 
-	 */
+
 	public static JSONObject fromBytesMsgpack(byte[] bytes) throws JsonParseException, JsonMappingException, IOException, JSONException{
 		MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(bytes);
 		Value value = unpacker.unpackValue();
@@ -308,25 +214,11 @@ public class JSONByteConverter {
 	}
 	// FIXME: eliminate copyOfRange
 
-  /**
-   *
-   * @param bbuf
-   * @return a json object
-   * @throws JsonParseException
-   * @throws JsonMappingException
-   * @throws IOException
-   * @throws JSONException
-   */
+
 	public static JSONObject fromBytesMsgpack(ByteBuffer bbuf) throws JsonParseException, JsonMappingException, IOException, JSONException{
 		return fromBytesMsgpack(Arrays.copyOfRange(bbuf.array(), bbuf.position(), bbuf.limit())); 
 	}
-	/**
-	 * Checks the type of the value object and either converts it to bytes or recursively handles its elements.
-	 * @param value The value to be parsed recursively and packed into the byte array.
-	 * @param packer The ByteArrayOutputStreeam that is constructing the byte array.
-	 * @throws JSONException
-	 * @throws IOException
-	 */
+
 	private static final void byteJSONValue(Object value, ByteArrayOutputStream out) throws JSONException, IOException{
 		ByteBuffer fourByteBuffer = ByteBuffer.allocate(4);
 		ByteBuffer eightByteBuffer = ByteBuffer.allocate(8);
@@ -465,13 +357,7 @@ public class JSONByteConverter {
 		}
 	}
 
-	/**
-	 * Converts a JSONObject to bytes recursively.
-	 * @param json The JSONObject to be converted to bytes.
-	 * @return The byte array representation of the JSONObject.
-	 * @throws JSONException
-	 * @throws IOException
-	 */
+
 	public static final byte[] toBytesHardcoded(JSONObject json) throws JSONException, IOException{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(1200);
 //		ByteBuffer bbuf = ByteBuffer.wrap(new byte[1200]);
@@ -483,12 +369,7 @@ public class JSONByteConverter {
 		return bytes;
 	}
 	
-	/**
-	 * Parses the given bytes and returns the object they represent.
-	 * @param bytes to be parsed
-	 * @return the object reconstructed from the bytes
-	 * @throws JSONException
-	 */
+
 	private static Object valueFromBytes(ByteBuffer bytes) throws JSONException{
 		byte type = bytes.get();
 		//System.out.println("From value: " + new Integer(type).toString());
@@ -522,12 +403,7 @@ public class JSONByteConverter {
 			
 	}
 	
-	/**
-	 * Creates a JSONObject map from the next element of the given bytebuffer
-	 * @param bytes the ByteBuffer to be parsed
-	 * @return The JSONObject reconstructed from the buffer.
-	 * @throws JSONException
-	 */
+
 	private static JSONObject mapFromBytes(ByteBuffer bytes) throws JSONException{
 		JSONObject json = new JSONObject();
 		//System.out.println("From map!");
@@ -578,12 +454,7 @@ public class JSONByteConverter {
 		return json;
 	}
 	
-	/**
-	 * Creates a JSONArray from the next element of the given bytebuffer
-	 * @param bytes the ByteBuffer to be parsed
-	 * @return The JSONArray reconstructed from the buffer.
-	 * @throws JSONException
-	 */
+
 	private static JSONArray arrayFromBytes(ByteBuffer bytes) throws JSONException{
 		JSONArray json = new JSONArray();
 		int length = bytes.getInt();
@@ -624,12 +495,7 @@ public class JSONByteConverter {
 		return json;
 	}
 	
-	/**
-	 * Converts a byte array generated by toBytesHardcoded back into a JSONObject.
-	 * @param bytes the byte array to be converted
-	 * @return The reconstructed JSONObject
-	 * @throws JSONException
-	 */
+
 	public static JSONObject fromBytesHardcoded(byte[] bytes) throws JSONException{
 		ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
 		//byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -640,12 +506,7 @@ public class JSONByteConverter {
 		return obj;
 	}
 
-  /**
-   *
-   * @param bbuf
-   * @return a json object
-   * @throws JSONException
-   */
+
   public static JSONObject fromBytesHardcoded(ByteBuffer bbuf) throws JSONException{
 		return (JSONObject)valueFromBytes(bbuf);
 	}

@@ -7,10 +7,7 @@ import javax.script.ScriptException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 
-/**
- * @author gaozy
- *
- */
+
 public class ActiveWorkerTask implements Callable<ActiveMessage>  {
 	
 	final ActiveNonBlockingRunner runner;

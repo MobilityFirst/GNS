@@ -32,10 +32,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 
-/**
- * @author gaozy
- *
- */
+
 public class ManagedDNSServiceProxy implements Runnable {
 	
 	protected final static String RECORD_FIELD = "record";
@@ -61,16 +58,12 @@ public class ManagedDNSServiceProxy implements Runnable {
 
 	    private final String text;
 
-	    /**
-	     * @param text
-	     */
+
 	    private Actions(String text) {
 	        this.text = text;
 	    }
 
-	    /**
-	     * @see java.lang.Enum#toString()
-	     */
+
 	    @Override
 	    public String toString() {
 	        return text;
@@ -355,9 +348,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 		
 	}
 	
-	/**
-	 * @param args
-	 */
+
 	public static void main(String[] args){
 		new Thread(new ManagedDNSServiceProxy()).start();
 	}

@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.console;
 
 import java.io.IOException;
@@ -61,12 +43,7 @@ import java.util.logging.Level;
 
 import org.json.JSONException;
 
-/**
- * This class defines a ConsoleModule
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
- * @version 1.0
- */
+
 public class ConsoleModule {
 
   private final ConsoleReader console;
@@ -74,9 +51,7 @@ public class ConsoleModule {
   private boolean quit = false;
   private boolean useGnsDefaults = true;
 
-  /**
-   *
-   */
+
   @SuppressWarnings("javadoc")
   protected Completor consoleCompletor;
   private String promptString = CONSOLE_PROMPT + "not connected>";
@@ -86,20 +61,12 @@ public class ConsoleModule {
   private boolean accountVerified;
   private boolean silent;
 
-  /**
-   * Prompt to prepend to the console message prompts
-   */
+
   public static final String CONSOLE_PROMPT = "GNS CLI - ";
-  /**
-   * location of the default command lists for the console modules
-   */
+
   public static String DEFAULT_COMMAND_PROPERTIES_FILE = "edu/umass/cs/gnsclient/console/console.properties";
 
-  /**
-   * Creates a new <code>ConsoleModule.java</code> object
-   *
-   * @param console to refer from
-   */
+
   public ConsoleModule(ConsoleReader console) {
     this.console = console;
     this.commands = new TreeSet<>();
@@ -141,11 +108,7 @@ public class ConsoleModule {
     return jHistory;
   }
 
-  /**
-   * Retrieve the command history
-   *
-   * @return a List including the command history
-   */
+
   @SuppressWarnings("unchecked")
   public List<String> getHistory() {
     return console.getHistory().getHistoryList();
@@ -153,9 +116,7 @@ public class ConsoleModule {
 
   private final static int NUMBER_OF_HISTORY_ITEMS_TO_STORE = 20;
 
-  /**
-   * Store the current command history
-   */
+
   public void storeHistory() {
     @SuppressWarnings("unchecked")
     List<String> history = console.getHistory().getHistoryList();
@@ -175,9 +136,7 @@ public class ConsoleModule {
     }
   }
 
-  /**
-   * Loads the commands for this module
-   */
+
   protected final void loadCommands() {
     commands.clear();
     String commandClassesAsString = loadCommandsFromProperties("main");
@@ -185,15 +144,7 @@ public class ConsoleModule {
     addCommands(commandClasses, commands);
   }
 
-  /**
-   * Parses a String representing a list of command classes (separated by
-   * commas) and returns an String[] representing the command classes
-   *
-   * @param commandClassesAsString a String representing a list of command
-   * classes (separated by commas)
-   * @return a (eventually empty) String[] where each String represents a
-   * command class
-   */
+
   protected String[] parseCommands(String commandClassesAsString) {
     if (commandClassesAsString == null) {
       return new String[0];
@@ -202,14 +153,7 @@ public class ConsoleModule {
     return cmds;
   }
 
-  /**
-   * Add commands to this module. Commands instances are created by reflection
-   * based on the command class names passed in parameter
-   *
-   * @param commandClasses a String[] containing the class names of the command
-   * to instantiate
-   * @param commands Set where the commands are added
-   */
+
   protected void addCommands(String[] commandClasses, Set<ConsoleCommand> commands) {
     for (int i = 0; i < commandClasses.length; i++) {
       String commandClass = commandClasses[i].trim();
@@ -230,14 +174,7 @@ public class ConsoleModule {
     }
   }
 
-  /**
-   * Extracts the commands from the command properties file as a single
-   * <code>String</code> containing a list of comma-separated command classes.
-   *
-   * @param moduleID module ID used as the key in the properties file
-   * @return a single <code>String</code> containing a list of comma-separated
-   * command classes corresponding to the module identified by
-   */
+
   protected String loadCommandsFromProperties(String moduleID) {
 
     //System.out.println(this.getClass().getClassLoader().getResource(".").getPath());
@@ -263,9 +200,7 @@ public class ConsoleModule {
     return commandClassesAsString;
   }
 
-  /**
-   * Loads the commands for this module
-   */
+
   protected void loadCompletor() {
     List<Completor> completors = new LinkedList<>();
     int size = commands.size();
@@ -283,20 +218,14 @@ public class ConsoleModule {
     consoleCompletor = new ArgumentCompletor(completorsArray, new CommandDelimiter());
   }
 
-  /**
-   * Reload the completor associated with this module. This method must be
-   * called if the list of commands has been dynamically modified.
-   */
+
   protected synchronized void reloadCompletor() {
     console.removeCompletor(consoleCompletor);
     loadCompletor();
     console.addCompletor(consoleCompletor);
   }
 
-  /**
-   * Display help for this module
-   *
-   */
+
   public void help() {
     printString("Commands available for the main menu are:\n");
     ConsoleCommand command;
@@ -308,28 +237,18 @@ public class ConsoleModule {
     }
   }
 
-  /**
-   * Quit this module
-   */
+
   public void quit() {
     quit = true;
     console.removeCompletor(getCompletor());
   }
 
-  /**
-   * Get all the commands for this module
-   *
-   * @return <code>TreeSet</code> of commands (commandName|commandObject)
-   */
+
   public TreeSet<ConsoleCommand> getCommands() {
     return commands;
   }
 
-  /**
-   * Get the prompt string for this module
-   *
-   * @return <code>String</code> to place before prompt
-   */
+
   public String getPromptString() {
     if (silent) {
       return "";
@@ -337,17 +256,12 @@ public class ConsoleModule {
     return promptString;
   }
 
-  /**
-   * @param promptString the promptString to set
-   */
+
   public void setPromptString(String promptString) {
     this.promptString = promptString;
   }
 
-  /**
-   * Handle a series of commands
-   *
-   */
+
   public void handlePrompt() {
     quit = false;
     // Try to connect to the GNS
@@ -388,9 +302,7 @@ public class ConsoleModule {
     GNSClientConfig.getLogger().fine("Quitting");
   }
 
-  /**
-   * Connect and try to find default GNSProtocol.GUID.toString() if defined.
-   */
+
   public void useGnsDefaults() {
     GuidEntry guid = KeyPairUtils.getDefaultGuidEntry(getGnsInstance());
     if (guid == null) {
@@ -407,42 +319,23 @@ public class ConsoleModule {
   private boolean lastWasCR = false;
   private List<Byte> currentLine = new ArrayList<>();
 
-  /**
-   * Implements SEQUOIA-887. We would like to create a BufferedReader to use its
-   * readLine() method but can't because its eager cache would steal bytes from
-   * JLine and drop them when we return, so painfully implement here our own
-   * readLine() method, tyring to be bug for bug compatible with JLine.
-   * <p>
-   * This is a quite ugly hack. Among others we cannot use any read buffering
-   * since consoleReader is exported and might be used elsewhere. At the very
-   * least we would like to encapsulate the consoleReader so we can avoid
-   * creating one in non-JLine mode. Re-open SEQUOIA-887 for such a proper fix.
-   */
+
   private String readLineBypassJLine() throws IOException {
     // If JLine implements any kind of internal read buffering, we
     // are screwed.
     InputStream jlineInternal = console.getInput();
 
-    /*
-     * Unfortunately we can't do this because InputStreamReader returns -1/EOF
-     * after every line!? So we have to decode bytes->characters by ourselves,
-     * see below. Because of this we will FAIL with exotic locales, see
-     * SEQUOIA-911
-     */
+
     // Reader jlineInternal = new InputStreamReader(consoleReader.getInput());
     currentLine.clear();
 
     int ch = jlineInternal.read();
 
-    if (ch == -1 /* EOF */ || ch == 4 /* ASCII EOT */) {
+    if (ch == -1  || ch == 4 ) {
       return null;
     }
 
-    /**
-     * @see java.io.BufferedReader#readLine(boolean)
-     * @see java.io.DataInputStream#readLine() and also the less elaborate JLine
-     * keybinding.properties
-     */
+
     // discard any LF following a CR
     if (lastWasCR && ch == '\n') {
       ch = jlineInternal.read();
@@ -466,20 +359,13 @@ public class ConsoleModule {
       encoded[i] = it.next();
     }
 
-    /**
-     * This String ctor is using the "default" java.nio.Charset encoding which
-     * is locale-dependent; a Good Thing.
-     */
+
     String line = new String(encoded);
 
     return line;
   }
 
-  /**
-   * Get the list of commands as strings for this module
-   *
-   * @return <code>Hashtable</code> list of <code>String</code> objects
-   */
+
   public final Hashtable<String, ConsoleCommand> getHashCommands() {
     Hashtable<String, ConsoleCommand> hashCommands = new Hashtable<String, ConsoleCommand>();
     for (ConsoleCommand consoleCommand : commands) {
@@ -488,13 +374,7 @@ public class ConsoleModule {
     return hashCommands;
   }
 
-  /**
-   * Handle module command
-   *
-   * @param commandLine the command line to handle
-   * @param hashCommands the list of commands available for this module
-   * @throws Exception if fails *
-   */
+
   public final void handleCommandLine(String commandLine, Hashtable<String, ConsoleCommand> hashCommands)
           throws Exception {
     StringTokenizer st = new StringTokenizer(commandLine);
@@ -509,18 +389,7 @@ public class ConsoleModule {
     throw new Exception("Command " + commandLine + " is not supported here");
   }
 
-  /**
-   * Find the <code>ConsoleCommand</code> based on the name of the command from
-   * the <code>commandLine</code> in the <code>hashCommands</code>. If more than
-   * one <code>ConsoleCommand</code>'s command name start the same way, return
-   * the <code>ConsoleCommand</code> with the longest one.
-   *
-   * @param commandLine the command line to handle
-   * @param hashCommands the list of commands available for this module
-   * @return the <code>ConsoleCommand</code> corresponding to the name of the
-   * command from the <code>commandLine</code> or <code>null</code> if
-   * there is no matching
-   */
+
   public ConsoleCommand findConsoleCommand(String commandLine, Hashtable<String, ConsoleCommand> hashCommands) {
     ConsoleCommand foundCommand = null;
     for (Iterator<?> iter = hashCommands.entrySet().iterator(); iter.hasNext();) {
@@ -540,101 +409,57 @@ public class ConsoleModule {
     return foundCommand;
   }
 
-  /**
-   * Get access to the console
-   *
-   * @return <code>Console</code> instance
-   */
+
   public ConsoleReader getConsole() {
     return console;
   }
 
-  /**
-   * Returns the console completor to use for this module.
-   *
-   * @return <code>Completor</code> object.
-   */
+
   public Completor getCompletor() {
     return consoleCompletor;
   }
 
-  /**
-   * Returns the silent value.
-   *
-   * @return Returns the silent.
-   */
+
   public boolean isSilent() {
     return silent;
   }
 
-  /**
-   * Toggle the console silent output on/off
-   *
-   * @param silent true if the output should be silent
-   */
+
   public void setSilent(boolean silent) {
     this.silent = silent;
   }
 
-  /**
-   * Returns the gnsClient value.
-   *
-   * @return Returns the gnsClient.
-   */
+
   public GNSClientCommands getGnsClient() {
     return gnsClient;
   }
 
-  /**
-   * Set the GNS client connection
-   *
-   * @param gnsClient A valid GNS connection
-   */
+
   public void setGnsClient(GNSClientCommands gnsClient) {
     this.gnsClient = gnsClient;
   }
 
-  /**
-   * Returns the currentGuid value.
-   *
-   * @return Returns the currentGuid.
-   */
+
   public GuidEntry getCurrentGuid() {
     return currentGuid;
   }
 
-  /**
-   * Returns the verified status of the current GNSProtocol.GUID.toString().
-   *
-   * @return true if the account is verified
-   */
+
   public boolean isAccountVerified() {
     return accountVerified;
   }
 
-  /**
-   * Sets the account status to verified
-   *
-   * @param accountVerified true if the account status is verified
-   */
+
   public void setAccountVerified(boolean accountVerified) {
     this.accountVerified = accountVerified;
   }
 
-  /**
-   * Sets the currentGuid value.
-   *
-   * @param guid The currentGuid to set.
-   */
+
   public void setCurrentGuid(GuidEntry guid) {
     this.currentGuid = guid;
   }
 
-  /**
-   * Returns true if the current GNSProtocol.GUID.toString() is set and the account has been verified
-   *
-   * @return true if the current GNSProtocol.GUID.toString() is set and the account has been verified
-   */
+
   public boolean isCurrentGuidSetAndVerified() {
     if (currentGuid == null) {
       printString("Select the GUID to use first with guid_use.\n");
@@ -650,12 +475,7 @@ public class ConsoleModule {
     return true;
   }
 
-  /**
-   * Sets the current GNSProtocol.GUID.toString() with the provided GNSProtocol.GUID.toString() and checks if the account is
- verified.
-   *
-   * @param guid the GNSProtocol.GUID.toString() to use as current GNSProtocol.GUID.toString()
-   */
+
   public void setCurrentGuidAndCheckForVerified(GuidEntry guid) {
     this.currentGuid = guid;
     if (gnsClient != null) {
@@ -666,12 +486,7 @@ public class ConsoleModule {
     }
   }
 
-  /**
-   * Sets the guid as default GNSProtocol.GUID.toString() in user preferences and checks if the account
- is verified.
-   *
-   * @param guid the GNSProtocol.GUID.toString() to set as default GNSProtocol.GUID.toString()
-   */
+
   public void setDefaultGuidAndCheckForVerified(GuidEntry guid) {
     KeyPairUtils.setDefaultGuidEntry(getGnsInstance(), guid.getEntityName());
     if (currentGuid == null) {
@@ -685,11 +500,7 @@ public class ConsoleModule {
     }
   }
 
-  /**
-   * Return the GNS host and port number in a string like "server.gns.name:8080"
-   *
-   * @return GNS host and port
-   */
+
   public String getGnsInstance() {
     if (gnsClient == null) {
       return null;
@@ -698,12 +509,7 @@ public class ConsoleModule {
     }
   }
 
-  /**
-   * Check if the given GNSProtocol.GUID.toString() is verified in the GNS.
-   *
-   * @param guid the GNSProtocol.GUID.toString() to lookup
-   * @return true if the account is verified
-   */
+
   public boolean checkGnsIsAccountVerified(GuidEntry guid) {
     try {
       JSONObject json = gnsClient.lookupAccountRecord(guid.getGuid());
@@ -722,11 +528,7 @@ public class ConsoleModule {
     }
   }
 
-  /**
-   * Outputs a string on the console output (without carriage return)
-   *
-   * @param string the string to print
-   */
+
   public void printString(String string) {
     try {
       console.printString(string);
@@ -735,30 +537,17 @@ public class ConsoleModule {
     }
   }
 
-  /**
-   * This class defines a CommandDelimiter used to delimit a command from user
-   * input
-   */
+
   private class CommandDelimiter extends ArgumentCompletor.AbstractArgumentDelimiter {
 
-    /**
-     * @see jline.ArgumentCompletor.AbstractArgumentDelimiter#isDelimiterChar(java.lang.String,
-     * int)
-     */
+
     @Override
     public boolean isDelimiterChar(String buffer, int pos) {
       String tentativeCmd = buffer.substring(0, pos);
       return isACompleteCommand(tentativeCmd);
     }
 
-    /**
-     * Test if the String input by the user insofar is a complete command or
-     * not.
-     *
-     * @param input Text input by the user
-     * @return <code>true</code> if the text input by the user is a complete
-     * command name, <code>false</code> else
-     */
+
     private boolean isACompleteCommand(String input) {
       boolean foundCompleteCommand = false;
       for (Iterator<ConsoleCommand> iter = commands.iterator(); iter.hasNext();) {
@@ -781,18 +570,12 @@ public class ConsoleModule {
     }
   }
 
-  /**
-   *
-   * @return true if use defaults is true
-   */
+
   public boolean isUseGnsDefaults() {
     return useGnsDefaults;
   }
 
-  /**
-   *
-   * @param useGnsDefaults
-   */
+
   public void setUseGnsDefaults(boolean useGnsDefaults) {
     this.useGnsDefaults = useGnsDefaults;
   }

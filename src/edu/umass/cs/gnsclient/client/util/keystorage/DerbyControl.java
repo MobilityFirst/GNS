@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.client.util.keystorage;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
@@ -30,19 +12,14 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 
-/**
- * Provides a simple interface for starting and stopping an embedded Derby.
- */
+
 public class DerbyControl {
 
-  /* the default framework is embedded */
+
   private String framework = "embedded";
   private String protocol = "jdbc:derby:";
 
-  /**
-   *
-   * @return a connection
-   */
+
   public Connection start() {
     try {
       Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
@@ -59,27 +36,10 @@ public class DerbyControl {
     props.put("user", "user1");
     props.put("password", "user1");
 
-    /* By default, the schema APP will be used when no username is
-     * provided.
-     * Otherwise, the schema name is the same as the user name (in this
-     * case "user1" or USER1.)
-     *
-     * Note that user authentication is off by default, meaning that any
-     * user can connect to your database using any password. To enable
-     * authentication, see the Derby Developer's Guide.
-     */
+
     String dbName = "clientKeyDB"; // the name of the database
 
-    /*
-     * This connection specifies create=true in the connection URL to
-     * cause the database to be created when connecting for the first
-     * time. To remove the database, remove the directory derbyDB (the
-     * same as the database name) and its contents.
-     *
-     * The directory derbyDB will be created under the directory that
-     * the system property derby.system.home points to, or the current
-     * directory (user.dir) if derby.system.home is not set.
-     */
+
     String url = protocol + dbName + ";create=true";
     //START HERE
     try {
@@ -95,28 +55,9 @@ public class DerbyControl {
     }
   }
 
-  /**
-   * Shut things down.
-   */
+
   public void shutdown() {
-    /*
-     * In embedded mode, an application should shut down the database.
-     * If the application fails to shut down the database,
-     * Derby will not perform a checkpoint when the JVM shuts down.
-     * This means that it will take longer to boot (connect to) the
-     * database the next time, because Derby needs to perform a recovery
-     * operation.
-     *
-     * It is also possible to shut down the Derby system/engine, which
-     * automatically shuts down all booted databases.
-     *
-     * Explicitly shutting down the database or the Derby engine with
-     * the connection URL is preferred. This style of shutdown will
-     * always throw an SQLException.
-     *
-     * Not shutting down when in a client environment, see method
-     * Javadoc.
-     */
+
     if (framework.equals("embedded")) {
       try {
         // the shutdown=true attribute shuts down Derby
@@ -143,22 +84,13 @@ public class DerbyControl {
     }
   }
 
-  /**
-   * Reports a data verification failure to System.err with the given message.
-   *
-   * @param message A message describing what failed.
-   */
+
   private void reportFailure(String message) {
     GNSClientConfig.getLogger().warning("\nData verification failed:");
     GNSClientConfig.getLogger().log(Level.WARNING, "\t{0}", message);
   }
 
-  /**
-   * Prints details of an SQLException chain to <code>System.err</code>.
-   * Details included are SQL State, Error code, Exception message.
-   *
-   * @param e the SQLException from which to print details.
-   */
+
   public static void printSQLException(SQLException e) {
     // Unwraps the entire exception chain to unveil the real cause of the
     // Exception.
@@ -173,37 +105,12 @@ public class DerbyControl {
     }
   }
 
-  /**
-   * <p>
-   * Starts the actual demo activities. This includes creating a database by
-   * making a connection to Derby (automatically loading the driver),
-   * creating a table in the database, and inserting, updating and retrieving
-   * some data. Some of the retrieved data is then verified (compared) against
-   * the expected results. Finally, the table is deleted and, if the embedded
-   * framework is used, the database is shut down.</p>
-   * <p>
-   * Generally, when using a client/server framework, other clients may be
-   * (or want to be) connected to the database, so you should be careful about
-   * doing shutdown unless you know that no one else needs to access the
-   * database until it is rebooted. That is why this demo will not shut down
-   * the database unless it is running Derby embedded.</p>
-   *
-   * @param args - Optional argument specifying which framework or JDBC driver
-   * to use to connect to Derby. Default is the embedded framework,
-   * see the <code>main()</code> method for details.
-   * @see #main(String[])
-   */
+
   void go(String[] args) {
-    /* parse the arguments to determine which framework is desired*/
+
     parseArguments(args);
 
-    /* We will be using Statement and PreparedStatement objects for
-     * executing SQL. These objects, as well as Connections and ResultSets,
-     * are resources that should be released explicitly after use, hence
-     * the try-catch-finally pattern used below.
-     * We are storing the Statement and Prepared statement object references
-     * in an array list for convenience.
-     */
+
     Connection conn = null;
     ArrayList<Statement> statements = new ArrayList<>(); // list of Statements, PreparedStatements
     PreparedStatement psInsert;
@@ -213,8 +120,7 @@ public class DerbyControl {
     try {
       conn = start();
 
-      /* Creating a statement object that we can use for running various
-       * SQL statements commands against the database.*/
+
       s = conn.createStatement();
       statements.add(s);
 
@@ -224,13 +130,7 @@ public class DerbyControl {
 
       // and add a few rows...
 
-      /* It is recommended to use PreparedStatements when you are
-       * repeating execution of an SQL statement. PreparedStatements also
-       * allows you to parameterize variables. By using PreparedStatements
-       * you may increase performance (because the Derby engine does not
-       * have to recompile the SQL statement each time it is executed) and
-       * improve security (because of Java type checking).
-       */
+
       // parameter 1 is num (int), parameter 2 is addr (varchar)
       psInsert = conn.prepareStatement(
               "insert into location values (?, ?)");
@@ -265,24 +165,11 @@ public class DerbyControl {
       System.out.println("Updated 180 Grand to 300 Lakeshore");
 
 
-      /*
-       We select the rows and verify the results.
-       */
+
       rs = s.executeQuery(
               "SELECT num, addr FROM location ORDER BY num");
 
-      /* we expect the first returned column to be an integer (num),
-       * and second to be a String (addr). Rows are sorted by street
-       * number (num).
-       *
-       * Normally, it is best to use a pattern of
-       *  while(rs.next()) {
-       *    // do something with the result set
-       *  }
-       * to process all returned rows, but we are only expecting two rows
-       * this time, and want the verification code to be easy to
-       * comprehend, so we use a different pattern.
-       */
+
       int number; // street number retrieved from the database
       boolean failure = false;
       if (!rs.next()) {
@@ -320,10 +207,7 @@ public class DerbyControl {
       s.execute("drop table location");
       System.out.println("Dropped table location");
 
-      /*
-       We commit the transaction. Any changes will be persisted to
-       the database now.
-       */
+
       conn.commit();
       System.out.println("Committed the transaction");
       shutdown();
@@ -369,18 +253,7 @@ public class DerbyControl {
     }
   }
 
-  /**
-   * Parses the arguments given and sets the values of this class's instance
-   * variables accordingly - that is, which framework to use, the name of the
-   * JDBC driver class, and which connection protocol to use. The
-   * protocol should be used as part of the JDBC URL when connecting to Derby.
-   * <p>
-   * If the argument is "embedded" or invalid, this method will not change
-   * anything, meaning that the default values will be used.</p>
-   * <p>
-   * @param args JDBC connection framework, either "embedded" or "derbyclient".
-   * Only the first argument will be considered, the rest will be ignored.
-   */
+
   private void parseArguments(String[] args) {
     if (args.length > 0) {
       if (args[0].equalsIgnoreCase("derbyclient")) {
@@ -390,37 +263,7 @@ public class DerbyControl {
     }
   }
 
-  /**
-   * <p>
-   * Starts the demo by creating a new instance of this class and running
-   * the <code>go()</code> method.</p>
-   * <p>
-   * When you run this application, you may give one of the following
-   * arguments:
-   * <ul>
-   * <li><code>embedded</code> - default, if none specified. Will use
-   * Derby's embedded driver. This driver is included in the derby.jar
-   * file.</li>
-   * <li><code>derbyclient</code> - will use the Derby client driver to
-   * access the Derby Network Server. This driver is included in the
-   * derbyclient.jar file.</li>
-   * </ul>
-   * <p>
-   * When you are using a client/server framework, the network server must
-   * already be running when trying to obtain client connections to Derby.
-   * This demo program will will try to connect to a network server on this
-   * host (the localhost), see the <code>protocol</code> instance variable.
-   * </p>
-   * <p>
-   * When running this demo, you must include the correct driver in the
-   * classpath of the JVM. See <a href="example.html">example.html</a> for
-   * details.
-   * </p>
-   *
-   * @param args This program accepts one optional argument specifying which
-   * connection framework (JDBC driver) to use (see above). The default
-   * is to use the embedded JDBC driver.
-   */
+
   public static void main(String[] args) {
     new DerbyControl().go(args);
     System.out.println("SimpleApp finished");

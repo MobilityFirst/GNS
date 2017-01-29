@@ -30,18 +30,7 @@ import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
-/**
- * @author arun
- *
- * Fixed. The bug was a concurrency bug in using signature instances at
- * the client as well as the server. The fix was to pre-create multiple
- * signature instances (for parallelism) and synchronize upon the
- * instance when using it.
- *
- * Tests the capacity of the GNS using a configurable number of async
- * clients.
- *
- */
+
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
 public class SomeReadsEncryptionFails extends DefaultTest {
 
@@ -61,15 +50,11 @@ public class SomeReadsEncryptionFails extends DefaultTest {
 
   private static Logger log = GNSClientConfig.getLogger();
 
-  /**
-   * @throws Exception
-   */
+
   public SomeReadsEncryptionFails() throws Exception {
   }
 
-  /**
-   * @throws Exception
-   */
+
   @BeforeClass
   public static void setup() throws Exception {
     initStaticParams();
@@ -190,9 +175,7 @@ public class SomeReadsEncryptionFails extends DefaultTest {
   private static final String someField = "someField";
   private static final String someValue = "someValue";
 
-  /**
-   * Verifies a single write is successful.
-   */
+
   @Test
   public void test_01_SingleWrite() {
     GuidEntry guid = guidEntries[0];
@@ -213,10 +196,7 @@ public class SomeReadsEncryptionFails extends DefaultTest {
     }
   }
 
-  /**
-   * @throws Exception
-   *
-   */
+
   @Test
   public void test_02_SequentialReadCapacity() throws Exception {
     int numReads = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
@@ -253,9 +233,7 @@ public class SomeReadsEncryptionFails extends DefaultTest {
     });
   }
 
-  /**
-   * @throws Exception
-   */
+
   @Test
   public void test_03_ParallelReadCapacity() throws Exception {
     int numReads = Config.getGlobalInt(TC.NUM_REQUESTS);
@@ -276,11 +254,7 @@ public class SomeReadsEncryptionFails extends DefaultTest {
             + "K/s averaged over " + numReads + " reads.");
   }
 
-  /**
-   * Removes all account and sub-guids created during the test.
-   *
-   * @throws Exception
-   */
+
   @AfterClass
   public static void cleanup() throws Exception {
     Thread.sleep(2000);
@@ -329,10 +303,7 @@ public class SomeReadsEncryptionFails extends DefaultTest {
     Config.register(args);
   }
 
-  /**
-   * @param args
-   * @throws IOException
-   */
+
   public static void main(String[] args) throws IOException {
     Util.assertAssertionsEnabled();
     processArgs(args);

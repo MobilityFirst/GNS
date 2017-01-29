@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import com.google.common.collect.Sets;
@@ -64,11 +46,7 @@ import javax.crypto.SecretKey;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import javax.xml.bind.DatatypeConverter;
 
-/**
- * Provides signing and ACL checks for commands.
- *
- * @author westy, arun
- */
+
 public class NSAccessSupport {
 
   private static KeyFactory keyFactory;
@@ -86,18 +64,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Verifies that the signature corresponds to the message using the public key.
-   *
-   * @param accessorPublicKey
-   * @param signature
-   * @param message
-   * @return true if the signature verifies successfully
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws UnsupportedEncodingException
-   * @throws InvalidKeySpecException
-   */
+
   public static boolean verifySignature(String accessorPublicKey, String signature, String message) throws
           InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
     byte[] publickeyBytes = Base64.decode(accessorPublicKey);
@@ -235,18 +202,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Handles checking of fields with dot notation.
-   * Checks deepest field first then backs up.
-   *
-   * @param accessType
-   * @param guid
-   * @param activeReplica
-   * @param groups
-   * @param field
-   * @return true if the accessor has access
-   * @throws FailedDBOperationException
-   */
+
   public static boolean hierarchicalAccessGroupCheck(MetaDataTypeName accessType, String guid,
           String field, Set<String> groups,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -268,18 +224,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Check for one of the groups that accessorguid is in being a member of allowed users.
-   * Field can be dotted and at any level.
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accessorGuid
-   * @param activeReplica
-   * @return true if access is allowed
-   * @throws FailedDBOperationException
-   */
+
   private static boolean checkForGroupAccess(MetaDataTypeName accessType,
           String guid, String field, Set<String> groups,
           GNSApplicationInterface<String> activeReplica)
@@ -300,19 +245,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Checks to see if the accessorGuid can access the field of the guid.
-   * Access type is some combo of read, and write, and blacklist or whitelist.
-   * Note: Blacklists are currently not supported.
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accessorGuid
-   * @param activeReplica
-   * @return true if the the reader has access
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
+
   // FIXME: This is only used for checking the case where an accessorGuid is in a group guid
   // that is in the acl. For this purpose it is overkill and should be fixed.
   @Deprecated
@@ -335,18 +268,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Handles checking of fields with dot notation.
-   * Checks deepest field first then backs up.
-   *
-   * @param accessType
-   * @param guidInfo
-   * @param field
-   * @param accessorInfo
-   * @param accessorPublicKey
-   * @return true if the accessor has access
-   * @throws FailedDBOperationException
-   */
+
   @Deprecated
   private static boolean hierarchicalAccessCheck(InternalRequestHeader header, MetaDataTypeName accessType, String guid,
           String field, String accessorGuid,
@@ -365,18 +287,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Does the access check for the given access type on field for the guid and accessorGuid.
-   * Field can be dotted and at any level.
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accessorGuid
-   * @param activeReplica
-   * @return true if access is allowed
-   * @throws FailedDBOperationException
-   */
+
   @Deprecated
   private static boolean checkForAccess(InternalRequestHeader header, MetaDataTypeName accessType, String guid, String field, String accessorGuid,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -405,17 +316,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Performs the ultimate check to see if guid is in the list of allowed users (which is a list of public keys).
-   * Also handles the case where one of the groups that accessorguid is in is a member of allowed users.
-   * Finally handles the case where the allowed users contains the GNSProtocol.EVERYONE.toString() symbol.
-   *
-   * @param accessorGuid - the guid that we are checking for access
-   * @param allowedUsers - the list of publickeys that are in the acl
-   * @param activeReplica
-   * @return true if the guid is in the allowed users
-   * @throws FailedDBOperationException
-   */
+
   @Deprecated
   private static boolean checkAllowedUsers(InternalRequestHeader header, String accessorGuid,
           Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -434,16 +335,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Returns true if the field has access setting that allow it to be read globally.
-   *
-   * @param access
-   * @param guid
-   * @param field
-   * @param activeReplica
-   * @return true if the field can be accessed
-   * @throws FailedDBOperationException
-   */
+
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     // First we check to see if the field has an acl that allows everyone access.
@@ -471,18 +363,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Looks up the public key for a guid using the acl of a field.
-   * Handles fields that uses dot notation. Recursively goes up the tree
-   * towards the root (GNSProtocol.ENTIRE_RECORD.toString()) node.
-   *
-   * @param access
-   * @param guid
-   * @param field
-   * @param database
-   * @return a set of public keys
-   * @throws FailedDBOperationException
-   */
+
   @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
@@ -544,13 +425,7 @@ public class NSAccessSupport {
     }
   }
 
-  /**
-   * Extracts out the message string without the signature part.
-   *
-   * @param messageStringWithSignatureParts
-   * @param signatureParts
-   * @return the string without the signature
-   */
+
   public static String removeSignature(String messageStringWithSignatureParts, String signatureParts) {
     ClientSupportConfig.getLogger().log(Level.FINER,
             "fullstring = {0} fullSignatureField = {1}", new Object[]{messageStringWithSignatureParts, signatureParts});

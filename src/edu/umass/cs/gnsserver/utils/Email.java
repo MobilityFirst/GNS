@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.utils;
 
 import edu.umass.cs.gnscommon.utils.Format;
@@ -38,30 +20,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.mail.MessagingException;
 
-/**
- * Contains a few different methods to send email to the recipient.
- *
- * @author westy
- */
+
 public class Email {
 
   private static final Logger LOG = Logger.getLogger(Email.class.getName());
 
-  /**
-   * @return Logger used by most of the client support package.
-   */
+
   public static final Logger getLogger() {
     return LOG;
   }
 
-  /**
-   * Attempts using a few different methods to send email to the recipient.
-   *
-   * @param subject
-   * @param recipient
-   * @param text
-   * @return true if successful
-   */
+
   public static boolean email(String subject, String recipient, String text) {
     if (emailLocal(subject, recipient, text, true)) {
       return true;
@@ -89,39 +58,17 @@ public class Email {
       return false;
     }
   }
-  /* To send to multiple users
-   void addRecipients(Message.RecipientType type, 
-   Address[] addresses)
-   throws MessagingException
-   */
- /* authentication 
 
-   props.setProperty("mail.user", "myuser");
-   props.setProperty("mail.password", "mypwd");
 
-   */
 
   private static final String SMTP_HOST = "smtp.gmail.com";
 
-  /**
-   *
-   * @param subject
-   * @param recipient
-   * @param text
-   * @return true if the mail was sent
-   */
+
   public static boolean simpleMail(String subject, String recipient, String text) {
     return simpleMail(subject, recipient, text, true);
   }
 
-  /**
-   *
-   * @param subject
-   * @param recipient
-   * @param text
-   * @param suppressWarning
-   * @return true if the mail was sent
-   */
+
   public static boolean simpleMail(String subject, String recipient, String text, boolean suppressWarning) {
     try {
       MailSSLSocketFactory sf = new MailSSLSocketFactory();
@@ -159,28 +106,12 @@ public class Email {
     }
   }
 
-  /**
-   * Attempts to use SSL to send a message to the recipient.
-   *
-   * @param subject
-   * @param recipient
-   * @param text
-   * @return true if the message was sent
-   */
+
   public static boolean emailSSL(String subject, String recipient, String text) {
     return emailSSL(subject, recipient, text, false);
   }
 
-  /**
-   * Attempts to use SSL to send a message to the recipient.
-   * If suppressWarning is true no warning message will be logged if this fails.
-   *
-   * @param subject
-   * @param recipient
-   * @param text
-   * @param suppressWarning
-   * @return true if the message was sent
-   */
+
   public static boolean emailSSL(String subject, String recipient, String text, boolean suppressWarning) {
     try {
       Properties props = new Properties();
@@ -220,28 +151,12 @@ public class Email {
     }
   }
 
-  /**
-   * Attempts to use TLS to send a message to the recipient.
-   *
-   * @param subject
-   * @param recipient
-   * @param text
-   * @return true if the message was sent
-   */
+
   public static boolean emailTLS(String subject, String recipient, String text) {
     return emailTLS(subject, recipient, text, false);
   }
 
-  /**
-   * Attempts to use TLS to send a message to the recipient.
-   * If suppressWarning is true no warning message will be logged if this fails.
-   *
-   * @param subject
-   * @param recipient
-   * @param text
-   * @param suppressWarning
-   * @return true if the message was sent
-   */
+
   // TLS doesn't work with Dreamhost
   public static boolean emailTLS(String subject, String recipient, String text, boolean suppressWarning) {
     final String username = Config.getGlobalString(GNSConfig.GNSC.ADMIN_EMAIL);
@@ -282,28 +197,12 @@ public class Email {
     }
   }
 
-  /**
-   * Attempts to use the local emailer to send a message to the recipient.
-   *
-   * @param subject
-   * @param recipient
-   * @param text
-   * @return true if the message was sent
-   */
+
   public static boolean emailLocal(String subject, String recipient, String text) {
     return emailLocal(subject, recipient, text, false);
   }
 
-  /**
-   * Attempts to use the local emailer to send a message to the recipient.
-   * If suppressWarning is true no warning message will be logged if this fails.
-   *
-   * @param subject
-   * @param recipient
-   * @param text
-   * @param suppressWarning
-   * @return true if the message was sent
-   */
+
   public static boolean emailLocal(String subject, String recipient, String text, boolean suppressWarning) {
     // Get system properties
     Properties properties = System.getProperties();
@@ -344,10 +243,7 @@ public class Email {
     }
   }
 
-  /**
-   *
-   * @param args
-   */
+
   public static void main(String[] args) {
     email("hello", "westy@cs.umass.edu", 
             "This is another email on " + Format.formatPrettyDateUTC(new Date()) + "."

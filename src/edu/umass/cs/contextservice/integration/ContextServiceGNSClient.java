@@ -12,24 +12,14 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.logging.Level;
 import edu.umass.cs.gnscommon.GNSProtocol;
 
-/**
- * This class interacts with context service using context service client.
- * It also implements the ContextServiceInterface.
- *
- * @author adipc
- *
- */
+
 public class ContextServiceGNSClient implements ContextServiceGNSInterface {
 
   private ContextServiceClient<Integer> csClient;
   private final NoopCallBack csNoopCallBack;
   private final NoopUpdateReply csNoopUpdateReply;
 
-  /**
-   *
-   * @param hostName
-   * @param portNum
-   */
+
   public ContextServiceGNSClient(String hostName, int portNum) 
   {
     // catching everything here, otherwise exception doesn't get printed in executor service.

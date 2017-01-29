@@ -1,45 +1,16 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.aws.networktools;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-/**
- * Simple implementation of rsync that uses ProcessBuilder.
- * 
- * @author westy
- */
+
 public class RSync {
 
   private static boolean verbose = true;
   
-  /**
-   *
-   * @param user
-   * @param host
-   * @param keyFile
-   * @param localFile
-   * @param remoteFile
-   */
+
   public static void upload(String user, String host, File keyFile, String localFile, String remoteFile) {
     try {
     ArrayList<String> command = new ArrayList<>();
@@ -62,26 +33,17 @@ public class RSync {
     }
   }
   
-  /**
-   *
-   * @return the value of verbose
-   */
+
   public static boolean isVerbose() {
     return verbose;
   }
 
-  /**
-   *
-   * @param verbose
-   */
+
   public static void setVerbose(boolean verbose) {
     RSync.verbose = verbose;
   }
   
-  /**
-   *
-   * @param arg
-   */
+
   public static void main(String[] arg) {
     String host = "ec2-23-21-120-250.compute-1.amazonaws.com";
     String localFile = "/Users/westy/Documents/Code/GNS/dist/GNS.jar";

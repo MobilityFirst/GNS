@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.client.http.android;
 
 import java.io.BufferedReader;
@@ -30,21 +12,12 @@ import java.net.URL;
 import android.os.AsyncTask;
 import android.util.Log;
 
-/**
- * This class defines a DownloadTask
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
- * @version 1.0
- */
+
 public class DownloadTask extends AsyncTask<String, String, Object> {
 
   private static final String LOG_TAG = "GNS";
 
-  /**
-   *
-   * @param urls
-   * @return the result
-   */
+
   @Override
   protected Object doInBackground(String... urls) {
     String stringUrl = urls[0];
@@ -64,8 +37,8 @@ public class DownloadTask extends AsyncTask<String, String, Object> {
     try {
       URL url = new URL(myUrl);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-      conn.setReadTimeout(10000 /* milliseconds */);
-      conn.setConnectTimeout(15000 /* milliseconds */);
+      conn.setReadTimeout(10000 );
+      conn.setConnectTimeout(15000 );
       conn.setRequestMethod("GET");
       conn.setDoInput(true);
       Log.v(LOG_TAG, "HTTP GET: " + myUrl);

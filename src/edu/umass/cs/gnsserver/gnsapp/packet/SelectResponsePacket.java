@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
@@ -28,13 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * This class implements a packet that contains a response
- * to a select statement.
- *
- * @author Westy
- * @param <NodeIDType>
- */
+
 public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddressAndNs<NodeIDType> implements ClientRequest {
 
   //
@@ -47,17 +23,11 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
   private final static String ERRORSTRING = "error";
   
 
-  /**
-   * The possible response codes for select packets.
-   */
+
   public enum ResponseCode {
-    /**
-     * NOERROR
-     */
+
     NOERROR, 
-    /**
-     * ERROR
-     */
+
     ERROR
 
   }
@@ -69,12 +39,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
   private ResponseCode responseCode;
   private String errorMessage;
 
-  /**
-   * Constructs a new SelectResponsePacket
-   *
-   * @param id
-   * @param jsonObject
-   */
+
   private SelectResponsePacket(long id, InetSocketAddress lnsAddress, int nsQueryId,
           NodeIDType nameServerID, JSONArray records, JSONArray guids, ResponseCode responseCode,
           String errorMessage) {
@@ -88,17 +53,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
     this.errorMessage = errorMessage;
   }
 
-  /**
-   * Used by a NameServer to a send response with full records back to the collecting NameServer
-   *
-   * @param id
-   * @param lnsAddress
-   * @param lnsQueryId
-   * @param nsQueryId
-   * @param nameServerID
-   * @param records
-   * @return a SelectResponsePacket
-   */
+
   public static SelectResponsePacket<String> makeSuccessPacketForRecordsOnly(long id, InetSocketAddress lnsAddress,
           long lnsQueryId,
           int nsQueryId, String nameServerID, JSONArray records) {
@@ -106,16 +61,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
             ResponseCode.NOERROR, null);
   }
 
-  /**
-   * Used by a NameServer to a send response with only a list of guids back to the Local NameServer
-   *
-   * @param id
-   * @param lnsAddress
-   * @param nsQueryId
-   * @param nameServerID
-   * @param guids
-   * @return a SelectResponsePacket
-   */
+
   public static SelectResponsePacket<String> makeSuccessPacketForGuidsOnly(long id,
           InetSocketAddress lnsAddress,
           int nsQueryId, String nameServerID, JSONArray guids) {
@@ -123,29 +69,14 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
             null, guids, ResponseCode.NOERROR, null);
   }
 
-  /**
-   * Used by a NameServer to a failure response to a NameServer or Local NameServer
-   *
-   * @param id
-   * @param lnsAddress
-   * @param nsQueryId
-   * @param nameServer
-   * @param errorMessage
-   * @return a SelectResponsePacket
-   */
+
   public static SelectResponsePacket<String> makeFailPacket(long id, InetSocketAddress lnsAddress,
            int nsQueryId, String nameServer, String errorMessage) {
     return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServer,
             null, null, ResponseCode.ERROR, errorMessage);
   }
 
-  /**
-   * Constructs new SelectResponsePacket from a JSONObject
-   *
-   * @param json JSONObject representing this packet
-   * @param unstringer
-   * @throws org.json.JSONException
-   */
+
   public SelectResponsePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json, unstringer);
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {
@@ -164,12 +95,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
 
   }
 
-  /**
-   * Converts a SelectResponsePacket to a JSONObject.
-   *
-   * @return JSONObject representing this packet.
-   * @throws org.json.JSONException
-   */
+
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
@@ -192,83 +118,50 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
     return json;
   }
 
-  /**
-   * Return the requestId.
-   *
-   * @return the requestId
-   */
+
   public long getId() {
     return requestId;
   }
 
-  /**
-   * Return the records.
-   *
-   * @return the records
-   */
+
   public JSONArray getRecords() {
     return records;
   }
 
-  /**
-   * Return the guids.
-   *
-   * @return the guids
-   */
+
   public JSONArray getGuids() {
     return guids;
   }
 
-  /**
-   * Return the NS query requestId.
-   *
-   * @return the NS query requestId
-   */
+
   public int getNsQueryId() {
     return nsQueryId;
   }
 
-  /**
-   * Return the response code.
-   *
-   * @return the response code
-   */
+
   public ResponseCode getResponseCode() {
     return responseCode;
   }
 
-  /**
-   * Return the error message.
-   *
-   * @return the error message
-   */
+
   public String getErrorMessage() {
     return errorMessage;
   }
 
-  /**
-   *
-   * @return the service name
-   */
+
   @Override
   public String getServiceName() {
     // FIXME:
     return "SelectResponse";
   }
 
-  /**
-   *
-   * @return the response
-   */
+
   @Override
   public ClientRequest getResponse() {
     return this.response;
   }
 
-  /**
-   *
-   * @return the id
-   */
+
   @Override
   public long getRequestID() {
     return requestId;

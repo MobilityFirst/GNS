@@ -1,18 +1,4 @@
-/* Copyright (c) 2016 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy */
+
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -33,18 +19,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import org.json.JSONObject;
 
-/**
- * This example creates an account GNSProtocol.GUID.toString() record and an additional GNSProtocol.GUID.toString() to 
- demonstrate ACL commands in the GNS.
- * 
- * <p>
- Note: This example assumes that the verification step (e.g., via email) to
- verify an account GNSProtocol.GUID.toString()'s human-readable name has been disabled on the server
- using the ENABLE_EMAIL_VERIFICATION=false option. This option is set in the
- default gigapaxos.properties file.
- * 
- * @author arun, westy, mdews
- */
+
 public class ClientACLExample {
 
   // replace with your account alias
@@ -53,16 +28,7 @@ public class ClientACLExample {
   private static GuidEntry guid;
   private static GuidEntry phoneGuid;
   
-  /**
-   * @param args
-   * @throws IOException
-   * @throws InvalidKeySpecException
-   * @throws NoSuchAlgorithmException
-   * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws Exception
-   */
+
   public static void main(String[] args) throws IOException,
       InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
       InvalidKeyException, SignatureException, Exception {

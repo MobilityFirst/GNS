@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.localnameserver;
 
 import edu.umass.cs.gigapaxos.interfaces.NearestServerSelector;
@@ -46,11 +28,7 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * Implements the <code>BasicPacketDemultiplexer</code> interface for using the nio package.
- *
- * @param <NodeIDType>
- */
+
 public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemultiplexer {
 
   private final RequestHandlerInterface handler;
@@ -58,12 +36,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
   final ReconfigurableAppClientAsync<Request> asyncLNSClient;
 
-  /**
-   * Create an instance of the LNSPacketDemultiplexer.
-   *
-   * @param handler
-   * @param asyncClient
-   */
+
   public LNSPacketDemultiplexer(RequestHandlerInterface handler, ReconfigurableAppClientAsync<Request> asyncClient) {
     this.handler = handler;
     this.asyncLNSClient = asyncClient;
@@ -74,14 +47,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
   private static final boolean USE_NEW_LNS_COMMAND_HANDLER = true; //false;
 
-  /**
-   * This is the entry point for all message received at a local name server.
-   * It de-multiplexes packets based on their packet type and forwards to appropriate classes.
-   *
-   * @param json
-   * @param header
-   * @return false if an invalid packet type is received
-   */
+
   @Override
   public boolean handleMessage(JSONObject json, NIOHeader header) {
     GNSConfig.getLogger().log(Level.INFO, ">>>>>>>>>>>>>>>>>>>>> Incoming packet: {0}", json);
@@ -122,9 +88,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
   private static boolean disableRequestActives = false;
 
-  /**
-   * If this is true we just send one copy to the nearest replica.
-   */
+
   // FIXME: Remove this at some point.
   protected static boolean disableCommandRetransmitter = true;
 
@@ -151,14 +115,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     }
   };
 
-  /**
-   * Handles a command packet that has come in from a client.
-   *
-   * @param json
-   * @param header
-   * @throws JSONException
-   * @throws IOException
-   */
+
   public void handleCommandPacket(JSONObject json, NIOHeader header) throws JSONException,
           IOException {
 
@@ -187,14 +144,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 	  return new CommandPacket(json);
   }
 
-  /**
-   * Handles a command packet that has come in from a client.
-   *
-   * @param json
-   * @param header
-   * @throws JSONException
-   * @throws IOException
-   */
+
   public void handleCommandPacketOld(JSONObject json, NIOHeader header) throws JSONException, IOException {
 
     CommandPacket packet = new CommandPacket(json);
@@ -233,25 +183,13 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     }
   }
 
-  /**
-   * Handles sending the results of a command packet back to the client.
-   *
-   * @param json
-   * @throws JSONException
-   * @throws IOException
-   */
+
   public void handleCommandReturnValuePacket(JSONObject json)
           throws JSONException, IOException {
     this.handleCommandReturnValuePacket(new ResponsePacket(json), json);
   }
 
-  /**
-   * Handles sending the results of a command packet back to the client. Passing
-   * json as well for legacy reasons and to avoid an unnecessary toJSON call.
-   *
-   * @throws JSONException
-   * @throws IOException
-   */
+
   private void handleCommandReturnValuePacket(Request response,
           JSONObject json) throws JSONException, IOException {
     ResponsePacket returnPacket = response instanceof ResponsePacket ? (ResponsePacket) response

@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.localnameserver;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
@@ -63,31 +45,13 @@ import java.net.InetAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- *
- * @author westy, arun
- *
- * Arun: This class uses knowledge of the set of all active replicas for
- * doing pings for nearest server selection. This is a poor design. The
- * LNS should not and need not know of all active replicas. It can learn
- * passively by observing response times to requests sent to different
- * active replicas.
- *
- * The LNS should be a module that is re-usable at an end-client. It
- * just needs to be an extremely lightweight data structure with an NIO
- * transport object that learns latencies (or outages) to recently
- * contacted active replicas over time.
- */
+
 public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
-  /**
-   * The default length of time to keep values in the cache.
-   */
+
   public static final int DEFAULT_VALUE_CACHE_TTL = 10000; // milleseconds
 
-  /**
-   * The logger.
-   */
+
   public static final Logger LOGGER = Logger.getLogger(LocalNameServer.class.getName());
 
   private static final ConcurrentMap<Long, LNSRequestInfo> outstandingRequests
@@ -106,10 +70,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   //Fixme: Why is this here?
   private static boolean usePublicIP = false;
 
-  /**
-   *
-   * @throws IOException
-   */
+
   public LocalNameServer() throws IOException {
     this(new InetSocketAddress(usePublicIP ? NetworkUtils.getLocalHostLANAddress()
             : InetAddress.getLoopbackAddress(),
@@ -117,13 +78,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
             new LNSNodeConfig());
   }
 
-  /**
-   * Create a LocalNameServer instance.
-   *
-   * @param originalNodeAddress
-   * @param nodeConfig
-   * @throws IOException
-   */
+
   public LocalNameServer(InetSocketAddress originalNodeAddress, LNSNodeConfig nodeConfig) throws IOException {
     SSLDataProcessingWorker.SSL_MODES sslMode = ReconfigurationConfig.getClientSSLMode();
     // Get out address by convert the address to the client facing address. 
@@ -156,9 +111,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     LOGGER.log(Level.INFO, "Started LNS listener on {0}", address);
   }
 
-  /**
-   * Handles LNS shutdown.
-   */
+
   @Override
   public void shutdown() {
     messenger.stop();
@@ -166,23 +119,8 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     protocolExecutor.stop();
   }
 
-  /* java -ea  -cp jars/GNS.jar \
--DgigapaxosConfig=conf/gnsserver.1local.properties \
--Djava.util.logging.config.file=conf/logging.gns.properties \
--Djavax.net.ssl.trustStorePassword=qwerty \
--Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
--Djavax.net.ssl.keyStorePassword=qwerty \
--Djavax.net.ssl.keyStore=conf/keyStore/node100.jks \
-edu.umass.cs.gnsserver.localnameserver.LocalNameServer
-   */
-  /**
-   * The main routine.
-   *
-   *
-   *
-   * @param args
-   * @throws IOException
-   */
+
+
   public static void main(String[] args) throws IOException {
     try {
       new LocalNameServer();
@@ -192,53 +130,31 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     }
   }
 
-  /**
-   * Returns the protocolExecutor.
-   *
-   * @return the protocolExecutor
-   */
+
   @Override
   public ProtocolExecutor<InetSocketAddress, PacketType, String> getProtocolExecutor() {
     return protocolExecutor;
   }
 
-  /**
-   * Returns the node config.
-   *
-   * @return the node config
-   */
+
   @Override
   public LNSConsistentReconfigurableNodeConfig getNodeConfig() {
     return crNodeConfig;
   }
 
-  /**
-   * Returns the node address.
-   *
-   * @return the node address
-   */
+
   @Override
   public InetSocketAddress getNodeAddress() {
     return address;
   }
 
-  /**
-   * Returns the demultiplexer.
-   *
-   * @return the demultiplexer
-   */
+
   @Override
   public AbstractJSONPacketDemultiplexer getDemultiplexer() {
     return demultiplexer;
   }
 
-  /**
-   * Adds the request info.
-   *
-   * @param id
-   * @param requestInfo
-   * @param header
-   */
+
   @Override
   public void addRequestInfo(long id, LNSRequestInfo requestInfo, NIOHeader header) {
     LOGGER.log(Level.INFO,
@@ -253,12 +169,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     return this.getClass().getSimpleName();
   }
 
-  /**
-   * Removes the request info.
-   *
-   * @param id
-   * @return the request info removed
-   */
+
   @Override
   public LNSRequestInfo removeRequestInfo(long id) {
     LOGGER.log(Level.INFO, "{0} matching repsonse with id {1}",
@@ -266,29 +177,17 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     return outstandingRequests.remove(id);
   }
 
-  /**
-   * Returns the request info.
-   *
-   * @param id
-   * @return the request info
-   */
+
   @Override
   public LNSRequestInfo getRequestInfo(long id) {
     return outstandingRequests.get(id);
   }
 
   // marker for broken and/or hacky code
-  /**
-   *
-   */
+
   protected static final String LNS_BAD_HACKY = "Bad hacky code: ";
 
-  /**
-   * Returns the active replicas.
-   *
-   * @param name
-   * @return the active replicas
-   */
+
   @Override
   public Set<InetSocketAddress> getReplicatedActives(String name) {
     // arun
@@ -349,26 +248,13 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     }
   }
 
-  /**
-   * Selects the closest Name Server from a set of Name Servers.
-   *
-   * @param servers
-   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
-   */
+
   @Override
   public InetSocketAddress getClosestReplica(Set<InetSocketAddress> servers) {
     return getClosestReplica(servers, null);
   }
 
-  /**
-   * Selects the closest Name Server from a set of Name Servers.
-   * excludeNameServers is a set of Name Servers from the first list to not consider.
-   * If the local server is one of the serverIds and not excluded this will return it.
-   *
-   * @param serverIds
-   * @param excludeServers
-   * @return id of closest server or null if one can't be found
-   */
+
   @Override
   public InetSocketAddress getClosestReplica(Set<InetSocketAddress> serverIds, Set<InetSocketAddress> excludeServers) {
     if (serverIds == null || serverIds.isEmpty()) {
@@ -391,12 +277,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     return serverAddress;
   }
 
-  /**
-   * Updates the value in the cache.
-   *
-   * @param name
-   * @param value
-   */
+
   @Override
   public void updateCacheEntry(String name, String value) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
@@ -408,12 +289,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     }
   }
 
-  /**
-   * Returns the value if it has not timed out.
-   *
-   * @param name
-   * @return the value
-   */
+
   @Override
   public String getValueIfValid(String name) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
@@ -424,12 +300,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     }
   }
 
-  /**
-   * Updates the set of active replicas.
-   *
-   * @param name
-   * @param actives
-   */
+
   @Override
   public void updateCacheEntry(String name, Set<InetSocketAddress> actives) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
@@ -446,12 +317,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     cache.invalidate(name);
   }
 
-  /**
-   * Returns the set of active replicas if they have not timed out.
-   *
-   * @param name
-   * @return a set of active replicas
-   */
+
   @Override
   public Set<InetSocketAddress> getActivesIfValid(String name) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
@@ -462,33 +328,19 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     }
   }
 
-  /**
-   * Clears the cache.
-   */
+
   @Override
   public void invalidateCache() {
     cache.invalidateAll();
   }
 
-  /**
-   * Returns true if the name is in the cache.
-   *
-   * @param name
-   * @return true if the name is in the cache
-   */
+
   @Override
   public boolean containsCacheEntry(String name) {
     return cache.getIfPresent(name) != null;
   }
 
-  /**
-   * Invokes the protocolExecutor to handle an event.
-   * Returns true if the event was handled.
-   *
-   * @param json
-   * @return true if the event was handled
-   * @throws JSONException
-   */
+
   @SuppressWarnings("unchecked")
   @Override
   public boolean handleEvent(JSONObject json) throws JSONException {
@@ -497,13 +349,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     return this.protocolExecutor.handleEvent(rcEvent);
   }
 
-  /**
-   * Sends a JSON packet to the closets active replica.
-   *
-   * @param servers
-   * @param packet
-   * @throws IOException
-   */
+
   @Override
   public void sendToClosestReplica(Set<InetSocketAddress> servers, JSONObject packet) throws IOException {
     InetSocketAddress replicaAddress = LocalNameServer.this.getClosestReplica(servers);
@@ -516,21 +362,13 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     messenger.sendToAddress(replicaAddress, packet);
   }
 
-  /**
-   * Sends a JSON packet to a client.
-   *
-   * @param isa
-   * @param msg
-   * @throws IOException
-   */
+
   @Override
   public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException {
     messenger.sendToAddress(isa, msg);
   }
 
-  /**
-   * Test code.
-   */
+
   public void testCache() {
     String serviceName = "fred";
     Set<InetSocketAddress> actives;

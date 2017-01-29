@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
@@ -48,88 +30,48 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-/**
- * So we have these packets see and we convert them back and forth to and from JSON Objects.
- * And send them over UDP and TCP connections. And we have an enum called PacketType that we
- * use to keep track of the type of packet that it is.
- *
- * @author westy
- */
+
 public class Packet {
 
-  /**
-   * Defines the type of this packet *
-   */
+
   public final static String PACKET_TYPE = "type";
   //Type of packets
 
-  /**
-   * The packet type.
-   */
+
   public enum PacketType implements IntegerPacketType {
-    /**
-     * COMMAND
-     */
+
     COMMAND(7, CommandPacket.class.getCanonicalName()),
-    /**
-     * COMMAND_RETURN_VALUE
-     */
+
     COMMAND_RETURN_VALUE(8, ResponsePacket.class.getCanonicalName()),
     
-    /**
-     * A variant of {@link CommandPacket} that is meant to be used for
-     * internal requests spawned by chains in {@link CommandType}.
-     */
+
     INTERNAL_COMMAND(9, InternalCommandPacket.class.getCanonicalName()),
     
-    /**
-     * ADMIN_COMMAND
-     * A variant of {@link CommandPacket} that is used for client requests that require mutual authentication.
-     */
+
     ADMIN_COMMAND(10, AdminCommandPacket.class.getCanonicalName()),
 
     
-    /**
-     * DUMP_REQUEST
-     */
+
     DUMP_REQUEST(40, DumpRequestPacket.class.getCanonicalName()),
-    /**
-     * SENTINAL
-     */
+
     SENTINAL(41, SentinalPacket.class.getCanonicalName()),
-    /**
-     * ADMIN_REQUEST
-     */
+
     ADMIN_REQUEST(42, AdminRequestPacket.class.getCanonicalName()),
-    /**
-     * ADMIN_RESPONSE
-     */
+
     ADMIN_RESPONSE(43, AdminResponsePacket.class.getCanonicalName()),
-    /**
-     * SELECT_REQUEST
-     */
+
     SELECT_REQUEST(70, SelectRequestPacket.class.getCanonicalName()),
-    /**
-     * SELECT_RESPONSE
-     */
+
     SELECT_RESPONSE(71, SelectResponsePacket.class.getCanonicalName()),
     // paxos
 
-    /**
-     * PAXOS_PACKET
-     */
+
     PAXOS_PACKET(90, null),
-    /**
-     * STOP
-     */
+
     STOP(98, null),
-    /**
-     * NOOP
-     */
+
     NOOP(99, null),
-    /**
-     * TEST_NOOP
-     */
+
     TEST_NOOP(224, null),;
     private final int number;
     private String className;
@@ -159,30 +101,18 @@ public class Packet {
       this.className = className;
     }
 
-    /**
-     *
-     * @return the int
-     */
+
     @Override
     public int getInt() {
       return number;
     }
 
-    /**
-     * Return the class name.
-     *
-     * @return the class name
-     */
+
     public String getClassName() {
       return className;
     }
 
-    /**
-     * Return the packet type.
-     *
-     * @param number
-     * @return the packet type
-     */
+
     public static PacketType getPacketType(int number) {
       PacketType t = map.get(number);
 //      assert(t!=null) : number;
@@ -192,23 +122,12 @@ public class Packet {
   }
 
   // some shorthand helpers
-  /**
-   * Return the packet type.
-   *
-   * @param number
-   * @return the packet type
-   */
+
   public static PacketType getPacketType(int number) {
     return PacketType.getPacketType(number);
   }
 
-  /**
-   * Return the packet type.
-   *
-   * @param json
-   * @return the packet type
-   * @throws JSONException
-   */
+
   public static PacketType getPacketType(JSONObject json) throws JSONException {
     if (Packet.hasPacketTypeField(json)) {
       return getPacketType(json.getInt(PACKET_TYPE));
@@ -217,23 +136,12 @@ public class Packet {
     }
   }
 
-  /**
-   * Returns true if the packet has a type field.
-   *
-   * @param json
-   * @return true or false
-   */
+
   public static boolean hasPacketTypeField(JSONObject json) {
     return json.has(PACKET_TYPE);
   }
 
-  /**
-   * Put the packet type into the packet.
-   *
-   * @param json
-   * @param type
-   * @throws JSONException
-   */
+
   public static void putPacketType(JSONObject json, PacketType type) throws JSONException {
     json.put(PACKET_TYPE, type.getInt());
   }
@@ -241,15 +149,7 @@ public class Packet {
   private static final String JSON_OBJECT_CLASS = "org.json.JSONObject";
   private static final String STRINGIFIABLE_OBJECT_CLASS = "edu.umass.cs.gnsserver.utils.Stringifiable";
 
-  /**
-   * Create an packet instance from a JSON Object that contains a packet plus
-   * a Stringifiable instance (same as a packet constructor).
-   *
-   * @param json
-   * @param unstringer
-   * @return return the new object
-   * @throws org.json.JSONException
-   */
+
   public static Object createInstance(JSONObject json, Stringifiable<String> unstringer)
           throws JSONException {
 
@@ -310,19 +210,10 @@ public class Packet {
   /// PACKET SENDING CODE THAT WE KEEP AROUND SO THAT THE ADMIN SIDE OF THINGS
   /// IS SEPARATE FROM THE NIO SIDE.
   ///
-  /**
-   * Delimiter that separates size from data in each frame transmitted *
-   */
+
   public static final String HEADER_PATTERN = "&";
 
-  /**
-   * **
-   * Reads bytes until we see delimiter HEADER_PATTERN. All bytes before HEADER_PATTERN indicates the size of the data. Bytes after ":" is the actual
-   * data.
-   *
-   * @param inStream
-   * @return Size of a frame (packet) or -1 if the input stream is closed *
-   */
+
   public static int getDataSize(InputStream inStream) {
 
     String input;
@@ -360,16 +251,7 @@ public class Packet {
     return Integer.parseInt(vectorSizeStr.trim());
   }
 
-  /**
-   * **
-   * Reads bytes from the input stream until we have read bytes equal the size of a frame (packet) and returns a JSONObject that
-   * represents the frame.
-   *
-   * @param input Input stream to read the frame.
-   * @param sizeOfFrame Size of a frame (packet)
-   * @throws java.io.IOException
-   * @throws org.json.JSONException *
-   */
+
   private static JSONObject getJSONObjectFrame(InputStream input, int sizeOfFrame)
           throws IOException, JSONException {
     byte[] jsonByte = new byte[sizeOfFrame];
@@ -385,16 +267,7 @@ public class Packet {
     return json;
   }
 
-  /**
-   * **
-   * Reads bytes from the input stream until we have read bytes equal the size of a frame (packet) and returns a JSONObject that
-   * represents the frame.
-   *
-   * @param socket Socket on which the frame has arrived
-   * @return Returns JSONObject representing the packet. Returns <i>null</i> if the socket is closed.
-   * @throws java.io.IOException
-   * @throws org.json.JSONException *
-   */
+
   public static JSONObject getJSONObjectFrame(Socket socket)
           throws IOException, JSONException {
     if (socket == null) {
@@ -414,16 +287,7 @@ public class Packet {
     return Packet.getJSONObjectFrame(input, sizeOfPacket);
   }
 
-  /**
-   * Sends a packet to a name server using TCP.
-   *
-   * @param gnsNodeConfig
-   * @param json JsonObject representing the packet
-   * @param nameserverId Name server id
-   * @param portType Type of port
-   * @return Returns the Socket over which the packet was sent, or null if the port type is incorrect.
-   * @throws java.io.IOException *
-   */
+
   @SuppressWarnings("unchecked")
   public static Socket sendTCPPacket(GNSNodeConfig<String> gnsNodeConfig, JSONObject json,
           String nameserverId, OldHackyConstants.PortType portType) throws IOException {
@@ -444,14 +308,7 @@ public class Packet {
     return sendTCPPacket(json, new InetSocketAddress(addr, port));
   }
 
-  /**
-   * Send a TCP packet.
-   *
-   * @param json
-   * @param addr
-   * @return a Socket
-   * @throws IOException
-   */
+
   public static Socket sendTCPPacket(JSONObject json, InetSocketAddress addr) throws IOException {
     GNSConfig.getLogger().log(Level.FINER,
             "sendTCPPacket:: to {0}:{1} json: {2}",
@@ -461,13 +318,7 @@ public class Packet {
     return socket;
   }
 
-  /**
-   * Sends a packet to a name server using TCP.
-   *
-   * @param json JsonObject representing the packet //
-   * @param socket Socket on which to send the packet
-   * @throws java.io.IOException *
-   */
+
   public static void sendTCPPacket(JSONObject json, Socket socket) throws IOException {
     if (json == null || socket == null) {
       return;
@@ -484,17 +335,7 @@ public class Packet {
     output.flush();
   }
 
-  /**
-   * Multicast TCP packet to all name servers in <i>nameServerIds</i>. This method excludes name server id in
-   * <i>excludeNameServers</i>
-   *
-   * @param gnsNodeConfig
-   * @param nameServerIds Set of name server ids where packet is sent
-   * @param json JSONObject representing the packet
-   * @param numRetry Number of re-try if the connection fails before successfully sending the packet.
-   * @param portType Type of port to connect
-   * @param excludeNameServers *
-   */
+
   @SuppressWarnings("unchecked")
   public static void multicastTCP(GNSNodeConfig<String> gnsNodeConfig,
           Set<String> nameServerIds, JSONObject json, int numRetry,
@@ -522,12 +363,7 @@ public class Packet {
     }
   }
 
-  /**
-   * A debugging aid that returns a string identifying the packet type or "Unknown" if it cannot be determined.
-   *
-   * @param json
-   * @return a string
-   */
+
   public static String getPacketTypeStringSafe(JSONObject json) {
     try {
       return getPacketType(json).toString();

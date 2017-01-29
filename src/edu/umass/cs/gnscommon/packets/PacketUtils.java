@@ -10,41 +10,26 @@ import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
-/**
- * @author arun A utility class for methods relating to {@link Packet}.
- */
+
 public class PacketUtils {
 
-	/**
-	 * @param command
-	 * @param response
-	 * @return CommandPacket {@code command} with {@code response} in it.
-	 */
+
 	public static CommandPacket setResult(CommandPacket command,
 			ResponsePacket response) {
 		return command.setResult(response);
 	}
 
-	/**
-	 * @param command
-	 * @return JSONObject command within CommandPacket {@code command}.
-	 */
+
 	public static JSONObject getCommand(CommandPacket command) {
 		return command.getCommand();
 	}
 
-	/**
-	 * @param commandPacket
-	 * @return The originatingGUID for {@code CommandPacket}.
-	 */
+
 	public static String getOriginatingGUID(CommandPacket commandPacket) {
 		return commandPacket != null ? commandPacket.getServiceName() : null;
 	}
 
-	/**
-	 * @param selectResponse
-	 * @return InternalRequestHeader
-	 */
+
 	public static InternalRequestHeader getInternalRequestHeader(
 			SelectResponsePacket<String> selectResponse) {
 		return new InternalRequestHeader() {
@@ -70,20 +55,11 @@ public class PacketUtils {
 			}
 		};
 	}
-	/**
-	 * @param commandPacket
-	 * @return {@link InternalRequestHeader} if {@code commandPacket} is an
-	 *         internal request.
-	 */
+
 	public static InternalRequestHeader getInternalRequestHeader(
 			CommandPacket commandPacket) {
 		return commandPacket instanceof InternalRequestHeader ? (InternalRequestHeader) commandPacket
-				/* originatingGUID must be non-null for internal commands to
-				 * make sense because it is important for internal commands to
-				 * be chargeable to someone; that someone is the originating
-				 * GUID. This is especially important for active requests where
-				 * the request chain is computed dynamically and is not known a
-				 * priori. */
+
 				:
 
 				new InternalRequestHeader() {
@@ -169,11 +145,7 @@ public class PacketUtils {
 				};
 	}
 
-	/**
-	 * @param command
-	 * @return A utility method to estimate the string length of a JSONObject or
-	 *         JSONArray.
-	 */
+
 	public static int getLengthEstimate(Object command) {
 		int length = 8;
 		try {

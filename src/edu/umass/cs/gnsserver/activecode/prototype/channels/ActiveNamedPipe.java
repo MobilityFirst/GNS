@@ -15,10 +15,7 @@ import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 
-/**
- * @author gaozy
- *
- */
+
 public class ActiveNamedPipe implements Channel {
 	
 	private InputStream reader;
@@ -27,10 +24,7 @@ public class ActiveNamedPipe implements Channel {
 	byte[] readerLengthBuffer = new byte[Integer.BYTES];
 	byte[] writerLengthBuffer = new byte[Integer.BYTES];
 	
-	/**
-	 * @param ifile 
-	 * @param ofile 
-	 */
+
 	public ActiveNamedPipe(String ifile, String ofile){
 		Thread t = new Thread(new Runnable() {
 	         public void run()

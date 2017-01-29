@@ -1,18 +1,4 @@
-/* Copyright (c) 2015 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy, arun */
+
 package edu.umass.cs.gnscommon.packets;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
@@ -31,12 +17,7 @@ import java.nio.ByteBuffer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * Packet format back to the client by local name server in response to a
- * CommandPacket. Contains the original id plus the return value (as a STRING)
- * plus a possible error code (could be null) plus instrumentation.
- *
- */
+
 public class ResponsePacket extends BasicPacketWithClientAddress
         implements ClientRequest {
 
@@ -50,35 +31,16 @@ public class ResponsePacket extends BasicPacketWithClientAddress
   private final static String OLD_COMMAND_RETURN_PACKET_RETURNVALUE = "returnValue";
   private final static String OLD_COMMAND_RETURN_PACKET_ERRORCODE = "errorCode";
 
-  /**
-   * Identifier of the request.
-   */
+
   private long clientRequestId;
-  /**
-   * The service name from the request. Usually the guid or HRN.
-   */
+
   private final String serviceName;
-  /**
-   * The returned value.
-   */
+
   private final String returnValue;
-  /**
-   * Indicates if the response is an error.
-   */
+
   private final ResponseCode errorCode;
 
-  /**
-   * Creates a CommandValueReturnPacket from a CommandResponse.
-   *
-   * @param requestId
-   * @param serviceName
-   * @param response
-   * @param requestCnt
-   * - current number of requests handled by the CCP (can be used
-   * to tell how busy CCP is)
-   * @param requestRate
-   * @param cppProccessingTime
-   */
+
   public ResponsePacket(long requestId, String serviceName,
           CommandResponse response, long requestCnt, int requestRate,
           long cppProccessingTime) {
@@ -89,12 +51,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     this.errorCode = response.getExceptionOrErrorCode();
   }
 
-  /**
-   * @param serviceName
-   * @param requestId
-   * @param code
-   * @param returnValue
-   */
+
   public ResponsePacket(String serviceName, long requestId,
           ResponseCode code, String returnValue) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
@@ -104,12 +61,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     this.errorCode = code;
   }
 
-  /**
-   * Creates a CommandValueReturnPacket from a JSONObject.
-   *
-   * @param json
-   * @throws JSONException
-   */
+
   public ResponsePacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
 
@@ -151,15 +103,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     }
   }
 
-  /**
-   * This method is used by fromBytes to recreate a CommandValueReturnPacket
-   * from a byte array.
-   *
-   * @param requestId
-   * @param errorNumber
-   * @param serviceName
-   * @param responseValue
-   */
+
   public ResponsePacket(long requestId, int errorNumber,
           String serviceName, String responseValue) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
@@ -169,12 +113,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     this.errorCode = ResponseCode.getResponseCode(errorNumber);
   }
 
-  /**
-   * Converts the command object into a JSONObject.
-   *
-   * @return a JSONObject
-   * @throws org.json.JSONException
-   */
+
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
@@ -190,11 +129,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     return json;
   }
 
-  /**
-   * Converts the CommandValueReturnPacket to a byte array.
-   *
-   * @return The byte array
-   */
+
   public byte[] toBytes() {
     try {
 
@@ -248,15 +183,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
 
   }
 
-  /**
-   * Constructs a CommandValueReturnPacket from a byte array.
-   *
-   * @param bytes
-   * The byte array created by the toBytes method of a
-   * CommandValueReturnPacket
-   * @return The CommandValueReturnPacket represented by the bytes
-   * @throws UnsupportedEncodingException
-   */
+
   public static final ResponsePacket fromBytes(byte[] bytes)
           throws UnsupportedEncodingException {
     ByteBuffer buf = ByteBuffer.wrap(bytes);
@@ -277,64 +204,40 @@ public class ResponsePacket extends BasicPacketWithClientAddress
 
   }
 
-  /**
-   * Get the client request id.
-   *
-   * @return the client request id
-   */
+
   public long getClientRequestId() {
     return clientRequestId;
   }
 
-  /**
-   *
-   * @return the service name
-   */
+
   @Override
   public String getServiceName() {
     return serviceName;
   }
 
-  /**
-   * Get the return value.
-   *
-   * @return the return value
-   */
+
   public String getReturnValue() {
     return returnValue;
   }
 
-  /**
-   * Get the error code.
-   *
-   * @return the error code
-   */
+
   public ResponseCode getErrorCode() {
     return errorCode;
   }
 
-  /**
-   *
-   * @return the client request
-   */
+
   @Override
   public ClientRequest getResponse() {
     return this.response;
   }
 
-  /**
-   *
-   * @return the request id
-   */
+
   @Override
   public long getRequestID() {
     return clientRequestId;
   }
 
-  /**
-   *
-   * @return the summary
-   */
+
   @Override
   public Object getSummary() {
     return new Object() {
@@ -347,12 +250,7 @@ public class ResponsePacket extends BasicPacketWithClientAddress
     };
   }
 
-  /**
-   * Only for instrumentation.
-   *
-   * @param requestID
-   * @return {@code this}.
-   */
+
   @Deprecated
   public ClientRequest setClientRequestAndLNSIds(long requestID) {
     this.clientRequestId = requestID;

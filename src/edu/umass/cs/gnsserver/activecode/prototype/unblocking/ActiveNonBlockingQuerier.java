@@ -21,12 +21,7 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.DNSQuerier;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
-/**
- * This class is an implementation of Querier, Querier only contains
- * readGuid and writeGuid method, so the protected methods will not be
- * exposed to the javascript code.
- * @author gaozy
- */
+
 public class ActiveNonBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 	private final Channel channel;
 	private final DatabaseReader dbReader;
@@ -37,14 +32,7 @@ public class ActiveNonBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 	
 	private Monitor monitor;
 	
-	/**
-	 * @param channel
-	 * @param dbReader 
-	 * @param JSON 
-	 * @param ttl 
-	 * @param guid 
-	 * @param id 
-	 */
+
 	public ActiveNonBlockingQuerier(Channel channel, DatabaseReader dbReader, ScriptObjectMirror JSON, int ttl, String guid, long id){
 		this.channel = channel;
 		this.dbReader = dbReader;
@@ -57,12 +45,7 @@ public class ActiveNonBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 	}
 	
 	
-	/**
-	 * @param queriedGuid
-	 * @param field
-	 * @return ValuesMap the code trying to read
-	 * @throws ActiveException
-	 */
+
 	@Override
 	public ScriptObjectMirror readGuid(String queriedGuid, String field) throws ActiveException{
 		if(currentTTL <=0)
@@ -72,12 +55,7 @@ public class ActiveNonBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 		return string2JS(readValueFromField(currentGuid, queriedGuid, field, currentTTL));
 	}
 	
-	/**
-	 * @param queriedGuid
-	 * @param field
-	 * @param value
-	 * @throws ActiveException
-	 */
+
 	@Override
 	public void writeGuid(String queriedGuid, String field, ScriptObjectMirror value) throws ActiveException{
 		if(currentTTL <=0)
@@ -155,11 +133,7 @@ public class ActiveNonBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 		}
 	}
 	
-  /**
-   *
-   * @param response
-   * @param isDone
-   */
+
   protected void release(ActiveMessage response, boolean isDone){
 		monitor.setResult(response, isDone);
 	}
@@ -241,9 +215,7 @@ public class ActiveNonBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
 		return (String) JSON.callMember("stringify", obj);
 	}
 	
-	/**
-	 * @param args
-	 */
+
 	public static void main(String[] args){
 		int n = 1000000;	
 		//ActiveNonBlockingQuerier querier = null;

@@ -1,18 +1,4 @@
-/* Copyright (1c) 2016 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (1the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy */
+
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
@@ -61,13 +47,10 @@ import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import javax.xml.bind.DatatypeConverter;
 
-/**
- *
- * @author arun, westy
- */
+
 public class CommandUtils {
 
-  /* arun: at least as many instances as cores for parallelism. */
+
   private static Signature[] signatureInstances = new Signature[2 * Runtime
           .getRuntime().availableProcessors()];
   private static Random random;
@@ -91,16 +74,7 @@ public class CommandUtils {
     return signatureInstances[sigIndex++ % signatureInstances.length];
   }
 
-  /**
-   * Creates a command object from the given action string and a variable
-   * number of key and value pairs.
-   *
-   * @param commandType
-   *
-   * @param keysAndValues
-   * @return the query string
-   * @throws JSONException
-   */
+
   public static JSONObject createCommand(CommandType commandType,
           Object... keysAndValues) throws JSONException {
     long startTime = System.currentTimeMillis();
@@ -118,13 +92,7 @@ public class CommandUtils {
     return result;
   }
 
-  /**
-   * Only for backwards compatibility
-   *
-   * @param response
-   * @return Single value string if response is JSONObject with a single
-   * key-value piar.
-   */
+
   public static String specialCaseSingleField(String response) {
     if (JSONPacket.couldBeJSON(response) && response.startsWith("{")) {
       try {
@@ -139,14 +107,7 @@ public class CommandUtils {
     return response;
   }
 
-  /**
-   * Conditionally converts a returned string to a JSON Array.
-   *
-   * @param field
-   * @param response
-   * @return a JSON Array
-   * @throws JSONException
-   */
+
   public static JSONArray commandResponseToJSONArray(String field, String response) throws JSONException {
     if (JSONPacket.couldBeJSONArray(response)) {
       return new JSONArray(response);
@@ -155,20 +116,7 @@ public class CommandUtils {
     }
   }
 
-  /**
-   * Signs a digest of a message using private key of the given guid.
-   *
-   * @param privateKey
-   * @param message
-   * @return a signed digest of the message string encoded as a hex string
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   * @throws java.io.UnsupportedEncodingException
-   *
-   * arun: This method need to be synchronized over the signature
-   * instance, otherwise it will result in corrupted signatures.
-   */
+
   public static String signDigestOfMessage(PrivateKey privateKey,
           String message) throws NoSuchAlgorithmException,
           InvalidKeyException, SignatureException,
@@ -232,19 +180,7 @@ public class CommandUtils {
     return ciphers[cipherIndex++ % ciphers.length];
   }
 
-  /**
-   * @param privateKey
-   * @param publicKey
-   * @param message
-   * @return Signature encoded as a hex string
-   * @throws NoSuchAlgorithmException
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws UnsupportedEncodingException
-   * @throws IllegalBlockSizeException
-   * @throws BadPaddingException
-   * @throws NoSuchPaddingException
-   */
+
   public static String signDigestOfMessage(PrivateKey privateKey,
           PublicKey publicKey, String message)
           throws NoSuchAlgorithmException, InvalidKeyException,
@@ -288,15 +224,7 @@ public class CommandUtils {
     return new String(combined, GNSProtocol.CHARSET.toString());
   }
 
-  /**
-   * This little dance is because we need to remove the signature to get the
-   * message that was signed. Alternatively we could have the client do it but
-   * that just means a longer message OR we could put the signature outside
-   * the command in the packet but some packets don't need a signature
-   *
-   * @param command
-   * @throws JSONException
-   */
+
   public static void addMessageWithoutSignatureToJSON(JSONObject command) throws JSONException {
     if (command.has(GNSProtocol.SIGNATURE.toString())) {
       String signature = command.getString(GNSProtocol.SIGNATURE.toString());
@@ -307,45 +235,13 @@ public class CommandUtils {
     }
   }
 
-  /**
-   * @param cvrp
-   * @return Response
-   * @throws ClientException
-   */
+
   protected static ResponsePacket checkResponseOldSchool(ResponsePacket cvrp) throws ClientException {
     checkResponseOldSchool(cvrp.getReturnValue());
     return cvrp;
   }
 
-  /**
-   * Checks the response from a command request for proper syntax as well as
-   * converting error responses into the appropriate thrown GNS exceptions.
-   * This method is only used by the HTTP server.
-   *
-   * In the original protocol the string response was modeled after other
-   * simple string-based response protocols. Responses were either:<br>
-   * 1) a return value whose format was interpreted by the caller - this is
-   * the nominal case<br>
-   * 2) "+OK+" - which was used to indicate a nominal result for commands that
-   * don't return a value<br>
-   * 2) "+NULL+" - another nominal which meant we should return null as the
-   * value<br>
-   * 3) "+NO+"{space}{error code string}{{space}{additional info string}}+<br>
-   * Later a special case 4 was added for GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString().<br>
-   *
-   * For case 3 the additional info strings (could be any number) were
-   * interpreted by the error handlers and generally used to help provide
-   * additional info to indicate error causes.
-   *
-   * Also note that:<br>
-   * GNSCommandProtocol.OK_RESPONSE = "+OK+"<br>
-   * GNSProtocol.BAD_RESPONSE.toString() = "+NO+"<br>
-   * GNSProtocol.NULL_RESPONSE.toString() = "+NULL+"<br>
-   *
-   * @param response
-   * @return Response as string.
-   * @throws ClientException
-   */
+
   public static String checkResponseOldSchool(String response) throws ClientException {
     // System.out.println("response:" + response);
     if (response.startsWith(GNSProtocol.BAD_RESPONSE.toString())) {
@@ -412,14 +308,7 @@ public class CommandUtils {
     }
   }
 
-  /**
-   *
-   * @param command
-   *
-   * @param responsePacket
-   * @return Response as a string.
-   * @throws ClientException
-   */
+
   public static ResponsePacket checkResponse(
           ResponsePacket responsePacket, CommandPacket command) throws ClientException {
 
@@ -479,24 +368,12 @@ public class CommandUtils {
     }
   }
 
-  /**
-   * @return Random long.
-   */
+
   public static String getRandomRequestNonce() {
     return (random.nextLong() + "");
   }
 
-  /**
-   * Creates a JSON Object from the given command, keypair and a variable
-   * number of key and value pairs. Includes a NONCE and TIMESTAMP field.
-   * 
-   * @param commandType
-   * @param includeTimestamp
-   * @param keysAndValues
-   * @return a JSONObject
-   * @throws ClientException
-   * @throws JSONException
-   */
+
   public static JSONObject createCommandWithTimestampAndNonce(CommandType commandType, boolean includeTimestamp,
           Object... keysAndValues)
           throws ClientException, JSONException {
@@ -509,17 +386,7 @@ public class CommandUtils {
     return result;
   }
   
-  /**
-   * Creates a JSON Object from the given command, keypair and a variable
-   * number of key and value pairs.
-   * 
-   * @param commandType
-   * @param privateKey
-   * @param publicKey
-   * @param keysAndValues
-   * @return Signed command.
-   * @throws ClientException
-   */
+
   public static JSONObject createAndSignCommand(CommandType commandType,
           PrivateKey privateKey, PublicKey publicKey, Object... keysAndValues)
           throws ClientException {
@@ -543,13 +410,7 @@ public class CommandUtils {
     }
   }
 
-  /**
-   * @param commandType
-   * @param querier
-   * @param keysAndValues
-   * @return JSONObject command
-   * @throws ClientException
-   */
+
   public static JSONObject createAndSignCommand(CommandType commandType,
           GuidEntry querier, Object... keysAndValues) throws ClientException {
     try {

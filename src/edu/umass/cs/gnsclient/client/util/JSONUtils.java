@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.client.util;
 
 import java.util.ArrayList;
@@ -25,19 +7,10 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-/**
- * Some conversions that are not in org.json.
- * 
- * @author westy
- */
+
 public class JSONUtils {
 
-  /**
-   *
-   * @param jsonArray
-   * @return an array list of strings
-   * @throws JSONException
-   */
+
   public static ArrayList<String> JSONArrayToArrayList(JSONArray jsonArray) throws JSONException {
     ArrayList<String> list = new ArrayList<>();
     //org.JSON sucks!!!
@@ -47,12 +20,7 @@ public class JSONUtils {
     return list;
   }
 
-  /**
-   *
-   * @param jsonArray
-   * @return a hash set of strings
-   * @throws JSONException
-   */
+
   public static HashSet<String> JSONArrayToHashSet(JSONArray jsonArray) throws JSONException {
     HashSet<String> set = new HashSet<>();
     //org.JSON sucks!!!
@@ -62,12 +30,7 @@ public class JSONUtils {
     return set;
   }
 
-  /**
-   *
-   * @param jsonArray
-   * @return an array list of integers
-   * @throws JSONException
-   */
+
   public static ArrayList<Integer> JSONArrayToArrayListInteger(JSONArray jsonArray) throws JSONException {
     ArrayList<Integer> list = new ArrayList<>();
     //org.JSON sucks!!!
@@ -77,13 +40,7 @@ public class JSONUtils {
     return list;
   }
 
-  /**
-   * Converts a JSONArray to an ArrayList of Integers
-   *
-   * @param json JSONArray
-   * @return ArrayList with the content of JSONArray.
-   * @throws JSONException
-   */
+
   public static Set<Integer> JSONArrayToSetInteger(JSONArray json) throws JSONException {
     Set<Integer> set = new HashSet<>();
 
@@ -98,12 +55,7 @@ public class JSONUtils {
     return set;
   }
 
-  /**
-   *
-   * @param json
-   * @return a set of strings
-   * @throws JSONException
-   */
+
   public static Set<String> JSONArrayToSetString(JSONArray json)
           throws JSONException {
     Set<String> set = new HashSet<>();

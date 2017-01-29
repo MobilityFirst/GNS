@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.utils;
 
 import edu.umass.cs.gnsserver.httpserver.Defs;
@@ -33,41 +15,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- *
- * @author westy
- */
+
 public class GEOLocator {
 
   //private final static String queryURL = "http://api.ipinfodb.com/v3/ip-city/?key=7ff99f3ea43b4f01c4947512822e4d660bf5832a6777f484ed5b964729a50b2b&format=json";
   private final static String IPServiceURL = "http://www.geoplugin.net/json.gp";
-  /*
-   {
-   "geoplugin_request":"54.248.152.94",
-   "geoplugin_status":200,
-   "geoplugin_city":"Tokyo",
-   "geoplugin_region":"T\u014dky\u014d",
-   "geoplugin_areaCode":"0",
-   "geoplugin_dmaCode":"0",
-   "geoplugin_countryCode":"JP",
-   "geoplugin_countryName":"Japan",
-   "geoplugin_continentCode":"AS",
-   "geoplugin_latitude":"35.685001373291",
-   "geoplugin_longitude":"139.75140380859",
-   "geoplugin_regionCode":"40",
-   "geoplugin_regionName":"T\u014dky\u014d",
-   "geoplugin_currencyCode":"JPY",
-   "geoplugin_currencySymbol":"&#165;",
-   "geoplugin_currencyConverter":79.8354
-   }
-   */
 
-  /**
-   * Lookup the lat,long based on the ip address.
-   * 
-   * @param ipAddress
-   * @return a Point2D
-   */
+
+
   public static Point2D lookupIPLocation(String ipAddress) {
     String query = IPServiceURL + Defs.QUERYPREFIX + "ip" + Defs.VALSEP + ipAddress;
     JSONObject json = sendGetCommandReadJSONObject(query);
@@ -88,12 +43,7 @@ public class GEOLocator {
   
   //  http://maps.googleapis.com/maps/api/geocode/json?address=Palo+Alto,+CA&sensor=false
   
-  /**
-   * Lookup the lat,long based on the street address.
-   * 
-   * @param address
-   * @return a Point2D
-   */
+
     
   public static Point2D lookupCityLocation(String address) {
     String query = cityServiceURL + Defs.QUERYPREFIX + "address" + Defs.VALSEP 
@@ -164,10 +114,7 @@ public class GEOLocator {
     return null;
   }
   
-  /**
-   *
-   * @param args
-   */
+
   public static void main(String[] args) {
     System.out.println(lookupIPLocation("74.125.45.100"));
     System.out.println(lookupIPLocation("50.138.213.8"));

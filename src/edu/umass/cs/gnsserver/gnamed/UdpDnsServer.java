@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -37,17 +19,7 @@ import java.util.logging.Level;
 import org.xbill.DNS.SimpleResolver;
 import org.xbill.DNS.Cache;
 
-/**
- * This class defines a UdpDnsServer that serves DNS requests through UDP.
- *
- * DNS requests can be handled just by the GNS server or by the GNS server
- * with a DNS server as a fallback.
- * When using DNS as a fallback we send out parallel requests and whichever returns
- * first is returned to the client as the answer.
- *
- * @author Westy
- * @version 1.0
- */
+
 public class UdpDnsServer extends Thread implements Shutdownable {
 
   private final SimpleResolver dnsServer;
@@ -59,22 +31,7 @@ public class UdpDnsServer extends Thread implements Shutdownable {
   private final String gnsServerIP; // just stored for informational purposes
   private final ClientRequestHandlerInterface handler;
 
-  /**
-   * Creates a new <code>UDPServer</code> object bound to the given IP/port
-   *
-   * @param addr IP to bind (0.0.0.0 is acceptable)
-   * @param port port to bind (53 is default for DNS)
-   * @param dnsServerIP primary DNS Server to forward requests to (make this null
-   * if you don't want to forward requests to a DNS server)
-   *
-   * A typical incantation thus looks like this:
-   * <code>new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8")</code>
-   * @param gnsServerIP
-   * @param handler
-   * @throws SecurityException 
-   * @throws java.net.SocketException
-   * @throws java.net.UnknownHostException
-   */
+
   public UdpDnsServer(InetAddress addr, int port, String dnsServerIP, String gnsServerIP,
           ClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
 	// set it to null to make it non-recursive

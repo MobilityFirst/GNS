@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, arun
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp;
 
 import com.google.common.net.InetAddresses;
@@ -43,85 +25,46 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * This class maintains the demand profile for a single name.
- * It will select active name servers based on location of the demand.
- * It is based on the old LocationBasedReplication class, but doesn't
- * include checks for unreachable active servers or highly loaded servers.
- *
- *
- * @author Westy, arun
- */
+
 public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   private static final Logger LOG = Logger.getLogger(LocationBasedDemandProfile.class.getName());
   //FIXME: Do this have an equivalent in gigapaxos we can use.
-  /**
-   * The maximum number of replicas. Used by {@link LocationBasedDemandProfile}.
-   */
+
   private static int maxReplica = 100;
   //FIXME: Do this have an equivalent in gigapaxos we can use.
-  /**
-   * Determines the number of replicas based on ratio of lookups to writes.
-   * Used by {@link LocationBasedDemandProfile}.
-   */
+
   private static double normalizingConstant = 0.5;
   //FIXME: Do this have an equivalent in gigapaxos we can use.
-  /**
-   * The minimum number of replicas. Used by {@link LocationBasedDemandProfile}.
-   */
+
   private static int minReplica = 3;
 
-  /**
-   * The keys for the demand profile packet.
-   */
+
   private enum Keys {
 
-    /**
-     * SERVICE_NAME
-     */
+
     SERVICE_NAME,
-    /**
-     * STATS
-     */
+
     STATS,
-    /**
-     * RATE
-     */
+
     RATE,
-    /**
-     * NUM_REQUESTS
-     */
+
     NUM_REQUESTS,
-    /**
-     * NUM_TOTAL_REQUESTS
-     */
+
     NUM_TOTAL_REQUESTS,
-    /**
-     * VOTES_MAP
-     */
+
     VOTES_MAP,
-    /**
-     * LOOKUP_COUNT
-     */
+
     LOOKUP_COUNT,
-    /**
-     * UPDATE_COUNT
-     */
+
     UPDATE_COUNT
   };
 
-  /**
-   * Only report this often.
-   */
+
   private static final int NUMBER_OF_REQUESTS_BETWEEN_REPORTS = 100;
-  /**
-   * Don't reconfigure more often than this time interval. Both of these need to be satisfied.
-   */
+
   private static final long MIN_RECONFIGURATION_INTERVAL = 60000; // milleseconds
-  /**
-   * Don't reconfigure more often than this many requests. Both of these need to be satisfied.
-   */
+
   private static final long NUMBER_OF_REQUESTS_BETWEEN_RECONFIGURATIONS = 1000;
 
   private double interArrivalTime = 0.0;
@@ -133,20 +76,12 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   private int lookupCount = 0;
   private int updateCount = 0;
 
-  /**
-   * Create a LocationBasedDemandProfile instance.
-   *
-   * @param name
-   */
+
   public LocationBasedDemandProfile(String name) {
     super(name);
   }
 
-  /**
-   * Create a LocationBasedDemandProfile instance by making a deep copy of another instance.
-   *
-   * @param dp
-   */
+
   public LocationBasedDemandProfile(LocationBasedDemandProfile dp) {
     super(dp.name);
     this.interArrivalTime = dp.interArrivalTime;
@@ -158,12 +93,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.updateCount = dp.updateCount;
   }
 
-  /**
-   * Create a LocationBasedDemandProfile instance from a JSON packet.
-   *
-   * @param json
-   * @throws org.json.JSONException
-   */
+
   public LocationBasedDemandProfile(JSONObject json) throws JSONException {
     super(json.getString(Keys.SERVICE_NAME.toString()));
     this.interArrivalTime = 1.0 / json.getDouble(Keys.RATE.toString());
@@ -175,10 +105,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> {0} VOTES MAP AFTER READ: {1}", new Object[]{this.name, this.votesMap});
   }
 
-  /**
-   *
-   * @return the stats
-   */
+
   @Override
   public JSONObject getStats() {
     LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> {0} VOTES MAP BEFORE GET STATS: {1}", new Object[]{this.name, this.votesMap});
@@ -198,25 +125,12 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     return json;
   }
 
-  /**
-   * Create an empty LocationBasedDemandProfile instance for a name.
-   *
-   * @param name
-   * @return New demand profile for {@code name}.
-   */
+
   public static LocationBasedDemandProfile createDemandProfile(String name) {
     return new LocationBasedDemandProfile(name);
   }
 
-  /**
-   * arun: ignore create, delete, and select commands. We only want to
-   * consider typical read/write commands. Note that select commands are not
-   * expected to have any locality, so they are unlikely to benefit from any
-   * locality based placement.
-   *
-   * @param request
-   * @return true if it should be ignore
-   */
+
   private static boolean shouldIgnore(Request request) {
     if (!(request instanceof CommandPacket)) {
       return true;
@@ -227,12 +141,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
             || command.getCommandType().isSelect();
   }
 
-  /**
-   *
-   * @param request
-   * @param sender
-   * @param nodeConfig
-   */
+
   @Override
   public void register(Request request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
     if (!request.getServiceName().equals(this.name)) {
@@ -297,9 +206,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     return result;
   }
 
-  /**
-   * Reset everything.
-   */
+
   @Override
   public void reset() {
     this.interArrivalTime = 0.0;
@@ -315,10 +222,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     return new LocationBasedDemandProfile(this);
   }
 
-  /**
-   *
-   * @param dp
-   */
+
   @Override
   public void combine(AbstractDemandProfile dp) {
     LocationBasedDemandProfile update = (LocationBasedDemandProfile) dp;
@@ -334,18 +238,13 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER COMBINE:{0}", this.toString());
   }
 
-  /**
-   *
-   * @return true if we should report
-   */
+
   @Override
   public boolean shouldReport() {
     return getNumRequests() >= NUMBER_OF_REQUESTS_BETWEEN_REPORTS;
   }
 
-  /**
-   * Was this just rconfigured.
-   */
+
   @Override
   public void justReconfigured() {
     this.lastReconfiguredProfile = this.clone();
@@ -353,12 +252,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
             this.lastReconfiguredProfile.toString());
   }
 
-  /**
-   *
-   * @param curActives
-   * @param nodeConfig
-   * @return true if we should reconfigure
-   */
+
   @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, InterfaceGetActiveIPs nodeConfig) {
     // This happens when called from a reconfigurator
@@ -394,16 +288,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   }
 
   // Routines below for computing new actives list
-  /**
-   * Returns a list of new active replicas based on read / write load.
-   * Returns InetSocketAddresses based on the number needed (which is calculated in computeNumberOfReplicas
-   * using read / write load), the current ones and the entire list available from nodeCOnfig.
-   *
-   * @param numReplica
-   * @param curActives
-   * @param nodeConfig
-   * @return a list of InetSocketAddress
-   */
+
   // NEED TO PICK A FRACTIONAL AMOUNT FOR LOCALITY-BASED ONES
   private ArrayList<InetAddress> pickNewActiveReplicas(int numReplica, ArrayList<InetAddress> curActives,
           ArrayList<InetAddress> topN, ArrayList<InetAddress> allActives) {
@@ -459,16 +344,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     return newActives;
   }
 
-  /**
-   * Returns the size of active replica set that should exist for this name record.
-   * Depends on the read and update rate of this name record.
-   * There are two special cases:
-   * (1) if there are no lookups or updates for this name, it returns 0.
-   * (2) if (numberReplicaControllers == 1), then the system is un-replicated, therefore it always returns 1;
-   *
-   * Otherwise returns a value in the range {@link edu.umass.cs.utils.Config.Config#minReplica} and
-   * {@link edu.umass.cs.utils.Config.Config#maxReplica}.
-   */
+
   private int computeNumberOfReplicas(int lookupCount, int updateCount, int actualReplicasCount) {
 
     if (updateCount == 0) {
@@ -484,39 +360,23 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     }
   }
 
-  /**
-   * Returns the request rate.
-   *
-   * @return the request rate
-   */
+
   public double getRequestRate() {
     return this.interArrivalTime > 0 ? 1.0 / this.interArrivalTime
             : 1.0 / (this.interArrivalTime + 1000);
   }
 
-  /**
-   * Return the number of requests.
-   *
-   * @return the number of requests
-   */
+
   public double getNumRequests() {
     return this.numRequests;
   }
 
-  /**
-   * Return the total number of requests.
-   *
-   * @return the total number of requests
-   */
+
   public double getNumTotalRequests() {
     return this.numTotalRequests;
   }
 
-  /**
-   * Return the votes map.
-   *
-   * @return the votes map
-   */
+
   public VotesMap getVotesMap() {
     return votesMap;
   }
@@ -530,10 +390,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
             + votesMap + ", lookupCount=" + lookupCount + ", updateCount=" + updateCount + '}';
   }
 
-  /**
-   * JUST FOR TESTING!
-   *
-   */
+
   public LocationBasedDemandProfile() {
     super("FRANK");
     this.interArrivalTime = 2.0;
@@ -545,12 +402,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.updateCount = 50;
   }
 
-  /**
-   * Main routine. Only for testing.
-   *
-   * @param args
-   * @throws UnknownHostException
-   */
+
   public static void main(String[] args) throws UnknownHostException {
     LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
     LOG.info(dp.toString());

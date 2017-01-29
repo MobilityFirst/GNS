@@ -1,10 +1,4 @@
-/*
- * Copyright (C) 2016
- * University of Massachusetts
- * All Rights Reserved 
- *
- * Initial developer(s): Westy.
- */
+
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
@@ -42,42 +36,10 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- *
- * @author Westy
- */
+
 public class NSUpdateSupport {
 
-  /**
-   * Executes a local updateEntireValuesMap operation.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid
-   * @param field
-   * @param writer
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param operation
-   * @param updateValue
-   * @param oldValue
-   * @param argument
-   * @param userJSON
-   * @param app
-   * @param doNotReplyToClient
-   * @return an NSResponseCode
-   * @throws NoSuchAlgorithmException
-   * @throws InvalidKeySpecException
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws JSONException
-   * @throws IOException
-   * @throws FailedDBOperationException
-   * @throws RecordNotFoundException
-   * @throws FieldNotFoundException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
-   */
+
   public static ResponseCode executeUpdateLocal(InternalRequestHeader header, CommandPacket commandPacket, String guid, String field,
           String writer, String signature, String message, Date timestamp,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,

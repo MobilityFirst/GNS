@@ -1,18 +1,4 @@
-/* Copyright (c) 2015 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy */
+
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -57,109 +43,45 @@ import javax.xml.bind.DatatypeConverter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/**
- * Provides the basic interface to GNS accounts.
- * <p>
- * See {@link AccountInfo} for more details about accounts.
- * <p>
- * Some of the internal records used to maintain account information are as
- * follows:
- * <p>
- * GUID: "ACCOUNT_INFO" -- {account} for primary guid<br>
- * GUID: "GUID" -- GUID (primary) for secondary guid<br>
- * GUID: "GUID_INFO" -- {guid info}<br>
- * HRN: "GUID" -- GUID<br>
- * <p>
- * GUID = Globally Unique Identifier<br>
- * HRN = Human Readable Name<br>
- *
- * @author westy, arun
- */
+
 public class AccountAccess {
 
-  /**
-   * This method is currently not used because roll backs when invoked seem as
-   * /** Defines the field name in an account guid where account information
-   * is stored.
-   */
+
   public static final String ACCOUNT_INFO = InternalField
           .makeInternalFieldString("account_info");
-  /**
-   * Special case for guids which can only be read from client as a list
-   */
+
   public static final String ACCOUNT_INFO_GUIDS = InternalField
           .makeInternalFieldString("guids");
 
-  /**
-   * Defines the field name in an HRN record (the reverse record) where guid
-   * is stored.
-   */
+
   public static final String HRN_GUID = InternalField
           .makeInternalFieldString("guid");
 
-  /**
-   * Defines the field name in the subguid where parent guid is stored.
-   */
+
   public static final String PRIMARY_GUID = InternalField
           .makeInternalFieldString("primary_guid");
 
-  /**
-   * Defines the field name in the guid where guid info is stored.
-   */
+
   public static final String GUID_INFO = InternalField
           .makeInternalFieldString("guid_info");
 
-  /**
-   * Defines the field name in the guid where the HRN is stored.
-   */
+
   public static final String HRN_FIELD = InternalField
           .makeInternalFieldString("guid_info") + "." + GNSProtocol.NAME.toString();
 
-  /**
-   * Obtains the account info record for the given guid if that guid was used
-   * to createField an account. Only looks on the local server.
-   *
-   * @param header
-   * @param guid
-   * @param handler
-   * @return the account info
-   */
+
   public static AccountInfo lookupAccountInfoFromGuidLocally(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler) {
     return lookupAccountInfoFromGuid(header, guid, handler, false);
   }
 
-  /**
-   * Obtains the account info record for the given guid if that guid was used
-   * to createField an account. Will do a remote query if needed.
-   *
-   * @param header
-   * @param guid
-   * @param handler
-   * @return the account info
-   */
+
   public static AccountInfo lookupAccountInfoFromGuidAnywhere(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler) {
     return lookupAccountInfoFromGuid(header, guid, handler, true);
   }
 
-  /**
-   * Obtains the account info record for the given guid if that guid was used
-   * to createField an account.
-   * <p>
-   * GUID: "ACCOUNT_INFO" -- {account} for primary guid<br>
-   * GUID: "GUID" -- guid (primary) for secondary guid<br>
-   * GUID: "GUID_INFO" -- {guid info}<br>
-   * HRN: "GUID" -- GUID<br>
-   * <p>
-   * GUID = Globally Unique Identifier<br>
-   * HRN = Human Readable Name<br>
-   *
-   * @param guid
-   * @param handler
-   * @param allowRemoteLookup
-   * @return the account info record or null if it could not be found
-   */
+
   private static AccountInfo lookupAccountInfoFromGuid(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
@@ -206,18 +128,7 @@ public class AccountAccess {
     return null;
   }
 
-  /**
-   * If this is a subguid associated with an account, returns the guid of that
-   * account, otherwise returns null.
-   * <p>
-   * guid = Globally Unique Identifier
-   *
-   * @param header
-   * @param guid
-   * @param handler
-   * @param allowRemoteLookup
-   * @return a guid
-   */
+
   public static String lookupPrimaryGuid(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
@@ -257,55 +168,19 @@ public class AccountAccess {
     return value;
   }
 
-  /**
-   * Returns the guid associated with name which is a HRN or null if one of
-   * that name does not exist. Will use a remote query if necessary.
-   *
-   * <p>
-   * guid = Globally Unique Identifier<br>
-   * HRN = Human Readable Name<br>
-   *
-   * @param header
-   * @param name
-   * @param handler
-   * @return a guid or null if the corresponding guid does not exist
-   */
+
   public static String lookupGuidAnywhere(InternalRequestHeader header, String name,
           ClientRequestHandlerInterface handler) {
     return lookupGuid(header, name, handler, true);
   }
 
-  /**
-   * Returns the guid associated with name which is a HRN or null if one of
-   * that name does not exist.
-   *
-   * <p>
-   * guid = Globally Unique Identifier<br>
-   * HRN = Human Readable Name<br>
-   *
-   * @param header
-   *
-   * @param name
-   * @param handler
-   * @return a guid or null if the corresponding guid does not exist
-   */
+
   public static String lookupGuidLocally(InternalRequestHeader header, String name,
           ClientRequestHandlerInterface handler) {
     return lookupGuid(header, name, handler, false);
   }
 
-  /**
-   * Returns the guid associated with name which is a HRN or null if one of
-   * that name does not exist.
-   * <p>
-   * guid = Globally Unique Identifier<br>
-   * HRN = Human Readable Name<br>
-   *
-   * @param name
-   * @param handler
-   * @param allowRemoteLookup
-   * @return a guid or null if the corresponding guid does not exist
-   */
+
   private static String lookupGuid(InternalRequestHeader header, String name,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
@@ -349,49 +224,19 @@ public class AccountAccess {
     return value;
   }
 
-  /**
-   * Obtains the guid info record from the database for guid given.
-   * <p>
-   * guid = Globally Unique Identifier<br>
-   *
-   * @param header
-   *
-   * @param guid
-   * @param handler
-   * @return an {@link GuidInfo} instance
-   */
+
   public static GuidInfo lookupGuidInfoLocally(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler) {
     return lookupGuidInfo(header, guid, handler, false);
   }
 
-  /**
-   * Obtains the guid info record from the database for guid given from any
-   * server, local or remote.
-   * <p>
-   * guid = Globally Unique Identifier<br>
-   *
-   * @param header
-   *
-   * @param guid
-   * @param handler
-   * @return an {@link GuidInfo} instance
-   */
+
   public static GuidInfo lookupGuidInfoAnywhere(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler) {
     return lookupGuidInfo(header, guid, handler, true);
   }
 
-  /**
-   * Obtains the guid info record from the database for guid given.
-   * <p>
-   * guid = Globally Unique Identifier<br>
-   *
-   * @param guid
-   * @param handler
-   * @param allowRemoteLookup
-   * @return an {@link GuidInfo} instance
-   */
+
   private static GuidInfo lookupGuidInfo(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     GNSConfig.getLogger().log(Level.FINE, "allowRemoteLookup is {0}",
@@ -449,17 +294,7 @@ public class AccountAccess {
     return null;
   }
 
-  /**
-   * Obtains the account info record from the database for the account whose
-   * HRN is name. Will use a remote query if necessary.
-   * <p>
-   * HRN = Human Readable Name<br>
-   *
-   * @param header
-   * @param name
-   * @param handler
-   * @return an {@link AccountInfo} instance
-   */
+
   public static AccountInfo lookupAccountInfoFromNameAnywhere(InternalRequestHeader header, String name,
           ClientRequestHandlerInterface handler) {
     String guid = lookupGuidAnywhere(header, name, handler);
@@ -492,25 +327,7 @@ public class AccountAccess {
           + "You can view their information using the link below:"
           + "\n\n%4$s%2$s\n";
 
-  /**
-   * Adds an account guid.
-   *
-   * @param header
-   * @param commandPacket
-   *
-   * @param hostPortString
-   * @param name
-   * @param guid
-   * @param publicKey
-   * @param password
-   * @param useEmailVerification
-   * @param handler
-   * @return the command response
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   * @throws java.io.IOException
-   * @throws org.json.JSONException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
-   */
+
   public static CommandResponse addAccount(InternalRequestHeader header,
           CommandPacket commandPacket,
           final String hostPortString, final String name, final String guid,
@@ -602,18 +419,7 @@ public class AccountAccess {
     return emailOK;
   }
 
-  /**
-   *
-   * @param header
-   * @param commandPacket
-   * @param accountInfo
-   * @param guid
-   * @param signature
-   * @param message
-   * @param handler
-   * @return a command response
-   * @throws UnknownHostException
-   */
+
   public static CommandResponse resendAuthenticationEmail(
           InternalRequestHeader header, CommandPacket commandPacket,
           AccountInfo accountInfo, String guid, String signature,
@@ -650,17 +456,7 @@ public class AccountAccess {
             + "Email verification is disabled.");
   }
 
-  /**
-   * Performs the account verification for a given guid using the verification
-   * code.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid
-   * @param code
-   * @param handler
-   * @return the command response
-   */
+
   public static CommandResponse verifyAccount(InternalRequestHeader header,
           CommandPacket commandPacket, String guid, String code,
           ClientRequestHandlerInterface handler) {
@@ -719,17 +515,7 @@ public class AccountAccess {
     }
   }
 
-  /**
-   * Reset the public key for an account guid.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid
-   * @param password
-   * @param publicKey
-   * @param handler
-   * @return the command response
-   */
+
   public static CommandResponse resetPublicKey(InternalRequestHeader header,
           CommandPacket commandPacket,
           String guid, String password,
@@ -775,31 +561,7 @@ public class AccountAccess {
     }
   }
 
-  /**
-   * Create a new GNS user account.
-   *
-   * THIS CAN BYPASS THE EMAIL VERIFICATION if you set emailVerify to false;
-   *
-   * <p>
-   * This adds three records to the GNS for the account:<br>
-   * GNSProtocol.NAME.toString(): "_GNS_GUID" -- guid<br>
-   * GUID: "_GNS_ACCOUNT_INFO" -- {account record - an AccountInfo object
-   * stored as JSON}<br>
-   * GUID: "_GNS_GUID_INFO" -- {guid record - a GuidInfo object stored as
-   * JSON}<br>
-   *
-   * @param header
-   *
-   * @param name
-   * @param guid
-   * @param publicKey
-   * @param password
-   * @param emailVerify
-   * @param verifyCode
-   * @param handler
-   * @return status result
-   * @throws IOException
-   */
+
   public static CommandResponse addAccountInternal(
           InternalRequestHeader header, String name, String guid,
           String publicKey, String password, boolean emailVerify,
@@ -956,9 +718,7 @@ public class AccountAccess {
     return null;
   }
 
-  /* This method is currently not used because roll backs when invoked seem as
-	 * likely to cause new problems as they are to fix limbo create operations.
-	 * The clean way to fix them is to have support for transactions. */
+
   private static CommandResponse rollback(
           ClientRequestHandlerInterface handler, ResponseCode returnCode,
           String name, String guid) throws ClientException {
@@ -983,15 +743,7 @@ public class AccountAccess {
 
   }
 
-  /**
-   * Removes a GNS user account.
-   *
-   * @param header
-   * @param commandPacket
-   * @param accountInfo
-   * @param handler
-   * @return status result
-   */
+
   public static CommandResponse removeAccount(InternalRequestHeader header,
           CommandPacket commandPacket,
           AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
@@ -1071,49 +823,12 @@ public class AccountAccess {
     }
   }
 
-  /**
-   * Adds a new GUID associated with an existing account.
-   * <p>
-   * These records will be created:<br>
-   * GUID: "_GNS_PRIMARY_GUID" -- GUID (primary) for secondary guid<br>
-   * GUID: "_GNS_GUID_INFO" -- {guid info}<br>
-   * HRN: "_GNS_GUID" -- GUID<br>
-   *
-   * @param header
-   * @param commandPacket
-   *
-   * @param accountInfo
-   * - the accountInfo of the account to add the GUID to
-   * @param accountGuidInfo
-   * @param name
-   * = the human readable name to associate with the GUID
-   * @param guid
-   * - the new GUID
-   * @param publicKey
-   * - the public key to use with the new account
-   * @param handler
-   * @return status result
-   */
+
   public static CommandResponse addGuid(InternalRequestHeader header,
           CommandPacket commandPacket,
           AccountInfo accountInfo, GuidInfo accountGuidInfo, String name,
           String guid, String publicKey, ClientRequestHandlerInterface handler) {
-    /* arun: The commented out code below checking for duplicates is
-		 * incorrect. What we need to do is to check for conflicts in HRN-GUID
-		 * bindings. If an HRN being created already exists, but the
-		 * corresponding GUID does not exist, we should create it. Otherwise,
-		 * the caller will interpret the duplicate name exception incorrectly as
-		 * a successful creation. 
-		 * 
- 		 * if ((AccountAccess.lookupGuidAnywhere(name, handler)) != null) {
-		 * return new CommandResponse( ResponseCode.DUPLICATE_NAME_EXCEPTION,
-		 * GNSProtocol.BAD_RESPONSE.toString() + " " +
-		 * GNSProtocol.DUPLICATE_NAME.toString() + " " + name); }
-		 * 
-		 * if ((AccountAccess.lookupGuidInfoAnywhere(guid, handler)) != null) {
-		 * return new CommandResponse( ResponseCode.DUPLICATE_GUID_EXCEPTION,
-		 * GNSProtocol.BAD_RESPONSE.toString() + " " +
-		 * GNSProtocol.DUPLICATE_GUID.toString() + " " + name); } */
+
 
     boolean createdName = false, createdGUID = false;
     try {
@@ -1124,10 +839,7 @@ public class AccountAccess {
       code = handler.getInternalClient().createOrExists(
               new CreateServiceName(name, jsonHRN.toString()));
 
-      /* arun: Return the error if we could not createField the HRN
-			 * (alias) record and the error indicates that it is not a duplicate
-			 * ID exception because of a limbo create operation from a previous
-			 * unsuccessful attempt. */
+
       String boundGUID = null;
       if (code.equals(ResponseCode.DUPLICATE_ID_EXCEPTION)
               && !(guid.equals(boundGUID = HRNMatchingGUIDExists(header, handler,
@@ -1246,21 +958,7 @@ public class AccountAccess {
     }
   }
 
-  /**
-   * Add multiple guids to an account.
-   *
-   * @param header
-   * @param commandPacket
-   *
-   * @param names
-   * - the list of names
-   * @param publicKeys
-   * - the list of public keys associated with the names
-   * @param accountInfo
-   * @param accountGuidInfo
-   * @param handler
-   * @return a command response
-   */
+
   public static CommandResponse addMultipleGuids(
           InternalRequestHeader header,
           CommandPacket commandPacket,
@@ -1346,19 +1044,7 @@ public class AccountAccess {
     }
   }
 
-  /**
-   * Used by the batch test methods to createField multiple guids. This
-   * creates bunch of randomly names guids.
-   *
-   * @param commandPacket
-   * @param header
-   *
-   * @param names
-   * @param accountInfo
-   * @param accountGuidInfo
-   * @param handler
-   * @return a CommandResponse
-   */
+
   public static CommandResponse addMultipleGuidsFaster(
           InternalRequestHeader header, CommandPacket commandPacket,
           List<String> names,
@@ -1373,19 +1059,7 @@ public class AccountAccess {
             accountGuidInfo, handler);
   }
 
-  /**
-   * Used by the batch test methods to createField multiple guids. This
-   * creates bunch of randomly named guids.
-   *
-   * @param commandPacket
-   * @param header
-   *
-   * @param accountInfo
-   * @param accountGuidInfo
-   * @param count
-   * @param handler
-   * @return a command response
-   */
+
   public static CommandResponse addMultipleGuidsFasterAllRandom(
           InternalRequestHeader header, CommandPacket commandPacket,
           int count, AccountInfo accountInfo,
@@ -1402,18 +1076,7 @@ public class AccountAccess {
             accountGuidInfo, handler);
   }
 
-  /**
-   * Remove a GUID. If accountInfo is not null it should be the
-   * account guid associated with this guid. It can be null in which case
-   * we will look it up.
-   *
-   * @param header
-   * @param commandPacket
-   * @param accountInfo
-   * @param guid
-   * @param handler
-   * @return a command response
-   */
+
   public static CommandResponse removeGuid(InternalRequestHeader header,
           CommandPacket commandPacket,
           GuidInfo guid, AccountInfo accountInfo,
@@ -1421,21 +1084,7 @@ public class AccountAccess {
     return removeGuidInternal(header, commandPacket, guid, accountInfo, false, handler);
   }
 
-  /**
-   * Remove a guid. If ignoreAccountGuid is true we're deleting
-   * the account guid as well so we don't have to check or
-   * update that info.
-   * The accountInfo parameter can be null in which case we
-   * look it up.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guidInfo
-   * @param accountInfo - can be null in which case we look it up
-   * @param ignoreAccountGuid
-   * @param handler
-   * @return the command response
-   */
+
   // This can be called from the context of an account guid deleting one if it's
   // subguids or a guid deleting itself. The difference being who signs the command,
   // but that's outside of this function
@@ -1542,24 +1191,7 @@ public class AccountAccess {
     }
   }
 
-  /**
-   * Add a new human readable name (alias) to an account.
-   * <p>
-   * These records will be added:<br>
-   * HRN: "_GNS_GUID" -- GUID<br>
-   *
-   * @param header
-   * @param commandPacket
-   *
-   * @param accountInfo
-   * @param alias
-   * @param writer
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return status result
-   */
+
   public static CommandResponse addAlias(InternalRequestHeader header,
           CommandPacket commandPacket,
           AccountInfo accountInfo, String alias, String writer,
@@ -1607,21 +1239,7 @@ public class AccountAccess {
     }
   }
 
-  /**
-   * Remove an alias from an account.
-   *
-   * @param header
-   * @param commandPacket
-   *
-   * @param accountInfo
-   * @param alias
-   * @param writer
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return status result
-   */
+
   public static CommandResponse removeAlias(InternalRequestHeader header,
           CommandPacket commandPacket,
           AccountInfo accountInfo, String alias, String writer,
@@ -1666,21 +1284,7 @@ public class AccountAccess {
             GNSProtocol.OK_RESPONSE.toString());
   }
 
-  /**
-   * Set the password of an account.
-   *
-   * @param header
-   * @param commandPacket
-   *
-   * @param accountInfo
-   * @param password
-   * @param writer
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return status result
-   */
+
   public static CommandResponse setPassword(InternalRequestHeader header,
           CommandPacket commandPacket,
           AccountInfo accountInfo, String password, String writer,
@@ -1792,20 +1396,7 @@ public class AccountAccess {
             null, null, null, handler).isExceptionOrError();
   }
 
-  /**
-   * Returns an ACL set up to look like the JSON Object below.
-   *
-   * "_GNS_ACL": { "READ_WHITELIST": {|readfield|: {"MD": [readAcessor1,
-   * readAcessor2,... ]}}, "WRITE_WHITELIST": {|writefield|: {"MD":
-   * [writeAcessor1, writeAcessor2,... ]}}
-   *
-   * @param readField
-   * @param readAcessors
-   * @param writeField
-   * @param writeAcessors
-   * @return a JSONObject
-   * @throws JSONException
-   */
+
   public static JSONObject createACL(String readField,
           List<String> readAcessors, String writeField,
           List<String> writeAcessors) throws JSONException {
@@ -1832,10 +1423,7 @@ public class AccountAccess {
   }
 
   // test code
-  /**
-   *
-   * @param args
-   */
+
   public static void main(String[] args) {
     String name = "westy@cs.umass.edu";
     String hostPortString = "128.119.44.108:8080";

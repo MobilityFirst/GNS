@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -33,25 +15,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import javax.xml.bind.DatatypeConverter;
 
-/**
- * OUT OF DATE: THIS WILL BE UPDATED SHORTLY TO REFLECT THE LATEST CLIENT CHANGES.
- *
- * This code example will help you get started using the GNS Java client library to access the GNS.
- * In this example we will use an account you have created to write and read back some
- * information in the GNS.
- *
- * It uses the UniversalTcpClient class to issue HTTP requests the GNS service.
- * Some requests will return a value as a Java String. Requests that
- * don't expect a response to be returned will return the string +OK+. A bad
- * response is indicated by the string +NO+. See the GnsProtocol class for more details.
- *
- * You will need to create an account using your email at the site http://gns.name.
- * Your email will be your account name. A public / private key pair will be generated when you register. The
- * GNS will store and use you public key for authentication. You will need to download the private key and
- * store it in a known location which you will also need to specify in the code below.
- *
- * @author westy
- */
+
 public class GNSQuickStart {
 
   // *** REPLACE THIS WITH THE VALUE YOU USED TO CREATE YOUR ACCOUNT ***
@@ -70,17 +34,7 @@ public class GNSQuickStart {
   // > openssl pkcs8 -topk8 -inform PEM -outform DER -in <input file>  -nocrypt > <output file>
   private static final String privateKeyFile = "/Users/Westy/test_key";
 
-  /**
-   *
-   * @param args
-   * @throws IOException
-   * @throws InvalidKeySpecException
-   * @throws NoSuchAlgorithmException
-   * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws Exception
-   */
+
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {

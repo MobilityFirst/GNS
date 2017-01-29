@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -64,14 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.time.DateUtils;
 
-/**
- * Provides static methods for sending and retrieve data values to and from the
- * the database which stores the fields and values.
- * Provides conversion between the database to java objects.
- *
- *
- * @author westy, arun
- */
+
 public class FieldAccess {
 
   private final static Logger LOGGER = Logger.getLogger(FieldAccess.class.getName());
@@ -79,33 +54,11 @@ public class FieldAccess {
   private static final String EMPTY_JSON_ARRAY_STRING = new JSONArray().toString();
   private static final String EMPTY_STRING = "";
 
-  /* false means that even single field queries will return a JSONObject response
-   * with a single key and value. The client code has been modified accordingly.
-   * The server-side modifications involve changes to AccountAccess to handle
-   * lookupGuidLocally and lookupPrimaryGuid differently.
-   */
-  /**
-   *
-   */
+
+
   protected static final boolean SINGLE_FIELD_VALUE_ONLY = false;//true;
 
-  /**
-   * Reads the value of field in a guid.
-   * Field(s) is a string the naming the field(s). Field(s) can us dot
-   * notation to indicate subfields.
-   *
-   * @param header
-   * @param commandPacket
-   *
-   * @param guid
-   * @param field - mutually exclusive with fields
-   * @param reader
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return the value of a single field
-   */
+
   public static CommandResponse lookupSingleField(InternalRequestHeader header, CommandPacket commandPacket, 
           String guid, String field,
           String reader, String signature, String message, Date timestamp,
@@ -125,11 +78,7 @@ public class FieldAccess {
         valuesMap = valuesMap.removeInternalFields();
       }
       if (valuesMap != null) {
-        /* arun: changed to not rely on JSONException. The previous code was relying
-    	   on valuesMap.getString() throwing a JSONException and conveying a GNSProtocol.JSON_PARSE_ERROR.toString(), 
-    	   which is incorrect in this case because it should give a FIELD_NOT_FOUND_EXCEPTION
-    	   to the client.
-         */
+
         if (valuesMap.isNull(field)) {
           return new CommandResponse(ResponseCode.FIELD_NOT_FOUND_EXCEPTION,
                   GNSProtocol.BAD_RESPONSE.toString() + " "
@@ -154,23 +103,7 @@ public class FieldAccess {
 
   }
 
-  /**
-   * Reads the value of fields in a guid.
-   * Field(s) is a string the naming the field(s). Field(s) can us dot
-   * notation to indicate subfields.
-   *
-   * @param header
-   * @param commandPacket
-   *
-   * @param guid
-   * @param fields - mutually exclusive with field
-   * @param reader
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return the value of a single field
-   */
+
   public static CommandResponse lookupMultipleFields(InternalRequestHeader header, CommandPacket commandPacket, 
           String guid, ArrayList<String> fields,
           String reader, String signature, String message, Date timestamp,
@@ -198,24 +131,7 @@ public class FieldAccess {
 
   }
 
-  /**
-   * Supports reading of the old style data formatted as a JSONArray of strings.
-   * Much of the internal system data is still stored in this format.
-   * The new format also supports JSONArrays as part of the
-   * whole "guid data is a JSONObject" format so we might be
-   * transitioning away from this altogether at some point.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid
-   * @param field
-   * @param reader
-   * @param signature
-   * @param timestamp
-   * @param message
-   * @param handler
-   * @return a command response
-   */
+
   public static CommandResponse lookupJSONArray(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, String field, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
@@ -240,20 +156,7 @@ public class FieldAccess {
     return new CommandResponse(ResponseCode.NO_ERROR, resultString);
   }
 
-  /**
-   * Reads the value of all the fields in a guid.
-   * Doesn't return internal system fields.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid
-   * @param reader
-   * @param signature
-   * @param message
-   * @param handler
-   * @param timestamp
-   * @return a command response
-   */
+
   public static CommandResponse lookupMultipleValues(InternalRequestHeader header,  CommandPacket commandPacket,
           String guid, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
@@ -284,20 +187,7 @@ public class FieldAccess {
     return new CommandResponse(responseCode, resultString);
   }
 
-  /**
-   * Returns the first value of the field in a guid in a an old-style JSONArray field value.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid
-   * @param field
-   * @param reader
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return a command response
-   */
+
   public static CommandResponse lookupOne(InternalRequestHeader header, CommandPacket commandPacket, 
           String guid, String field,
           String reader, String signature, String message, Date timestamp,
@@ -325,19 +215,7 @@ public class FieldAccess {
     return new CommandResponse(ResponseCode.NO_ERROR, resultString);
   }
 
-  /**
-   * Returns the first value of all the fields in a guid in an old-style JSONArray field value.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid
-   * @param reader
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return a command response
-   */
+
   public static CommandResponse lookupOneMultipleValues(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, String reader,
           String signature, String message, Date timestamp,
@@ -372,27 +250,7 @@ public class FieldAccess {
     return new CommandResponse(responseCode, resultString);
   }
 
-  /**
-   * Updates the field with value.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid - the guid to update
-   * @param key - the field to update
-   * @param value - the new value
-   * @param oldValue - the old value - only applicable for certain operations, null otherwise
-   * @param argument - for operations that require an index, -1 otherwise
-   * @param operation - the update operation to perform... see <code>UpdateOperation</code>
-   * @param writer - the guid performing the write operation, can be the same as the guid being written. Can be null for globally
-   * readable or writable fields or the secret for internal operations done without a signature.
-   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or the secret for internal operations done without a signature.
-   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or the secret for internal operations done without a signature.
-   * @param timestamp
-   * @param handler
-   * @return an NSResponseCode
-   */
+
   public static ResponseCode update(InternalRequestHeader header,
           CommandPacket commandPacket,
           String guid, String key, String value, String oldValue,
@@ -408,27 +266,7 @@ public class FieldAccess {
             writer, signature, message, timestamp, handler);
   }
 
-  /**
-   * Updates the field with value.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid - the guid to update
-   * @param key - the field to update
-   * @param value - the new value
-   * @param oldValue - the old value - only applicable for certain operations, null otherwise
-   * @param argument - for operations that require an index, -1 otherwise
-   * @param operation - the update operation to perform... see <code>UpdateOperation</code>
-   * @param writer - the guid performing the write operation, can be the same as the guid being written. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param timestamp
-   * @param handler
-   * @return an NSResponseCode
-   */
+
   public static ResponseCode update(InternalRequestHeader header, CommandPacket commandPacket, String guid, String key,
           ResultValue value, ResultValue oldValue,
           int argument, UpdateOperation operation,
@@ -452,22 +290,7 @@ public class FieldAccess {
     }
   }
 
-  /**
-   * Sends an update request to the server containing a JSON Object.
-   *
-   * @param header
-   * @param guid - the guid to update
-   * @param json - the JSONObject to use in the update
-   * @param operation - the update operation to perform... see <code>UpdateOperation</code>
-   * @param writer - the guid performing the write operation, can be the same as the guid being written. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param handler
-   * @return an NSResponseCode
-   */
+
   private static ResponseCode update(InternalRequestHeader header,
           CommandPacket commandPacket,
           String guid, JSONObject json, UpdateOperation operation,
@@ -485,23 +308,7 @@ public class FieldAccess {
     }
   }
 
-  /**
-   * Sends an update request to the server containing a JSON Object.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid - the guid to update
-   * @param json - the JSONObject to use in the update
-   * @param writer - the guid performing the write operation, can be the same as the guid being written. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param timestamp
-   * @param handler
-   * @return an NSResponseCode
-   */
+
   public static ResponseCode updateUserJSON(InternalRequestHeader header,
           CommandPacket commandPacket,
           String guid, JSONObject json,
@@ -512,25 +319,7 @@ public class FieldAccess {
             writer, signature, message, timestamp, handler);
   }
 
-  /**
-   * Sends an update request to the server containing a JSON Object.
-   * This is a convenience method - one could use the <code>update</code> method.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid - the guid to update
-   * @param key - the field to createField
-   * @param value - the initial value of the field
-   * @param writer - the guid performing the createField operation, can be the same as the guid being written. Can be null for globally
-   * readable or writable fields or the secret for internal operations done without a signature.
-   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param timestamp
-   * @param handler
-   * @return a {@link ResponseCode}
-   */
+
   public static ResponseCode createField(InternalRequestHeader header,
           CommandPacket commandPacket,
           String guid, String key, ResultValue value,
@@ -541,23 +330,7 @@ public class FieldAccess {
             timestamp, handler);
   }
 
-  /**
-   * Deletes the field from the guid.
-   *
-   * @param header
-   * @param commandPacket
-   * @param guid - the guid to update
-   * @param key - the field to createField
-   * @param writer - the guid performing the delete operation, can be the same as the guid being written.
-   * Can be null for globally readable or writable fields or the secret for internal operations done without a signature.
-   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
-   * readable or writable fields or for internal operations done without a signature.
-   * @param timestamp
-   * @param handler
-   * @return a {@link ResponseCode}
-   */
+
   public static ResponseCode deleteField(InternalRequestHeader header, CommandPacket commandPacket, String guid, String key,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
@@ -584,16 +357,7 @@ public class FieldAccess {
     }
   }
 
-  /**
-   * Sends a select request to the server to retrieve all the guids matching the request.
-   *
-   * @param header
-   * @param key - the key to match
-   * @param value - the value to match
-   * @param handler
-   * @return a command response
-   * @throws InternalRequestException
-   */
+
   public static CommandResponse select(InternalRequestHeader header, String key, Object value, ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
@@ -611,16 +375,7 @@ public class FieldAccess {
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
-  /**
-   * Sends a select request to the server to retrieve all the guids within an area specified by a bounding box.
-   *
-   * @param header
-   * @param key - the field to match - should be a location field
-   * @param value - a bounding box
-   * @param handler
-   * @return a command response
-   * @throws InternalRequestException
-   */
+
   public static CommandResponse selectWithin(InternalRequestHeader header, String key, String value,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
@@ -640,17 +395,7 @@ public class FieldAccess {
 
   }
 
-  /**
-   * Sends a select request to the server to retrieve all the guids within maxDistance of value.
-   *
-   * @param header
-   * @param key - the field to match - should be a location field
-   * @param value - the position
-   * @param maxDistance - the maximum distance from position
-   * @param handler
-   * @return a command response
-   * @throws InternalRequestException
-   */
+
   public static CommandResponse selectNear(InternalRequestHeader header, String key, String value, String maxDistance,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
@@ -669,15 +414,7 @@ public class FieldAccess {
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
-  /**
-   * Sends a select request to the server to retrieve all the guid matching the query.
-   *
-   * @param header
-   * @param query
-   * @param handler
-   * @return a command response
-   * @throws InternalRequestException
-   */
+
   public static CommandResponse selectQuery(InternalRequestHeader header, String query, ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
@@ -696,19 +433,7 @@ public class FieldAccess {
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
-  /**
-   * Sends a select request to the server to setup a context aware group guid and retrieve all the guids matching the query.
-   *
-   * @param header
-   * @param commandPacket
-   * @param accountGuid
-   * @param query
-   * @param publicKey
-   * @param interval - the refresh interval (queries made more quickly than this will get a cached value)
-   * @param handler
-   * @return a command response
-   * @throws InternalRequestException
-   */
+
   public static CommandResponse selectGroupSetupQuery(InternalRequestHeader header,
           CommandPacket commandPacket,
           String accountGuid, String query, String publicKey,
@@ -767,15 +492,7 @@ public class FieldAccess {
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
-  /**
-   * Sends a select request to the server to retrieve the members of a context aware group guid.
-   *
-   * @param header
-   * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
-   * @param handler
-   * @return a command response
-   * @throws InternalRequestException
-   */
+
   public static CommandResponse selectGroupLookupQuery(InternalRequestHeader header, String guid, ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
@@ -794,20 +511,7 @@ public class FieldAccess {
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
-  /**
-   * 
-   * @param header
-   * @param commandPacket
-   * @param guid
-   * @param field
-   * @param fields
-   * @param reader
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param app
-   * @return the ResponseCode
-   */
+
   public static ResponseCode signatureAndACLCheckForRead(InternalRequestHeader header,
           CommandPacket commandPacket,
           String guid,

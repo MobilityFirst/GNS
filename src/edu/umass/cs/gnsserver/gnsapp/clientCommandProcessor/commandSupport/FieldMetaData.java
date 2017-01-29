@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -34,40 +16,15 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Implements metadata on fields.
- *
- * @author westy
- */
+
 public class FieldMetaData {
 
-  /**
-   * Creates a key for looking up metadata in a guid record.
-   *
-   * @param metaDataType
-   * @param key
-   * @return a string
-   */
+
   public static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
     return metaDataType.getFieldPath() + "." + key + ".MD";
   }
 
-  /**
-   * Adds a value to the metadata of the field in the guid.
-   *
-   * @param header
-   * @param commandPacket
-   * @param type
-   * @param guid
-   * @param key
-   * @param value
-   * @param writer
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return a {@link ResponseCode}
-   */
+
   public static ResponseCode add(InternalRequestHeader header, CommandPacket commandPacket, MetaDataTypeName type, String guid,
           String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
@@ -76,21 +33,7 @@ public class FieldMetaData {
             timestamp, handler);
   }
 
-  /**
-   * Create an empty metadata field in the guid.
-   *
-   * @param header
-   * @param type
-   * @param commandPacket
-   * @param guid
-   * @param key
-   * @param writer
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return a {@link ResponseCode}
-   */
+
   public static ResponseCode createField(InternalRequestHeader header, 
           CommandPacket commandPacket,
           MetaDataTypeName type, String guid,
@@ -102,21 +45,7 @@ public class FieldMetaData {
             timestamp, handler);
   }
 
-  /**
-   * Delete a metadata field in the guid.
-   *
-   * @param header
-   * @param type
-   * @param commandPacket
-   * @param guid
-   * @param key
-   * @param writer
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return a {@link ResponseCode}
-   */
+
   public static ResponseCode deleteField(InternalRequestHeader header, 
           CommandPacket commandPacket,
           MetaDataTypeName type, String guid,
@@ -127,19 +56,7 @@ public class FieldMetaData {
             timestamp, handler);
   }
 
-  /**
-   * Return true if the field exists.
-   *
-   * @param type
-   * @param guid
-   * @param key
-   * @param writer
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return true if the field exists
-   */
+
   public static boolean fieldExists(MetaDataTypeName type, String guid,
           String key, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
@@ -150,21 +67,7 @@ public class FieldMetaData {
     }
   }
 
-  /**
-   * Grabs the metadata indexed by type from the field from the guid.
-   *
-   * @param header
-   * @param commandPacket
-   * @param type
-   * @param guid
-   * @param key
-   * @param reader
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return a set of strings
-   */
+
   public static Set<String> lookup(InternalRequestHeader header, 
           CommandPacket commandPacket,
           MetaDataTypeName type, String guid, String key,
@@ -183,21 +86,7 @@ public class FieldMetaData {
     return new HashSet<>(result.toStringSet());
   }
 
-  /**
-   *
-   * @param header
-   * @param commandPacket
-   * @param type
-   * @param guid
-   * @param key
-   * @param value
-   * @param writer
-   * @param signature
-   * @param message
-   * @param timestamp
-   * @param handler
-   * @return a {@link ResponseCode}
-   */
+
   public static ResponseCode removeValue(InternalRequestHeader header, 
           CommandPacket commandPacket,
           MetaDataTypeName type, String guid, String key, String value, String writer, String signature,

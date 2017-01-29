@@ -1,18 +1,4 @@
-/* Copyright (c) 2016 University of Massachusetts
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * Initial developer(s): Westy */
+
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.http.HttpClient;
@@ -30,13 +16,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import org.json.JSONObject;
 
-/**
- * This example creates an account GUID record, updates access lists,
- * performs a few reads and writes to its fields. It uses client 
- * commands similar to those used by the CASA Alerts application.
- *
- * @author arun, westy
- */
+
 public class HTTPClientCASAAppExample {
 
   // replace with your account alias
@@ -45,16 +25,7 @@ public class HTTPClientCASAAppExample {
   private static GuidEntry guidEntry;
   private static final String MASTER_ALIAS = "example_ACS_master_alias@gns.name";
 
-  /**
-   * @param args
-   * @throws IOException
-   * @throws InvalidKeySpecException
-   * @throws NoSuchAlgorithmException
-   * @throws ClientException
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws Exception
-   */
+
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {

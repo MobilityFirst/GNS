@@ -30,10 +30,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
-/**
- * @author gaozy
- *
- */
+
 public class ActiveNonBlockingRunner implements Runner {
 	
 	final private ScriptEngine engine;
@@ -48,9 +45,7 @@ public class ActiveNonBlockingRunner implements Runner {
 	// This object is used to serialize/deserialize values passing between Java and Javascript
 	private static ScriptObjectMirror JSON;
 	
-	/**
-	 * @param channel 
-	 */
+
 	public ActiveNonBlockingRunner(Channel channel, DatabaseReader dbReader){
 		this.channel = channel;
 		this.dbReader = dbReader;
@@ -68,13 +63,7 @@ public class ActiveNonBlockingRunner implements Runner {
 		invocable = (Invocable) engine;
 	}
 	
-	/**
-	 * Update cache needs to be synchronized, as some code cache may not be evaled before being used.
-	 * 
-	 * @param codeId
-	 * @param code
-	 * @throws ScriptException
-	 */
+
 	private synchronized void updateCache(String codeId, String code) throws ScriptException {
 	    if (!contexts.containsKey(codeId)) {
 	      // Create a context if one does not yet exist and eval the code
@@ -90,26 +79,7 @@ public class ActiveNonBlockingRunner implements Runner {
 	    }
 	}
 	
-	/**
-	 * This method first update the cache of code, 
-	 * then set the context with the cached code 
-	 * for the script engine, finally invokes the
-	 * "run" method.
-	 * 
-	 * <p>Based on the answer of Nashorn builder on stackoverflow:
-	 * http://stackoverflow.com/questions/30140103/should-i-use-a-separate-scriptengine-and-compiledscript-instances-per-each-threa/30159424#30159424
-	 * there is no need to make this method synchronized any more.
-	 * 
-	 * @param guid
-	 * @param accessor
-	 * @param code
-	 * @param value
-	 * @param ttl
-	 * @param id 
-	 * @return ValuesMap result 
-	 * @throws ScriptException
-	 * @throws NoSuchMethodException
-	 */
+
         @Override
 	public String runCode(String guid, String accessor, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {		
 		ActiveNonBlockingQuerier querier = new ActiveNonBlockingQuerier(channel, dbReader, JSON, ttl, guid, id);
@@ -125,9 +95,7 @@ public class ActiveNonBlockingRunner implements Runner {
 		return result;
 	}
 	
-	/**
-	 * @param am
-	 */
+
 	public void release(ActiveMessage am){
 		
 		ActiveNonBlockingQuerier querier = map.get(am.getId());
@@ -140,7 +108,7 @@ public class ActiveNonBlockingRunner implements Runner {
 	
 
 	
-	/*************** TEST *****************/
+
 	private static class SimpleTask implements Callable<String>{
 		
 		ActiveNonBlockingRunner runner;
@@ -158,13 +126,7 @@ public class ActiveNonBlockingRunner implements Runner {
 		
 	}
 	
-	/**
-	 * Test throughput with multithread worker with multiple script engine
-	 * @param args
-	 * @throws JSONException 
-	 * @throws ExecutionException 
-	 * @throws InterruptedException 
-	 */
+
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
 		
 		int numThread = 10; 		
@@ -207,9 +169,7 @@ public class ActiveNonBlockingRunner implements Runner {
 		
 		
 		
-		/**
-		 * Test runner's protected method
-		 */
+
 		ActiveNonBlockingRunner runner = new ActiveNonBlockingRunner(null, null);
 		String chain_code = null;
 		try {

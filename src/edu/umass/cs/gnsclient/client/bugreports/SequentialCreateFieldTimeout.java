@@ -30,12 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-/**
- * @author Brendan
- *
- * Repeats the Create_Entity test of ServerIntegrationTest a number of times sequentially to try and reproduce a timeout error.
- *
- */
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SequentialCreateFieldTimeout {
 
@@ -46,18 +41,12 @@ public class SequentialCreateFieldTimeout {
   private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
 
-  /**
-   *
-   * @param alias
-   */
+
   public static void setAccountAlias(String alias) {
     accountAlias = alias;
   }
 
-  /**
-   *
-   * @throws Exception
-   */
+
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     client = new GNSClientCommands();
@@ -88,10 +77,7 @@ public class SequentialCreateFieldTimeout {
     }
   }
 
-  /**
-   *
-   * @throws Exception
-   */
+
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     if (client != null) {
@@ -99,15 +85,11 @@ public class SequentialCreateFieldTimeout {
     }
   }
 
-  /**
-   *
-   */
+
   @Rule
   public TestName testName = new TestName();
 
-  /**
-   *
-   */
+
   @Rule
   public TestWatcher ruleExample = new TestWatcher() {
     @Override
@@ -123,25 +105,18 @@ public class SequentialCreateFieldTimeout {
     }
   };
 
-  /**
-   * Run something before.
-   */
+
   @Before
   public void beforeMethod() {
     System.out.print(testName.getMethodName() + " ");
   }
 
-  /**
-   * Run something after.
-   */
+
   @After
   public void afterMethod() {
   }
 
-  /**
-   *
-   * @throws Exception
-   */
+
   @Test
   public void test_010_CreateEntity() throws Exception {
     String runsString = System.getProperty("integrationTest.runs");
@@ -162,10 +137,7 @@ public class SequentialCreateFieldTimeout {
     }
   }
 
-  /**
-   * @param args
-   * @throws IOException
-   */
+
   public static void main(String[] args) throws IOException {
     Util.assertAssertionsEnabled();
     Result result = JUnitCore.runClasses(GNSClientCapacityTest.class);

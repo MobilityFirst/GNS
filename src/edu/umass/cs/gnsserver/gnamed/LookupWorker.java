@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -46,17 +28,7 @@ import org.xbill.DNS.RRset;
 import org.xbill.DNS.Section;
 import org.xbill.DNS.Credibility;
 
-/**
- * This class defines a LookupWorker which handles a single query.
- *
- * DNS requests can be handled just by the GNS server or by the GNS server
- * with a DNS server as a fallback.
- * When using DNS as a fallback we send out parallel requests and whichever returns
- * first is returned to the client as the answer.
- *
- * @author westy
- * @version 1.0
- */
+
 public class LookupWorker implements Runnable {
 
   private final SimpleResolver dnsServer;
@@ -67,17 +39,7 @@ public class LookupWorker implements Runnable {
   private final byte[] incomingData;
   private final ClientRequestHandlerInterface handler;
 
-  /**
-   * Creates a new <code>LookupWorker</code> object which handles the parallel GNS and DNS requesting.
-   *
-   * @param socket
-   * @param incomingPacket
-   * @param incomingData
-   * @param dnsServer (might be null meaning don't send requests to a DNS server)
-   * @param gnsServer (might be null gns requests are resolved locally)
-   * @param dnsCache (might be null meaning DNS responses are not cached)
-   * @param handler
-   */
+
   public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver gnsServer,
           SimpleResolver dnsServer, Cache dnsCache, ClientRequestHandlerInterface handler) {
     this.socket = socket;
@@ -89,9 +51,7 @@ public class LookupWorker implements Runnable {
     this.handler = handler;
   }
 
-  /**
-   * @see java.lang.Thread#run()
-   */
+
   @Override
   public void run() {
     long startTime = System.currentTimeMillis();
@@ -128,12 +88,7 @@ public class LookupWorker implements Runnable {
     DelayProfiler.updateDelay("LookupWorker", startTime);
   }
 
-  /**
-   * Queries DNS and/or GNS servers for DNS records.
-   *
-   * Note: a null return value means that the caller doesn't need to do
-   * anything. Currently this only happens if this is an AXFR request over TCP.
-   */
+
   private Message generateReply(Message query) {
     long startTime = System.currentTimeMillis();
     NameResolution.getLogger().log(Level.FINE, "Incoming request: {0}", query.toString());
@@ -182,9 +137,9 @@ public class LookupWorker implements Runnable {
     } else {
       tasks = Arrays.asList(
               // Create GNS lookup task
-              new LookupTask(query, gnsServer, true, /* isGNS */ handler),
+              new LookupTask(query, gnsServer, true,  handler),
               // Create DNS lookup task
-              new LookupTask(dnsQuery, dnsServer, false, /* isGNS */ handler));
+              new LookupTask(dnsQuery, dnsServer, false,  handler));
     }
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than
@@ -246,11 +201,7 @@ public class LookupWorker implements Runnable {
     }
   }
 
-  /**
-   * Returns a response to the sender.
-   *
-   * @param responseBytes
-   */
+
   private void sendResponse(byte[] responseBytes) {
     DatagramPacket outgoingPacket = new DatagramPacket(responseBytes, responseBytes.length, incomingPacket.getAddress(), incomingPacket.getPort());
     try {

@@ -11,11 +11,7 @@ import java.nio.ByteBuffer;
 
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
 
-/**
- * This class is deprecated, and it is only used for test only.
- * @author gaozy
- *
- */
+
 @Deprecated
 public class ActivePipe implements ActiveChannel{
 	
@@ -24,10 +20,7 @@ public class ActivePipe implements ActiveChannel{
 	byte[] readerLengthBuffer = new byte[Integer.BYTES];
 	byte[] writerLengthBuffer = new byte[Integer.BYTES];
 			
-	/**
-	 * @param ifile 
-	 * @param ofile 
-	 */
+
 	public ActivePipe(String ifile, String ofile){
 		Thread t = new Thread(new Runnable() {
 	         public void run()
@@ -69,10 +62,7 @@ public class ActivePipe implements ActiveChannel{
 		return length;
 	}
 	
-	/**
-	 * This method must be synchronized because it is not guaranteed that lines will remain intact
-	 * when writing into a same pipe. They can become intermingled.
-	 */
+
 	public boolean write(byte[] buffer, int offset, int length){
 		boolean wSuccess = false;
 		try {

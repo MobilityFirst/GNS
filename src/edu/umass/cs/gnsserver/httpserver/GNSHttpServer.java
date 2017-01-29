@@ -1,28 +1,7 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+
 package edu.umass.cs.gnsserver.httpserver;
 
-/**
- *
- * @author westy
- */
+
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -73,16 +52,10 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 
 import java.io.UnsupportedEncodingException;
 
-/**
- *
- *
- * @author westy
- */
+
 public class GNSHttpServer {
 
-  /**
-   *
-   */
+
   protected static final String GNS_PATH = Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH);
   private HttpServer httpServer = null;
   private int port;
@@ -91,19 +64,13 @@ public class GNSHttpServer {
   // newer handles command processing
   private GNSClient client = null;
 
-  /**
-   *
-   */
+
   protected final ClientRequestHandlerInterface requestHandler;
   private final Date serverStartDate = new Date();
 
   private final static Logger LOGGER = Logger.getLogger(GNSHttpServer.class.getName());
 
-  /**
-   *
-   * @param port
-   * @param requestHandler
-   */
+
   public GNSHttpServer(int port, ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
@@ -121,11 +88,7 @@ public class GNSHttpServer {
     runServer(port);
   }
 
-  /**
-   * Start the server.
-   *
-   * @param startingPort
-   */
+
   public final void runServer(int startingPort) {
     int cnt = 0;
     do {
@@ -139,21 +102,14 @@ public class GNSHttpServer {
     } while (cnt++ < 100);
   }
 
-  /**
-   * Stop everything.
-   */
+
   public void stop() {
     if (httpServer != null) {
       httpServer.stop(0);
     }
   }
 
-  /**
-   * Try to start the http server at the port.
-   *
-   * @param port
-   * @return true if it was started
-   */
+
   public boolean tryPort(int port) {
     try {
       InetSocketAddress addr = new InetSocketAddress(port);
@@ -176,15 +132,10 @@ public class GNSHttpServer {
     }
   }
 
-  /**
-   * The default handler.
-   */
+
   protected class DefaultHttpHandler implements HttpHandler {
 
-    /**
-     *
-     * @param exchange
-     */
+
     @Override
     public void handle(HttpExchange exchange) {
       try {
@@ -234,13 +185,7 @@ public class GNSHttpServer {
     }
   }
 
-  /**
-   * Process queries for the http service. Converts the URI of e the HTTP query into
-   * the JSON Object format that is used by the CommandModeule class, then finds
-   * executes the matching command.
-   *
-   * @throws InternalRequestException
-   */
+
   private CommandResponse processQuery(String host, String commandName, String queryString) throws InternalRequestException {
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
@@ -383,24 +328,15 @@ public class GNSHttpServer {
     CommandPacket returnPacket = client.execute(outgoingPacket);
 
     LOGGER.log(Level.FINE, "returnPacket =" + returnPacket.toString());
-    /**
-     * Can also invoke getResponse(), getResponseString(), getResponseJSONObject()
-     * etc. on {@link CommandPacket} as documented in {@link GNSCommand}.
-     */
+
     return returnPacket;
 
   }
 
-  /**
-   * Returns info about the server.
-   */
+
   protected class EchoHttpHandler implements HttpHandler {
 
-    /**
-     *
-     * @param exchange
-     * @throws IOException
-     */
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
       String requestMethod = exchange.getRequestMethod();

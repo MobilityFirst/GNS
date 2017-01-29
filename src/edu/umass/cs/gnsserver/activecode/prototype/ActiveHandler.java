@@ -26,10 +26,7 @@ import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
-/**
- * @author gaozy
- *
- */
+
 public class ActiveHandler {
 	
 	private static Client[] clientPool;
@@ -40,23 +37,14 @@ public class ActiveHandler {
 	private final static int clientPort = 50000;
 	private final static int workerPort = 60000;
 	
-	/**
-	 * Test then initialize this variable
-	 */
+
 	public boolean pipeEnable = true;
 	
 	private final int numProcess;
 	final AtomicInteger counter = new AtomicInteger();
 	
 	
-	/**
-	 * Initialize handler with clients and workers.
-	 * @param nodeID 
-	 * @param app 
-	 * @param numProcess
-	 * @param numThread 
-	 * @param blocking blocking client or not
-	 */
+
 	public ActiveHandler(String nodeID, ActiveDBInterface app, int numProcess, int numThread, boolean blocking){
 		this.suffix = nodeID;
 		
@@ -94,19 +82,12 @@ public class ActiveHandler {
 				+(blocking?"blocking":"nonblocking")+" worker processes.");
 	}
 	
-	/**
-	 * Initialize a handler with multi-process single-threaded workers.
-	 * @param nodeId 
-	 * @param app
-	 * @param numProcess
-	 */
+
 	public ActiveHandler(String nodeId, ActiveDBInterface app, int numProcess){
 		this(nodeId, app, numProcess, 1, false);
 	}
 	
-	/**
-	 * Shutdown all the client and its corresponding workers
-	 */
+
 	private void shutdown(){
 		for(int i=0; i<numProcess; i++){
 			if(clientPool[i] != null){
@@ -115,28 +96,14 @@ public class ActiveHandler {
 		}
 	}
 	
-	/**
-	 * @param header 
-	 * @param guid
-	 * @param accessor
-	 * @param code
-	 * @param value
-	 * @param ttl
-	 * @return executed result
-	 * @throws ActiveException 
-	 */
+
 	public JSONObject runCode(InternalRequestHeader header, String guid, 
 			String accessor, String code, JSONObject value, int ttl) throws ActiveException{
 		return clientPool[counter.getAndIncrement()%numProcess].runCode(header, guid, accessor, code, value, ttl, 2000);
 	}
 	
-	/***************** Test methods ****************/	
-	/**
-	 * @param args
-	 * @throws JSONException 
-	 * @throws ExecutionException 
-	 * @throws InterruptedException 
-	 */
+
+
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
 		int numProcess = Integer.parseInt(args[0]);
 		int numThread = Integer.parseInt(args[1]);

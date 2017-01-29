@@ -1,22 +1,4 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+
 package edu.umass.cs.gnsclient.client.util.keystorage;
 
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -35,21 +17,11 @@ import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.lang3.ArrayUtils;
 
-/**
- * Provides get, put, remove, etc for String keysStatement and values using
- * an underlying embedded Derby database.
- *
- * We use a trigger to keep track of update times for each row.
- * We explicitly set a timestamp field for each read on the row.
- *
- * @author westy, ayadav
- */
+
 public class SimpleKeyStore extends AbstractKeyStorage
 {
 
-  /**
-   *
-   */
+
   public static final int MAX_KEY_LENGTH = 2048;
 
   private static final String TABLE_NAME = "GNS_CLIENT_KEYSTORE"; // Derby uses all upcase for table names
@@ -71,9 +43,7 @@ public class SimpleKeyStore extends AbstractKeyStorage
   private DerbyControl derbyControl = new DerbyControl();
   private Connection conn = null;
 
-  /**
-   * Creates a new instance of a key store.
-   */
+
   public SimpleKeyStore() {
     GNSClientConfig.getLogger().fine("Attempting to connect and create table " + TABLE_NAME);
 
@@ -87,19 +57,12 @@ public class SimpleKeyStore extends AbstractKeyStorage
 
   }
 
-  /**
-   * Frees up all the resources used by the key store.
-   */
+
   public void shutdown() {
     derbyControl.shutdown();
   }
 
-  /**
-   * Associates the specified value with the specified key.
-   *
-   * @param key
-   * @param value
-   */
+
   @Override
   public void put(String key, String value) {
     try {
@@ -123,15 +86,7 @@ public class SimpleKeyStore extends AbstractKeyStorage
     }
   }
 
-  /**
-   * Returns the value associated with the specified key.
-   * Returns the specified default if there is no value associated
-   * with the key or if some problem arises.
-   *
-   * @param key
-   * @param def
-   * @return the value as a string
-   */
+
   @Override
   public String get(String key, String def) {
     String result = def;
@@ -166,11 +121,7 @@ public class SimpleKeyStore extends AbstractKeyStorage
     }
   }
 
-  /**
-   *
-   * @param key
-   * @return the update time as a Date
-   */
+
   public Date updateTime(String key) {
     ResultSet rs = null;
     try {
@@ -189,11 +140,7 @@ public class SimpleKeyStore extends AbstractKeyStorage
     return null;
   }
 
-  /**
-   *
-   * @param key
-   * @return the read time as a DATE
-   */
+
   public Date readTime(String key) {
     ResultSet rs = null;
     try {
@@ -212,11 +159,7 @@ public class SimpleKeyStore extends AbstractKeyStorage
     return null;
   }
 
-  /**
-   * Removes the value associated with the specified key.
-   *
-   * @param key
-   */
+
   public void remove(String key) {
     try {
       PreparedStatement removeStatement 
@@ -229,9 +172,7 @@ public class SimpleKeyStore extends AbstractKeyStorage
     }
   }
 
-  /**
-   * Removes all of the key-value associations .
-   */
+
   public void clear() {
     try {
       PreparedStatement clearStatement = conn.prepareStatement("truncate table " + TABLE_NAME);
@@ -242,12 +183,7 @@ public class SimpleKeyStore extends AbstractKeyStorage
     }
   }
 
-  /**
-   * Returns all of the keys that have an associated value.
-   * (The returned array will be of size zero if there are none.)
-   *
-   * @return all the keys
-   */
+
   public String[] keys() {
     List<String> keys = new ArrayList<>();
     try {
@@ -342,10 +278,7 @@ public class SimpleKeyStore extends AbstractKeyStorage
 
   // TEST CODE
 
-  /**
-   *
-   * @param args
-   */
+
   public static void main(String[] args) {
 
     SimpleKeyStore keyStore = new SimpleKeyStore();
