@@ -1,10 +1,9 @@
 package edu.umass.cs.gnsserver.interfaces;
 
-import java.util.ArrayList;
-
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.util.ArrayList;
 
 
 public interface ActiveGNSInterface {

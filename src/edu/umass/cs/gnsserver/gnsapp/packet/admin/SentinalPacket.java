@@ -3,7 +3,6 @@ package edu.umass.cs.gnsserver.gnsapp.packet.admin;
 
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

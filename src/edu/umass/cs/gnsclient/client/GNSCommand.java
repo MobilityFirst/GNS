@@ -1,6 +1,24 @@
 
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnsclient.client.util.Password;
+import edu.umass.cs.gnscommon.AclAccessType;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
+import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.utils.Base64;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -10,25 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.Password;
-import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.SharedGuidUtils;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
-import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
 
 public class GNSCommand extends CommandPacket {

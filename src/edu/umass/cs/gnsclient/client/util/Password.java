@@ -2,6 +2,7 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.gnscommon.utils.Base64;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 

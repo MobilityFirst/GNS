@@ -1,6 +1,12 @@
 
 package edu.umass.cs.gnsclient.client.util;
 
+import android.os.Environment;
+import android.util.Log;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+
+import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,12 +23,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.LinkedList;
 import java.util.List;
-
-import android.os.Environment;
-import android.util.Log;
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import javax.xml.bind.DatatypeConverter;
 
 
 public class KeyPairUtilsAndroid {

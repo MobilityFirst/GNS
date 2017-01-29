@@ -3,15 +3,9 @@ package edu.umass.cs.aws.networktools;
 
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
-import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 public class UserInfoPrompted implements UserInfo, UIKeyboardInteractive {

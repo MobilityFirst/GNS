@@ -1,8 +1,7 @@
 package edu.umass.cs.contextservice.integration;
 
-import org.json.JSONObject;
-
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import org.json.JSONObject;
 
 
 public interface ContextServiceGNSInterface {

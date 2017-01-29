@@ -3,13 +3,17 @@ package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
-import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -20,12 +24,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.CommandType;
-
-import edu.umass.cs.gnscommon.ResponseCode;
-import org.json.JSONObject;
-import edu.umass.cs.gnscommon.GNSProtocol;
+import static edu.umass.cs.gnsclient.client.CommandUtils.createAndSignCommand;
 
 
 public class ClientAsynchExample {

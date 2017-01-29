@@ -1,10 +1,5 @@
 package edu.umass.cs.gnsserver.gnsapp;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -16,6 +11,11 @@ import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync.Reconfiguration
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class GNSClientInternal extends GNSClient {

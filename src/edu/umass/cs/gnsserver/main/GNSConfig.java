@@ -1,6 +1,8 @@
 
 package edu.umass.cs.gnsserver.main;
 
+import edu.umass.cs.utils.Config;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -16,10 +18,6 @@ import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
-
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
 
 public class GNSConfig {

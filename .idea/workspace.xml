@@ -2,34 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fdf69332-fa18-4dca-9b8b-d1948a597372" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/BatchCreateTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/CreateGuidTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/CreateMultiGuidClient.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/GNSClientCapacityTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/GNSTestingConfig.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/ReplicaLatencyTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/ThroughputAsynchMultiClientTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/activecode/ActiveCodeHelloWorldExample.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/activecode/CapacityTestForLatencyClient.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/activecode/CapacityTestForThruputClient.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/activecode/GNSClientCapacityTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/activecode/MessageStats.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/activecode/SetupChainCode.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/activecode/TestActiveACL.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/activecode/TestActiveCodeRemoteQueryClient.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/testing/activecode/TestUnsignedRead.java" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/ExecuteBash.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/ExecuteBash.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/Pinger.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/Pinger.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/RSync.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/RSync.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/SFTPUpload.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/SFTPUpload.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/SSHClient.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/SSHClient.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/UserInfoPrompted.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/networktools/UserInfoPrompted.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/AMIRecord.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/AMIRecord.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/AMIRecordType.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/AMIRecordType.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/AWSEC2.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/AWSEC2.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/Amazontool.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/Amazontool.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/InstanceStateRecord.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/InstanceStateRecord.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/RegionRecord.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/RegionRecord.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/Route53.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/Route53.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/examples/AWSStatusCheck.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/examples/AWSStatusCheck.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/examples/Sudo.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/aws/support/examples/Sudo.java" />
@@ -37,7 +14,6 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/contextservice/integration/ContextServiceGNSClient.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/contextservice/integration/ContextServiceGNSClient.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/contextservice/integration/ContextServiceGNSInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/contextservice/integration/ContextServiceGNSInterface.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/contextservice/integration/examples/ContextServiceExample.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/contextservice/integration/examples/ContextServiceExample.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CommandResultType.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CommandResultType.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CommandUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CommandUtils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClientCommands.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClientCommands.java" />
@@ -52,32 +28,25 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/deprecated/examples/ClientAsynchExample.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/deprecated/examples/ClientAsynchExample.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/deprecated/examples/ContextAwareGroupGuidExample.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/deprecated/examples/ContextAwareGroupGuidExample.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/deprecated/examples/GNSQuickStart.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/deprecated/examples/GNSQuickStart.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/deprecated/examples/SimpleClientExample.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/deprecated/examples/SimpleClientExample.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/http/HttpClient.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/http/HttpClient.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/http/android/DownloadTask.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/http/android/DownloadTask.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/BasicGuidEntry.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/BasicGuidEntry.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/BasicHashFunction.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/BasicHashFunction.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/ChooserDialog.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/ChooserDialog.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/GuidEntry.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/GuidEntry.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/GuidUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/GuidUtils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/HashFunction.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/HashFunction.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/JSONUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/JSONUtils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/KeyPairUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/KeyPairUtils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/KeyPairUtilsAndroid.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/KeyPairUtilsAndroid.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/Password.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/Password.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/QueryStringParser.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/QueryStringParser.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/SHA1HashFunction.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/SHA1HashFunction.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/Stringifiable.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/Stringifiable.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/Util.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/Util.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/keystorage/AbstractKeyStorage.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/keystorage/AbstractKeyStorage.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/keystorage/DerbyControl.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/keystorage/DerbyControl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/keystorage/JavaPreferencesKeyStore.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/keystorage/JavaPreferencesKeyStore.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/keystorage/SimpleKeyStore.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/util/keystorage/SimpleKeyStore.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/CommandLineInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/CommandLineInterface.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/ConsoleModule.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/ConsoleModule.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/ProxyConsole.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/ProxyConsole.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AccountCreate.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AccountCreate.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AccountDelete.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AccountDelete.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AccountVerify.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AccountVerify.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AclAdd.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AclAdd.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AclList.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/AclList.java" />
@@ -106,7 +75,6 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/GuidImport.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/GuidImport.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/GuidList.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/GuidList.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/GuidLookup.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/GuidLookup.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/GuidUse.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/GuidUse.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Help.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Help.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/History.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/History.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/KeyDelete.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/KeyDelete.java" />
@@ -116,60 +84,25 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Quit.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Quit.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Read.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Read.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Select.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Select.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/SetDefaultGuid.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/SetDefaultGuid.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Update.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/console/commands/Update.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/ClientACLExample.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/ClientACLExample.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/ClientExample.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/ClientExample.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/CreateDnsRecord.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/CreateDnsRecord.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/CreateSomeRecordsForDns.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/CreateSomeRecordsForDns.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/GNSClientCommandsExample.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/GNSClientCommandsExample.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/HTTPClientCASAAppExample.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/HTTPClientCASAAppExample.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/HTTPClientExample.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/HTTPClientExample.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/AclAccessType.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/AclAccessType.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/CommandType.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/CommandType.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/GNSProtocol.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/GNSProtocol.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/ResponseCode.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/ResponseCode.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/GNSException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/GNSException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/AclException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/AclException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/ActiveReplicaException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/ActiveReplicaException.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/ClientException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/ClientException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/DuplicateNameException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/DuplicateNameException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/EncryptionException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/EncryptionException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/FieldNotFoundException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/FieldNotFoundException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/InvalidFieldException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/InvalidFieldException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/InvalidGuidException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/InvalidGuidException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/OperationNotSupportedException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/OperationNotSupportedException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/RemoteQueryException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/RemoteQueryException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/VerificationException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/client/VerificationException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/FailedDBOperationException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/FailedDBOperationException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/FieldNotFoundException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/FieldNotFoundException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/InternalRequestException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/InternalRequestException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/RecordExistsException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/RecordExistsException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/RecordNotFoundException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/RecordNotFoundException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/ServerException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/ServerException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/ServerRuntimeException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/exceptions/server/ServerRuntimeException.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/packets/AdminCommandPacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/packets/AdminCommandPacket.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/packets/CommandPacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/packets/CommandPacket.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/packets/PacketUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/packets/PacketUtils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/packets/ResponsePacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/packets/ResponsePacket.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/Base64.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/Base64.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ByteUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ByteUtils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/CanonicalJSON.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/CanonicalJSON.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/DisabledClasses.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/DisabledClasses.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/Format.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/Format.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/JSONByteConverter.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/JSONByteConverter.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/JSONDotNotation.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/JSONDotNotation.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/LogFormatter.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/LogFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/NetworkUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/NetworkUtils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/RandomString.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/RandomString.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/StringUtil.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/StringUtil.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ThreadUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ThreadUtils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/URIEncoderDecoder.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/URIEncoderDecoder.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/ActiveCodeConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/ActiveCodeConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/ActiveCodeDB.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/ActiveCodeDB.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/ActiveCodeHandler.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/ActiveCodeHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/ActiveException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/ActiveException.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/ActiveHandler.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/ActiveHandler.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/ActiveMessage.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/ActiveMessage.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/ActiveQueryHandler.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/ActiveQueryHandler.java" />
@@ -183,13 +116,9 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/channels/ActiveNamedPipe.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/channels/ActiveNamedPipe.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/channels/ActivePipe.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/channels/ActivePipe.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/ACLQuerier.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/ACLQuerier.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/ActiveChannel.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/ActiveChannel.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Channel.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Channel.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Client.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Client.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/DNSQuerier.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/DNSQuerier.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Message.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Message.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Querier.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Querier.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Runner.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/interfaces/Runner.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveNonBlockingClient.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveNonBlockingClient.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveNonBlockingQuerier.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveNonBlockingQuerier.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveNonBlockingRunner.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveNonBlockingRunner.java" />
@@ -197,29 +126,19 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveWorkerSubmittedTask.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveWorkerSubmittedTask.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveWorkerTask.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/unblocking/ActiveWorkerTask.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/utils/CircularBufferedRandomAccessFile.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/utils/CircularBufferedRandomAccessFile.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/utils/QueueFile.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/activecode/prototype/utils/QueueFile.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/AbstractRecordCursor.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/AbstractRecordCursor.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/CassandraRecords.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/CassandraRecords.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/ColumnField.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/ColumnField.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/ColumnFieldType.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/ColumnFieldType.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/DatabaseConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/DatabaseConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/DiskMapCollection.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/DiskMapCollection.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/DiskMapRecords.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/DiskMapRecords.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/MongoCollectionSpec.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/MongoCollectionSpec.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/MongoCollectionSpecs.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/MongoCollectionSpecs.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/MongoRecordCursor.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/MongoRecordCursor.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/MongoRecords.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/MongoRecords.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/NoSQLRecords.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/NoSQLRecords.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/NoSQLRecordsThroughputTest.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/NoSQLRecordsThroughputTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/RecordCursorInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/RecordCursorInterface.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/package-info.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/database/package-info.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/DnsTranslator.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/DnsTranslator.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/LookupTask.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/LookupTask.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/LookupWorker.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/LookupWorker.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/ManagedDNSServiceProxy.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/ManagedDNSServiceProxy.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/NameResolution.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/NameResolution.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/UdpDnsServer.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/UdpDnsServer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/WorkerClass.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnamed/WorkerClass.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/AppAdmin.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/AppAdmin.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSApp.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSApp.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSClientInternal.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSClientInternal.java" />
@@ -230,11 +149,8 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/Select.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/Select.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/VotesMap.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/VotesMap.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/activegns/ActiveGNSClient.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/activegns/ActiveGNSClient.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/ClientCommandProcessorConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/ClientCommandProcessorConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/ClientRequestHandler.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/ClientRequestHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/ClientRequestHandlerInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/ClientRequestHandlerInterface.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/ListenerAdmin.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/ListenerAdmin.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/AbstractHashFunction.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/AbstractHashFunction.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/AccountAccess.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/AccountAccess.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/AccountInfo.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/AccountInfo.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/ActiveCode.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/ActiveCode.java" />
@@ -243,17 +159,11 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/CommandRequestInfo.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/CommandRequestInfo.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/CommandResponse.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/CommandResponse.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/FieldAccess.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/FieldAccess.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/FieldMetaData.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/FieldMetaData.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/GroupAccess.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/GroupAccess.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/GuidInfo.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/GuidInfo.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/HashFunction.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/HashFunction.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/InternalField.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/InternalField.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/MetaDataTypeName.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/MetaDataTypeName.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/ShaOneHashFunction.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/ShaOneHashFunction.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/UpdateOperation.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/UpdateOperation.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/package-info.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/package-info.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/AbstractCommand.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/AbstractCommand.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandDescriptionFormat.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandDescriptionFormat.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandInterface.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandModule.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandModule.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/account/AddAlias.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/account/AddAlias.java" />
@@ -350,7 +260,6 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/group/GetGroups.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/group/GetGroups.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/group/RemoveFromGroup.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/group/RemoveFromGroup.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/group/RemoveMembersFromGroup.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/group/RemoveMembersFromGroup.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/package-info.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/package-info.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/secured/AclAddSecured.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/secured/AclAddSecured.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/secured/AclRemoveSecured.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/secured/AclRemoveSecured.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/secured/AclRetrieveSecured.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/secured/AclRetrieveSecured.java" />
@@ -367,8 +276,6 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/select/SelectNear.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/select/SelectNear.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/select/SelectQuery.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/select/SelectQuery.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/select/SelectWithin.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/select/SelectWithin.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/AclCheckResult.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/AclCheckResult.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/ClientSupportConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/ClientSupportConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSAccessSupport.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSAccessSupport.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSAccountAccess.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSAccountAccess.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSAuthentication.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSAuthentication.java" />
@@ -376,20 +283,13 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSFieldMetaData.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSFieldMetaData.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSGroupAccess.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSGroupAccess.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSUpdateSupport.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSUpdateSupport.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/package-info.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/package-info.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/deprecated/GNSApplicationInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/deprecated/GNSApplicationInterface.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacket.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithClientAddress.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithClientAddress.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithNs.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithNs.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithReturnAddress.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithReturnAddress.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithReturnAddressAndNs.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithReturnAddressAndNs.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithSignatureInfo.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacketWithSignatureInfo.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/ExtensiblePacketInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/ExtensiblePacketInterface.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/Packet.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/Packet.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/PacketInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/PacketInterface.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/SelectGroupBehavior.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/SelectGroupBehavior.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/SelectOperation.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/SelectOperation.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/SelectRequestPacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/SelectRequestPacket.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/SelectResponsePacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/SelectResponsePacket.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/StopPacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/StopPacket.java" />
@@ -397,27 +297,20 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/admin/AdminResponsePacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/admin/AdminResponsePacket.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/admin/DumpRequestPacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/admin/DumpRequestPacket.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/admin/SentinalPacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/admin/SentinalPacket.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/recordmap/BasicRecordMap.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/recordmap/BasicRecordMap.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/recordmap/GNSRecordMap.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/recordmap/GNSRecordMap.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/recordmap/NameRecord.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/recordmap/NameRecord.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/recordmap/RecordMapInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/recordmap/RecordMapInterface.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/httpserver/Defs.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/httpserver/Defs.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/httpserver/GNSHttpServer.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/httpserver/GNSHttpServer.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/httpserver/GNSHttpsServer.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/httpserver/GNSHttpsServer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/DataStoreType.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/DataStoreType.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/EC2ConfigParser.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/EC2ConfigParser.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/EC2RegionSpec.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/EC2RegionSpec.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/EC2Runner.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/EC2Runner.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/GNSInstaller.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/GNSInstaller.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/HostConfigParseException.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/HostConfigParseException.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/HostConfigParser.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/HostConfigParser.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/HostInfo.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/HostInfo.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/InstallConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/InstallConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/WriteConfFile.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/installer/WriteConfFile.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/interfaces/ActiveDBInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/interfaces/ActiveDBInterface.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/interfaces/ActiveGNSInterface.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/interfaces/ActiveGNSInterface.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/interfaces/InternalRequestHeader.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/interfaces/InternalRequestHeader.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/CacheEntry.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/CacheEntry.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/CommandRetransmitter.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/CommandRetransmitter.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/LNSPacketDemultiplexer.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/LNSPacketDemultiplexer.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/LNSRequestInfo.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/LNSRequestInfo.java" />
@@ -429,9 +322,7 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/nodeconfig/LNSConsistentReconfigurableNodeConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/nodeconfig/LNSConsistentReconfigurableNodeConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/nodeconfig/LNSNodeConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/nodeconfig/LNSNodeConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/nodeconfig/LNSNodeInfo.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/nodeconfig/LNSNodeInfo.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/package-info.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/localnameserver/package-info.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/main/GNSConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/main/GNSConfig.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/main/OldHackyConstants.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/main/OldHackyConstants.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSConsistentNodeConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSConsistentNodeConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSConsistentReconfigurableNodeConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSConsistentReconfigurableNodeConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSInterfaceNodeConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSInterfaceNodeConfig.java" />
@@ -444,14 +335,9 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/GEOLocator.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/GEOLocator.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/JSONUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/JSONUtils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/ResultValue.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/ResultValue.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/ResultValueString.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/ResultValueString.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/RunCommand.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/RunCommand.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/Shutdownable.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/Shutdownable.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/StringVersionedMap.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/StringVersionedMap.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/URLQueryStringParser.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/URLQueryStringParser.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/Util.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/Util.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/ValuesMap.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/ValuesMap.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/wiki/WikiConstants.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/wiki/WikiConstants.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -472,7 +358,9 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
               <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -491,8 +379,10 @@
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSApp.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-9639">
-              <caret line="92" column="13" lean-forward="false" selection-start-line="92" selection-start-column="13" selection-end-line="92" selection-end-column="13" />
-              <folding />
+              <caret line="87" column="13" lean-forward="false" selection-start-line="87" selection-start-column="13" selection-end-line="87" selection-end-column="13" />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -502,7 +392,9 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
               <caret line="19" column="0" lean-forward="false" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -511,8 +403,10 @@
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSCommandInternal.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
-              <caret line="19" column="0" lean-forward="false" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
-              <folding />
+              <caret line="16" column="0" lean-forward="false" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -522,7 +416,9 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
               <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -532,7 +428,9 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
               <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -542,7 +440,9 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
               <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -551,8 +451,10 @@
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/Select.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="165">
-              <caret line="49" column="3" lean-forward="false" selection-start-line="49" selection-start-column="3" selection-end-line="49" selection-end-column="3" />
-              <folding />
+              <caret line="46" column="3" lean-forward="false" selection-start-line="46" selection-start-column="3" selection-end-line="46" selection-end-column="3" />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -560,8 +462,8 @@
       <file leaf-file-name="AppAdmin.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/AppAdmin.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="37" column="0" lean-forward="true" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
+            <state relative-caret-position="285">
+              <caret line="40" column="19" lean-forward="true" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
               <folding />
             </state>
           </provider>
@@ -938,7 +840,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="812" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -955,7 +857,7 @@
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.73055553" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25679544" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25679544" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -983,10 +885,10 @@
         <state relative-caret-position="1140">
           <caret line="76" column="2" lean-forward="false" selection-start-line="76" selection-start-column="2" selection-end-line="76" selection-end-column="2" />
           <folding>
-            <element signature="e#0#21088#0" expanded="false" />
+            <element signature="e#0#21083#0" expanded="false" />
             <element signature="imports" expanded="false" />
-            <element signature="e#2899#2900#0" expanded="false" />
-            <element signature="e#2967#2968#0" expanded="false" />
+            <element signature="e#2894#2895#0" expanded="false" />
+            <element signature="e#2962#2963#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1004,10 +906,10 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#21088#0" expanded="false" />
+            <element signature="e#0#21083#0" expanded="false" />
             <element signature="imports" expanded="false" />
-            <element signature="e#2899#2900#0" expanded="false" />
-            <element signature="e#2967#2968#0" expanded="false" />
+            <element signature="e#2894#2895#0" expanded="false" />
+            <element signature="e#2962#2963#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1017,10 +919,10 @@
         <state relative-caret-position="150">
           <caret line="76" column="2" lean-forward="false" selection-start-line="76" selection-start-column="2" selection-end-line="76" selection-end-column="2" />
           <folding>
-            <element signature="e#0#21088#0" expanded="false" />
+            <element signature="e#0#21083#0" expanded="false" />
             <element signature="imports" expanded="false" />
-            <element signature="e#2899#2900#0" expanded="false" />
-            <element signature="e#2967#2968#0" expanded="false" />
+            <element signature="e#2894#2895#0" expanded="false" />
+            <element signature="e#2962#2963#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1245,7 +1147,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1260,8 +1164,10 @@
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSApp.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-9639">
-          <caret line="92" column="13" lean-forward="false" selection-start-line="92" selection-start-column="13" selection-end-line="92" selection-end-column="13" />
-          <folding />
+          <caret line="87" column="13" lean-forward="false" selection-start-line="87" selection-start-column="13" selection-end-line="87" selection-end-column="13" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1269,15 +1175,19 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="19" column="0" lean-forward="false" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSCommandInternal.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
-          <caret line="19" column="0" lean-forward="false" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
-          <folding />
+          <caret line="16" column="0" lean-forward="false" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1285,7 +1195,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1293,7 +1205,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1301,22 +1215,26 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/Select.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
-          <caret line="49" column="3" lean-forward="false" selection-start-line="49" selection-start-column="3" selection-end-line="49" selection-end-column="3" />
-          <folding />
+          <caret line="46" column="3" lean-forward="false" selection-start-line="46" selection-start-column="3" selection-end-line="46" selection-end-column="3" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/AppAdmin.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="37" column="0" lean-forward="true" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
+        <state relative-caret-position="285">
+          <caret line="40" column="19" lean-forward="true" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
           <folding />
         </state>
       </provider>

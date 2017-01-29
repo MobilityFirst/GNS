@@ -1,13 +1,6 @@
 package edu.umass.cs.gnsserver.gnsapp;
 
-import java.util.ArrayList;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import edu.umass.cs.gnsclient.client.CommandUtils;
-import edu.umass.cs.gnsclient.client.GNSCommand;
-import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -16,6 +9,10 @@ import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 
 public class GNSCommandInternal extends InternalCommandPacket {

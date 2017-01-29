@@ -1,9 +1,9 @@
 
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnscommon.CommandType;
 
 
 public class Append extends AbstractUpdate {

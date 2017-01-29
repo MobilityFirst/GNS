@@ -1,11 +1,11 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.util.StringTokenizer;
-
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+
+import java.util.StringTokenizer;
 
 
 public class KeyDelete extends ConsoleCommand

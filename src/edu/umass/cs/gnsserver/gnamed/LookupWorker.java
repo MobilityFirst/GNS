@@ -3,6 +3,15 @@ package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.utils.DelayProfiler;
+import org.xbill.DNS.Cache;
+import org.xbill.DNS.Credibility;
+import org.xbill.DNS.Flags;
+import org.xbill.DNS.Message;
+import org.xbill.DNS.RRset;
+import org.xbill.DNS.Rcode;
+import org.xbill.DNS.Section;
+import org.xbill.DNS.SetResponse;
+import org.xbill.DNS.SimpleResolver;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -12,21 +21,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-
-import org.xbill.DNS.Flags;
-import org.xbill.DNS.Message;
-import org.xbill.DNS.Rcode;
-import org.xbill.DNS.SimpleResolver;
-import org.xbill.DNS.Cache;
-import org.xbill.DNS.SetResponse;
-import org.xbill.DNS.RRset;
-import org.xbill.DNS.Section;
-import org.xbill.DNS.Credibility;
 
 
 public class LookupWorker implements Runnable {

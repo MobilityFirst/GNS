@@ -10,12 +10,11 @@ import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.utils.Util;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class ResponsePacket extends BasicPacketWithClientAddress

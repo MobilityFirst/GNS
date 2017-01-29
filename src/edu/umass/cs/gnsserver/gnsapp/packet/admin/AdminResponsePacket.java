@@ -1,10 +1,9 @@
 
 package edu.umass.cs.gnsserver.gnsapp.packet.admin;
 
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
-import edu.umass.cs.gnscommon.utils.Format;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

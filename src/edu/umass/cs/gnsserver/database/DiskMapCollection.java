@@ -5,16 +5,16 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DiskMap;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.json.JSONObject;
+import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
 
 
 public class DiskMapCollection {

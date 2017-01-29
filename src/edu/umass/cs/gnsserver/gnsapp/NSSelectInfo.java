@@ -3,7 +3,6 @@ package edu.umass.cs.gnsserver.gnsapp;
 
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
-
 import org.json.JSONObject;
 
 import java.util.Collections;

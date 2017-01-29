@@ -1,9 +1,9 @@
 
 package edu.umass.cs.gnsserver.gnamed;
 
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
-import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.utils.DelayProfiler;
 
 import java.io.IOException;

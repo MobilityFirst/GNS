@@ -5,11 +5,11 @@ package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
-import edu.umass.cs.gnsserver.nodeconfig.HostFileLoader;
-import edu.umass.cs.gnsserver.nodeconfig.HostSpec;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -17,16 +17,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 
 public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,

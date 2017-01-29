@@ -2,24 +2,20 @@
 package edu.umass.cs.gnsserver.gnsapp;
 
 import com.google.common.net.InetAddresses;
-
 import edu.umass.cs.gigapaxos.interfaces.Request;
-
-import java.util.ArrayList;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.Test;
-
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 import edu.umass.cs.utils.DefaultTest;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.Test;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;

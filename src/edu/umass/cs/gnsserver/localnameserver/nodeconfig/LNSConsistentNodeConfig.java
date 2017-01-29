@@ -3,15 +3,14 @@ package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
 
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.Set;
-
+import edu.umass.cs.nio.interfaces.NodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.nio.interfaces.NodeConfig;
-import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.Set;
 
 
 public abstract class LNSConsistentNodeConfig implements

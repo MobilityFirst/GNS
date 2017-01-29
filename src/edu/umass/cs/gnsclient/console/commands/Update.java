@@ -1,15 +1,15 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.util.StringTokenizer;
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.StringUtil;
-import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
 
 
 public class Update extends ConsoleCommand {

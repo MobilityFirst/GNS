@@ -4,11 +4,10 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.utils.Util;
-
-import java.net.InetSocketAddress;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.InetSocketAddress;
 
 
 public abstract class BasicPacketWithClientAddress extends BasicPacket {

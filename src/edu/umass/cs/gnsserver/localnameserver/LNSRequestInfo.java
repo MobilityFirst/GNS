@@ -1,10 +1,10 @@
 
 package edu.umass.cs.gnsserver.localnameserver;
 
-import java.net.InetSocketAddress;
-
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+
+import java.net.InetSocketAddress;
 
 
 public class LNSRequestInfo {

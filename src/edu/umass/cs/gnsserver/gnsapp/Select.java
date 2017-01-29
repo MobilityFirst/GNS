@@ -3,24 +3,11 @@ package edu.umass.cs.gnsserver.gnsapp;
 
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
-
+import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Level;
-
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
@@ -33,10 +20,20 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 

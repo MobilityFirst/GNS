@@ -1,9 +1,6 @@
 
 package edu.umass.cs.gnsserver.localnameserver;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Logger;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
@@ -11,17 +8,19 @@ import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
 import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.utils.Config;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Set;
 import java.util.logging.Level;
-import org.json.JSONException;
+import java.util.logging.Logger;
 
 
 public class RequestActives implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {

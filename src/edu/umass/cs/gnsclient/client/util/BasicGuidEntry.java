@@ -2,15 +2,16 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.utils.Base64;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class BasicGuidEntry {

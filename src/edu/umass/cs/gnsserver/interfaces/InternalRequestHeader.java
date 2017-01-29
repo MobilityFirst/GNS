@@ -1,8 +1,5 @@
 package edu.umass.cs.gnsserver.interfaces;
 
-import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
-
-
 public interface InternalRequestHeader {
 
 

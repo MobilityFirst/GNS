@@ -1,12 +1,13 @@
 
 package edu.umass.cs.gnscommon.utils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class JSONDotNotation {

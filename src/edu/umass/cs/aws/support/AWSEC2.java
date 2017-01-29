@@ -1,7 +1,6 @@
 
 package edu.umass.cs.aws.support;
 
-import edu.umass.cs.aws.networktools.Pinger;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
@@ -37,9 +36,11 @@ import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.aws.networktools.ExecuteBash;
+import edu.umass.cs.aws.networktools.Pinger;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;

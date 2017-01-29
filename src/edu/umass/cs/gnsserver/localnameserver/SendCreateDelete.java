@@ -1,20 +1,21 @@
 
 package edu.umass.cs.gnsserver.localnameserver;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Logger;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {

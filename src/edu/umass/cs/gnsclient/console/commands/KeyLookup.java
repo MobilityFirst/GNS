@@ -1,14 +1,15 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.security.PublicKey;
-import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.StringUtil;
-import java.io.IOException;
+
 import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
+import java.security.PublicKey;
+import java.util.StringTokenizer;
 
 
 public class KeyLookup extends ConsoleCommand {

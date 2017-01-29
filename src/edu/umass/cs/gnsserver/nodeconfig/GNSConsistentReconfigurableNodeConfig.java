@@ -2,13 +2,14 @@
 package edu.umass.cs.gnsserver.nodeconfig;
 
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import org.json.JSONArray;
-import org.json.JSONException;
-import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 
 public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends

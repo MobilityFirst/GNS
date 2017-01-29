@@ -1,8 +1,8 @@
 
 package edu.umass.cs.gnsclient.client.deprecated;
 
-import edu.umass.cs.gnscommon.packets.CommandPacket;
 import android.os.AsyncTask;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 
 @Deprecated

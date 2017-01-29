@@ -1,8 +1,7 @@
 package edu.umass.cs.gnsserver.activecode.prototype.interfaces;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 
 public interface DNSQuerier {

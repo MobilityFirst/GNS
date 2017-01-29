@@ -1,11 +1,10 @@
 package edu.umass.cs.gnsserver.activecode.prototype.unblocking;
 
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 
 import javax.script.ScriptException;
-
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
 
 
 public class ActiveWorkerTask implements Callable<ActiveMessage>  {

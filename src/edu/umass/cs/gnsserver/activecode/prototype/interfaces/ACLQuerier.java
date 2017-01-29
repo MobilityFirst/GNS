@@ -1,8 +1,7 @@
 package edu.umass.cs.gnsserver.activecode.prototype.interfaces;
 
-import org.json.JSONObject;
-
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
+import org.json.JSONObject;
 
 
 public interface ACLQuerier {

@@ -1,26 +1,20 @@
 package edu.umass.cs.gnsserver.gnsapp.activegns;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class ActiveGNSClient extends GNSClient implements ActiveDBInterface {

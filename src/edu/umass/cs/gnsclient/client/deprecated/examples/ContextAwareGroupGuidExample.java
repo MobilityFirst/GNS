@@ -1,25 +1,19 @@
 
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.BasicGuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.utils.Config;
+import org.json.JSONArray;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
-
-import org.json.JSONArray;
 
 
 public class ContextAwareGroupGuidExample {

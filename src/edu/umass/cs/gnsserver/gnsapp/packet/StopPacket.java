@@ -3,7 +3,6 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

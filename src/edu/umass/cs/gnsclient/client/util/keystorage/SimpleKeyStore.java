@@ -1,9 +1,10 @@
 
 package edu.umass.cs.gnsclient.client.util.keystorage;
 
-import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import static edu.umass.cs.gnscommon.utils.Format.formatPrettyDateUTC;
+import edu.umass.cs.gnscommon.utils.RandomString;
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -15,7 +16,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-import org.apache.commons.lang3.ArrayUtils;
+
+import static edu.umass.cs.gnscommon.utils.Format.formatPrettyDateUTC;
 
 
 public class SimpleKeyStore extends AbstractKeyStorage

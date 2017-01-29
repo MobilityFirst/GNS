@@ -1,12 +1,13 @@
 
 package edu.umass.cs.gnsserver.utils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 
 public class ResultValue extends ArrayList<Object> {

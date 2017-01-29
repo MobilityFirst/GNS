@@ -2,11 +2,10 @@
 package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-
-import java.util.concurrent.Callable;
-
 import org.xbill.DNS.Message;
 import org.xbill.DNS.SimpleResolver;
+
+import java.util.concurrent.Callable;
 
 
 public class LookupTask implements Callable<Message> {

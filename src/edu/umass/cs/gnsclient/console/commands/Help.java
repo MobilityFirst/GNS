@@ -1,9 +1,9 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.io.IOException;
-
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+
+import java.io.IOException;
 
 
 public class Help extends ConsoleCommand

@@ -1,9 +1,30 @@
 
 package edu.umass.cs.gnsclient.console;
 
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnsclient.console.commands.Connect;
+import edu.umass.cs.gnsclient.console.commands.ConsoleCommand;
+import edu.umass.cs.gnsclient.console.commands.GuidUse;
+import edu.umass.cs.gnsclient.console.commands.Help;
+import edu.umass.cs.gnsclient.console.commands.History;
+import edu.umass.cs.gnsclient.console.commands.Quit;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import jline.ArgumentCompletor;
+import jline.Completor;
+import jline.ConsoleReader;
+import jline.FileNameCompletor;
+import jline.SimpleCompletor;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -15,33 +36,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.prefs.Preferences;
-
-import jline.ArgumentCompletor;
-import jline.Completor;
-import jline.ConsoleReader;
-import jline.FileNameCompletor;
-import jline.SimpleCompletor;
-
-import org.json.JSONObject;
-
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.console.commands.ConsoleCommand;
-import edu.umass.cs.gnsclient.console.commands.Connect;
-import edu.umass.cs.gnsclient.console.commands.GuidUse;
-import edu.umass.cs.gnsclient.console.commands.Help;
-import edu.umass.cs.gnsclient.console.commands.History;
-import edu.umass.cs.gnsclient.console.commands.Quit;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
-
-import org.json.JSONException;
+import java.util.prefs.Preferences;
 
 
 public class ConsoleModule {

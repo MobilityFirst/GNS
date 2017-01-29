@@ -2,12 +2,11 @@
 package edu.umass.cs.gnsclient.console.commands;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import java.util.StringTokenizer;
-
-import org.json.JSONArray;
-
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.utils.StringUtil;
+import org.json.JSONArray;
+
+import java.util.StringTokenizer;
 
 
 public class FieldAppend extends ConsoleCommand

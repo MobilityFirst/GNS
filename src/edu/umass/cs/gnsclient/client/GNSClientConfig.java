@@ -1,15 +1,14 @@
 
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.utils.Config;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
-
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.utils.Config;
-import java.util.Enumeration;
 
 
 public class GNSClientConfig {

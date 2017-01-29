@@ -3,6 +3,10 @@ package edu.umass.cs.gnsserver.utils;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
 import java.util.Collections;
@@ -14,9 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class Util {

@@ -1,11 +1,11 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.io.IOException;
-
-import jline.ConsoleReader;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import jline.ConsoleReader;
+
+import java.io.IOException;
 
 
 public abstract class ConsoleCommand implements Comparable<ConsoleCommand>

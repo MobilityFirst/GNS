@@ -1,11 +1,10 @@
 
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import org.json.JSONException;
-
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import org.json.JSONException;
 
 
 public class CommandResponse {

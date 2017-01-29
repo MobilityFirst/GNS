@@ -1,15 +1,15 @@
 
 package edu.umass.cs.aws.support.examples;
 
-import edu.umass.cs.aws.networktools.UserInfoPrompted;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
-import java.awt.HeadlessException;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
+import edu.umass.cs.aws.networktools.UserInfoPrompted;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 public class UserAuthPubKey {

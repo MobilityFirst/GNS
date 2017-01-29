@@ -1,24 +1,25 @@
 
 package edu.umass.cs.gnsserver.utils;
 
-import edu.umass.cs.gnscommon.utils.Format;
 import com.sun.mail.smtp.SMTPTransport;
 import com.sun.mail.util.MailSSLSocketFactory;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import edu.umass.cs.utils.Config;
-import java.security.GeneralSecurityException;
-import java.util.Date;
+
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.security.GeneralSecurityException;
+import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.mail.MessagingException;
 
 
 public class Email {

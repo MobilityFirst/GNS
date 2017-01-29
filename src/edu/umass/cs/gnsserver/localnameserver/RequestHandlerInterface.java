@@ -6,13 +6,12 @@ import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Set;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public interface RequestHandlerInterface {

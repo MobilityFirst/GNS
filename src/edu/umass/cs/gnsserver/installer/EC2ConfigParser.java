@@ -3,8 +3,14 @@ package edu.umass.cs.gnsserver.installer;
 
 import edu.umass.cs.aws.support.AMIRecordType;
 import edu.umass.cs.aws.support.RegionRecord;
-
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -12,12 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 
 public class EC2ConfigParser {

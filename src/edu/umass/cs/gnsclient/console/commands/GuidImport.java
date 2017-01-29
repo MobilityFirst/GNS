@@ -1,15 +1,15 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnsclient.console.ConsoleModule;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.security.KeyPair;
 import java.util.StringTokenizer;
-
-import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 
 public class GuidImport extends ConsoleCommand

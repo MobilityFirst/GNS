@@ -1,42 +1,41 @@
 
 package edu.umass.cs.gnsclient.client;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.utils.DelayProfiler;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,10 +43,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 
-import org.json.JSONException;
-
 import static edu.umass.cs.gnsclient.client.CommandUtils.commandResponseToJSONArray;
-import edu.umass.cs.gnscommon.GNSProtocol;
 
 
 public class GNSClientCommandsOld extends GNSClient //implements GNSClientInterface 

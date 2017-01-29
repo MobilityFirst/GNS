@@ -8,6 +8,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
+import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,8 +17,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 import java.util.logging.Level;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 
 
 public class SSHClient {

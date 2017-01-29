@@ -1,14 +1,15 @@
 
 package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
-import java.net.InetSocketAddress;
-import java.util.HashSet;
-import java.util.Set;
-import org.json.JSONArray;
-import org.json.JSONException;
 import edu.umass.cs.reconfiguration.interfaces.ModifiableActiveConfig;
 import edu.umass.cs.reconfiguration.interfaces.ModifiableRCConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class LNSConsistentReconfigurableNodeConfig extends

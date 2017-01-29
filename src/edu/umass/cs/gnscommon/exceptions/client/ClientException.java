@@ -1,14 +1,14 @@
 
 package edu.umass.cs.gnscommon.exceptions.client;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.GNSException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync.ReconfigurationException;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket.ResponseCodes;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 
 public class ClientException extends GNSException {

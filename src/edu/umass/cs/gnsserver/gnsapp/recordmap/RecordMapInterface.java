@@ -2,13 +2,15 @@
 package edu.umass.cs.gnsserver.gnsapp.recordmap;
 
 //import edu.umass.cs.gnsserver.nsdesign.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
-import edu.umass.cs.gnsserver.database.ColumnField;
+
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
+import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 

@@ -1,14 +1,15 @@
 
 package edu.umass.cs.gnscommon.utils;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeSet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONString;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeSet;
 
 
 public class CanonicalJSON {

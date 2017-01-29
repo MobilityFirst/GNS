@@ -2,11 +2,11 @@
 package edu.umass.cs.gnsserver.nodeconfig;
 
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.net.InetAddress;
 import java.util.Set;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 
 public class GNSConsistentNodeConfig<NodeIDType> implements

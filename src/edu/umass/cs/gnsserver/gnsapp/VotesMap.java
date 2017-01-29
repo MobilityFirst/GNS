@@ -3,6 +3,9 @@ package edu.umass.cs.gnsserver.gnsapp;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.Util;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -11,8 +14,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class VotesMap {

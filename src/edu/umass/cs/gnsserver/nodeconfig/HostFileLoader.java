@@ -2,8 +2,8 @@
 package edu.umass.cs.gnsserver.nodeconfig;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;

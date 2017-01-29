@@ -1,5 +1,12 @@
 package edu.umass.cs.gnsserver.activecode.prototype.unblocking;
 
+import com.maxmind.geoip2.DatabaseReader;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
+import edu.umass.cs.gnsserver.activecode.prototype.channels.ActiveNamedPipe;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import org.json.JSONException;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -9,15 +16,6 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
-import org.json.JSONException;
-
-import com.maxmind.geoip2.DatabaseReader;
-
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
-import edu.umass.cs.gnsserver.activecode.prototype.channels.ActiveNamedPipe;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 
 
 public class ActiveNonBlockingWorker {

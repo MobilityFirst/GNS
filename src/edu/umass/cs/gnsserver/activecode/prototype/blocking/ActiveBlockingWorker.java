@@ -1,5 +1,11 @@
 package edu.umass.cs.gnsserver.activecode.prototype.blocking;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
+import edu.umass.cs.gnsserver.activecode.prototype.channels.ActiveNamedPipe;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -10,13 +16,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.json.JSONException;
-
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
-import edu.umass.cs.gnsserver.activecode.prototype.channels.ActiveNamedPipe;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 
 
 public class ActiveBlockingWorker {

@@ -4,10 +4,10 @@ package edu.umass.cs.gnsserver.localnameserver;
 import edu.umass.cs.gigapaxos.interfaces.NearestServerSelector;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.nioutils.NIOHeader;
@@ -18,15 +18,14 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemultiplexer {

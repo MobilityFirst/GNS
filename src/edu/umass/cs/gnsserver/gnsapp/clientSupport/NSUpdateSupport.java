@@ -22,6 +22,9 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.Config;
+import org.apache.commons.lang3.time.DateUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -31,10 +34,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-
-import org.apache.commons.lang3.time.DateUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class NSUpdateSupport {

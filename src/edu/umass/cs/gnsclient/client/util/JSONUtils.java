@@ -1,11 +1,12 @@
 
 package edu.umass.cs.gnsclient.client.util;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 
 public class JSONUtils {

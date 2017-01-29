@@ -4,7 +4,6 @@ package edu.umass.cs.gnsserver.gnsapp.packet.admin;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithReturnAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

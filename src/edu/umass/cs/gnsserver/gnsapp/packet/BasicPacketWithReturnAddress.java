@@ -1,9 +1,10 @@
 
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
-import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.InetSocketAddress;
 
 
 public abstract class BasicPacketWithReturnAddress extends BasicPacketWithClientAddress {

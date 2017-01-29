@@ -1,5 +1,10 @@
 package edu.umass.cs.gnsserver.activecode.prototype.channels;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
+import org.json.JSONException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -8,12 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-
-import org.json.JSONException;
-
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 
 
 public class ActiveNamedPipe implements Channel {

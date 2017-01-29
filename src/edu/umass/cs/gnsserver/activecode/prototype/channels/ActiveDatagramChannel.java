@@ -1,17 +1,16 @@
 package edu.umass.cs.gnsserver.activecode.prototype.channels;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-
-import org.json.JSONException;
-
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 
 
 public class ActiveDatagramChannel implements Channel {

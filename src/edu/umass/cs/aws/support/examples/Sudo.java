@@ -1,21 +1,20 @@
 
 package edu.umass.cs.aws.support.examples;
 
-import edu.umass.cs.aws.networktools.SSHClient;
-import edu.umass.cs.aws.networktools.UserInfoPrompted;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
-import java.awt.HeadlessException;
+import edu.umass.cs.aws.networktools.SSHClient;
+import edu.umass.cs.aws.networktools.UserInfoPrompted;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 
 
 public class Sudo {

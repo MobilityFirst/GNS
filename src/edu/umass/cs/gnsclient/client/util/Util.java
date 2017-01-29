@@ -2,6 +2,7 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;

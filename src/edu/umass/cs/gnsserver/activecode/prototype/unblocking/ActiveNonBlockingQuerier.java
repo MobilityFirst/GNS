@@ -1,17 +1,9 @@
 package edu.umass.cs.gnsserver.activecode.prototype.unblocking;
 
-import java.io.IOException;
-import java.net.InetAddress;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
 import com.maxmind.geoip2.record.Location;
-
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
@@ -20,6 +12,12 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.DNSQuerier;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.InetAddress;
 
 
 public class ActiveNonBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {

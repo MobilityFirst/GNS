@@ -14,14 +14,13 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Level;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 
 public class NSGroupAccess {

@@ -1,21 +1,13 @@
 
 package edu.umass.cs.gnsserver.installer;
 
-import edu.umass.cs.gnsserver.nodeconfig.HostFileLoader;
 import edu.umass.cs.aws.networktools.ExecuteBash;
 import edu.umass.cs.aws.networktools.RSync;
 import edu.umass.cs.aws.networktools.SSHClient;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.nodeconfig.HostSpec;
 import edu.umass.cs.gnscommon.utils.Format;
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.nodeconfig.HostFileLoader;
+import edu.umass.cs.gnsserver.nodeconfig.HostSpec;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -24,6 +16,15 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class GNSInstaller {

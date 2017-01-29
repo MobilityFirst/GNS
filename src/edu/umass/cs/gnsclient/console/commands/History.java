@@ -1,10 +1,10 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
+import edu.umass.cs.gnsclient.console.ConsoleModule;
+
 import java.util.List;
 import java.util.StringTokenizer;
-
-import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 
 public class History extends ConsoleCommand

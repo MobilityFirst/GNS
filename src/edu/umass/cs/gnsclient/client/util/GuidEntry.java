@@ -2,8 +2,12 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.utils.Base64;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,12 +20,6 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-
-import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
 
 public class GuidEntry extends BasicGuidEntry implements Serializable {

@@ -1,10 +1,11 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.utils.StringUtil;
+
+import java.util.StringTokenizer;
 
 
 public class ActiveCodeGet extends ConsoleCommand {

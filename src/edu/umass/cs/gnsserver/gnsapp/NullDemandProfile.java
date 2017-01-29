@@ -4,12 +4,11 @@ package edu.umass.cs.gnsserver.gnsapp;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 

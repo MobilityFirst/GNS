@@ -12,9 +12,19 @@ import edu.umass.cs.aws.support.AMIRecordType;
 import edu.umass.cs.aws.support.AWSEC2;
 import edu.umass.cs.aws.support.InstanceStateRecord;
 import edu.umass.cs.aws.support.RegionRecord;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.GEOLocator;
-import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
+import javax.swing.*;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -25,16 +35,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 
 public class EC2Runner {

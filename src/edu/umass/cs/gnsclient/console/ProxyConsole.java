@@ -1,10 +1,10 @@
 
 package edu.umass.cs.gnsclient.console;
 
+import jline.ConsoleReader;
+
 import java.io.IOException;
 import java.io.PrintWriter;
-
-import jline.ConsoleReader;
 
 
 public class ProxyConsole

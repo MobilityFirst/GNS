@@ -1,17 +1,35 @@
 
 package edu.umass.cs.gnsserver.gnamed;
 
-import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
-import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
-import edu.umass.cs.gnsserver.gnsapp.GNSApp;
+import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.xbill.DNS.ARecord;
+import org.xbill.DNS.CNAMERecord;
+import org.xbill.DNS.Cache;
+import org.xbill.DNS.Credibility;
+import org.xbill.DNS.DClass;
+import org.xbill.DNS.Flags;
+import org.xbill.DNS.Header;
+import org.xbill.DNS.MXRecord;
+import org.xbill.DNS.Message;
+import org.xbill.DNS.NSRecord;
+import org.xbill.DNS.Name;
+import org.xbill.DNS.Opcode;
+import org.xbill.DNS.RRset;
+import org.xbill.DNS.Rcode;
+import org.xbill.DNS.Record;
+import org.xbill.DNS.Section;
+import org.xbill.DNS.SetResponse;
+import org.xbill.DNS.SimpleResolver;
+import org.xbill.DNS.TextParseException;
+import org.xbill.DNS.Type;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -22,29 +40,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xbill.DNS.ARecord;
-import org.xbill.DNS.CNAMERecord;
-import org.xbill.DNS.Cache;
-import org.xbill.DNS.Credibility;
-import org.xbill.DNS.DClass;
-import org.xbill.DNS.Flags;
-import org.xbill.DNS.Header;
-import org.xbill.DNS.Message;
-import org.xbill.DNS.Name;
-import org.xbill.DNS.Opcode;
-import org.xbill.DNS.RRset;
-import org.xbill.DNS.Rcode;
-import org.xbill.DNS.Record;
-import org.xbill.DNS.Section;
-import org.xbill.DNS.SetResponse;
-import org.xbill.DNS.SimpleResolver;
-import org.xbill.DNS.Type;
-import org.xbill.DNS.MXRecord;
-import org.xbill.DNS.NSRecord;
-import org.xbill.DNS.TextParseException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
 
 
 public class NameResolution {

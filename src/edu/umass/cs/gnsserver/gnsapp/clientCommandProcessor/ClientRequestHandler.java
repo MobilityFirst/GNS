@@ -1,7 +1,6 @@
 
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
 
-import static edu.umass.cs.gnscommon.utils.NetworkUtils.getLocalHostLANAddress;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.GNSClientInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
@@ -11,6 +10,8 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurabl
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+
+import static edu.umass.cs.gnscommon.utils.NetworkUtils.getLocalHostLANAddress;
 
 
 public class ClientRequestHandler implements ClientRequestHandlerInterface {

@@ -1,14 +1,13 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.security.PublicKey;
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 
+import java.security.PublicKey;
 import java.util.StringTokenizer;
 
 

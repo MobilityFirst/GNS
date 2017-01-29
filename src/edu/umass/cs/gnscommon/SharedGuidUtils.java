@@ -3,11 +3,12 @@ package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
-import java.util.HashSet;
-import java.util.Set;
-import javax.xml.bind.DatatypeConverter;
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import javax.xml.bind.DatatypeConverter;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class SharedGuidUtils {

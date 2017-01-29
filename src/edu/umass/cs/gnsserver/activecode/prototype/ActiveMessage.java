@@ -1,16 +1,15 @@
 package edu.umass.cs.gnsserver.activecode.prototype;
 
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 
 
 public class ActiveMessage implements Message{

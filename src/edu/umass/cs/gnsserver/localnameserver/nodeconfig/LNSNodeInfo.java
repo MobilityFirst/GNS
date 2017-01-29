@@ -1,9 +1,10 @@
 
 package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
+import edu.umass.cs.utils.Util;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import edu.umass.cs.utils.Util;
 
 
 public class LNSNodeInfo {

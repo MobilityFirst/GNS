@@ -2,6 +2,7 @@
 package edu.umass.cs.gnsserver.installer;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

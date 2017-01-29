@@ -1,19 +1,5 @@
 package edu.umass.cs.gnsclient.client.bugreports;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.junit.After;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
-import org.junit.runner.notification.Failure;
-
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -25,6 +11,19 @@ import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
+import org.junit.After;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class BatchCreateOpsFail extends DefaultTest {

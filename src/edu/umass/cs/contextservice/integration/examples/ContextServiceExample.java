@@ -1,12 +1,11 @@
 package edu.umass.cs.contextservice.integration.examples;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 
 public class ContextServiceExample {

@@ -1,6 +1,15 @@
 
 package edu.umass.cs.gnsclient.client.util;
 
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.util.keystorage.AbstractKeyStorage;
+import edu.umass.cs.gnsclient.client.util.keystorage.JavaPreferencesKeyStore;
+import edu.umass.cs.gnsclient.client.util.keystorage.SimpleKeyStore;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.utils.Config;
+
+import javax.xml.bind.DatatypeConverter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -19,15 +28,6 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
-
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.util.keystorage.AbstractKeyStorage;
-import edu.umass.cs.gnsclient.client.util.keystorage.JavaPreferencesKeyStore;
-import edu.umass.cs.gnsclient.client.util.keystorage.SimpleKeyStore;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.utils.Config;
-import javax.xml.bind.DatatypeConverter;
 
 
 public class KeyPairUtils {

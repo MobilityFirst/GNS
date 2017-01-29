@@ -1,9 +1,10 @@
 
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+
+import java.util.StringTokenizer;
 
 
 public class Connect extends ConsoleCommand {

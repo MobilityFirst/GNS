@@ -3,9 +3,9 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import org.json.JSONException;
 
 import java.util.logging.Level;
-import org.json.JSONException;
 
 
 public abstract class BasicPacket implements PacketInterface, ExtensiblePacketInterface {

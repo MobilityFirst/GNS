@@ -1,8 +1,14 @@
 package edu.umass.cs.gnsclient.client.bugreports;
 
 
-import java.io.IOException;
-
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.utils.Util;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -18,14 +24,8 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runners.MethodSorters;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest;
-import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.utils.ThreadUtils;
-import edu.umass.cs.utils.Util;
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;

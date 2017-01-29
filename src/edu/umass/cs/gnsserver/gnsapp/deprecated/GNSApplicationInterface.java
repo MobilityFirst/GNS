@@ -6,10 +6,9 @@ import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
+import org.json.JSONObject;
 
 import java.io.IOException;
-
-import org.json.JSONObject;
 
 // Not really sure why this is in a deprecated package. Some parts of it are obsolete and
 // need to be updated and removed, but the overall interface is necessary.

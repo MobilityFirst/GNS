@@ -1,10 +1,9 @@
 package edu.umass.cs.gnscommon.packets;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 public class AdminCommandPacket extends CommandPacket {

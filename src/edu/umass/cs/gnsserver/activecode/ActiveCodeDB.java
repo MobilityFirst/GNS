@@ -1,16 +1,14 @@
 package edu.umass.cs.gnsserver.activecode;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.gnsapp.activegns.ActiveGNSClient;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class ActiveCodeDB implements ActiveDBInterface {

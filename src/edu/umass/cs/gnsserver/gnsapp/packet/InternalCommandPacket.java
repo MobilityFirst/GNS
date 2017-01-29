@@ -1,19 +1,16 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.Test;
-
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.packets.PacketUtils;
-import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.Test;
 
 
 public class InternalCommandPacket extends CommandPacket implements

@@ -1,14 +1,14 @@
 
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
-import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gigapaxos.interfaces.Summarizable;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
-import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
-import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import org.json.JSONException;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -17,10 +17,9 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 
-import org.json.JSONException;
-
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
+import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
+import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
+import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
 
 
 public abstract class AbstractCommand implements CommandInterface, Comparable<AbstractCommand>, Summarizable {

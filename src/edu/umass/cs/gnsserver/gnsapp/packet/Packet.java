@@ -3,7 +3,6 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
@@ -14,7 +13,6 @@ import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

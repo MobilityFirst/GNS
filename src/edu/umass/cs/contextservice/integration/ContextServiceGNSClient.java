@@ -1,16 +1,15 @@
 package edu.umass.cs.contextservice.integration;
 
 
-import org.json.JSONObject;
-
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.contextservice.client.callback.implementations.NoopCallBack;
 import edu.umass.cs.contextservice.client.callback.implementations.NoopUpdateReply;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import org.json.JSONObject;
 
 import java.util.logging.Level;
-import edu.umass.cs.gnscommon.GNSProtocol;
 
 
 public class ContextServiceGNSClient implements ContextServiceGNSInterface {

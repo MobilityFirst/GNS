@@ -1,9 +1,6 @@
 
 package edu.umass.cs.gnsserver.localnameserver;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Logger;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolEvent;
@@ -12,9 +9,13 @@ import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
-import java.net.InetSocketAddress;
-import java.util.logging.Level;
 import org.json.JSONObject;
+
+import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {

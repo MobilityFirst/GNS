@@ -6,16 +6,17 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.http.HttpClient;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
-import edu.umass.cs.gnscommon.GNSProtocol;
 
 
 public class GuidUtils {

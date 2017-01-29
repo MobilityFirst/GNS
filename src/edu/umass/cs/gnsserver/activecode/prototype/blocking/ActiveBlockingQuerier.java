@@ -1,13 +1,5 @@
 package edu.umass.cs.gnsserver.activecode.prototype.blocking;
 
-import java.io.IOException;
-import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import com.maxmind.geoip2.record.Location;
-
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ACLQuerier;
@@ -15,6 +7,9 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.DNSQuerier;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.json.JSONObject;
+
+import java.io.IOException;
 
 
 public class ActiveBlockingQuerier implements Querier,ACLQuerier,DNSQuerier {
