@@ -106,12 +106,20 @@ public class GNSHttpServer extends GNSHttpProxy{
 	 * @param port
 	 * @return true if it was started
 	 */
-	public boolean tryPort(int port) {
+	public boolean tryPort(int port, String hostname) {
 		try {
-			InetSocketAddress addr = new InetSocketAddress(port);
+			InetSocketAddress addr;
+			if (hostname == null){
+				addr = new InetSocketAddress(port);
+			}
+			else{
+				addr = new InetSocketAddress(hostname, port);
+			}
 			httpServer = HttpServer.create(addr, 0);
 
 			httpServer.createContext("/", new EchoHttpHandler());
+			
+			//This line here is what differs from the parent class, it uses a different HTTP Handler.
 			httpServer.createContext("/" + GNS_PATH, new DefaultHttpHandler());
 			httpServer.setExecutor(Executors.newCachedThreadPool());
 			httpServer.start();

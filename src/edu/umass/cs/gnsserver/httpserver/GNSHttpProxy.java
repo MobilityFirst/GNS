@@ -115,13 +115,20 @@ public class GNSHttpProxy {
 		}
 	}
 	
+	
 	/**
 	 * Creates and runs a GNSHttpProxy that receives commands over HTTP
 	 * and executed them using a GNSClient.
 	 */
 	public static void main(String[] args){
+		String portString = System.getProperty("gnsProxy.port", "8080");
+		int port = Integer.parseInt(portString);
+		
+		String hostname = System.getProperty("gnsProxy.remoteHostname", "localhost");
+		
+
 		GNSHttpProxy proxy = new GNSHttpProxy();
-		proxy.runServer(8080);
+		proxy.runServer(port, hostname);
 	}
 
 	/**
@@ -134,13 +141,32 @@ public class GNSHttpProxy {
 		do {
 			// Find the first port after starting port that actually works.
 			// Usually if 8080 is busy we can get 8081.
-			if (tryPort(startingPort + cnt)) {
+			if (tryPort(startingPort + cnt, null)) {
 				port = startingPort + cnt;
 				break;
 			}
 			edu.umass.cs.utils.Util.suicide(GNSConfig.getLogger(), "Unable to start GNS HTTP server; exiting");
 		} while (cnt++ < 100);
 	}
+	
+	/**
+	 * Start the server.
+	 *
+	 * @param startingPort
+	 */
+	public final void runServer(int startingPort, String hostname) {
+		int cnt = 0;
+		do {
+			// Find the first port after starting port that actually works.
+			// Usually if 8080 is busy we can get 8081.
+			if (tryPort(startingPort + cnt, hostname)) {
+				port = startingPort + cnt;
+				break;
+			}
+			edu.umass.cs.utils.Util.suicide(GNSConfig.getLogger(), "Unable to start GNS HTTP server; exiting");
+		} while (cnt++ < 100);
+	}
+
 
 	/**
 	 * Stop everything.
@@ -157,9 +183,15 @@ public class GNSHttpProxy {
 	 * @param port
 	 * @return true if it was started
 	 */
-	public boolean tryPort(int port) {
+	public boolean tryPort(int port, String hostname) {
 		try {
-			InetSocketAddress addr = new InetSocketAddress(port);
+			InetSocketAddress addr;
+			if (hostname == null){
+				addr = new InetSocketAddress(port);
+			}
+			else{
+				addr = new InetSocketAddress(hostname, port);
+			}
 			httpServer = HttpServer.create(addr, 0);
 
 			httpServer.createContext("/", new EchoHttpHandler());
@@ -168,7 +200,7 @@ public class GNSHttpProxy {
 			httpServer.start();
 
 			LOGGER.log(Level.INFO,
-					"HTTP server is listening on port {0}", port);
+					"HTTP server is listening on port {0} for {1}", new Object[]{port, hostname});
 			return true;
 		} catch (IOException e) {
 			LOGGER.log(Level.FINE,
