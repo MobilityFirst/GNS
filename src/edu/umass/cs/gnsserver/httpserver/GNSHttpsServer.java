@@ -82,7 +82,7 @@ public class GNSHttpsServer extends GNSHttpServer {
    * @return true if it was started
    */
   @Override
-  public boolean tryPort(int port) {
+  public boolean tryPort(int port, String hostname) {
     try {
       InetSocketAddress addr = new InetSocketAddress(port);
       httpsServer = HttpsServer.create(addr, 0);
