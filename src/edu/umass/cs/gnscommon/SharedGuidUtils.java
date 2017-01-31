@@ -4,6 +4,7 @@ package edu.umass.cs.gnscommon;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.JSONPacket;
@@ -17,7 +18,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
@@ -29,8 +29,7 @@ public class SharedGuidUtils {
 
   public static String createGuidStringFromPublicKey(byte[] keyBytes) {
     byte[] publicKeyDigest = ShaOneHashFunction.getInstance().hash(keyBytes);
-    return DatatypeConverter.printHexBinary(publicKeyDigest);
-    //return ByteUtils.toHex(publicKeyDigest);
+    return ByteUtils.toHex(publicKeyDigest);
   }
 
 

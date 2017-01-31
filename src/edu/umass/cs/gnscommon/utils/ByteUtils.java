@@ -87,18 +87,18 @@ public class ByteUtils {
 //  }
 
 //
-//  public static String toHex(byte[] bytes) {
-//    StringBuilder sb = new StringBuilder();
-//    for (int i = 0; i < bytes.length; i++) {
-//      sb.append(toHex(bytes[i]));
-//    }
-//    return sb.toString();
-//  }
+  public static String toHex(byte[] bytes) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < bytes.length; i++) {
+      sb.append(toHex(bytes[i]));
+    }
+    return sb.toString();
+  }
 //
 //
-//  public static String toHex(byte b) {
-//    return String.format("%02X", b);
-//  }
+  public static String toHex(byte b) {
+    return String.format("%02X", b);
+  }
   
   
   
