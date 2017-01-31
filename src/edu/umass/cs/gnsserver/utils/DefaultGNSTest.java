@@ -18,6 +18,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
+import edu.umass.cs.utils.UtilServer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -245,7 +246,7 @@ public class DefaultGNSTest extends DefaultTest {
 			File[] files = getMatchingFiles(getLogFileDir(), getLogFile());
 			numServersUp = 0;
 			for (File f : files)
-				numServersUp += Util.readFileAsString(f.getAbsolutePath())
+				numServersUp += UtilServer.readFileAsString(f.getAbsolutePath())
 						.contains("server ready") ? 1 : 0;
 
 			System.out.println((numServersUp) + " out of "
