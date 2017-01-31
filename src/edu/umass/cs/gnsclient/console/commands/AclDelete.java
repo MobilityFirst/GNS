@@ -35,7 +35,7 @@ import java.io.IOException;
 public class AclDelete extends ConsoleCommand {
 
   /**
-   * Creates a new <code>AclAdd</code> object
+   * Creates a new <code>AclDelete</code> object
    *
    * @param module
    */

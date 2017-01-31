@@ -36,7 +36,7 @@ import edu.umass.cs.gnsclient.console.ConsoleModule;
 public class AclRemove extends ConsoleCommand {
 
   /**
-   * Creates a new <code>AclAdd</code> object
+   * Creates a new <code>AclRemove</code> object
    *
    * @param module
    */

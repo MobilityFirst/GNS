@@ -1313,6 +1313,7 @@ public class HttpClient {
    * @return the guid
    * @throws java.io.IOException
    */
+  @SuppressWarnings("javadoc")
   private String guidCreate(GuidEntry accountGuid, String name, PublicKey publicKey) throws IOException, ClientException {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
@@ -1334,6 +1335,7 @@ public class HttpClient {
    * @throws ClientException
    * @throws InvalidGuidException if the user already exists
    */
+  @SuppressWarnings("javadoc")
   private String accountGuidCreate(String alias, GuidEntry guidEntry, String password) throws UnsupportedEncodingException, IOException,
           ClientException, InvalidGuidException, NoSuchAlgorithmException {
     byte[] publicKeyBytes = guidEntry.getPublicKey().getEncoded();
@@ -1355,6 +1357,7 @@ public class HttpClient {
    * @param accesserGuid
    * @throws java.io.IOException
    */
+  @SuppressWarnings("javadoc")
   private void aclAdd(String accessType, GuidEntry guid, String field, String accesserGuid) throws IOException, ClientException {
     getResponse(accesserGuid == null ? CommandType.AclAdd : CommandType.AclAddSelf, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType, GNSProtocol.GUID.toString(),
@@ -1371,6 +1374,7 @@ public class HttpClient {
    * @param accesserGuid
    * @throws java.io.IOException
    */
+  @SuppressWarnings("javadoc")
   private void aclRemove(String accessType, GuidEntry guid, String field, String accesserGuid) throws IOException, ClientException {
     getResponse(accesserGuid == null ? CommandType.AclRemove : CommandType.AclRemoveSelf, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType,
@@ -1389,6 +1393,7 @@ public class HttpClient {
    * @return the acl as a JSON array
    * @throws java.io.IOException
    */
+  @SuppressWarnings("javadoc")
   private JSONArray aclGet(String accessType, GuidEntry guid, String field, String accesserGuid) throws IOException, ClientException {
     try {
       return new JSONArray(getResponse(accesserGuid == null ? CommandType.AclRetrieve : CommandType.AclRetrieveSelf, guid,
@@ -1671,6 +1676,7 @@ public class HttpClient {
   // more hair because of need for URLs and also JSON. Maybe just send JSON?
   // The big difference is that it creates a URI String to send to the server, but it also
   // creates a canonical JSON form that it needs for the signature.
+  @SuppressWarnings("javadoc")
   private String createAndSignQuery(CommandType commandType, GuidEntry guid, Object... keysAndValues)
           throws ClientException {
     // First we create the URI string

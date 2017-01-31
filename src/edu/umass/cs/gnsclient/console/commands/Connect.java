@@ -32,7 +32,7 @@ import edu.umass.cs.gnsclient.console.ConsoleModule;
 public class Connect extends ConsoleCommand {
 
   /**
-   * Creates a new <code>GnsConnect</code> object
+   * Creates a new <code>Connect</code> object
    *
    * @param module
    */

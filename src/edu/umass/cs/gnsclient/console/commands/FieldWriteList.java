@@ -38,7 +38,7 @@ import java.io.IOException;
 public class FieldWriteList extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldAppend</code> object
+   * Creates a new <code>FieldWriteList</code> object
    *
    * @param module
    */

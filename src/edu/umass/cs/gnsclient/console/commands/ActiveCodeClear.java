@@ -34,7 +34,7 @@ import java.io.IOException;
 public class ActiveCodeClear extends ConsoleCommand {
 
   /**
-   * Creates a new <code>ActiveCodeGet</code> object
+   * Creates a new <code>ActiveCodeClear</code> object
    *
    * @param module
    */

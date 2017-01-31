@@ -37,7 +37,7 @@ import org.json.JSONObject;
 public class Read extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldRead</code> object
+   * Creates a new <code>Read</code> object
    *
    * @param module
    */

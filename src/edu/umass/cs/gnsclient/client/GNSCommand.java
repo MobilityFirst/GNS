@@ -120,6 +120,7 @@ public class GNSCommand extends CommandPacket {
    * awaiting a response in the async client unless ENABLE_ID_TRANSFORM is
    * true.
    */
+  @SuppressWarnings("javadoc")
   private static long randomLong() {
     return (long) (Math.random() * Long.MAX_VALUE);
   }
@@ -498,9 +499,11 @@ public class GNSCommand extends CommandPacket {
    *
    * @param alias
    * @return CommandPacket
+   * @throws edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException
    * @throws ClientException
+   * @throws java.io.IOException
    */
-  PublicKey publicKeyLookupFromAlias(String alias)
+  public PublicKey publicKeyLookupFromAlias(String alias)
           throws InvalidGuidException, ClientException, IOException {
     throw new RuntimeException("Unimplementable");
     // String guid = lookupGuid(alias);

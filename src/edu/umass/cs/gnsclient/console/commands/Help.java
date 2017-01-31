@@ -24,16 +24,14 @@ import java.io.IOException;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
- * This class defines a Help
+ * This class defines Help
  * 
- * @author <a href="mailto:Nicolas.Modrzyk@inria.fr">Nicolas Modrzyk</a>
- * @version 1.0
  */
 public class Help extends ConsoleCommand
 {
 
   /**
-   * Creates a new <code>Help.java</code> object
+   * Creates a new <code>Help</code> object
    * 
    * @param module the command is attached to
    */

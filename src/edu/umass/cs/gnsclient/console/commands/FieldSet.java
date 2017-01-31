@@ -36,7 +36,7 @@ import java.io.IOException;
 public class FieldSet extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldAppend</code> object
+   * Creates a new <code>FieldSet</code> object
    *
    * @param module
    */

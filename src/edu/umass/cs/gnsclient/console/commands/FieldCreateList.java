@@ -37,7 +37,7 @@ import java.io.IOException;
 public class FieldCreateList extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldCreate</code> object
+   * Creates a new <code>FieldCreateList</code> object
    *
    * @param module
    */

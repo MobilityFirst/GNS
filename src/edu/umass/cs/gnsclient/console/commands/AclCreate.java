@@ -35,7 +35,7 @@ import java.io.IOException;
 public class AclCreate extends ConsoleCommand {
 
   /**
-   * Creates a new <code>AclAdd</code> object
+   * Creates a new <code>AclCreate</code> object
    *
    * @param module
    */

@@ -36,7 +36,7 @@ import java.io.IOException;
 public class FieldClear extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldRemove</code> object
+   * Creates a new <code>FieldClear</code> object
    *
    * @param module
    */

@@ -33,7 +33,7 @@ public class Quit extends ConsoleCommand
 {
 
   /**
-   * Creates a new <code>Quit.java</code> object
+   * Creates a new <code>Quit</code> object
    * 
    * @param module the command is attached to
    */

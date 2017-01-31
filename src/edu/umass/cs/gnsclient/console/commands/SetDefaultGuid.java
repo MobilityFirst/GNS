@@ -37,7 +37,7 @@ import java.util.StringTokenizer;
 public class SetDefaultGuid extends ConsoleCommand {
 
   /**
-   * Creates a new <code>GuidUse</code> object
+   * Creates a new <code>SetDefaultGuid</code> object
    *
    * @param module
    */

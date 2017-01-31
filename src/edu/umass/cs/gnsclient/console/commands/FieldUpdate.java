@@ -36,7 +36,7 @@ import java.io.IOException;
 public class FieldUpdate extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldAppend</code> object
+   * Creates a new <code>FieldUpdate</code> object
    *
    * @param module
    */
