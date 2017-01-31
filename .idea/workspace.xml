@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8fad88fb-f230-4c0c-ba2c-231d68302a76" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSNodeConfig.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSNodeConfig.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -74,11 +74,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="InternalCommandPacket.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="InternalCommandPacket.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="398">
-              <caret line="223" column="43" lean-forward="true" selection-start-line="223" selection-start-column="43" selection-end-line="223" selection-end-column="43" />
+            <state relative-caret-position="491">
+              <caret line="231" column="14" lean-forward="false" selection-start-line="231" selection-start-column="14" selection-end-line="231" selection-end-column="14" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -86,11 +86,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GNSNodeConfig.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="GNSNodeConfig.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSNodeConfig.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="263">
-              <caret line="548" column="0" lean-forward="true" selection-start-line="548" selection-start-column="0" selection-end-line="548" selection-end-column="0" />
+            <state relative-caret-position="293">
+              <caret line="550" column="61" lean-forward="true" selection-start-line="550" selection-start-column="61" selection-end-line="550" selection-end-column="61" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#3358#3359#0" expanded="true" />
@@ -157,8 +157,8 @@
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java" />
         <option value="$PROJECT_DIR$/test/edu/umass/cs/gnsclient/client/singletests/CommandTypeTest.java" />
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/CommandType.java" />
-        <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java" />
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSNodeConfig.java" />
+        <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java" />
       </list>
     </option>
   </component>
@@ -282,7 +282,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="SearchEverywhereHistoryKey" value="GNSNodeConfig&#9;PSI&#9;JAVA://edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig&#10;InternalCommandPacket&#9;PSI&#9;JAVA://edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket&#10;CommandType&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.CommandType&#10;Shared&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnscommon/SharedGuidUtils.java&#10;CommandPacket&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.packets.CommandPacket&#10;JSONByteC&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.utils.JSONByteConverter" />
+    <property name="SearchEverywhereHistoryKey" value="InternalCommandPacket&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java&#10;GNSNodeConfig&#9;PSI&#9;JAVA://edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig&#10;CommandType&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.CommandType&#10;Shared&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnscommon/SharedGuidUtils.java&#10;CommandPacket&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.packets.CommandPacket&#10;JSONByteC&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.utils.JSONByteConverter" />
   </component>
   <component name="RunManager">
     <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
@@ -679,24 +679,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="398">
-          <caret line="223" column="43" lean-forward="true" selection-start-line="223" selection-start-column="43" selection-end-line="223" selection-end-column="43" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/nodeconfig/GNSNodeConfig.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="263">
-          <caret line="548" column="0" lean-forward="true" selection-start-line="548" selection-start-column="0" selection-end-line="548" selection-end-column="0" />
+        <state relative-caret-position="293">
+          <caret line="550" column="61" lean-forward="true" selection-start-line="550" selection-start-column="61" selection-end-line="550" selection-end-column="61" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#3358#3359#0" expanded="true" />
             <element signature="e#3399#3400#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="491">
+          <caret line="231" column="14" lean-forward="false" selection-start-line="231" selection-start-column="14" selection-end-line="231" selection-end-column="14" />
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
