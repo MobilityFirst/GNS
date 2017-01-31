@@ -1,45 +1,57 @@
-// TODO: Bring uniformity in terminology. Ensure all terms are already defined in the "terminology" page.
-// Page still under construction
+// TODO: Bring uniformity in terminology. Ensure all terms are already defined in the "terminology" page beforehand.
 
-//Why are ACLs necessary?
-GNS is not just intended to be used to read and write your own data. Often, other trusted applications or users (represented by GUIDs) may want to write data on your behalf. For example, a calendar application may want to write new appointments for you. Other GUIDs may also want to read data that you do not want to be visible to the whole world. For example, your fitness application may want to read your activity data to generate reports.
-ACLs enable you to specify appropriate permissions for other GUIDs to access your data.
+#Access Control#
 
-//What exactly are ACLs?
-Access control lists or ACLs are a list of permissions associated with a particular field of a GNS record. Every ACL can be a whitelist or a blacklist. Further, each whitelist or blacklist can be used to control read or write access. Therefore, for every field, four separate lists can be specified: read whitelist, read blacklist, write whitelist and write blacklist.
+### Need for Access Control ###
 
-//It should be implied that ACLs apply only to "other" GUIDs, not to self (GUID to which the field record belongs)
-If an ACL for a particular field X is a read whitelist, every GUID listed under this ACL will have explicit read access to the value of X. This is true even if a parent field of X in dotted notation has an ACL preventing such an access. (Add example 1). If any sub-field of X, say Y, has a read blacklist ACL for a GUID already under the read whitelist of X, that GUID will be unable to read the value of Y. (Add example 2). The same holds good for write whitelist.
+GNS is not just intended to be used to read and write your own data. Often, other trusted applications or users (represented by GUIDs) may want to write data on your behalf. For example, a calendar application may want to write new appointments for you. Other GUIDs may also want to read data that you do not want to be visible to the whole world. For example, your fitness application may want to read your activity data to generate reports. Access Control Lists enable you to specify appropriate permissions for other GUIDs to access or update your data.
 
-If an ACL for a particular field X is a read blacklist, every GUID listed under this ACL will be prevented explicitly from reading the value of X, even if X has an ACL that grants read access to everyone. This is true even if a parent field of X in dotted notation has an ACL allowing such an access. (Add example 3). If any sub-field of X, say Y, has a read whitelist ACL for a GUID already under the read blacklist of X, that GUID will still be able to read the value of Y. (Add example 4). The same holds good for write blacklist.
+### What exactly are ACLs in GNS? ###
 
-ACL Inheritance
-It is not necessary to specify ACLs for every field in a record. If any field is not associated with an ACL, it inherits ACLs from its parent field. For example, if a field Y has only write blacklist associated with it, it inherits read whitelist, read blacklist and write whitelist from its parent field.
-(Add example 5)
+Access control lists or ACLs are a list of permissions associated with a particular field of a GNS record. You can specify separate lists for granting read and write privileges. Every field can therefore have a read ACL and a write ACL. It should be noted that a GUID has implicit read and write access to all the fields of its entire record.
 
-Default ACL
-When a field is created in a record and no ACL is specified, it will be associated with the following default ACLs:
-read whitelist: ALL GUIDs
-write whitelist: Account GUID
-read blacklist: <empty>
-write blacklist: <empty>
-//Verify if this is true even if parent has prohibitive access, like blacklist ALL
-(Add example 6)
+### The special "ALL" GUID ###
 
-The following simple sequence of steps can be used to determine if a particular field X can be read by GUID G:
+If you would like to grant read or write access for a particular field to all GUIDs instead of executing the command for each GUID explicitly, you can use the special "ALL" GUID. It should be noted that this "ALL" GUID is tracked separately and execution of commands with "ALL" and regular GUIDs cannot be mixed. For example, you cannot grant read access for field "location" to all GUIDs and then remove GUID G from it.
+(Example)
 
-- If G or ALL is present in read blacklist of X, deny access.
-- If G or ALL is present in read whitelist of X or if G is the account GUID of X, allow access.
-- Repeat the steps for ACLs of parent field of X until access is allowed or denied.
+### The special "ALL" field ###
 
-(Add example 7)
+If you would like to grant read or write access for all fields to a particular GUID, you can use the special "ALL" field instead of executing the command multiple times for each field. It should be noted that this "ALL" field is tracked separately and execution of commands with "ALL" and regular fields cannot be mixed. For example, you cannot grant read access to a GUID for "ALL" fields and then remove this privilege for a particular field called "private".
+(Example)
 
-//Cases where a GUID is in both whitelist and blacklist?
-//Cases where the record GUID (itself) is in blacklist?
-//Cases where account GUID is blacklisted by parent field?
+### Default ACL ###
+Whenever a new GUID is created, it is associated with a read ACL for "ALL" fields to "ALL" GUIDs. This happens only once at the time of GUID creation. Therefore, if you would like to make some information private in your record, you are expected to first remove this default ACL and then specify privileges for individual fields.
+(Example)
 
-//What happens when a value is inaccessible?
-No exception is raised (//Verify). The behavior of GNS will be as if the inaccessible field never exists in the record.
+### ACL Inheritance ###
 
+It is not necessary for you to specify ACLs explicitly for every field in every level (for nested fields) of the record. If you do not specify any ACL for a nested field, it assumes the ACL of its closest parent field with an ACL. If a nested field has only write ACL specified, it inherits the read ACL from its closest parent field having non-empty value for such an ACL.
+(Example)
+
+### Read ACL ###
+If a particular field X has a read ACL, every GUID listed under it will have explicit read access to the value of X. This is true even if a parent field of X does not grant such an access.
+(Example)
+
+### Write ACL ###
+If a particular field X has a write ACL, every GUID listed under it will have explicit write access to the value of X. This is true even if a parent field of X does not grand such an access.
+(Example)
+
+The following simple sequence of steps can be used to determine if a particular field X belonging to a record of GUID R can be read by GUID G:
+
+- If R has a read ACL for "ALL" fields with G or "ALL" GUID in it, allow access.
+- If field X has a read ACL
+    - If the read ACL contains G or "ALL", allow access.
+    - Otherwise, deny access.
+- If field X does not has a read ACL, recursively check steps 1 and 2 for parent fields of X until a field with read ACL is found.
+- If we reach the top level field which doesn't satisfy steps 1 and 2, deny access.
+
+(Example)
+
+What happens when access is denied?
+When access is denied, appropriate exception is communicated to the client.
+
+Coming soon:
+- ACL behavior in Groups
 - ACL operations - explanation of each operation with an example demonstrating its use in each client library.
 - A link to the @ACL Reference page that provides an exhaustive listing of access types that can be set, ACL Operations and the default values.
