@@ -20,7 +20,7 @@ If you would like to grant read or write access for all fields to a particular G
 (Example)
 
 ### Default ACL ###
-Whenever a new GUID is created, it is associated with a read ACL for `ALL` fields to `ALL` GUIDs. This happens only once at the time of GUID creation. Therefore, if you would like to make some information private in your record, you are expected to first remove this default ACL and then specify privileges for individual fields.
+Whenever a new GUID is created, it is associated with a default read ACL for `ALL` fields to `ALL` GUIDs. This happens only once at the time of GUID creation. Therefore, if you would like to make some information private in your record, you are expected to first remove this default ACL and then specify privileges for individual fields.
 (Example)
 
 ### ACL Inheritance ###
