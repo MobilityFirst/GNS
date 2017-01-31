@@ -214,22 +214,4 @@ public class InternalCommandPacket extends CommandPacket implements
 		};
 	}
 
-
-	public static class InternalCommandPacketTest extends DefaultTest {
-
-
-
-		public void test_01_serialization() throws JSONException,
-				InternalRequestException {
-			Util.assertAssertionsEnabled();
-			decrementTTL = false;
-			InternalCommandPacket icmd = GNSCommandInternal.fieldRead("hello",
-					"world", getTestHeader(4, "randomGUID", 312312312));
-			String s1 = (icmd.toString());
-			String s2 = new InternalCommandPacket(new JSONObject(s1))
-					.toString();
-			// assumes canonical order
-			//org.junit.Assert.assertEquals(s1, s2);
-		}
-	}
 }
