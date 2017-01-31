@@ -215,9 +215,10 @@ public class GNSClient {
 				response = defaultHandleResponse(this.sendSyncInternal(packet,
 						timeout));
 			} catch (ClientException ce) {
-				if (ce.getCode() == ResponseCode.TIMEOUT)
-					// do nothing
-					;
+				if (ce.getCode() == ResponseCode.TIMEOUT) {
+
+				}
+
 			}
 		} while ((count++ < this.numRetriesUponTimeout && (response == null || response
 				.getErrorCode() == ResponseCode.TIMEOUT)));

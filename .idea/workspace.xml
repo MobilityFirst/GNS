@@ -3,9 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="8fad88fb-f230-4c0c-ba2c-231d68302a76" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ios/build.sh" afterPath="$PROJECT_DIR$/ios/build.sh" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -35,7 +33,7 @@
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CryptoUtils.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="519">
-              <caret line="228" column="7" lean-forward="true" selection-start-line="228" selection-start-column="7" selection-end-line="228" selection-end-column="7" />
+              <caret line="228" column="7" lean-forward="false" selection-start-line="228" selection-start-column="7" selection-end-line="228" selection-end-column="7" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -43,11 +41,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GNSCommand.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="GNSCommand.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="41" column="3" lean-forward="true" selection-start-line="41" selection-start-column="3" selection-end-line="41" selection-end-column="3" />
+            <state relative-caret-position="210">
+              <caret line="35" column="0" lean-forward="true" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -77,11 +75,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GNSClient.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="GNSClient.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="279">
-              <caret line="441" column="76" lean-forward="true" selection-start-line="441" selection-start-column="76" selection-end-line="441" selection-end-column="76" />
+            <state relative-caret-position="470">
+              <caret line="219" column="17" lean-forward="true" selection-start-line="219" selection-start-column="17" selection-end-line="219" selection-end-column="17" />
               <folding>
                 <element signature="e#2383#2384#0" expanded="true" />
                 <element signature="e#2428#2429#0" expanded="true" />
@@ -149,6 +147,7 @@
       <find>toHex</find>
       <find>createAnd</find>
       <find>crypto</find>
+      <find>TIMEOUT</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -174,8 +173,8 @@
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/DefaultGNSTest.java" />
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ByteUtils.java" />
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java" />
-        <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java" />
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java" />
+        <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java" />
       </list>
     </option>
   </component>
@@ -997,21 +996,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="279">
-          <caret line="441" column="76" lean-forward="true" selection-start-line="441" selection-start-column="76" selection-end-line="441" selection-end-column="76" />
-          <folding>
-            <element signature="e#2383#2384#0" expanded="true" />
-            <element signature="e#2428#2429#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CryptoUtils.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="519">
-          <caret line="228" column="7" lean-forward="true" selection-start-line="228" selection-start-column="7" selection-end-line="228" selection-end-column="7" />
+          <caret line="228" column="7" lean-forward="false" selection-start-line="228" selection-start-column="7" selection-end-line="228" selection-end-column="7" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -1020,10 +1008,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="41" column="3" lean-forward="true" selection-start-line="41" selection-start-column="3" selection-end-line="41" selection-end-column="3" />
+        <state relative-caret-position="210">
+          <caret line="35" column="0" lean-forward="true" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="470">
+          <caret line="219" column="17" lean-forward="true" selection-start-line="219" selection-start-column="17" selection-end-line="219" selection-end-column="17" />
+          <folding>
+            <element signature="e#2383#2384#0" expanded="true" />
+            <element signature="e#2428#2429#0" expanded="true" />
           </folding>
         </state>
       </provider>
