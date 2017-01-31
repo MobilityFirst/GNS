@@ -24,6 +24,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -74,18 +75,17 @@ public class SetDefaultGuid extends ConsoleCommand {
 
     StringTokenizer st = new StringTokenizer(commandText.trim());
     if (st.countTokens() != 1) {
-      console.printString("Wrong number of arguments for this command.\n");
+      wrongArguments();
       return;
     }
     String aliasName = st.nextToken();
     GNSClientCommands gnsClient = module.getGnsClient();
-    
+
     try {
       try {
         gnsClient.lookupGuid(aliasName);
-      } catch (Exception expected) {
-        console.printString("Alias " + aliasName + " is not registered in the GNS");
-        console.printNewline();
+      } catch (ClientException e) {
+        console.printString("Alias " + aliasName + " is not registered in the GNS\n");
         return;
       }
 
@@ -107,7 +107,6 @@ public class SetDefaultGuid extends ConsoleCommand {
         console.printString("Default GUID set to " + aliasName + "\n");
       }
     } catch (IOException e) {
-      e.printStackTrace();
       console.printString("Failed to access the GNS ( " + e + ")\n");
     }
   }

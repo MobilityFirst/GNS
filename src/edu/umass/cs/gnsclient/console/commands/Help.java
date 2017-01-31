@@ -46,6 +46,7 @@ public class Help extends ConsoleCommand
    * @throws java.io.IOException
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#parse(java.lang.String)
    */
+  @Override
   public void parse(String commandText) throws IOException
   {
     module.help();
@@ -55,6 +56,7 @@ public class Help extends ConsoleCommand
    * @return the command name
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandName()
    */
+  @Override
   public String getCommandName()
   {
     return "help"; //$NON-NLS-1$
@@ -64,6 +66,7 @@ public class Help extends ConsoleCommand
    * @return the command description
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandDescription()
    */
+  @Override
   public String getCommandDescription()
   {
     return "Print this help message"; //$NON-NLS-1$
@@ -79,6 +82,7 @@ public class Help extends ConsoleCommand
    * @throws java.lang.Exception
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#execute(java.lang.String)
    */
+  @Override
   public void execute(String commandText) throws Exception
   {
     this.parse(commandText);

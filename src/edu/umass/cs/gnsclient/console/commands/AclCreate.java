@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (c) 2015 University of Massachusetts
+ *  Copyright (c) 2017 University of Massachusetts
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you
  *  may not use this file except in compliance with the License. You
@@ -14,55 +14,53 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
-
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.utils.StringUtil;
 import java.io.IOException;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
- * Command to update the entire records using JSON in the GNS
+ * Add a GUID to the ACL of a field of the current GUID in the GNS
  *
- * @author Westy
+ * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
  * @version 1.0
  */
-public class Update extends ConsoleCommand {
+public class AclCreate extends ConsoleCommand {
 
   /**
-   * Creates a new <code>Update</code> object
+   * Creates a new <code>AclAdd</code> object
    *
    * @param module
    */
-  public Update(ConsoleModule module) {
+  public AclCreate(ConsoleModule module) {
     super(module);
   }
 
   @Override
   public String getCommandDescription() {
-    return "Update the value of the target GUID using the JSON String (using the credential of the current GUID/alias)";
+    return "Create and empty read or write ACL for the given field in the current GUID (using the credential of the current GUID/alias). "
+            + "Use +ALL+ as the field name to delete the ACL for all fields. ";
   }
 
   @Override
   public String getCommandName() {
-    return "update";
+    return "acl_create";
   }
 
   @Override
   public String getCommandParameters() {
-    return "[target_guid_or_alias] jsonString";
+    return "field read|write";
   }
 
   /**
-   * Override execute to check for a selected gui
+   * Override execute to check for existing connectivity
    *
    * @throws java.lang.Exception
    */
@@ -76,35 +74,24 @@ public class Update extends ConsoleCommand {
 
   @Override
   public void parse(String commandText) throws Exception {
-    GNSClientCommands gnsClient = module.getGnsClient();
     try {
+      GNSClientCommands gnsClient = module.getGnsClient();
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      String guid;
-      switch (st.countTokens()) {
-        case 1:
-          guid = module.getCurrentGuid().getGuid();
-          break;
-        case 2:
-          guid = st.nextToken();
-          if (!StringUtil.isValidGuidString(guid)) {
-            // We probably have an alias, lookup the GUID
-            guid = gnsClient.lookupGuid(guid);
-          }
-          break;
-        default:
-          wrongArguments();
-          return;
+      if (st.countTokens() != 2) {
+        wrongArguments();
+        return;
       }
-      String value = st.nextToken();
-      JSONObject json = new JSONObject(value);
+      String field = st.nextToken();
+      boolean isWrite = "write".equalsIgnoreCase(st.nextToken());
 
-      gnsClient.update(guid, json, module.getCurrentGuid());
-      console.printString("GUID " + guid + " has been updated using '" + json.toString());
+      // Set ACL
+      gnsClient.fieldCreateAcl(isWrite ? AclAccessType.WRITE_WHITELIST
+              : AclAccessType.READ_WHITELIST, module.getCurrentGuid(),
+              field);
+      console.printString((isWrite ? "Write" : "Read") + " ACL for field " + field + " has been created");
       console.printNewline();
     } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
-    } catch (JSONException e) {
-      console.printString("Unable to parse JSON string: " + e + "\n");
     }
   }
 }

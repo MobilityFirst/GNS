@@ -47,6 +47,7 @@ public class History extends ConsoleCommand
    * Override execute to not check for existing connectivity
    * @throws java.lang.Exception
    */
+  @Override
   public void execute(String commandText) throws Exception
   {
     parse(commandText);
@@ -56,6 +57,7 @@ public class History extends ConsoleCommand
    * @throws java.lang.Exception
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#parse(java.lang.String)
    */
+  @Override
   public void parse(String commandText) throws Exception
   {
     List<String> list = module.getHistory();

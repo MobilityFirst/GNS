@@ -59,6 +59,7 @@ public class PrivateKeyExport extends ConsoleCommand {
 
   /**
    * Override execute to not check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
@@ -71,7 +72,7 @@ public class PrivateKeyExport extends ConsoleCommand {
     try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
       if (st.countTokens() != 2) {
-        console.printString("Wrong number of arguments for this command.\n");
+        wrongArguments();
         return;
       }
       String aliasName = st.nextToken();
@@ -92,12 +93,9 @@ public class PrivateKeyExport extends ConsoleCommand {
         console.printString("Private key for " + aliasName + " stored in " + filename + " in "
                 + myGuid.getPrivateKey().getFormat() + " format.");
         console.printNewline();
-        return;
       }
     } catch (Exception e) {
-      e.printStackTrace();
       console.printString("Failed to save keys ( " + e + ")\n");
     }
-    console.printString("Failed to save keys \n");
   }
 }

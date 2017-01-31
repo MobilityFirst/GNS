@@ -76,7 +76,7 @@ public class AccountVerify extends ConsoleCommand {
 
       StringTokenizer st = new StringTokenizer(commandText.trim());
       if (st.countTokens() != 2) {
-        printString("Wrong number of arguments for this command.\n");
+        wrongArguments();
         return;
       }
       String alias = st.nextToken();

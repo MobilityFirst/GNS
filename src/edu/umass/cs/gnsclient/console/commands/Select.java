@@ -26,65 +26,59 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.io.IOException;
 
 /**
  * Reads a field in the GNS
- * 
+ *
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
  * @version 1.0
  */
-public class Select extends ConsoleCommand
-{
+public class Select extends ConsoleCommand {
 
   /**
    * Creates a new <code>Select</code> object
-   * 
+   *
    * @param module
    */
-  public Select(ConsoleModule module)
-  {
+  public Select(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Returns all records that have a field that contains the given value";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "select";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "field value";
   }
 
   /**
    * Override execute to not check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
+  public void execute(String commandText) throws Exception {
     parse(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    try {
       GNSClientCommands gnsClient = module.getGnsClient();
 
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if (st.countTokens() != 2)
-      {
-        console.printString("Wrong number of arguments for this command.\n");
+      if (st.countTokens() != 2) {
+        wrongArguments();
         return;
       }
       String field = st.nextToken();
@@ -94,22 +88,8 @@ public class Select extends ConsoleCommand
       JSONArray result = gnsClient.select(field, value);
       console.printString(result.toString());
       console.printNewline();
-//      for (int i = 0; i < result.length(); i++)
-//      {
-//        console.printString(result.getJSONObject(i).getString("GUID") + " -> "
-//            + toPrettyRecordString(result.getJSONObject(i)));
-//        console.printNewline();
-//      }
-    }
-    catch (Exception e)
-    {
+    } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
-  }
-
-  private String toPrettyRecordString(JSONObject json) throws Exception
-  {
-    json.remove("GUID");
-    return json.toString();
   }
 }

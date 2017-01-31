@@ -67,13 +67,17 @@ public class KeyLookup extends ConsoleCommand {
       String alias;
       switch (st.countTokens()) {
         case 0:
-          alias = module.getCurrentGuid().getEntityName();
+          if (!module.isCurrentGuidSetAndVerified()) {
+            return;
+          } else {
+            alias = module.getCurrentGuid().getEntityName();
+          }
           break;
         case 1:
           alias = st.nextToken();
           break;
         default:
-          console.printString("Wrong number of arguments for this command.\n");
+          wrongArguments();
           return;
       }
       GNSClientCommands gnsClient = module.getGnsClient();
