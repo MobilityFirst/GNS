@@ -23,63 +23,57 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.io.IOException;
+import java.util.StringTokenizer;
 
 /**
- * Command that creates a new proxy group
- * 
- * @author Westy
- * @version 1.0
+ * Delete an account
  */
-public class AccountDelete extends ConsoleCommand
-{
+public class AccountDelete extends ConsoleCommand {
 
   /**
    * Creates a new <code>AccountDelete</code> object
-   * 
+   *
    * @param module
    */
-  public AccountDelete(ConsoleModule module)
-  {
+  public AccountDelete(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Delete an account with a GUID.";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "account_delete";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "alias";
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    String aliasName = commandText.trim();
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    StringTokenizer st = new StringTokenizer(commandText.trim());
+    if ((st.countTokens() != 1)) {
+      wrongArguments();
+      return;
+    }
+    String aliasName = st.nextToken();
+    try {
       GNSClientCommands gnsClient = module.getGnsClient();
-      try
-      {
+      try {
         gnsClient.lookupGuid(aliasName);
-      }
-      catch (Exception expected)
-      {
+      } catch (IOException | ClientException expected) {
         printString("Alias " + aliasName + " doesn't exist.\n");
         return;
       }
       GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
-      if (myGuid == null)
-      {
+      if (myGuid == null) {
         printString("Unable to retrieve GUID for alias " + aliasName + "\n");
         return;
       }
@@ -88,14 +82,10 @@ public class AccountDelete extends ConsoleCommand
       KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
       module.setCurrentGuidAndCheckForVerified(null);
       module.setPromptString(ConsoleModule.CONSOLE_PROMPT + ">");
-      if (!module.isSilent())
-      {
+      if (!module.isSilent()) {
         printString("Removed account GUID " + myGuid.getGuid() + "\n");
       }
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
+    } catch (ClientException | IOException e) {
       printString("Failed to delete guid ( " + e + ")\n");
     }
   }

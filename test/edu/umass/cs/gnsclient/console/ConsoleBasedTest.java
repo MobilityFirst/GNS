@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Emmanuel Cecchet
  *
  */
 package edu.umass.cs.gnsclient.console;
@@ -31,10 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
-import javax.xml.bind.DatatypeConverter;
 import static org.junit.Assert.fail;
 
 /**
@@ -43,10 +40,11 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class ConsoleBasedTest {
+  public class ConsoleBasedTest {
 
   private static final String GNS_CLI_PROMPT = "GNS CLI";
   private static final String ACCOUNT = "test_account@localhost";
+  private static final String PASSWORD = "password";
   private static final String GROUP_GUID = "test_group";
   private static final String GUID1 = "test_guid1";
   private static final String GUID2 = "test_guid2";
@@ -68,13 +66,13 @@ public class ConsoleBasedTest {
     String inCommands;
     String expectedOutput;
 
-    inCommands = "account_create " + ACCOUNT + "\n";
-    inCommands += "account_verify " + ACCOUNT + " " + createVerificationCode(ACCOUNT) + "\n";
+    inCommands = "account_create " + ACCOUNT + " " + PASSWORD + "\n";
+    //inCommands += "account_verify " + ACCOUNT + " " + createVerificationCode(ACCOUNT) + "\n";
     inCommands += "account_delete " + ACCOUNT + "\n";
 
     expectedOutput = "Created an account with GUID .*\n";
-    expectedOutput += ACCOUNT + " is not verified.\n";
-    expectedOutput += "Account verified.\n";
+    //expectedOutput += ACCOUNT + " is not verified.\n";
+    //expectedOutput += "Account verified.\n";
     expectedOutput += "Removed account GUID .*\n";
 
     runCommandsInConsole(inCommands, expectedOutput, true, false);
@@ -98,13 +96,13 @@ public class ConsoleBasedTest {
     String inCommands;
     String expectedOutput;
 
-    inCommands = "account_create " + ACCOUNT + "\n";
-    inCommands += "account_verify " + ACCOUNT + " " + createVerificationCode(ACCOUNT) + "\n";
+    inCommands = "account_create " + ACCOUNT + " " + PASSWORD + "\n";
+    //inCommands += "account_verify " + ACCOUNT + " " + createVerificationCode(ACCOUNT) + "\n";
     inCommands += "set_default_guid " + ACCOUNT + "\n";
 
     expectedOutput = "Created an account with GUID .*\n";
-    expectedOutput += ACCOUNT + " is not verified.\n";
-    expectedOutput += "Account verified.\n";
+    //expectedOutput += ACCOUNT + " is not verified.\n";
+    //expectedOutput += "Account verified.\n";
     expectedOutput += "Looking up alias " + ACCOUNT + " GUID and certificates...\n";
     expectedOutput += "Default GUID set to " + ACCOUNT + "\n";
 
@@ -440,19 +438,5 @@ public class ConsoleBasedTest {
         System.out.println(output.toString());
       }
     }
-  }
-
-  private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
-  // this is so we can mimic the verification code the server is generting
-  // AKA we're cheating... if the SECRET changes on the server side
-  // you'll need to change it here as well
-  private static final String SECRET = "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
-          + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
-
-  private static String createVerificationCode(String name) {
-    return DatatypeConverter.printHexBinary(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), 
-            VERIFICATION_CODE_LENGTH));
-//    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), 
-//            VERIFICATION_CODE_LENGTH));
   }
 }

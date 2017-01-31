@@ -24,82 +24,83 @@ import org.json.JSONArray;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import java.util.StringTokenizer;
 
 /**
  * List the ACLs of a field of the current GUID in the GNS
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
-public class AclList extends ConsoleCommand
-{
+public class AclList extends ConsoleCommand {
 
   /**
    * Creates a new <code>AclList</code> object
-   * 
+   *
    * @param module
    */
-  public AclList(ConsoleModule module)
-  {
+  public AclList(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "List the current ACLs defined for the given field in the current GUID (using the credential of the current GUID/alias)";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "acl_list";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "field";
   }
 
   /**
    * Override execute to check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
-    if (!module.isCurrentGuidSetAndVerified())
-    {
+  public void execute(String commandText) throws Exception {
+    if (!module.isCurrentGuidSetAndVerified()) {
       return;
     }
     super.execute(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    try {
       GNSClientCommands gnsClient = module.getGnsClient();
 
-      String field = commandText.trim();
+      StringTokenizer st = new StringTokenizer(commandText.trim());
+      if (st.countTokens() != 1) {
+        wrongArguments();
+        return;
+      }
+      String field = st.nextToken();
 
-      // Read ACLs first (we just do the white lists are black lists are not
-      // implemented yet)
-      JSONArray read = gnsClient.aclGet(AclAccessType.READ_WHITELIST, module.getCurrentGuid(), field, module
-          .getCurrentGuid().getGuid());
-      console.printString("Read ACL: " + read.toString());
-      console.printNewline();
+      if (gnsClient.fieldAclExists(AclAccessType.READ_WHITELIST, module.getCurrentGuid(), field)) {
+        JSONArray read = gnsClient.aclGet(AclAccessType.READ_WHITELIST, module.getCurrentGuid(), field, module
+                .getCurrentGuid().getGuid());
+        console.printString("Read ACL: " + read.toString());
+        console.printNewline();
+      } else {
+        console.printString("Read ACL for field " + field + " does not exist");
+        console.printNewline();
+      }
 
       // Then write ACLs
-      JSONArray write = gnsClient.aclGet(AclAccessType.WRITE_WHITELIST, module.getCurrentGuid(), field, module
-          .getCurrentGuid().getGuid());
-      console.printString("Write ACL: " + write.toString());
-      console.printNewline();
-    }
-    catch (Exception e)
-    {
+      if (gnsClient.fieldAclExists(AclAccessType.WRITE_WHITELIST, module.getCurrentGuid(), field)) {
+        JSONArray write = gnsClient.aclGet(AclAccessType.WRITE_WHITELIST, module.getCurrentGuid(), field, module
+                .getCurrentGuid().getGuid());
+        console.printString("Write ACL: " + write.toString());
+        console.printNewline();
+      } else {
+        console.printString("Write ACL for field " + field + " does not exist");
+        console.printNewline();
+      }
+    } catch (Exception e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

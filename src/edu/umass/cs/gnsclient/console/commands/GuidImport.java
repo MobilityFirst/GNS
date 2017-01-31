@@ -28,80 +28,70 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import java.io.IOException;
 
 /**
- * Command that saves GUID/alias/Keypair information to a file
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Command that reads GUID/alias/Keypair information from a file
  */
-public class GuidImport extends ConsoleCommand
-{
+public class GuidImport extends ConsoleCommand {
 
   /**
    * Creates a new <code>GuidImport</code> object
-   * 
+   *
    * @param module
    */
-  public GuidImport(ConsoleModule module)
-  {
+  public GuidImport(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Load an alias/GUID and keypair information from a file on disk";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "guid_import";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "path_and_filename";
   }
 
   /**
    * Override execute to not check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
+  public void execute(String commandText) throws Exception {
     parse(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if (st.countTokens() != 1)
-      {
-        console.printString("Wrong number of arguments for this command.\n");
+      if (st.countTokens() != 1) {
+        wrongArguments();
         return;
       }
       String filename = st.nextToken();
 
       File f = new File(filename);
-      ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f));
-      GuidEntry guidEntry = new GuidEntry(ois);
-      ois.close();
+      GuidEntry guidEntry;
+      try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
+        guidEntry = new GuidEntry(ois);
+        ois.close();
+      }
       KeyPairUtils.saveKeyPair(module.getGnsInstance(), guidEntry.getEntityName(), guidEntry.getGuid(),
-          new KeyPair(guidEntry.getPublicKey(), guidEntry.getPrivateKey()));
+              new KeyPair(guidEntry.getPublicKey(), guidEntry.getPrivateKey()));
       console.printString("Keys for " + guidEntry.getEntityName() + " read from " + filename
-          + " and saved in local preferences.");
+              + " and saved in local preferences.");
       console.printNewline();
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
+    } catch (IOException | EncryptionException e) {
       console.printString("Failed to load keys ( " + e + ")\n");
     }
   }

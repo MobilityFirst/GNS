@@ -24,16 +24,13 @@ import java.io.IOException;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
- * This class defines a Help
- * 
- * @author <a href="mailto:Nicolas.Modrzyk@inria.fr">Nicolas Modrzyk</a>
- * @version 1.0
+ * Shows the help
  */
 public class Help extends ConsoleCommand
 {
 
   /**
-   * Creates a new <code>Help.java</code> object
+   * Creates a new <code>Help</code> object
    * 
    * @param module the command is attached to
    */
@@ -46,6 +43,7 @@ public class Help extends ConsoleCommand
    * @throws java.io.IOException
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#parse(java.lang.String)
    */
+  @Override
   public void parse(String commandText) throws IOException
   {
     module.help();
@@ -55,6 +53,7 @@ public class Help extends ConsoleCommand
    * @return the command name
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandName()
    */
+  @Override
   public String getCommandName()
   {
     return "help"; //$NON-NLS-1$
@@ -64,6 +63,7 @@ public class Help extends ConsoleCommand
    * @return the command description
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#getCommandDescription()
    */
+  @Override
   public String getCommandDescription()
   {
     return "Print this help message"; //$NON-NLS-1$
@@ -79,6 +79,7 @@ public class Help extends ConsoleCommand
    * @throws java.lang.Exception
    * @see edu.umass.cs.gnsclient.console.commands.ConsoleCommand#execute(java.lang.String)
    */
+  @Override
   public void execute(String commandText) throws Exception
   {
     this.parse(commandText);

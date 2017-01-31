@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsclient.console.commands;
@@ -22,11 +22,12 @@ package edu.umass.cs.gnsclient.console.commands;
 import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.StringUtil;
+import java.io.IOException;
 
 /**
- *
- * @author westy
+ * Retrieve the active code field
  */
 public class ActiveCodeGet extends ConsoleCommand {
 
@@ -56,6 +57,7 @@ public class ActiveCodeGet extends ConsoleCommand {
 
   /**
    * Override execute to check for a selected guid
+   *
    * @throws java.lang.Exception
    */
   @Override
@@ -72,17 +74,19 @@ public class ActiveCodeGet extends ConsoleCommand {
     try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;
-      if (st.countTokens() == 1) {
-        guid = module.getCurrentGuid().getGuid();
-      } else if (st.countTokens() == 2) {
-        guid = st.nextToken();
-        if (!StringUtil.isValidGuidString(guid)) {
-          // We probably have an alias, lookup the GUID
-          guid = gnsClient.lookupGuid(guid);
-        }
-      } else {
-        console.printString("Wrong number of arguments for this command.\n");
-        return;
+      switch (st.countTokens()) {
+        case 1:
+          guid = module.getCurrentGuid().getGuid();
+          break;
+        case 2:
+          guid = st.nextToken();
+          if (!StringUtil.isValidGuidString(guid)) {
+            // We probably have an alias, lookup the GUID
+            guid = gnsClient.lookupGuid(guid);
+          } break;
+        default:
+          wrongArguments();
+          return;
       }
 
       String action = st.nextToken();
@@ -96,7 +100,7 @@ public class ActiveCodeGet extends ConsoleCommand {
         console.printNewline();
       }
 
-    } catch (Exception e) {
+    } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

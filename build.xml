@@ -389,7 +389,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
           depends="compiletest, ensure-test-name, pkgtest">
   </target>
   
-  <target name="runsingletest" description="Runs the test you specify on the command line with -Dtest=" 
+  <target name="testnoserver" description="Runs the test you specify on the command line with -Dtest=" 
           depends="compiletest, ensure-test-name">
     <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
     <property name="alias" value=""/>
@@ -422,7 +422,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
-  <target name="runsingletestwithkeystore" 
+  <target name="testnoserverwithkeystore" 
           description="Runs with the correct keystore the test you specify on the command line -Dtest=" 
           depends="compiletest, ensure-test-name">
     <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->

@@ -23,79 +23,73 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.util.StringTokenizer;
 
 /**
  * Command that sets the current GUID to use for GNS commands.
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
-public class GuidUse extends ConsoleCommand
-{
+public class GuidUse extends ConsoleCommand {
 
   /**
    * Creates a new <code>GuidUse</code> object
-   * 
+   *
    * @param module
    */
-  public GuidUse(ConsoleModule module)
-  {
+  public GuidUse(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Use a different alias/GUID to execute GNS commands.";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "guid_use";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "alias";
   }
 
   /**
    * Override execute to not check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
+  public void execute(String commandText) throws Exception {
     parse(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
-      String aliasName = commandText.trim();
+  public void parse(String commandText) throws Exception {
+    try {
+      StringTokenizer st = new StringTokenizer(commandText.trim());
+      if ((st.countTokens() != 1)) {
+        wrongArguments();
+        return;
+      }
+      String aliasName = st.nextToken();
       GNSClientCommands gnsClient = module.getGnsClient();
 
-      try
-      {
+      try {
         gnsClient.lookupGuid(aliasName);
-      }
-      catch (Exception expected)
-      {
+      } catch (ClientException expected) {
         console.printString("Alias " + aliasName + " is not registered in the GNS");
         console.printNewline();
         return;
       }
 
-      if (!module.isSilent())
+      if (!module.isSilent()) {
         console.printString("Looking up alias " + aliasName + " GUID and certificates...\n");
+      }
       GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
 
-      if (myGuid == null)
-      {
+      if (myGuid == null) {
         console.printString("You do not have the private key for alias " + aliasName);
         console.printNewline();
         return;
@@ -106,10 +100,7 @@ public class GuidUse extends ConsoleCommand
       console.printString("Current GUID set to " + myGuid);
       console.printNewline();
       module.setPromptString(ConsoleModule.CONSOLE_PROMPT + aliasName + ">");
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
+    } catch (Exception e) {
       console.printString("Failed to access the GNS ( " + e + ")\n");
     }
   }

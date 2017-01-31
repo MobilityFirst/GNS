@@ -28,64 +28,57 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 /**
- * Command that saves GUID/alias/Keypair information to a file
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Command that reads GUID/alias/Keypair information from a file
  */
-public class PrivateKeyImport extends ConsoleCommand
-{
+public class PrivateKeyImport extends ConsoleCommand {
 
   /**
    * Creates a new <code>PrivateKeyImport</code> object
-   * 
+   *
    * @param module
    */
-  public PrivateKeyImport(ConsoleModule module)
-  {
+  public PrivateKeyImport(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Loads a private key for guid from a file on disk";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "private_key_import";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "alias path_and_filename";
   }
 
   /**
    * Override execute to not check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
+  public void execute(String commandText) throws Exception {
     parse(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
+  public void parse(String commandText) throws Exception {
     GNSClientCommands gnsClient = module.getGnsClient();
-    try
-    {
+    try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if (st.countTokens() != 2)
-      {
-        console.printString("Wrong number of arguments for this command.\n");
+      if (st.countTokens() != 2) {
+        wrongArguments();
         return;
       }
       String aliasName = st.nextToken();
@@ -93,8 +86,7 @@ public class PrivateKeyImport extends ConsoleCommand
 
       PrivateKey privateKey = KeyPairUtils.getPrivateKeyFromPKCS8File(filename);
       String guid = gnsClient.lookupGuid(aliasName);
-      if (guid == null)
-      {
+      if (guid == null) {
         console.printString("Alias " + aliasName + " is not in the GNS");
         console.printNewline();
         return;
@@ -103,13 +95,10 @@ public class PrivateKeyImport extends ConsoleCommand
       GuidEntry guidEntry = new GuidEntry(aliasName, guid, publicKey, privateKey);
 
       KeyPairUtils.saveKeyPair(module.getGnsInstance(), guidEntry.getEntityName(), guidEntry.getGuid(),
-          new KeyPair(guidEntry.getPublicKey(), guidEntry.getPrivateKey()));
+              new KeyPair(guidEntry.getPublicKey(), guidEntry.getPrivateKey()));
       console.printString("Private key for " + guidEntry.getEntityName() + " read from " + filename
-          + " and saved in local preferences.");
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
+              + " and saved in local preferences.");
+    } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException | ClientException e) {
       console.printString("Failed to save keys ( " + e + ")\n");
     }
   }

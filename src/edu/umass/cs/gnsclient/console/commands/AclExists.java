@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (c) 2015 University of Massachusetts
+ *  Copyright (c) 2017 University of Massachusetts
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you
  *  may not use this file except in compliance with the License. You
@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsclient.console.commands;
@@ -23,44 +23,45 @@ import java.util.StringTokenizer;
 
 import org.json.JSONArray;
 
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.utils.StringUtil;
 import java.io.IOException;
 
 /**
- * Command to update a field in the GNS
+ * Check for the existence of an ACL of a field of the current GUID
+ *
  */
-public class FieldWriteList extends ConsoleCommand {
+public class AclExists extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldWriteList</code> object
+   * Creates a new <code>AclExists</code> object
    *
    * @param module
    */
-  public FieldWriteList(ConsoleModule module) {
+  public AclExists(ConsoleModule module) {
     super(module);
   }
 
   @Override
   public String getCommandDescription() {
-    return "Write a value in the given field of the target GUID (using the credential of the current GUID/alias). "
-            + "The field is written as a list with the value as the single element. If the field doesn't exist it is created otherwise any previous value is overwritten.";
+    return "Check that a read or write ACL exists for the given field in the current GUID (using the credential of the current GUID/alias). "
+            + "Use +ALL+ as the field name to check the ACL on all fields. ";
   }
 
   @Override
   public String getCommandName() {
-    return "field_write_list";
+    return "acl_exists";
   }
 
   @Override
   public String getCommandParameters() {
-    return "[target_guid_or_alias] field value";
+    return "field read|write";
   }
 
   /**
-   * Override execute to check for a selected guid
+   * Override execute to check for existing connectivity
    *
    * @throws java.lang.Exception
    */
@@ -74,31 +75,31 @@ public class FieldWriteList extends ConsoleCommand {
 
   @Override
   public void parse(String commandText) throws Exception {
-    GNSClientCommands gnsClient = module.getGnsClient();
     try {
+      GNSClientCommands gnsClient = module.getGnsClient();
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      String guid;
-      switch (st.countTokens()) {
-        case 2:
-          guid = module.getCurrentGuid().getGuid();
-          break;
-        case 3:
-          guid = st.nextToken();
-          if (!StringUtil.isValidGuidString(guid)) {
-            // We probably have an alias, lookup the GUID
-            guid = gnsClient.lookupGuid(guid);
-          }
-          break;
-        default:
-          wrongArguments();
-          return;
+      if (st.countTokens() != 2) {
+        wrongArguments();
+        return;
       }
       String field = st.nextToken();
-      String value = st.nextToken();
+      boolean isWrite = "write".equalsIgnoreCase(st.nextToken());
 
-      gnsClient.fieldReplaceOrCreateList(guid, field, new JSONArray().put(value), module.getCurrentGuid());
-      console.printString("Value '" + value + "' written to field " + field + " for GUID " + guid);
-      console.printNewline();
+      // Set ACL
+      boolean exists = gnsClient.fieldAclExists(isWrite ? AclAccessType.WRITE_WHITELIST
+              : AclAccessType.READ_WHITELIST, module.getCurrentGuid(),
+              field);
+
+      if (exists) {
+        // Then read ACLs
+        JSONArray acl = gnsClient.aclGet(isWrite ? AclAccessType.WRITE_WHITELIST : AclAccessType.READ_WHITELIST,
+                module.getCurrentGuid(), field, module.getCurrentGuid().getGuid());
+        console.printString((isWrite ? "Write" : "Read") + " ACL is: " + acl.toString());
+        console.printNewline();
+      } else {
+        console.printString((isWrite ? "Write" : "Read") + " ACL for field " + field + " does not exist");
+        console.printNewline();
+      }
     } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }

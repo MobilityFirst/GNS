@@ -1,7 +1,6 @@
 package edu.umass.cs.gnsclient.client.testing;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,14 +8,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.utils.Config;
 
 /**
  * @author gaozy
