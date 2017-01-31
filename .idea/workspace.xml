@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8fad88fb-f230-4c0c-ba2c-231d68302a76" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ios/build.sh" afterPath="$PROJECT_DIR$/ios/build.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ByteUtils.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ByteUtils.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java" afterPath="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -33,8 +34,8 @@
       <file leaf-file-name="CryptoUtils.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CryptoUtils.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1804">
-              <caret line="36" column="3" lean-forward="false" selection-start-line="36" selection-start-column="3" selection-end-line="36" selection-end-column="3" />
+            <state relative-caret-position="519">
+              <caret line="228" column="7" lean-forward="true" selection-start-line="228" selection-start-column="7" selection-end-line="228" selection-end-column="7" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -42,12 +43,14 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GNSCommand.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="GNSCommand.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="37" column="9" lean-forward="false" selection-start-line="37" selection-start-column="9" selection-end-line="37" selection-end-column="9" />
-              <folding />
+            <state relative-caret-position="390">
+              <caret line="41" column="3" lean-forward="true" selection-start-line="41" selection-start-column="3" selection-end-line="41" selection-end-column="3" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -55,9 +58,21 @@
       <file leaf-file-name="DefaultGNSTest.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/DefaultGNSTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="222">
+            <state relative-caret-position="3135">
               <caret line="248" column="35" lean-forward="false" selection-start-line="248" selection-start-column="35" selection-end-line="248" selection-end-column="35" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="false" />
+                <element signature="e#3915#3916#0" expanded="false" />
+                <element signature="e#3947#3948#0" expanded="false" />
+                <element signature="e#4711#4712#0" expanded="false" />
+                <element signature="e#4789#4790#0" expanded="false" />
+                <element signature="e#7832#7833#0" expanded="false" />
+                <element signature="e#7891#7892#0" expanded="false" />
+                <element signature="e#7991#7992#0" expanded="false" />
+                <element signature="e#8009#8010#0" expanded="false" />
+                <element signature="e#8081#8082#0" expanded="false" />
+                <element signature="e#8109#8110#0" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -65,21 +80,32 @@
       <file leaf-file-name="GNSClient.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="52" column="38" lean-forward="false" selection-start-line="52" selection-start-column="38" selection-end-line="52" selection-end-column="38" />
+            <state relative-caret-position="279">
+              <caret line="441" column="76" lean-forward="true" selection-start-line="441" selection-start-column="76" selection-end-line="441" selection-end-column="76" />
+              <folding>
+                <element signature="e#2383#2384#0" expanded="true" />
+                <element signature="e#2428#2429#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ClientExample.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/ClientExample.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="540">
+              <caret line="56" column="0" lean-forward="false" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="50" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SharedGuidUtils.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="SharedGuidUtils.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1321">
-              <caret line="24" column="0" lean-forward="true" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state relative-caret-position="60">
+              <caret line="24" column="0" lean-forward="false" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -87,11 +113,19 @@
       <file leaf-file-name="ByteUtils.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ByteUtils.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="95" column="3" lean-forward="true" selection-start-line="95" selection-start-column="3" selection-end-line="95" selection-end-column="3" />
+            <state relative-caret-position="1275">
+              <caret line="95" column="3" lean-forward="false" selection-start-line="95" selection-start-column="3" selection-end-line="95" selection-end-column="3" />
               <folding>
-                <element signature="e#2618#2619#0" expanded="true" />
-                <element signature="e#2659#2660#0" expanded="true" />
+                <element signature="e#451#452#0" expanded="false" />
+                <element signature="e#490#491#0" expanded="false" />
+                <element signature="e#746#747#0" expanded="false" />
+                <element signature="e#778#779#0" expanded="false" />
+                <element signature="e#1048#1049#0" expanded="false" />
+                <element signature="e#1087#1088#0" expanded="false" />
+                <element signature="e#1572#1573#0" expanded="false" />
+                <element signature="e#1609#1610#0" expanded="false" />
+                <element signature="e#1815#1816#0" expanded="false" />
+                <element signature="e#1856#1857#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -113,6 +147,8 @@
       <find>junit</find>
       <find>utils</find>
       <find>toHex</find>
+      <find>createAnd</find>
+      <find>crypto</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -138,6 +174,8 @@
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/DefaultGNSTest.java" />
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ByteUtils.java" />
         <option value="$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java" />
+        <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java" />
+        <option value="$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java" />
       </list>
     </option>
   </component>
@@ -161,9 +199,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -176,44 +213,13 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GNS" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GNS" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GNS" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GNS" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="cs" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="SearchEverywhereHistoryKey" value="Shared&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnscommon/SharedGuidUtils.java&#10;defaultGNSTest&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnsserver/utils/DefaultGNSTest.java&#10;CryptoUtils&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnsclient/client/CryptoUtils.java&#10;CommandType&#9;FILE&#9;file:///Users/kanantharamu/GNS/test/edu/umass/cs/gnsclient/client/singletests/CommandTypeTest.java&#10;DefaultGNSTest&#9;PSI&#9;JAVA://edu.umass.cs.gnsserver.utils.DefaultGNSTest&#10;InternalCommandPacket&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java&#10;GNSNodeConfig&#9;PSI&#9;JAVA://edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig&#10;CommandPacket&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.packets.CommandPacket&#10;JSONByteC&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.utils.JSONByteConverter" />
+    <property name="SearchEverywhereHistoryKey" value="GNSCommand&#9;PSI&#9;JAVA://edu.umass.cs.gnsclient.client.GNSCommand&#10;ClientExa&#9;PSI&#9;JAVA://edu.umass.cs.gnsclient.examples.ClientExample&#10;ACLExa&#9;PSI&#9;JAVA://edu.umass.cs.gnsclient.examples.ClientACLExample&#10;GNSCommandInternal&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnsserver/gnsapp/GNSCommandInternal.java&#10;Shared&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnscommon/SharedGuidUtils.java&#10;defaultGNSTest&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnsserver/utils/DefaultGNSTest.java&#10;CryptoUtils&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnsclient/client/CryptoUtils.java&#10;CommandType&#9;FILE&#9;file:///Users/kanantharamu/GNS/test/edu/umass/cs/gnsclient/client/singletests/CommandTypeTest.java&#10;DefaultGNSTest&#9;PSI&#9;JAVA://edu.umass.cs.gnsserver.utils.DefaultGNSTest&#10;InternalCommandPacket&#9;FILE&#9;file:///Users/kanantharamu/GNS/src/edu/umass/cs/gnsserver/gnsapp/packet/InternalCommandPacket.java&#10;GNSNodeConfig&#9;PSI&#9;JAVA://edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig&#10;CommandPacket&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.packets.CommandPacket&#10;JSONByteC&#9;PSI&#9;JAVA://edu.umass.cs.gnscommon.utils.JSONByteConverter" />
   </component>
   <component name="RecentsManager">
     <key name="MoveMembersDialog.RECENTS_KEY">
@@ -464,8 +470,8 @@
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.7583333" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2639485" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26752505" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -489,6 +495,54 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CommandUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CryptoUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="36" column="3" lean-forward="false" selection-start-line="36" selection-start-column="3" selection-end-line="36" selection-end-column="3" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="37" column="9" lean-forward="false" selection-start-line="37" selection-start-column="9" selection-end-line="37" selection-end-column="9" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/DefaultGNSTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3135">
+          <caret line="248" column="35" lean-forward="false" selection-start-line="248" selection-start-column="35" selection-end-line="248" selection-end-column="35" />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#3915#3916#0" expanded="false" />
+            <element signature="e#3947#3948#0" expanded="false" />
+            <element signature="e#4711#4712#0" expanded="false" />
+            <element signature="e#4789#4790#0" expanded="false" />
+            <element signature="e#7832#7833#0" expanded="false" />
+            <element signature="e#7891#7892#0" expanded="false" />
+            <element signature="e#7991#7992#0" expanded="false" />
+            <element signature="e#8009#8010#0" expanded="false" />
+            <element signature="e#8081#8082#0" expanded="false" />
+            <element signature="e#8109#8110#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CommandUtils.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
@@ -529,7 +583,19 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#3915#3916#0" expanded="false" />
+            <element signature="e#3947#3948#0" expanded="false" />
+            <element signature="e#4711#4712#0" expanded="false" />
+            <element signature="e#4789#4790#0" expanded="false" />
+            <element signature="e#7832#7833#0" expanded="false" />
+            <element signature="e#7891#7892#0" expanded="false" />
+            <element signature="e#7991#7992#0" expanded="false" />
+            <element signature="e#8009#8010#0" expanded="false" />
+            <element signature="e#8081#8082#0" expanded="false" />
+            <element signature="e#8109#8110#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -537,9 +603,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="645">
           <caret line="55" column="20" lean-forward="false" selection-start-line="55" selection-start-column="20" selection-end-line="55" selection-end-column="20" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -547,7 +611,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="43" column="0" lean-forward="false" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#2383#2384#0" expanded="true" />
+            <element signature="e#2428#2429#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -555,9 +622,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="855">
           <caret line="77" column="23" lean-forward="false" selection-start-line="77" selection-start-column="23" selection-end-line="77" selection-end-column="23" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -566,39 +631,39 @@
         <state relative-caret-position="75">
           <caret line="13" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#75124#75125#0" expanded="true" />
-            <element signature="e#75156#75157#0" expanded="true" />
-            <element signature="e#75182#75183#0" expanded="true" />
-            <element signature="e#75205#75206#0" expanded="true" />
-            <element signature="e#75248#75249#0" expanded="true" />
-            <element signature="e#75273#75274#0" expanded="true" />
-            <element signature="e#75313#75314#0" expanded="true" />
-            <element signature="e#75342#75343#0" expanded="true" />
-            <element signature="e#75389#75390#0" expanded="true" />
-            <element signature="e#75421#75422#0" expanded="true" />
-            <element signature="e#75469#75470#0" expanded="true" />
-            <element signature="e#75508#75509#0" expanded="true" />
-            <element signature="e#75552#75553#0" expanded="true" />
-            <element signature="e#75587#75588#0" expanded="true" />
-            <element signature="e#75631#75632#0" expanded="true" />
-            <element signature="e#75666#75667#0" expanded="true" />
-            <element signature="e#75719#75720#0" expanded="true" />
-            <element signature="e#75761#75762#0" expanded="true" />
-            <element signature="e#75814#75815#0" expanded="true" />
-            <element signature="e#75856#75857#0" expanded="true" />
-            <element signature="e#76062#76063#0" expanded="true" />
-            <element signature="e#76116#76117#0" expanded="true" />
-            <element signature="e#76148#76149#0" expanded="true" />
-            <element signature="e#76204#76205#0" expanded="true" />
-            <element signature="e#76242#76243#0" expanded="true" />
-            <element signature="e#76305#76306#0" expanded="true" />
-            <element signature="e#76337#76338#0" expanded="true" />
-            <element signature="e#76393#76394#0" expanded="true" />
-            <element signature="e#76429#76430#0" expanded="true" />
-            <element signature="e#76500#76501#0" expanded="true" />
-            <element signature="e#76698#76699#0" expanded="true" />
-            <element signature="e#76730#76731#0" expanded="true" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#75124#75125#0" expanded="false" />
+            <element signature="e#75156#75157#0" expanded="false" />
+            <element signature="e#75182#75183#0" expanded="false" />
+            <element signature="e#75205#75206#0" expanded="false" />
+            <element signature="e#75248#75249#0" expanded="false" />
+            <element signature="e#75273#75274#0" expanded="false" />
+            <element signature="e#75313#75314#0" expanded="false" />
+            <element signature="e#75342#75343#0" expanded="false" />
+            <element signature="e#75389#75390#0" expanded="false" />
+            <element signature="e#75421#75422#0" expanded="false" />
+            <element signature="e#75469#75470#0" expanded="false" />
+            <element signature="e#75508#75509#0" expanded="false" />
+            <element signature="e#75552#75553#0" expanded="false" />
+            <element signature="e#75587#75588#0" expanded="false" />
+            <element signature="e#75631#75632#0" expanded="false" />
+            <element signature="e#75666#75667#0" expanded="false" />
+            <element signature="e#75719#75720#0" expanded="false" />
+            <element signature="e#75761#75762#0" expanded="false" />
+            <element signature="e#75814#75815#0" expanded="false" />
+            <element signature="e#75856#75857#0" expanded="false" />
+            <element signature="e#76062#76063#0" expanded="false" />
+            <element signature="e#76116#76117#0" expanded="false" />
+            <element signature="e#76148#76149#0" expanded="false" />
+            <element signature="e#76204#76205#0" expanded="false" />
+            <element signature="e#76242#76243#0" expanded="false" />
+            <element signature="e#76305#76306#0" expanded="false" />
+            <element signature="e#76337#76338#0" expanded="false" />
+            <element signature="e#76393#76394#0" expanded="false" />
+            <element signature="e#76429#76430#0" expanded="false" />
+            <element signature="e#76500#76501#0" expanded="false" />
+            <element signature="e#76698#76699#0" expanded="false" />
+            <element signature="e#76730#76731#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -674,7 +739,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1995">
           <caret line="186" column="25" lean-forward="true" selection-start-line="186" selection-start-column="25" selection-end-line="186" selection-end-column="25" />
-          <folding />
+          <folding>
+            <element signature="e#2383#2384#0" expanded="true" />
+            <element signature="e#2428#2429#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -791,16 +859,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSCommandInternal.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="645">
-          <caret line="55" column="20" lean-forward="false" selection-start-line="55" selection-start-column="20" selection-end-line="55" selection-end-column="20" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/edu/umass/cs/gnsclient/client/singletests/CommandTypeTest.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
@@ -813,73 +871,59 @@
         <state relative-caret-position="38">
           <caret line="1533" column="46" lean-forward="false" selection-start-line="1533" selection-start-column="46" selection-end-line="1533" selection-end-column="46" />
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#75124#75125#0" expanded="true" />
-            <element signature="e#75156#75157#0" expanded="true" />
-            <element signature="e#75182#75183#0" expanded="true" />
-            <element signature="e#75205#75206#0" expanded="true" />
-            <element signature="e#75248#75249#0" expanded="true" />
-            <element signature="e#75273#75274#0" expanded="true" />
-            <element signature="e#75313#75314#0" expanded="true" />
-            <element signature="e#75342#75343#0" expanded="true" />
-            <element signature="e#75389#75390#0" expanded="true" />
-            <element signature="e#75421#75422#0" expanded="true" />
-            <element signature="e#75469#75470#0" expanded="true" />
-            <element signature="e#75508#75509#0" expanded="true" />
-            <element signature="e#75552#75553#0" expanded="true" />
-            <element signature="e#75587#75588#0" expanded="true" />
-            <element signature="e#75631#75632#0" expanded="true" />
-            <element signature="e#75666#75667#0" expanded="true" />
-            <element signature="e#75719#75720#0" expanded="true" />
-            <element signature="e#75761#75762#0" expanded="true" />
-            <element signature="e#75814#75815#0" expanded="true" />
-            <element signature="e#75856#75857#0" expanded="true" />
-            <element signature="e#76062#76063#0" expanded="true" />
-            <element signature="e#76116#76117#0" expanded="true" />
-            <element signature="e#76148#76149#0" expanded="true" />
-            <element signature="e#76204#76205#0" expanded="true" />
-            <element signature="e#76242#76243#0" expanded="true" />
-            <element signature="e#76305#76306#0" expanded="true" />
-            <element signature="e#76337#76338#0" expanded="true" />
-            <element signature="e#76393#76394#0" expanded="true" />
-            <element signature="e#76429#76430#0" expanded="true" />
-            <element signature="e#76500#76501#0" expanded="true" />
-            <element signature="e#76698#76699#0" expanded="true" />
-            <element signature="e#76730#76731#0" expanded="true" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#75124#75125#0" expanded="false" />
+            <element signature="e#75156#75157#0" expanded="false" />
+            <element signature="e#75182#75183#0" expanded="false" />
+            <element signature="e#75205#75206#0" expanded="false" />
+            <element signature="e#75248#75249#0" expanded="false" />
+            <element signature="e#75273#75274#0" expanded="false" />
+            <element signature="e#75313#75314#0" expanded="false" />
+            <element signature="e#75342#75343#0" expanded="false" />
+            <element signature="e#75389#75390#0" expanded="false" />
+            <element signature="e#75421#75422#0" expanded="false" />
+            <element signature="e#75469#75470#0" expanded="false" />
+            <element signature="e#75508#75509#0" expanded="false" />
+            <element signature="e#75552#75553#0" expanded="false" />
+            <element signature="e#75587#75588#0" expanded="false" />
+            <element signature="e#75631#75632#0" expanded="false" />
+            <element signature="e#75666#75667#0" expanded="false" />
+            <element signature="e#75719#75720#0" expanded="false" />
+            <element signature="e#75761#75762#0" expanded="false" />
+            <element signature="e#75814#75815#0" expanded="false" />
+            <element signature="e#75856#75857#0" expanded="false" />
+            <element signature="e#76062#76063#0" expanded="false" />
+            <element signature="e#76116#76117#0" expanded="false" />
+            <element signature="e#76148#76149#0" expanded="false" />
+            <element signature="e#76204#76205#0" expanded="false" />
+            <element signature="e#76242#76243#0" expanded="false" />
+            <element signature="e#76305#76306#0" expanded="false" />
+            <element signature="e#76337#76338#0" expanded="false" />
+            <element signature="e#76393#76394#0" expanded="false" />
+            <element signature="e#76429#76430#0" expanded="false" />
+            <element signature="e#76500#76501#0" expanded="false" />
+            <element signature="e#76698#76699#0" expanded="false" />
+            <element signature="e#76730#76731#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/utils/DefaultGNSTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="222">
+        <state relative-caret-position="3135">
           <caret line="248" column="35" lean-forward="false" selection-start-line="248" selection-start-column="35" selection-end-line="248" selection-end-column="35" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="52" column="38" lean-forward="false" selection-start-line="52" selection-start-column="38" selection-end-line="52" selection-end-column="38" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="37" column="9" lean-forward="false" selection-start-line="37" selection-start-column="9" selection-end-line="37" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CryptoUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1804">
-          <caret line="36" column="3" lean-forward="false" selection-start-line="36" selection-start-column="3" selection-end-line="36" selection-end-column="3" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#3915#3916#0" expanded="false" />
+            <element signature="e#3947#3948#0" expanded="false" />
+            <element signature="e#4711#4712#0" expanded="false" />
+            <element signature="e#4789#4790#0" expanded="false" />
+            <element signature="e#7832#7833#0" expanded="false" />
+            <element signature="e#7891#7892#0" expanded="false" />
+            <element signature="e#7991#7992#0" expanded="false" />
+            <element signature="e#8009#8010#0" expanded="false" />
+            <element signature="e#8081#8082#0" expanded="false" />
+            <element signature="e#8109#8110#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -892,21 +936,92 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="24" column="0" lean-forward="false" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnscommon/utils/ByteUtils.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="95" column="3" lean-forward="true" selection-start-line="95" selection-start-column="3" selection-end-line="95" selection-end-column="3" />
+        <state relative-caret-position="1275">
+          <caret line="95" column="3" lean-forward="false" selection-start-line="95" selection-start-column="3" selection-end-line="95" selection-end-column="3" />
           <folding>
-            <element signature="e#2618#2619#0" expanded="true" />
-            <element signature="e#2659#2660#0" expanded="true" />
+            <element signature="e#451#452#0" expanded="false" />
+            <element signature="e#490#491#0" expanded="false" />
+            <element signature="e#746#747#0" expanded="false" />
+            <element signature="e#778#779#0" expanded="false" />
+            <element signature="e#1048#1049#0" expanded="false" />
+            <element signature="e#1087#1088#0" expanded="false" />
+            <element signature="e#1572#1573#0" expanded="false" />
+            <element signature="e#1609#1610#0" expanded="false" />
+            <element signature="e#1815#1816#0" expanded="false" />
+            <element signature="e#1856#1857#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnscommon/SharedGuidUtils.java">
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsserver/gnsapp/GNSCommandInternal.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1321">
-          <caret line="24" column="0" lean-forward="true" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+        <state relative-caret-position="420">
+          <caret line="55" column="20" lean-forward="false" selection-start-line="55" selection-start-column="20" selection-end-line="55" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClientCommands.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="213">
+          <caret line="415" column="16" lean-forward="false" selection-start-line="415" selection-start-column="16" selection-end-line="415" selection-end-column="16" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/ClientACLExample.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-696">
+          <caret line="38" column="9" lean-forward="true" selection-start-line="38" selection-start-column="9" selection-end-line="38" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/examples/ClientExample.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="56" column="0" lean-forward="false" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="50" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSClient.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="279">
+          <caret line="441" column="76" lean-forward="true" selection-start-line="441" selection-start-column="76" selection-end-line="441" selection-end-column="76" />
+          <folding>
+            <element signature="e#2383#2384#0" expanded="true" />
+            <element signature="e#2428#2429#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/CryptoUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="519">
+          <caret line="228" column="7" lean-forward="true" selection-start-line="228" selection-start-column="7" selection-end-line="228" selection-end-column="7" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/umass/cs/gnsclient/client/GNSCommand.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="41" column="3" lean-forward="true" selection-start-line="41" selection-start-column="3" selection-end-line="41" selection-end-column="3" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

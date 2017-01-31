@@ -6,6 +6,8 @@ import edu.umass.cs.gigapaxos.interfaces.Callback;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
@@ -452,7 +454,11 @@ public class GNSClient {
 	}
 
 
-	public static void main(String[] args) throws IOException {
-		new GNSClient();
+	public static void main(String[] args) throws Exception {
+		GNSClient client = new GNSClient();
+		GuidEntry guid;
+		guid = GuidUtils.lookupOrCreateAccountGuid(client, "test",
+				"password", true);
+		client.execute(GNSCommand.update(guid, new JSONObject()));
 	}
 }
