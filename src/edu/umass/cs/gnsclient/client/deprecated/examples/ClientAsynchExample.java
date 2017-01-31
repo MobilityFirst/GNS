@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static edu.umass.cs.gnsclient.client.CommandUtils.createAndSignCommand;
+import static edu.umass.cs.gnsclient.client.CryptoUtils.createAndSignCommand;
 
 
 public class ClientAsynchExample {

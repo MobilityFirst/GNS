@@ -48,7 +48,7 @@ public class GNSCommand extends CommandPacket {
 
   public static CommandPacket getCommand(CommandType type, GuidEntry querier,
           Object... keysAndValues) throws ClientException {
-    JSONObject command = CommandUtils.createAndSignCommand(type, querier,
+    JSONObject command = CryptoUtils.createAndSignCommand(type, querier,
             keysAndValues);
     if (CommandPacket.getJSONCommandType(command).isMutualAuth()) {
       return new AdminCommandPacket(randomLong(), command);

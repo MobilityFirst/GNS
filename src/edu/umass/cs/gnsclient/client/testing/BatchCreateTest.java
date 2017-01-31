@@ -1,6 +1,7 @@
 
 package edu.umass.cs.gnsclient.client.testing;
 
+import edu.umass.cs.gnsclient.client.CryptoUtils;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -19,7 +20,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -123,7 +123,7 @@ public class BatchCreateTest {
     JSONArray randomGuids = null;
     if (writeTo > 0) {
       try {
-        command = createCommand(CommandType.LookupRandomGuids,
+        command = CryptoUtils.createCommand(CommandType.LookupRandomGuids,
                 GNSProtocol.GUID.toString(), masterGuid.getGuid(), GNSProtocol.GUIDCNT.toString(), writeTo);
         result = client.execute(new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command)).getResultString();
         //checkResponse(client.sendCommandAndWait(command));

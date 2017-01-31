@@ -1,6 +1,6 @@
 package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.gnsclient.client.CommandUtils;
+import edu.umass.cs.gnsclient.client.CryptoUtils;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -53,7 +53,7 @@ public class GNSCommandInternal extends InternalCommandPacket {
             new GNSCommandInternal(header, makeInternal(
                     type,
                     header,
-                    CommandUtils
+                    CryptoUtils
                     .createCommand(type, keysAndValues)
                     .put(GNSProtocol.ORIGINATING_GUID.toString(),
                             header.getOriginatingGUID())

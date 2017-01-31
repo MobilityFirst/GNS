@@ -2,6 +2,7 @@
 package edu.umass.cs.gnsclient.client.http;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
+import edu.umass.cs.gnsclient.client.CryptoUtils;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.http.android.DownloadTask;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -823,7 +824,7 @@ public class HttpClient {
       }
       // Now we create the JSON version that we can use to sign the command with
       // Do this first so we can pull out the timestamp and nonce to use in the URI
-      JSONObject jsonVersionOfCommand = CommandUtils.createCommandWithTimestampAndNonce(
+      JSONObject jsonVersionOfCommand = CryptoUtils.createCommandWithTimestampAndNonce(
               commandType, includeTimestamp, keysAndValues);
 
       // Also add the Timestamp and Nonce to the URI
@@ -851,9 +852,9 @@ public class HttpClient {
       PublicKey publicKey = keypair.getPublic();
       String signatureString;
       if (Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_SECRET_KEY)) {
-        signatureString = CommandUtils.signDigestOfMessage(privateKey, publicKey, canonicalJSON);
+        signatureString = CryptoUtils.signDigestOfMessage(privateKey, publicKey, canonicalJSON);
       } else {
-        signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
+        signatureString = CryptoUtils.signDigestOfMessage(privateKey, canonicalJSON);
       }
       String signaturePart = KEYSEP + GNSProtocol.SIGNATURE.toString()
               // Base64 encode the signature first since it's guaranteed to be a lot of non-ASCII characters

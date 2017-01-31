@@ -1,6 +1,7 @@
 
 package edu.umass.cs.gnsclient.client.testing;
 
+import edu.umass.cs.gnsclient.client.CryptoUtils;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Format;
@@ -10,7 +11,6 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.utils.DelayProfiler;
-import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.CommandType;
 
@@ -305,7 +305,7 @@ public class ThroughputAsynchMultiClientTest {
           }
         }
         try {
-          JSONObject command = createCommand(CommandType.LookupRandomGuids,
+          JSONObject command = CryptoUtils.createCommand(CommandType.LookupRandomGuids,
                   GNSProtocol.GUID.toString(), masterGuid.getGuid(), GNSProtocol.GUIDCNT.toString(), numberOfGuids);
 					String result = clients[0].execute(
 							new CommandPacket(
@@ -471,11 +471,11 @@ public class ThroughputAsynchMultiClientTest {
   private static CommandPacket createReadCommandPacket(GNSClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommand(CommandType.ReadUnsigned, 
+      command = CryptoUtils.createCommand(CommandType.ReadUnsigned,
               GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
               GNSProtocol.READER.toString(), null);
     } else {
-      command = createAndSignCommand(CommandType.Read,
+      command = CryptoUtils.createAndSignCommand(CommandType.Read,
               reader.getPrivateKey(),
               reader.getPublicKey(),
               GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
@@ -487,7 +487,7 @@ public class ThroughputAsynchMultiClientTest {
 
   private static CommandPacket createUpdateCommandPacket(GNSClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
-    command = createAndSignCommand(CommandType.ReplaceUserJSON,
+    command = CryptoUtils.createAndSignCommand(CommandType.ReplaceUserJSON,
             writer.getPrivateKey(),
             writer.getPublicKey(),
             GNSProtocol.GUID.toString(), targetGuid, json.toString(),
