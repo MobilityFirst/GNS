@@ -3,8 +3,6 @@ _// TODO: Bring uniformity in terminology. Ensure all terms are already defined 
 Access Control
 ==============
 
-### Need for Access Control ###
-
 GNS is not just intended to be used to read and write your own data. Often, other trusted applications or users (represented by GUIDs) may want to write data on your behalf. For example, a calendar application may want to write new appointments for you. Other GUIDs may also want to read data that you do not want to be visible to the whole world. For example, your fitness application may want to read your activity data to generate reports. Access Control Lists enable you to specify appropriate permissions for other GUIDs to access or update your data.
 
 ### What exactly are ACLs in GNS? ###
