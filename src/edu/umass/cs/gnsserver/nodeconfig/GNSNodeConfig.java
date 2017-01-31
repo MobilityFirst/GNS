@@ -1,7 +1,6 @@
 
 package edu.umass.cs.gnsserver.nodeconfig;
 
-import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.OldHackyConstants;
@@ -98,7 +97,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   @Override
   public Set<NodeIDType> getNodeIDs() {
-    return ImmutableSet.copyOf(hostInfoMapping.keySet());
+    return hostInfoMapping.keySet();
   }
 
 
