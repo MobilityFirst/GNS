@@ -32,10 +32,7 @@ import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import java.io.IOException;
 
 /**
- * Command that saves GUID/alias/Keypair information to a file
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Command that reads GUID/alias/Keypair information from a file
  */
 public class GuidImport extends ConsoleCommand {
 

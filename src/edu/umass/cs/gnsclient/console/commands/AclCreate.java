@@ -27,10 +27,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 
 /**
- * Add a GUID to the ACL of a field of the current GUID in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Create an empty ACL for the field of the current GUID
  */
 public class AclCreate extends ConsoleCommand {
 
@@ -45,7 +42,7 @@ public class AclCreate extends ConsoleCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Create and empty read or write ACL for the given field in the current GUID (using the credential of the current GUID/alias). "
+    return "Create an empty read or write ACL for the given field in the current GUID (using the credential of the current GUID/alias). "
             + "Use +ALL+ as the field name to delete the ACL for all fields. ";
   }
 

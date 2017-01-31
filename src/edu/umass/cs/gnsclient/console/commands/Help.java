@@ -24,8 +24,7 @@ import java.io.IOException;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
- * This class defines Help
- * 
+ * Shows the help
  */
 public class Help extends ConsoleCommand
 {

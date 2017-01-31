@@ -29,10 +29,7 @@ import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 
 /**
- * Reads a field in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Updates the account verification status
  */
 public class AccountVerify extends ConsoleCommand {
 

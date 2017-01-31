@@ -30,10 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Command to update the entire records using JSON in the GNS
- *
- * @author Westy
- * @version 1.0
+ * Command to update the entire records using JSON
  */
 public class Update extends ConsoleCommand {
 

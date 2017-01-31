@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsclient.console.commands;
@@ -27,8 +27,7 @@ import edu.umass.cs.gnscommon.utils.StringUtil;
 import java.io.IOException;
 
 /**
- *
- * @author westy
+ * Retrieve the active code field
  */
 public class ActiveCodeGet extends ConsoleCommand {
 

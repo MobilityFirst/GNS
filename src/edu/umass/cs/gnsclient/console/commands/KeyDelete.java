@@ -27,9 +27,6 @@ import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
  * Command that deletes a GUID/alias/Keypair from the user preferences
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class KeyDelete extends ConsoleCommand {
 

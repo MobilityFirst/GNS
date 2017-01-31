@@ -30,10 +30,8 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 
 /**
- * Add a GUID to the ACL of a field of the current GUID in the GNS
+ * Check for the existence of an ACL of a field of the current GUID
  *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class AclExists extends ConsoleCommand {
 

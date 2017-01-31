@@ -27,9 +27,6 @@ import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
  * Command that saves GUID/alias/Keypair information to a file
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class PrivateKeyExport extends ConsoleCommand {
 

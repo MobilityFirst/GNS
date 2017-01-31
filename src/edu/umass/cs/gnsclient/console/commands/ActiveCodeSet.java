@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsclient.console.commands;
@@ -30,9 +30,6 @@ import java.io.IOException;
 
 /**
  * Command to update a field in the GNS
- *
- * @author mbadov
- * @version 0.1
  */
 public class ActiveCodeSet extends ConsoleCommand {
 

@@ -30,9 +30,6 @@ import java.util.StringTokenizer;
 
 /**
  * Command that sets the default GUID in the GNS user preferences
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class SetDefaultGuid extends ConsoleCommand {
 

@@ -30,10 +30,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 
 /**
- * Reads a field in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Select records in the GNS
  */
 public class Select extends ConsoleCommand {
 

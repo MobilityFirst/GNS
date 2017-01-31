@@ -30,9 +30,6 @@ import javax.xml.bind.DatatypeConverter;
 
 /**
  * Lookup a Public Key for an alias or GUID
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class KeyLookup extends ConsoleCommand {
 

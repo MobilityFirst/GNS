@@ -30,10 +30,7 @@ import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import java.util.StringTokenizer;
 
 /**
- * Command that creates a new proxy group
- * 
- * @author Westy
- * @version 1.0
+ * Create a new account
  */
 public class AccountCreate extends ConsoleCommand
 {

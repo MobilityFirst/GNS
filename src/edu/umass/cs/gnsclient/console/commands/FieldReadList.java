@@ -31,9 +31,6 @@ import java.io.IOException;
 
 /**
  * Reads a field in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class FieldReadList extends ConsoleCommand {
 

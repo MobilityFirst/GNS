@@ -28,9 +28,6 @@ import java.util.StringTokenizer;
 
 /**
  * List the ACLs of a field of the current GUID in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class AclList extends ConsoleCommand {
 

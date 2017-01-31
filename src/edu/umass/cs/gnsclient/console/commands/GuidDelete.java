@@ -29,9 +29,6 @@ import java.io.IOException;
 
 /**
  * Command that deletes a GUID/alias/Keypair from the GNS and user preferences
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class GuidDelete extends ConsoleCommand {
 

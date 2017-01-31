@@ -31,10 +31,7 @@ import java.io.IOException;
 import org.json.JSONException;
 
 /**
- * Lookup a GNSProtocol.GUID.toString() corresponding to an alias in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Lookup a guid corresponding to an alias in the GNS
  */
 public class AliasLookup extends ConsoleCommand {
 

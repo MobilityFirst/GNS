@@ -25,10 +25,7 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
- * This class defines a History
- * 
- * @author <a href="mailto:Nicolas.Modrzyk@inrialpes.fr">Nicolas Modrzyk </a>
- * @version 1.0
+ * Shows the history
  */
 public class History extends ConsoleCommand
 {

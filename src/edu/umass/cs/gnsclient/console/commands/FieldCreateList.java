@@ -30,9 +30,6 @@ import java.io.IOException;
 
 /**
  * Command to create a new field in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class FieldCreateList extends ConsoleCommand {
 

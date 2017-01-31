@@ -28,9 +28,6 @@ import java.io.IOException;
 
 /**
  * Lookup a GUID corresponding to an alias in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class GuidLookup extends ConsoleCommand {
 

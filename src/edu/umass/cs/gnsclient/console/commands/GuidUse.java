@@ -24,14 +24,10 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import java.io.IOException;
 import java.util.StringTokenizer;
 
 /**
  * Command that sets the current GUID to use for GNS commands.
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class GuidUse extends ConsoleCommand {
 

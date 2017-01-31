@@ -27,10 +27,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 
 /**
- * Add a GUID to the ACL of a field of the current GUID in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Delete the ACL of a field of the current GUID
  */
 public class AclDelete extends ConsoleCommand {
 

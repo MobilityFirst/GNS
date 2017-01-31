@@ -29,9 +29,6 @@ import java.io.IOException;
 
 /**
  * Command to update a field in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class FieldDelete extends ConsoleCommand {
 

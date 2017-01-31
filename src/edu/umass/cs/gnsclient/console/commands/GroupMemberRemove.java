@@ -29,9 +29,6 @@ import java.io.IOException;
 
 /**
  * Command to remove a member from a group GUID
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class GroupMemberRemove extends ConsoleCommand {
 

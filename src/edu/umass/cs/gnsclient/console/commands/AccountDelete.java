@@ -28,10 +28,7 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 /**
- * Command that creates a new proxy group
- *
- * @author Westy
- * @version 1.0
+ * Delete an account
  */
 public class AccountDelete extends ConsoleCommand {
 

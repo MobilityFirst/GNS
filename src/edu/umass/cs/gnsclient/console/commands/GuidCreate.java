@@ -31,10 +31,7 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 /**
- * Command that creates a new proxy group
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Command that creates a a new guid
  */
 public class GuidCreate extends ConsoleCommand {
 

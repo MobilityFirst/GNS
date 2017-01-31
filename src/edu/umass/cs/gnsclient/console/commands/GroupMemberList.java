@@ -32,9 +32,6 @@ import org.json.JSONException;
 
 /**
  * Command to list members in a group GUID
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class GroupMemberList extends ConsoleCommand {
 
