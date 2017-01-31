@@ -162,10 +162,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
           throw new RuntimeException("Should never come here");
         case HOMEBREW:
           return JSONByteConverter.fromBytesHardcoded(bbuf);
-        case JACKSON:
-          return JSONByteConverter.fromBytesJackson(bbuf);
-        case MSGPACK:
-          return JSONByteConverter.fromBytesMsgpack(bbuf);
         case STRING_WING:
           return fromBytesStringerHack(bbuf);
         default:
@@ -211,14 +207,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
           return this.appendByteifiedInnerJSONCommand(
                   this.toByteBufferWithOuterFields(),
                   JSONByteConverter.toBytesHardcoded(this.command));
-        case JACKSON:
-          return this.appendByteifiedInnerJSONCommand(
-                  this.toByteBufferWithOuterFields(),
-                  JSONByteConverter.toBytesJackson(this.command));
-        case MSGPACK:
-          return this.appendByteifiedInnerJSONCommand(
-                  this.toByteBufferWithOuterFields(),
-                  JSONByteConverter.toBytesMsgpack(this.command));
         case STRING_WING:
           // different from above three
           return this.toBytesWingItAsString(
