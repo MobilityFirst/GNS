@@ -10,7 +10,6 @@ import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Test;
 
 
 public class InternalCommandPacket extends CommandPacket implements
@@ -219,7 +218,7 @@ public class InternalCommandPacket extends CommandPacket implements
 	public static class InternalCommandPacketTest extends DefaultTest {
 
 
-		@Test
+
 		public void test_01_serialization() throws JSONException,
 				InternalRequestException {
 			Util.assertAssertionsEnabled();
