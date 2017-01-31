@@ -3,8 +3,6 @@ package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsclient.client.CommandResultType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import org.junit.Assert;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1568,56 +1566,8 @@ public enum CommandType {
   }
 
 
-  public static void enforceChecks() {
-    HashSet<CommandType> curLevel, nextLevel = new HashSet<>(), cumulative = new HashSet<>();
-
-    for (CommandType ctype : CommandType.values()) {
-      curLevel = new HashSet<CommandType>(Arrays.asList(ctype));
-      nextLevel.clear();
-      cumulative.clear();
-
-      while (!curLevel.isEmpty()) {
-        nextLevel.clear();
-
-        for (CommandType curLevelType : curLevel) {
-          if (curLevelType.invokedCommands != null) {
-            nextLevel.addAll(new HashSet<CommandType>(Arrays.asList(curLevelType.invokedCommands)));
-          } else {
-            Assert.fail("!!!!! Need to add " + curLevelType.name() + ".setChain(); !!!!!");
-          }
-        }
-        curLevel = nextLevel;
-        cumulative.addAll(nextLevel);
-        if (curLevel.size() > 256) {
-          Assert.fail("Likely cycle in chain for command " + ctype);
-        }
-
-        GNSConfig.getLogger().log(Level.FINE,
-                "{0} expanding next level {1}",
-                new Object[]{ctype, nextLevel});
-      }
-      GNSConfig.getLogger().log(Level.INFO,
-              "Cumulative chain for {0} = {1}",
-              new Object[]{ctype, cumulative});
-
-      for (CommandType downstream : cumulative) {
-        if ((ctype.isUpdate() && downstream.isCoordinated())) {
-          Assert.fail("Coordinated " + ctype
-                  + " is invoking another coordinated command "
-                  + downstream);
-        }
-      }
-
-    }
-  }
-
 
   public static void main(String args[]) {
-    //CommandType.enforceChecks();
-    //System.out.println(generateSwiftEnum());
-    //System.out.println(generateSwiftStructStaticConstants());
-    //System.out.println(generateEmptySetChains());
-    //System.out.println(generateSwiftConstants());
-    //System.out.println(generateCommandTypeCode());
+
   }
 }
