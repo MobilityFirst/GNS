@@ -78,7 +78,7 @@ public class DiskMapRecords implements NoSQLRecords {
       // Make a new object to make sure there aren't any DBObjects lurking in here
       return recursiveCopyJSONObject(record); //copyJsonObject(record);
     } catch (JSONException e) {
-      throw new FailedDBOperationException(collection, name, "Unable to parse json record");
+      throw new FailedDBOperationException(collection, name, "Unable to parse json record "+ record );
     }
   }
 
@@ -358,5 +358,10 @@ public class DiskMapRecords implements NoSQLRecords {
   public void printAllEntries(String collection) throws FailedDBOperationException {
     getMap(collection).commit();
     getMongoRecords(collection).printAllEntries(MongoRecords.DBNAMERECORD);
+  }
+
+  public static void main(String args[]) throws JSONException{
+    String data = "{\"nr_name\":\"6437C6E4DF4346D242FD5432B4F5AF44AC2D0CB8\",\"nr_valuesMap\":{\"_GNS_ACL\":{\"READ_WHITELIST\":{\"+ALL+\":{\"MD\":[\"+ALL+\"]}}},\"_GNS_account_info\":{\"password\":\"\",\"aliases\":[],\"created\":\"20170201022208\",\"guids\":[],\"verified\":true,\"guid\":\"6437C6E4DF4346D242FD5432B4F5AF44AC2D0CB8\",\"type\":\"DEFAULT\",\"updated\":\"20170201022208\",\"guidCnt\":0,\"username\":\"accountGUID07Y5V0UG48U7\"},\"_GNS_guid_info\":{\"created\":\"20170201022208\",\"publickey\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC4yBVGZjX6m7b7LlA/EPS6WZs9kgQyUYUgeUaDvJe4Z0207b1WWKPKc0rsoZat5Em1OEJI6O1oNP4kEhFN7LqQOoksmrrH7oRaiSaiDwOzR3QpzQd4fgn6mTmI4phBVO8yM7U32m+9XByUp+oYIiNNu8RMFRK6pD8muEmqcfX9wIDAQAB\",\"name\":\"accountGUID07Y5V0UG48U7\",\"guid\":\"6437C6E4DF4346D242FD5432B4F5AF44AC2D0CB8\",\"type\":\"DEFAULT\",\"updated\":\"20170201022208\",\"tags\":[]}}}";
+    System.out.println(recursiveCopyJSONObject(new JSONObject(data)));
   }
 }

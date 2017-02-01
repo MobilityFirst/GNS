@@ -70,7 +70,7 @@ dependencies {
     
   // Use android for compling, but not runtime
   compileOnly group: 'com.google.android', name: 'android', version: '4.1.1.4'
-  //compileOnly files('lib/android.jar')
+  //compileOnly files('lib/android.jar.bkp')
   
   // Use these jars for unit testing
   testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
