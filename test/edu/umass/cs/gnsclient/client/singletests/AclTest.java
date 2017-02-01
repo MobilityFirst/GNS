@@ -344,7 +344,7 @@ public class AclTest extends DefaultGNSTest {
 
       }
       try {
-        clientCommands.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSProtocol.ENTIRE_RECORD.toString());
+        clientCommands.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSProtocol.ALL_GUIDS.toString());
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Problem adding acl: " + e);
 
@@ -352,7 +352,7 @@ public class AclTest extends DefaultGNSTest {
       try {
         JSONArray actual = clientCommands.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(GNSProtocol.ENTIRE_RECORD.toString())));
+        JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(GNSProtocol.ALL_GUIDS.toString())));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (ClientException | IOException | JSONException e) {
         Utils.failWithStackTrace("Problem reading acl: " + e);
@@ -360,6 +360,89 @@ public class AclTest extends DefaultGNSTest {
       }
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+
+    }
+  }
+
+  /**
+   * Remove from the CL
+   */
+  @Test
+  public void test_142_ACLRemoveDeeperFieldACL() throws Exception {
+    clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
+            "test.deeper.field", GNSProtocol.ALL_GUIDS.toString());
+  }
+
+  /**
+   * Check that the ACL is empty
+   */
+  @Test
+  public void test_144_ACLCheckForAllFieldsEmpty() throws JSONException, Exception {
+    JSONArray expected = new JSONArray();
+    JSONAssert.assertEquals(expected,
+            clientCommands.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+                    "test.deeper.field", masterGuid.getGuid()), true);
+  }
+
+  /**
+   * Check that the ACL exists
+   */
+  @Test
+  public void test_146_CheckAllFieldsAcl() throws Exception {
+    Assert.assertTrue(clientCommands.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry,
+            "test.deeper.field"));
+  }
+
+  /**
+   * Delete the ACL
+   */
+  @Test
+  public void test_148_ACLDeleteDeeperFieldACL() {
+    try {
+      try {
+        clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Problem adding acl: " + e);
+
+      }
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it ACLDeleteDeeperFieldACL: " + e);
+
+    }
+  }
+
+  /**
+   * Check that the ACL does not exist
+   */
+  @Test
+  public void test_150_CheckDeeperFieldACLExists() {
+    try {
+      try {
+        Assert.assertFalse(clientCommands.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Problem adding acl: " + e);
+
+      }
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it ACLDeleteDeeperFieldACL: " + e);
+
+    }
+  }
+
+  /**
+   * Try to delete it again
+   */
+  @Test
+  public void test_152_ACLDeleteDeeperFieldACLAgain() {
+    try {
+      try {
+        clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Problem adding acl: " + e);
+
+      }
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it ACLDeleteDeeperFieldACL: " + e);
 
     }
   }
