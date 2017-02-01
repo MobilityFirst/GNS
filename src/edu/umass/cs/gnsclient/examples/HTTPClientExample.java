@@ -2,8 +2,8 @@
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.http.HttpClient;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,7 +36,7 @@ public class HTTPClientExample {
       System.out.println("// account GUID creation\n"
               + "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
               + " \"password\", true)");
-      guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
+      guid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
               "password", true);
     } catch (Exception | Error e) {
       System.out.println("Exception during accountGuid creation: " + e);

@@ -1,6 +1,7 @@
 
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -573,7 +574,7 @@ public static final CommandPacket batchCreateGUIDs(
   // /////////////////////////////
   private static GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
           String alias) throws NoSuchAlgorithmException, EncryptionException {
-    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
+    GuidEntry guidEntry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(gnsInstance, alias);
 
     if (guidEntry == null) {
       KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())

@@ -15,7 +15,6 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
@@ -381,9 +380,12 @@ public class GNSClient {
 		public Set<IntegerPacketType> getMutualAuthRequestTypes() {
 			Set<IntegerPacketType> types = new HashSet<IntegerPacketType>(
 					Arrays.asList(Packet.PacketType.ADMIN_COMMAND));
+			/* Disabling since this is FALSE
 			if (InternalCommandPacket.SEPARATE_INTERNAL_TYPE) {
+
 				types.add(Packet.PacketType.INTERNAL_COMMAND);
 			}
+			*/
 			return types;
 		}
 

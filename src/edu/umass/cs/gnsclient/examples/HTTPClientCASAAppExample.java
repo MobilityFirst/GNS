@@ -2,8 +2,8 @@
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.http.HttpClient;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -109,7 +109,7 @@ public class HTTPClientCASAAppExample {
 
   private static void createSimulatedMasterAccount() {
     try {
-      guidEntry = GuidUtils.lookupOrCreateAccountGuid(client, MASTER_ALIAS, "samplePassword");
+      guidEntry = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, MASTER_ALIAS, "samplePassword");
     } catch (Exception e) {
       System.out.println("\nProblem creating simulated master account: " + e);
       System.exit(1);

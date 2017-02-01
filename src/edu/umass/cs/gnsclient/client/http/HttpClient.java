@@ -5,8 +5,8 @@ import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.CryptoUtils;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.http.android.DownloadTask;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -167,7 +167,7 @@ public class HttpClient {
   public GuidEntry accountGuidCreate(String alias, String password)
           throws IOException, ClientException, NoSuchAlgorithmException {
 
-    GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+    GuidEntry entry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(this, alias);
     // Don't recreate pair if one already exists. Otherwise you can
     // not get out of the funk where the account creation timed out but
     // wasn't rolled back fully at the server. Re-using
