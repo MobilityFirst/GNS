@@ -30,17 +30,17 @@ import java.util.Random;
  */
 public class CryptoUtils {
 
-    static Random random;
+    static Random random = new Random();
 
     private static synchronized Signature getSignatureInstance() {
-        CryptoUtils.random = new Random();
+        Signature s = null;
         try {
-            return Signature
+            s = Signature
                     .getInstance(GNSProtocol.SIGNATURE_ALGORITHM.toString());
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } finally {
-            return null;
+            return s;
         }
     }
 
