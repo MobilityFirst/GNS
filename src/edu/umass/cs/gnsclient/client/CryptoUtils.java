@@ -4,6 +4,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -13,16 +14,9 @@ import edu.umass.cs.utils.SessionKeys;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.xml.bind.DatatypeConverter;
+
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -30,62 +24,24 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.util.Date;
 import java.util.Random;
-import java.util.logging.Level;
 
 /**
  * Created by kanantharamu on 1/31/17.
  */
 public class CryptoUtils {
-    static final MessageDigest[] mds = new MessageDigest[Runtime
-            .getRuntime().availableProcessors()];
-    static final Cipher[] ciphers = new Cipher[2 * Runtime.getRuntime()
-                    .availableProcessors()];
-    static Signature[] signatureInstances = new Signature[2 * Runtime
-            .getRuntime().availableProcessors()];
+
     static Random random;
-    private static int sigIndex = 0;
-
-
-    static {
-        try {
-            for (int i = 0; i < CryptoUtils.signatureInstances.length; i++) {
-                CryptoUtils.signatureInstances[i] = Signature
-                        .getInstance(GNSProtocol.SIGNATURE_ALGORITHM.toString());
-            }
-            CryptoUtils.random = new Random();
-        } catch (NoSuchAlgorithmException e) {
-            GNSConfig.getLogger().log(Level.SEVERE,
-                    "Unable to initialize for authentication:{0}", e);
-        }
-    }
-    static {
-        for (int i = 0; i < CryptoUtils.mds.length; i++) {
-            try {
-                CryptoUtils.mds[i] = MessageDigest
-                        .getInstance(GNSProtocol.DIGEST_ALGORITHM.toString());
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-        }
-    }
-
-
-    static {
-        for (int i = 0; i < CryptoUtils.ciphers.length; i++) {
-            try {
-                CryptoUtils.ciphers[i] = Cipher
-                        .getInstance(GNSProtocol.SECRET_KEY_ALGORITHM.toString());
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-        }
-    }
-
 
     private static synchronized Signature getSignatureInstance() {
-      return signatureInstances[sigIndex++ % signatureInstances.length];
+        CryptoUtils.random = new Random();
+        try {
+            return Signature
+                    .getInstance(GNSProtocol.SIGNATURE_ALGORITHM.toString());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } finally {
+            return null;
+        }
     }
 
     public static JSONObject createCommand(CommandType commandType,
@@ -112,17 +68,9 @@ public class CryptoUtils {
       Signature signatureInstance = getSignatureInstance();
       synchronized (signatureInstance) {
         signatureInstance.initSign(privateKey);
-        // iOS client uses UTF-8 - should switch to ISO-8859-1 to be consistent with
-        // secret key version
         signatureInstance.update(message.getBytes("UTF-8"));
         byte[] signedString = signatureInstance.sign();
-        // We used to encode this as a hex so we could send it with the html without
-        // encoding. Not really necessary anymore for the socket based client,
-        // but the iOS client does as well so we need to keep it like this.
-        // Also note that the secret based method doesn't do this - it just returns a string
-        // using the ISO-8859-1 charset.
-        String result = DatatypeConverter.printHexBinary(signedString);
-        //String result = ByteUtils.toHex(signedString);
+        String result = ByteUtils.toHex(signedString);
         return result;
       }
     }
