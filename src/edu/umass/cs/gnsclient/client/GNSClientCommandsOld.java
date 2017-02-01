@@ -3,7 +3,6 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -403,7 +402,7 @@ public class GNSClientCommandsOld extends GNSClient //implements GNSClientInterf
            {
 
     long startTime = System.currentTimeMillis();
-    GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
+    GuidEntry entry = GUIDUtilsGNSClient.createAndSaveGuidEntry(alias,
             getGNSProvider());
     DelayProfiler.updateDelay("updatePreferences", startTime);
     String returnedGuid = guidCreateHelper(accountGuid, alias,
@@ -429,7 +428,7 @@ public class GNSClientCommandsOld extends GNSClient //implements GNSClientInterf
     publicKeys = new ArrayList<>();
     for (String alias : aliasList) {
       long singleEntrystartTime = System.currentTimeMillis();
-      GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
+      GuidEntry entry = GUIDUtilsGNSClient.createAndSaveGuidEntry(alias,
               getGNSProvider());
       DelayProfiler.updateDelay("updateOnePreference",
               singleEntrystartTime);

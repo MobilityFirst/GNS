@@ -7,8 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 
 public class SetupChainCode {
@@ -54,7 +54,7 @@ public class SetupChainCode {
 			entries = new GuidEntry[depth];
 			
 			for (int i=0; i<depth; i++){
-				entries[i] = GuidUtils.lookupOrCreateAccountGuid(
+				entries[i] = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(
 						client, ACCOUNT_GUID_PREFIX +(j*1000+i), PASSWORD);
 			}
 			

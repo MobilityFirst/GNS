@@ -2,8 +2,8 @@ package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
@@ -98,7 +98,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 		if (guid_file==null){
 			// create account guid with username admin 
 			try {
-				accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, "admin",
+				accountGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, "admin",
 						"password", true);
 				ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(new File("proxy_guid")));
 				accountGuid.writeObject(output);
@@ -127,7 +127,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 	private static void deployDomain() throws Exception {
 		int ttl = 0;
 		
-		GuidEntry guid = GuidUtils.lookupOrCreateGuid(client, accountGuid, DOMAIN);
+		GuidEntry guid = GUIDUtilsHTTPClient.lookupOrCreateGuid(client, accountGuid, DOMAIN);
 		
 		List<String> records = new ArrayList<String>();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("conf/activeCode/records")));
@@ -190,7 +190,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 	
 	
 	private static GuidEntry createGuidEntryForDomain(String domain) throws Exception{		
-		return GuidUtils.lookupOrCreateGuid(client, accountGuid, domain);
+		return GUIDUtilsHTTPClient.lookupOrCreateGuid(client, accountGuid, domain);
 	}
 	
 	

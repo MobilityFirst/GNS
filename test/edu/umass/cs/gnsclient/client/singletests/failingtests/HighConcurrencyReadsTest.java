@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -23,7 +24,6 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
@@ -107,7 +107,7 @@ public class HighConcurrencyReadsTest extends DefaultGNSTest {
       LOGGER.log(Level.FINE, "Creating account GUID {0}",
               new Object[]{ACCOUNT_GUID_PREFIX + i,});
       try {
-        accountGuidEntries[i] = GuidUtils.lookupOrCreateAccountGuid(
+        accountGuidEntries[i] = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(
                 clients[0], ACCOUNT_GUID_PREFIX + i, PASSWORD);
         LOGGER.log(Level.FINE, "Created account {0}",
                 new Object[]{accountGuidEntries[i]});
@@ -146,7 +146,7 @@ public class HighConcurrencyReadsTest extends DefaultGNSTest {
         if (subGuids.size() == 1) {
           String subGuid = subGuids.iterator().next();
           try {
-            GuidEntry created = GuidUtils.lookupOrCreateGuid(
+            GuidEntry created = GUIDUtilsHTTPClient.lookupOrCreateGuid(
                     clients[0], accountGuidEntries[i
                     / numGuidsPerAccount], subGuid);
             assert (created.getGuid().equals(KeyPairUtils

@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
 
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -27,7 +28,6 @@ import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
@@ -236,7 +236,7 @@ public class ServerFailureTests {
       try {
         System.out.println("Creating account guid: " + (tries - 1)
                 + " attempt remaining.");
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
+        masterGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client,
                 accountAlias, PASSWORD, true);
         accountCreated = true;
       } catch (Exception e) {

@@ -1,8 +1,8 @@
 package edu.umass.cs.gnsclient.client.testing.activecode;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
 /**
  * A simple test for unsigned read
@@ -24,7 +24,7 @@ public class TestUnsignedRead {
 	public static void main(String[] args) throws Exception{
 		
 		final GNSClientCommands client = new GNSClientCommands();
-		GuidEntry entry = GuidUtils.lookupOrCreateAccountGuid(
+		GuidEntry entry = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(
 				client, ACCOUNT_GUID, PASSWORD);
 		
 		// Update someField with someValue 

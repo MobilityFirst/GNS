@@ -15,12 +15,12 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsclient.client.integrationtests;
 
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsserver.utils.RunCommand;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.File;
@@ -248,7 +248,7 @@ public class ServerConnectTest extends DefaultTest {
       try {
         System.out.println("Creating account guid: " + (tries - 1)
                 + " attempt remaining.");
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
+        masterGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client,
                 accountAlias, PASSWORD, true);
         accountCreated = true;
       } catch (Exception e) {

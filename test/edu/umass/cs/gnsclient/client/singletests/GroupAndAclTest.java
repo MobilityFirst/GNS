@@ -20,9 +20,9 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
@@ -83,7 +83,7 @@ public class GroupAndAclTest extends DefaultGNSTest {
         Utils.failWithStackTrace("Exception while creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+        masterGuid = GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
         Utils.failWithStackTrace("Exception while creating account guid: " + e);
       }

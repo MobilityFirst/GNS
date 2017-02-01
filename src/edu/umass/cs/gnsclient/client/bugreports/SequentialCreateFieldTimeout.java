@@ -4,8 +4,8 @@ package edu.umass.cs.gnsclient.client.bugreports;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.utils.Util;
@@ -65,7 +65,7 @@ public class SequentialCreateFieldTimeout {
       try {
         System.out.println("Creating account guid: " + (tries - 1)
                 + " attempt remaining.");
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
+        masterGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client,
                 accountAlias, PASSWORD, true);
         accountCreated = true;
       } catch (Exception e) {

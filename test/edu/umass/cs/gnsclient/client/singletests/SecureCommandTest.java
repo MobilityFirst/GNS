@@ -22,8 +22,8 @@ package edu.umass.cs.gnsclient.client.singletests;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -219,7 +219,7 @@ public class SecureCommandTest extends DefaultGNSTest {
    */
   @Test
   public void test_15_SecureRead() {
-    GuidEntry masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+    GuidEntry masterGuid = GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName);
     try {
       client.execute(GNSCommand.createGUID(masterGuid, "whatever"));
       GuidEntry testGuid = GUIDUtilsGNSClient.lookupGuidEntryFromDatabase(client, "whatever");

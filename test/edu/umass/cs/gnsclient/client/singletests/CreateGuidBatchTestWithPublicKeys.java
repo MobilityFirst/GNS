@@ -20,8 +20,8 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
@@ -74,7 +74,7 @@ public class CreateGuidBatchTestWithPublicKeys extends DefaultGNSTest {
   public void test_01_CreateBatchAccountGuid() {
     try {
       String batchAccountAlias = "batchTest-" + RandomString.randomString(24) + "@gns.name";
-      batchAccountGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+      batchAccountGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(clientCommands,
               batchAccountAlias, "password", true);
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);

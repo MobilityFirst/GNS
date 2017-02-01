@@ -4,8 +4,8 @@ package edu.umass.cs.gnsclient.client.deprecated.examples;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -41,7 +41,7 @@ public class ClientAsynchExample {
     GuidEntry accountGuidEntry = null;
     try {
       // Create a guid (which is also an account guid)
-      accountGuidEntry = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
+      accountGuidEntry = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
     } catch (Exception e) {
       System.out.println("Exception during accountGuid creation: " + e);
       e.printStackTrace();

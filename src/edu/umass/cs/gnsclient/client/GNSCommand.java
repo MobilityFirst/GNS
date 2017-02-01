@@ -1,9 +1,8 @@
 
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -324,7 +323,7 @@ public class GNSCommand extends CommandPacket {
 public static final CommandPacket createGUID(
           GuidEntry accountGUID, String alias) throws ClientException {
     try {
-      return guidCreateHelper(accountGUID, alias, GuidUtils
+      return guidCreateHelper(accountGUID, alias, GUIDUtilsGNSClient
               .createAndSaveGuidEntry(alias, GNSClient.getGNSProvider()).getPublicKey());
     } catch (NoSuchAlgorithmException e) {
       throw new ClientException(e);
@@ -342,7 +341,7 @@ public static final CommandPacket batchCreateGUIDs(
     for (String alias : aliasList) {
       GuidEntry entry;
       try {
-        entry = GuidUtils.createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
+        entry = GUIDUtilsGNSClient.createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
       } catch (NoSuchAlgorithmException e) {
         // FIXME: Do we need to roll back created keys?
         throw new ClientException(e);
@@ -574,7 +573,7 @@ public static final CommandPacket batchCreateGUIDs(
   // /////////////////////////////
   private static GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
           String alias) throws NoSuchAlgorithmException, EncryptionException {
-    GuidEntry guidEntry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(gnsInstance, alias);
+    GuidEntry guidEntry = GUIDUtilsGNSClient.lookupGuidEntryFromDatabase(gnsInstance, alias);
 
     if (guidEntry == null) {
       KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())

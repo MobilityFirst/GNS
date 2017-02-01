@@ -20,8 +20,8 @@
 package edu.umass.cs.gnsclient.client.singletests.failingtests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 
@@ -69,7 +69,7 @@ public class GroupGuidLookupIndirectionTest extends DefaultGNSTest {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+        masterGuid = GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
         Utils.failWithStackTrace("Exception while creating account guid: " + e);
       }

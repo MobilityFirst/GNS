@@ -2,8 +2,8 @@
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class SimpleClientExample {
       // The password is for future use.
       // Note that lookupOrCreateAccountGuid "cheats" by bypassing the account verification
       // mechanisms.
-      accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+      accountGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
       System.out.println("Exception during accountGuid creation: " + e);
       System.exit(1);

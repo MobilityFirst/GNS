@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -14,7 +15,6 @@ import org.junit.runner.notification.Failure;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -45,7 +45,7 @@ public class TestActiveCodeRemoteQueryClient {
 		
 		// initialize two GUID
 		for (int i=0; i<numGuid; i++){
-			entries[i] = GuidUtils.lookupOrCreateAccountGuid(
+			entries[i] = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(
 					client, ACCOUNT_GUID_PREFIX + i, PASSWORD);
 		}
 		

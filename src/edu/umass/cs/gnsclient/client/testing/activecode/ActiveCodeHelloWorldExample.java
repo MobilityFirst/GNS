@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 
 /**
@@ -60,7 +60,7 @@ public class ActiveCodeHelloWorldExample {
 		final String PASSWORD = "";
 		
 		// create an account
-		final edu.umass.cs.gnsclient.client.util.GuidEntry entry = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_GUID, PASSWORD);
+		final edu.umass.cs.gnsclient.client.util.GuidEntry entry = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, ACCOUNT_GUID, PASSWORD);
 		
 		String field = "someField";
 		String value = "original value";

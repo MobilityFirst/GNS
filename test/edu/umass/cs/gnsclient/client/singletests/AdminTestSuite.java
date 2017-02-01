@@ -20,8 +20,8 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 
@@ -69,7 +69,7 @@ public class AdminTestSuite extends DefaultGNSTest {
       try {
         System.out.println("Creating account guid: " + (tries - 1)
                 + " attempt remaining.");
-        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+        masterGuid = GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName);
         accountCreated = true;
       } catch (Exception e) {
         Utils.failWithStackTrace("Failure getting master guid");

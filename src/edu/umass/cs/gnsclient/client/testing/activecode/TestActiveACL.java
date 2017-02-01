@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -17,7 +18,6 @@ import org.junit.runner.notification.Failure;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.utils.DefaultTest;
@@ -53,7 +53,7 @@ public class TestActiveACL extends DefaultTest {
 		// initialize three GUID
 		for (int i=0; i<numGuid; i++){
 			try {
-				entries[i] = GuidUtils.lookupOrCreateAccountGuid(
+				entries[i] = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(
 						client, ACCOUNT_GUID_PREFIX + i, PASSWORD);
 			} catch (Exception e) {
 			}

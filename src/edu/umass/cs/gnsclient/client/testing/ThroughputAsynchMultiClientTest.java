@@ -3,10 +3,10 @@ package edu.umass.cs.gnsclient.client.testing;
 
 import edu.umass.cs.gnsclient.client.CryptoUtils;
 import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -189,7 +189,7 @@ public class ThroughputAsynchMultiClientTest {
       System.exit(1);
     }
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(clients[0], accountAlias, "password", true);
+      masterGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(clients[0], accountAlias, "password", true);
     } catch (Exception e) {
       System.out.println("Exception when we were not expecting it: " + e);
       e.printStackTrace();
@@ -290,7 +290,7 @@ public class ThroughputAsynchMultiClientTest {
       // to do all the operations from
       if (updateAlias != null) {
         // if it was specified find or create the guid for updateAlias
-        subGuids[0] = GuidUtils.lookupOrCreateGuid(clients[0], masterGuid, updateAlias, true).getGuid();
+        subGuids[0] = GUIDUtilsHTTPClient.lookupOrCreateGuid(clients[0], masterGuid, updateAlias, true).getGuid();
       }
       JSONArray existingGuids = null;
       GuidEntry createdGuids[] = new GuidEntry[numberOfGuids];

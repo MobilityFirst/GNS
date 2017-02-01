@@ -20,8 +20,8 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -65,7 +65,7 @@ public class RemoveAccountWithPasswordTest extends DefaultGNSTest {
   @Test
   public void test_35_RemoveAccountWithPasswordCreateAccount() {
     try {
-      accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+      accountToRemoveGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(clientCommands,
               ACCOUNT_TO_REMOVE, PASSWORD, true);
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception creating account in RemoveAccountWithPasswordTest: " + e);

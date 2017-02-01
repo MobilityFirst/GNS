@@ -5,8 +5,8 @@ import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.AclException;
@@ -70,7 +70,7 @@ public class ClientACLExample {
     // Create a sub guid under our guid account
     client.execute(GNSCommand.createGUID( guid, phoneAlias));
     // Get the GuidEntry from the local database
-    phoneGuid = GuidUtils.lookupOrCreateGuidEntry(phoneAlias, client.getGNSProvider());
+    phoneGuid = GUIDUtilsHTTPClient.lookupOrCreateGuidEntry(phoneAlias, client.getGNSProvider());
 
     System.out.println("\n// Create phoneGuid\n"
         + "client.createGuid(guid, phoneAlias) // phoneAlias=" + phoneAlias);

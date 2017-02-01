@@ -20,8 +20,8 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
@@ -55,7 +55,7 @@ public class RemoveGuidTest extends DefaultGNSTest {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+        masterGuid = GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
         Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
@@ -144,7 +144,7 @@ public class RemoveGuidTest extends DefaultGNSTest {
   @Test
   public void test_80_RemoveAccountCreateAccount() {
     try {
-      accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+      accountToRemoveGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(clientCommands,
               ACCOUNT_TO_REMOVE, PASSWORD, true);
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception creating account in: " + e);

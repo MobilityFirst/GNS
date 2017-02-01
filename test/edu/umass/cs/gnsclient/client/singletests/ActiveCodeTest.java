@@ -3,8 +3,8 @@ package edu.umass.cs.gnsclient.client.singletests;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -57,7 +57,7 @@ public class ActiveCodeTest extends DefaultGNSTest {
       return;
     }
     try {
-      masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+      masterGuid = GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName);
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception while creating guids: " + e);
     }

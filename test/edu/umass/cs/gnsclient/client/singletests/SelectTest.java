@@ -20,8 +20,8 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -74,7 +74,7 @@ public class SelectTest extends DefaultGNSTest {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+        masterGuid = GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
         Utils.failWithStackTrace("Exception while creating account guid: " + e);
       }

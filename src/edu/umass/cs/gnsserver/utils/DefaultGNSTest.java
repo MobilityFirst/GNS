@@ -6,8 +6,8 @@ import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
@@ -190,7 +190,7 @@ public class DefaultGNSTest extends DefaultTest {
 						GNSCommand.createAccount(globalAccountName))
 						.getResultString();
 				Assert.assertEquals(createdGUID,
-						(GuidUtils.getGUIDKeys(globalAccountName)).guid);
+						(GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName)).guid);
 
 				accountCreated = true;
 			} catch (Exception e) {
@@ -202,7 +202,7 @@ public class DefaultGNSTest extends DefaultTest {
 			Util.suicide("Failure setting up account guid; aborting all tests.");
 		}
 		System.out.println(" ..created "
-				+ GuidUtils.getGUIDKeys(globalAccountName));
+				+ GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName));
 	}
 
 	protected static final long TIMEOUT = 8000;
@@ -462,7 +462,7 @@ public class DefaultGNSTest extends DefaultTest {
 		String createdGUID = client.execute(
 				GNSCommand.createAccount(accountHRN)).getResultString();
 		Assert.assertEquals(createdGUID,
-				(myAccountGUID = GuidUtils.getGUIDKeys(accountHRN)).guid);
+				(myAccountGUID = GUIDUtilsHTTPClient.getGUIDKeys(accountHRN)).guid);
 		return myAccountGUID;
 	}
 

@@ -8,8 +8,8 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.http.HttpClient;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
@@ -51,7 +51,7 @@ public class SimpleHttpClientTest extends DefaultGNSTest {
   @Test
   public void test_900_Http_CreateAccountGuid() {
     try {
-      masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+      masterGuid = GUIDUtilsHTTPClient.getGUIDKeys(globalAccountName);
 
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception while creating master guid: ", e);

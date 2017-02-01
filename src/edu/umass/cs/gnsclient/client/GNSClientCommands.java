@@ -1,8 +1,8 @@
 
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -217,7 +217,7 @@ public class GNSClientCommands extends GNSClient {
     } catch (NoSuchAlgorithmException e) {
       throw new ClientException(e);
     }
-    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+    GuidEntry guidEntry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(this, alias);
     // If something went wrong an exception should be thrown above, but we're checking
     // here anyway just to be safe.
     if (guidEntry == null) {
@@ -233,7 +233,7 @@ public class GNSClientCommands extends GNSClient {
     } catch (NoSuchAlgorithmException e) {
       throw new ClientException(e);
     }
-    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+    GuidEntry guidEntry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(this, alias);
     // If something went wrong an exception should be thrown above, but we're checking
     // here anyway just to be safe.
     if (guidEntry == null) {
@@ -274,7 +274,7 @@ public class GNSClientCommands extends GNSClient {
           throws ClientException, IOException {
 
     execute(GNSCommand.createGUID(accountGuid, alias));
-    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+    GuidEntry guidEntry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(this, alias);
     // If something went wrong an exception should be thrown above, but we're checking
     // here anyway just to be safe.
     if (guidEntry == null) {

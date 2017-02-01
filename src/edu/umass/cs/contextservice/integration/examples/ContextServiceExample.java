@@ -2,8 +2,8 @@ package edu.umass.cs.contextservice.integration.examples;
 
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -64,7 +64,7 @@ public class ContextServiceExample {
               .println("// account GUID creation\n"
                       + "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
                       + " \"password\", true)\n");
-      account_guid = GuidUtils.lookupOrCreateAccountGuid(client,
+      account_guid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client,
               ACCOUNT_ALIAS, "password", true);
     } catch (Exception | Error e) {
       System.out.println("Exception during accountGuid creation: " + e);

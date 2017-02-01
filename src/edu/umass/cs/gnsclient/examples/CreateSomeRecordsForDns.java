@@ -2,8 +2,8 @@
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class CreateSomeRecordsForDns {
 
     client = new GNSClientCommands();
     try {
-      accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
+      accountGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
     } catch (Exception e) {
       System.out.println("Exception during accountGuid creation: " + e);
       System.exit(1);
@@ -48,7 +48,7 @@ public class CreateSomeRecordsForDns {
       domain = domain + ".";
       
     }
-    GuidEntry guid = GuidUtils.lookupOrCreateGuid(client, accountGuid, domain);
+    GuidEntry guid = GUIDUtilsHTTPClient.lookupOrCreateGuid(client, accountGuid, domain);
     client.fieldUpdate(guid, "A", address);
     System.out.println("Value of A in " + guid.getEntityName() + " is " + client.fieldRead(guid, "A"));
     

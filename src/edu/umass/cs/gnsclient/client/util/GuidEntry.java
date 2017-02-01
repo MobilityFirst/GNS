@@ -1,13 +1,10 @@
 
 package edu.umass.cs.gnsclient.client.util;
 
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.utils.Base64;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -140,24 +137,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
   // Test code
 
 public static void main(String[] args) throws IOException, Exception {
-    String name = "testGuid@gigapaxos.net";
-    String password = "123";
-    String file_name = "guid";
 
-    GNSClientCommands client = new GNSClientCommands();
-
-    GuidEntry guidEntry = client.accountGuidCreate(name, password);
-
-    FileOutputStream fos = new FileOutputStream(file_name);
-    ObjectOutputStream os = new ObjectOutputStream(fos);
-    guidEntry.writeObject(os);
-    os.flush(); // Important to flush
-
-    FileInputStream fis = new FileInputStream(file_name);
-    ObjectInputStream ois = new ObjectInputStream(fis);
-
-    GuidEntry newEntry = new GuidEntry(ois);
-    System.out.println(newEntry);
   }
 
 }

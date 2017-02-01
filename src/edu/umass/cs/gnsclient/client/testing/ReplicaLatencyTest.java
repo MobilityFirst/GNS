@@ -2,8 +2,8 @@
 package edu.umass.cs.gnsclient.client.testing;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.utils.Util;
@@ -44,7 +44,7 @@ public class ReplicaLatencyTest {
         System.exit(1);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, "password", true);
+        masterGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, accountAlias, "password", true);
       } catch (Exception e) {
         System.out.println("Exception when we were not expecting it: " + e);
         e.printStackTrace();
@@ -87,7 +87,7 @@ public class ReplicaLatencyTest {
 
   public void createSubGuid() {
     try {
-      subGuidEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, guidHRN + RandomString.randomString(6));
+      subGuidEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(client, masterGuid, guidHRN + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       System.out.println("Exception when we were not expecting it: " + e);

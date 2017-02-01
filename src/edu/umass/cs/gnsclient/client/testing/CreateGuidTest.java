@@ -2,8 +2,8 @@
 package edu.umass.cs.gnsclient.client.testing;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
 import java.awt.HeadlessException;
@@ -37,7 +37,7 @@ public class CreateGuidTest {
         System.exit(1);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
         System.out.println("Exception when we were not expecting it: " + e);
         e.printStackTrace();

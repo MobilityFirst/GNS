@@ -15,6 +15,7 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsclient.client.integrationtests;
 
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsserver.utils.RunCommand;
 
 import java.io.File;
@@ -42,13 +43,11 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.BasicGuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -221,7 +220,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   public static void setUpBeforeClass() throws FileNotFoundException,
           IOException, InterruptedException {
     DefaultGNSTest.setUpBeforeClass();
-    masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
+    masterGuid = GUIDUtilsHTTPClient.getGUIDKeys(accountAlias = globalAccountName);
     clientCommands = (GNSClientCommands) new GNSClientCommands()
             .setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
     client = new GNSClient()
@@ -360,10 +359,10 @@ public class ServerIntegrationTest extends DefaultGNSTest {
         System.out.println("Creating account guid: " + (tries - 1)
                 + " attempt remaining.");
         String createdGUID = client.execute(GNSCommand.createAccount(accountAlias)).getResultString();
-        Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(accountAlias).guid);
+        Assert.assertEquals(createdGUID, GUIDUtilsHTTPClient.getGUIDKeys(accountAlias).guid);
 
         // older code; okay to leave it hanging or to remove
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+        masterGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(clientCommands,
                 accountAlias, PASSWORD, true);
         accountCreated = true;
       } catch (Exception e) {
@@ -516,8 +515,8 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     String alias = "testGUID" + RandomString.randomString(12);
     String createdGUID = client.execute(GNSCommand.createGUID(masterGuid, alias))
             .getResultString();
-    Assert.assertEquals(alias, GuidUtils.getGUIDKeys(alias).entityName);
-    Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
+    Assert.assertEquals(alias, GUIDUtilsHTTPClient.getGUIDKeys(alias).entityName);
+    Assert.assertEquals(createdGUID, GUIDUtilsHTTPClient.getGUIDKeys(alias).guid);
     // deprecated client test
     // GuidEntry guidEntry = clientCommands.guidCreate(masterGuid, alias);
     // Assert.assertNotNull(guidEntry);
@@ -534,7 +533,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     String alias = "testGUID" + RandomString.randomString(12);
     String createdGUID = client.execute(
             GNSCommand.createGUID(masterGuid, alias)).getResultString();
-    GuidEntry createdGUIDEntry = GuidUtils.getGUIDKeys(alias);
+    GuidEntry createdGUIDEntry = GUIDUtilsHTTPClient.getGUIDKeys(alias);
     String key = "key1", value = "value1";
     client.execute(GNSCommand.update(createdGUID,
             new JSONObject().put(key, value), createdGUIDEntry));
@@ -580,7 +579,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     String testGuidName = "testGUID" + RandomString.randomString(12);
 
     String testGUID = client.execute(GNSCommand.createGUID(masterGuid, testGuidName)).getResultString();
-    client.execute(GNSCommand.removeGUID(GuidUtils.getGUIDKeys(testGuidName)));
+    client.execute(GNSCommand.removeGUID(GUIDUtilsHTTPClient.getGUIDKeys(testGuidName)));
 //    GuidEntry testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
 //    clientCommands.guidRemove(testGuid);
 
@@ -625,7 +624,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     client.execute(
             GNSCommand.createAccount(accountToRemoveWithPassword,
                     REMOVE_ACCOUNT_PASSWORD));
-    return GuidUtils.getGUIDKeys(accountToRemoveWithPassword);
+    return GUIDUtilsHTTPClient.getGUIDKeys(accountToRemoveWithPassword);
     //    return GuidUtils.lookupOrCreateAccountGuid(clientCommands, accountToRemoveWithPassword, REMOVE_ACCOUNT_PASSWORD, true);
   }
 
@@ -781,7 +780,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 //    		RandomString.randomString(6) + "@gns.name", PASSWORD, true);
     String name = RandomString.randomString(6) + "@gns.name";
     client.execute(GNSCommand.createAccount(name, PASSWORD));
-    GuidEntry accountGuid = GuidUtils.getGUIDKeys(name);
+    GuidEntry accountGuid = GUIDUtilsHTTPClient.getGUIDKeys(name);
 
     String testFieldName = TEST_FIELD_NAME + RandomString.randomString(6);
     test_101_ACLCreateField(accountGuid, testFieldName);
@@ -927,8 +926,8 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   @Test
   public void test_124_ACLTests_OtherUser() throws JSONException, Exception {
-    GuidEntry westyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "westy124" + RandomString.randomString(6));
-    GuidEntry samEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "sam124" + RandomString.randomString(6));
+    GuidEntry westyEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "westy124" + RandomString.randomString(6));
+    GuidEntry samEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "sam124" + RandomString.randomString(6));
     test_131_ACLRemoveAllFields(westyEntry, samEntry);
     test_132_ACLCreateFields(westyEntry);
     test_135_ACLMaybeAddAllFieldsForMaster(westyEntry);
@@ -958,9 +957,9 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   @Test
   public void test_125_ACLTests_OtherUser2() throws JSONException, Exception {
-    GuidEntry westyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "westy125" + RandomString.randomString(6));
-    GuidEntry samEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "sam125" + RandomString.randomString(6));
-    GuidEntry barneyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "barney125" + RandomString.randomString(6));
+    GuidEntry westyEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "westy125" + RandomString.randomString(6));
+    GuidEntry samEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "sam125" + RandomString.randomString(6));
+    GuidEntry barneyEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "barney125" + RandomString.randomString(6));
 
     test_143_ACLAdjustACL(barneyEntry);
     test_144_ACLCreateFields(barneyEntry);
@@ -980,8 +979,8 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   @Test
   public void test_126_ACLTests_DeeperFields() throws JSONException, Exception {
-    GuidEntry westyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "westy126" + RandomString.randomString(6));
-    GuidEntry samEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "sam126" + RandomString.randomString(6));
+    GuidEntry westyEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "westy126" + RandomString.randomString(6));
+    GuidEntry samEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "sam126" + RandomString.randomString(6));
 
     test_131_ACLRemoveAllFields(westyEntry, samEntry);
 
@@ -1455,7 +1454,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   @Test
   public void test_160_DBTests() throws JSONException, Exception {
-    GuidEntry westyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "westy160" + RandomString.randomString(6));
+    GuidEntry westyEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "westy160" + RandomString.randomString(6));
 
     test_170_DB(westyEntry);
     test_180_DBUpserts(westyEntry);
@@ -1714,8 +1713,8 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   @Test
   public void test_210_GroupTests() throws Exception {
-    GuidEntry westyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "westy210" + RandomString.randomString(6));
-    GuidEntry samEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "sam210" + RandomString.randomString(6));
+    GuidEntry westyEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "westy210" + RandomString.randomString(6));
+    GuidEntry samEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "sam210" + RandomString.randomString(6));
 
     List<GuidEntry> entries = test_210_GroupCreate();
     GuidEntry guidToDeleteEntry = entries.get(0);
@@ -2022,9 +2021,9 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   @Test
   public void test_240_WriteAccess() throws Exception {
-    GuidEntry westyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "westy240" + RandomString.randomString(6));
-    GuidEntry samEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "sam240" + RandomString.randomString(6));
-    GuidEntry barneyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "barney240" + RandomString.randomString(6));
+    GuidEntry westyEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "westy240" + RandomString.randomString(6));
+    GuidEntry samEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "sam240" + RandomString.randomString(6));
+    GuidEntry barneyEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "barney240" + RandomString.randomString(6));
     //CHECKED FOR VALIDITY
     String fieldName = "whereAmI";
     try {
@@ -2107,7 +2106,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 //            "unsignedReadAccountGuid249" + RandomString.randomString(12), PASSWORD, true);
     String name = "unsignedReadAccountGuid249" + RandomString.randomString(12);
     client.execute(GNSCommand.createAccount(name, PASSWORD));
-    return GuidUtils.getGUIDKeys(name);
+    return GUIDUtilsHTTPClient.getGUIDKeys(name);
   }
 
   /**
@@ -2356,7 +2355,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   @Test
   public void test_264_UnsignedWriteTests() throws Exception {
-    GuidEntry westyEntry = GuidUtils.lookupOrCreateGuid(clientCommands, masterGuid, "westy264" + RandomString.randomString(6));
+    GuidEntry westyEntry = GUIDUtilsHTTPClient.lookupOrCreateGuid(clientCommands, masterGuid, "westy264" + RandomString.randomString(6));
     test_265_UnsignedWrite(westyEntry);
     test_270_RemoveField(westyEntry);
   }
@@ -3053,7 +3052,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     String batchAccountAlias = "batchTest510"
             + RandomString.randomString(12) + "@gns.name";
     client.execute(GNSCommand.createAccount(batchAccountAlias));
-    return GuidUtils.getGUIDKeys(batchAccountAlias);
+    return GUIDUtilsHTTPClient.getGUIDKeys(batchAccountAlias);
 //    accountGuidForBatch = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
 //            batchAccountAlias, "password", true);
 //    return accountGuidForBatch;
@@ -3206,7 +3205,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     // look up the individual values
     for (int i = 0; i < result.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
-      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
+      GuidEntry entry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
       String value = clientCommands.fieldReadArrayFirstElement(entry, groupTestFieldName);
       Assert.assertEquals(TEST_HIGH_VALUE, value);
     }
@@ -3224,7 +3223,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       JSONArray result = clientCommands.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
-        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
+        GuidEntry guidEntry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
         System.out.println("Removing from " + guidEntry.getEntityName());
         clientCommands.fieldRemove(guidEntry, groupTestFieldName);
       }
@@ -3265,12 +3264,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
     // the HRN is a hash of the query
     String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne), false);
-    GuidEntry groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, GNSClientCommands.getGNSProvider());
+    GuidEntry groupOneGuid = GUIDUtilsHTTPClient.lookupOrCreateGuidEntry(groupOneGuidName, GNSClientCommands.getGNSProvider());
     //groupGuid = client.guidCreate(masterGuid, groupGuidName + RandomString.randomString(6));
 
     // the HRN is a hash of the query
     String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo), false);
-    GuidEntry groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, GNSClientCommands.getGNSProvider());
+    GuidEntry groupTwoGuid = GUIDUtilsHTTPClient.lookupOrCreateGuidEntry(groupTwoGuidName, GNSClientCommands.getGNSProvider());
     //groupTwoGuid = client.guidCreate(masterGuid, groupTwoGuidName + RandomString.randomString(6));
 
     List<GuidEntry> list = new ArrayList<>(2);
@@ -3422,7 +3421,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       // change ALL BUT ONE to be ZERO
       for (int i = 0; i < result.length() - 1; i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
-        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
+        GuidEntry entry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
         JSONArray array = new JSONArray(Arrays.asList(0));
         clientCommands.fieldReplaceOrCreateList(entry, groupTestFieldName, array);
       }
@@ -3449,7 +3448,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
-        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
+        GuidEntry entry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
         String value = clientCommands.fieldReadArrayFirstElement(entry, groupTestFieldName);
         Assert.assertEquals(TEST_HIGH_VALUE, value);
       }
@@ -3476,7 +3475,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(clientCommands.lookupGuidRecord(result.getString(i)));
-        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
+        GuidEntry entry = GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(clientCommands, guidInfo.getEntityName());
         String value = clientCommands.fieldReadArrayFirstElement(entry, groupTestFieldName);
         Assert.assertEquals("0", value);
       }

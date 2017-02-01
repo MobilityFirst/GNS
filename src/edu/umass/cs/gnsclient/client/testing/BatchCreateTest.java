@@ -2,8 +2,8 @@
 package edu.umass.cs.gnsclient.client.testing;
 
 import edu.umass.cs.gnsclient.client.CryptoUtils;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
 import java.io.IOException;
@@ -52,7 +52,7 @@ public class BatchCreateTest {
     }
 
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountGuidAlias, PASSWORD, true);
+      masterGuid = GUIDUtilsHTTPClient.lookupOrCreateAccountGuid(client, accountGuidAlias, PASSWORD, true);
     } catch (Exception e) {
       System.out.println("Exception when we were not expecting it: " + e);
       e.printStackTrace();
@@ -79,7 +79,7 @@ public class BatchCreateTest {
 
         // Store all the created aliases so we can remove them later
         for (String createdAlias : aliases) {
-          createdSubGuids.add(GuidUtils.lookupGuidEntryFromDatabase(client, createdAlias));
+          createdSubGuids.add(GUIDUtilsHTTPClient.lookupGuidEntryFromDatabase(client, createdAlias));
         }
         
 //        //make one non batch for comparison
