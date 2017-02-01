@@ -4,6 +4,7 @@ package edu.umass.cs.gnsclient.examples;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -41,7 +42,7 @@ public class ClientACLExample {
           .println("// account GUID creation\n"
               + "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
               + " \"password\", true)");
-      guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
+      guid = GUIDUtilsGNSClient.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
           "password", true);
     } catch (Exception | Error e) {
       System.out.println("Exception during accountGuid creation: " + e);

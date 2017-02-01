@@ -21,6 +21,7 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
@@ -221,7 +222,7 @@ public class SecureCommandTest extends DefaultGNSTest {
     GuidEntry masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
     try {
       client.execute(GNSCommand.createGUID(masterGuid, "whatever"));
-      GuidEntry testGuid = GuidUtils.lookupGuidEntryFromDatabase(client, "whatever");
+      GuidEntry testGuid = GUIDUtilsGNSClient.lookupGuidEntryFromDatabase(client, "whatever");
       client.execute(GNSCommand.fieldUpdate(testGuid, "fred", "value"));
       JSONObject actual = client.execute(GNSCommand.readSecure(testGuid.getGuid())).getResultJSONObject(); 
       JSONAssert.assertEquals(new JSONObject().put("fred", "value"),

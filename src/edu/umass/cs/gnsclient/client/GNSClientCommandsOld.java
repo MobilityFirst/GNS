@@ -1,6 +1,7 @@
 
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -667,7 +668,7 @@ public class GNSClientCommandsOld extends GNSClient //implements GNSClientInterf
 
   private GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
           String alias) throws NoSuchAlgorithmException, EncryptionException {
-    GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+    GuidEntry entry = GUIDUtilsGNSClient.lookupGuidEntryFromDatabase(this, alias);
 
     if (entry == null) {
       KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())

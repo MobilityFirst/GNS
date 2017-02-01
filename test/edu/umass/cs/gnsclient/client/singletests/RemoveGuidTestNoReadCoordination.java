@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -71,7 +72,7 @@ public class RemoveGuidTestNoReadCoordination extends DefaultGNSTest {
         Utils.failWithStackTrace(deleteName + " entity should not exist");
       } catch (ClientException e) {
       }
-      guidToDeleteEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, deleteName);
+      guidToDeleteEntry = GUIDUtilsGNSClient.lookupOrCreateGuid(client, masterGuid, deleteName);
     } catch (IOException | ClientException e) {
       Utils.failWithStackTrace("Exception while creating guids: " + e);
     }
