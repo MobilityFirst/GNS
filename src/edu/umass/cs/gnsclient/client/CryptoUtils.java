@@ -44,8 +44,7 @@ public class CryptoUtils {
             .getRuntime().availableProcessors()];
     static Random random;
     private static int sigIndex = 0;
-    private static int mdIndex = 0;
-    private static int cipherIndex = 0;
+
 
     static {
         try {
@@ -128,56 +127,6 @@ public class CryptoUtils {
       }
     }
 
-    private static MessageDigest getMessageDigestInstance() {
-      return mds[mdIndex++ % mds.length];
-    }
-
-    private static Cipher getCipherInstance() {
-      return ciphers[cipherIndex++ % ciphers.length];
-    }
-
-    public static String signDigestOfMessage(PrivateKey privateKey,
-                                             PublicKey publicKey, String message)
-            throws NoSuchAlgorithmException, InvalidKeyException,
-            SignatureException, UnsupportedEncodingException,
-            IllegalBlockSizeException, BadPaddingException,
-            NoSuchPaddingException {
-      SecretKey secretKey = SessionKeys.getOrGenerateSecretKey(publicKey,
-              privateKey);
-      MessageDigest md = getMessageDigestInstance();
-      byte[] digest;
-      // FIXME: The reason why we use CHARSET should be more throughly documented here.
-      // This might be important for folks writing clients in other languages.
-      byte[] body = message.getBytes(GNSProtocol.CHARSET.toString());
-      synchronized (md) {
-        digest = md.digest(body);
-      }
-      assert (digest != null);
-      Cipher cipher = getCipherInstance();
-      byte[] signature;
-      synchronized (cipher) {
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        signature = cipher.doFinal(digest);
-      }
-
-      SessionKeys.SecretKeyCertificate skCert = SessionKeys
-              .getSecretKeyCertificate(publicKey);
-      byte[] encodedSKCert = skCert.getEncoded(false);
-
-      // arun: Combining them like this because the rest of the GNS code seems
-      // poorly organized to add more signature related fields in a systematic
-      // manner.
-      byte[] combined = new byte[Short.BYTES + signature.length + Short.BYTES
-              + encodedSKCert.length];
-      ByteBuffer.wrap(combined)
-              // signature
-              .putShort((short) signature.length).put(signature)
-              // certificate
-              .putShort((short) encodedSKCert.length).put(encodedSKCert);
-
-      // FIXME: The reason why we use CHARSET should be more throughly documented here.
-      return new String(combined, GNSProtocol.CHARSET.toString());
-    }
 
     public static String getRandomRequestNonce() {
       return (random.nextLong() + "");
@@ -203,17 +152,14 @@ public class CryptoUtils {
         String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
         String signatureString = null;
         long t = System.nanoTime();
-        if (Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_SECRET_KEY)) {
-          signatureString = signDigestOfMessage(privateKey, publicKey, canonicalJSON);
-        } else {
           signatureString = signDigestOfMessage(privateKey, canonicalJSON);
-        }
+
         result.put(GNSProtocol.SIGNATURE.toString(), signatureString);
         if (edu.umass.cs.utils.Util.oneIn(10)) {
           DelayProfiler.updateDelayNano("signature", t);
         }
         return result;
-      } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException | NoSuchPaddingException e) {
+      } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
         throw new ClientException("Error encoding message", e);
       }
     }

@@ -851,11 +851,9 @@ public class HttpClient {
       PrivateKey privateKey = keypair.getPrivate();
       PublicKey publicKey = keypair.getPublic();
       String signatureString;
-      if (Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_SECRET_KEY)) {
-        signatureString = CryptoUtils.signDigestOfMessage(privateKey, publicKey, canonicalJSON);
-      } else {
+
         signatureString = CryptoUtils.signDigestOfMessage(privateKey, canonicalJSON);
-      }
+
       String signaturePart = KEYSEP + GNSProtocol.SIGNATURE.toString()
               // Base64 encode the signature first since it's guaranteed to be a lot of non-ASCII characters
               // and this will limit the percent encoding to just /,+,= in the base64 string.
@@ -873,8 +871,7 @@ public class HttpClient {
       }
       // Finally return everything
       return encodedString.toString() + signaturePart + debuggingPart;
-    } catch (JSONException | UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | IllegalBlockSizeException |
-            BadPaddingException | NoSuchPaddingException e) {
+    } catch (JSONException | UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException  e) {
       throw new ClientException("Error encoding message", e);
     }
   }
