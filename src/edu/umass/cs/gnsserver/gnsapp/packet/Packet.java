@@ -126,11 +126,11 @@ public class Packet {
   }
 
 
-  public static PacketType getPacketType(JSONObject json) throws Exception {
+  public static PacketType getPacketType(JSONObject json) throws JSONException {
     if (Packet.hasPacketTypeField(json)) {
       return getPacketType(json.getInt(PACKET_TYPE));
     } else {
-      throw new Exception("Packet missing packet type field:" + json.toString());
+      throw new JSONException("Packet missing packet type field:" + json.toString());
     }
   }
 
@@ -149,7 +149,7 @@ public class Packet {
 
 
   public static Object createInstance(JSONObject json, Stringifiable<String> unstringer)
-          throws Exception{
+          throws JSONException {
 
     PacketType packetType = null;
     try {
@@ -182,7 +182,7 @@ public class Packet {
           try {
             return new edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket(json);
           } catch (ParseException e) {
-            throw new Exception(e);
+            throw new JSONException(e.getMessage());
           }
         // select
         case SELECT_REQUEST:
@@ -366,7 +366,7 @@ public class Packet {
     try {
       return getPacketType(json).toString();
       //}
-    } catch (Exception e) {
+    } catch (JSONException e) {
       return "Unknown";
     }
   }

@@ -76,12 +76,12 @@ public class CanonicalJSON {
           try {
             object = ((JSONString) x).toJSONString();
           } catch (Exception e) {
-            throw new Exception(e);
+            throw new JSONException(e.getMessage());
           }
           if (object instanceof String) {
             return (String) object;
           }
-          throw new Exception("Bad value from toJSONString: " + object);
+          throw new JSONException("Bad value from toJSONString: " + object);
         }
         if (x instanceof Number) {
           return JSONObject.numberToString((Number) x);
