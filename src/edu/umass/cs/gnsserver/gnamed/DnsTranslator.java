@@ -3,7 +3,7 @@ package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnsserver.utils.GNSShutdownable;
 import edu.umass.cs.utils.DelayProfiler;
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 
-public class DnsTranslator extends Thread implements Shutdownable {
+public class DnsTranslator extends Thread implements GNSShutdownable {
 
   private final int port;
   private final DatagramSocket sock;

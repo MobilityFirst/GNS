@@ -2,6 +2,7 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.gnsclient.client.util.keystorage.AbstractKeyStorage;
+import edu.umass.cs.gnsclient.client.util.keystorage.IOSKeyStorage;
 import edu.umass.cs.gnsclient.client.util.keystorage.JavaPreferencesKeyStore;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
@@ -215,7 +216,7 @@ public class KeyPairUtils {
     if (keyStorageObj == null) {
       synchronized (SINGLETON_OBJ_LOCK) {
         if (keyStorageObj == null) {
-            keyStorageObj = new JavaPreferencesKeyStore();
+            keyStorageObj = new IOSKeyStorage();
         }
       }
     }

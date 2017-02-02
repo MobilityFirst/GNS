@@ -5,6 +5,7 @@ import com.mongodb.util.JSON;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.JSONDotNotation;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -85,10 +86,10 @@ public class DiskMapRecords implements NoSQLRecords {
 
   protected static JSONObject recursiveCopyJSONObject(JSONObject record)
           throws JSONException {
-    String[] keys = JSONObject.getNames(record);
+    String[] keys = CanonicalJSON.getNames(record);
     JSONObject copy = new JSONObject();
     if (keys != null) { // oddly, empty returns null
-      for (String key : JSONObject.getNames(record)) {
+      for (String key : CanonicalJSON.getNames(record)) {
         copy.put(key, recursiveCopyObject(record.get(key)));
       }
     }
@@ -140,7 +141,7 @@ public class DiskMapRecords implements NoSQLRecords {
   // for debugging
   @SuppressWarnings("unused")
   private void print(JSONObject json) throws JSONException {
-    for (String key : JSONObject.getNames(json)) {
+    for (String key : CanonicalJSON.getNames(json)) {
       Object obj = json.get(key);
       System.out.print(key + " : ");
       if (obj instanceof JSONObject) {

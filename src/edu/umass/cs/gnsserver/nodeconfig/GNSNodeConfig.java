@@ -4,7 +4,7 @@ package edu.umass.cs.gnsserver.nodeconfig;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.OldHackyConstants;
-import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnsserver.utils.GNSShutdownable;
 import edu.umass.cs.nio.nioutils.InterfaceDelayEmulator;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 
-public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDType>, Shutdownable, InterfaceDelayEmulator<NodeIDType> {
+public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDType>, GNSShutdownable, InterfaceDelayEmulator<NodeIDType> {
 
 
   public static final long INVALID_PING_LATENCY = -1L;

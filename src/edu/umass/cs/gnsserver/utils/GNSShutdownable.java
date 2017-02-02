@@ -2,7 +2,7 @@
 package edu.umass.cs.gnsserver.utils;
 
 
-public interface Shutdownable {
+public interface GNSShutdownable {
 
 
   public void shutdown();

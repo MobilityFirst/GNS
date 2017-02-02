@@ -13,7 +13,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnsserver.utils.GNSShutdownable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +26,7 @@ import java.util.logging.Level;
 
 
 @SuppressWarnings("unchecked")
-public class AppAdmin extends Thread implements Shutdownable {
+public class AppAdmin extends Thread implements GNSShutdownable {
 
 
   private ServerSocket serverSocket;

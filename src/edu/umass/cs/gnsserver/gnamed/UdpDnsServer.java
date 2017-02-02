@@ -3,7 +3,7 @@ package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnsserver.utils.GNSShutdownable;
 import org.xbill.DNS.Cache;
 import org.xbill.DNS.SimpleResolver;
 
@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 
-public class UdpDnsServer extends Thread implements Shutdownable {
+public class UdpDnsServer extends Thread implements GNSShutdownable {
 
   private final SimpleResolver dnsServer;
   private final SimpleResolver gnsServer;

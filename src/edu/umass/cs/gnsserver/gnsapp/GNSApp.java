@@ -46,7 +46,7 @@ import edu.umass.cs.gnsserver.localnameserver.LocalNameServer;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnsserver.utils.GNSShutdownable;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -83,7 +83,7 @@ import java.util.logging.Level;
 
 public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         GNSApplicationInterface<String>, Replicable, Reconfigurable,
-        ClientMessenger, AppRequestParserBytes, Shutdownable {
+        ClientMessenger, AppRequestParserBytes, GNSShutdownable {
 
   private String nodeID;
   private GNSConsistentReconfigurableNodeConfig<String> nodeConfig;

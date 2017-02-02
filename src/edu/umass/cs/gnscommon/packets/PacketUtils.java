@@ -1,6 +1,7 @@
 package edu.umass.cs.gnscommon.packets;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -149,7 +150,7 @@ public class PacketUtils {
 		try {
 			if (command instanceof JSONObject) {
 				JSONObject o = ((JSONObject) command);
-				for (String key : JSONObject.getNames(o))
+				for (String key : CanonicalJSON.getNames(o))
 					length += key.length() + getLengthEstimate(o.get(key));
 			} else if (command instanceof JSONArray) {
 				JSONArray a = ((JSONArray) command);

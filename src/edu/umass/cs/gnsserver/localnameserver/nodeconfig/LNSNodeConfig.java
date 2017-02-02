@@ -5,7 +5,7 @@ package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
-import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnsserver.utils.GNSShutdownable;
 import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import org.json.JSONArray;
@@ -24,7 +24,7 @@ import java.util.logging.Level;
 
 
 public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
-        GNSInterfaceNodeConfig<InetSocketAddress>, Shutdownable {
+        GNSInterfaceNodeConfig<InetSocketAddress>, GNSShutdownable {
 
 
   public static final long INVALID_PING_LATENCY = -1L;

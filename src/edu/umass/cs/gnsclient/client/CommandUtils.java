@@ -30,7 +30,7 @@ public class CommandUtils {
     if (JSONPacket.couldBeJSON(response) && response.startsWith("{")) {
       try {
         JSONObject json = new JSONObject(response);
-        String[] keys = JSONObject.getNames(json);
+        String[] keys = CanonicalJSON.getNames(json);
         return (keys.length == 1) ? json.getString(JSONObject
                 .getNames(json)[0]) : response;
       } catch (JSONException e) {

@@ -170,4 +170,19 @@ public class CanonicalJSON {
     sb.append('"');
     return sb.toString();
   }
+
+  public static String[] getNames(JSONObject jo) {
+    int length = jo.length();
+    if (length == 0) {
+      return null;
+    }
+    Iterator iterator = jo.keys();
+    String[] names = new String[length];
+    int i = 0;
+    while (iterator.hasNext()) {
+      names[i] = (String) iterator.next();
+      i += 1;
+    }
+    return names;
+  }
 }

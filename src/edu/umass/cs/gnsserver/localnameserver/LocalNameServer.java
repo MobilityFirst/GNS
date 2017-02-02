@@ -9,7 +9,7 @@ import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig;
-import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnsserver.utils.GNSShutdownable;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
@@ -44,7 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
+public class LocalNameServer implements RequestHandlerInterface, GNSShutdownable {
 
 
   public static final int DEFAULT_VALUE_CACHE_TTL = 10000; // milleseconds

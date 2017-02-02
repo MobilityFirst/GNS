@@ -2,6 +2,7 @@
 package edu.umass.cs.gnsserver.utils;
 
 import com.google.common.collect.ImmutableSet;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,7 +20,7 @@ public class JSONUtils {
 
   public static JSONObject copyJsonObject(JSONObject record) throws JSONException {
     JSONObject copy = new JSONObject();
-    for (String key : JSONObject.getNames(record)) {
+    for (String key : CanonicalJSON.getNames(record)) {
       copy.put(key, record.get(key));
     }
     return copy;

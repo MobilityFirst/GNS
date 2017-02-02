@@ -7,7 +7,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
 import edu.umass.cs.gnsserver.main.OldHackyConstants;
-import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnsserver.utils.GNSShutdownable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.logging.Level;
 
 
-public class ListenerAdmin extends Thread implements Shutdownable {
+public class ListenerAdmin extends Thread implements GNSShutdownable {
 
 
   private ServerSocket serverSocket;
