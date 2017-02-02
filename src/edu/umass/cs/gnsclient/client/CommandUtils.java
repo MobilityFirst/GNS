@@ -31,7 +31,7 @@ public class CommandUtils {
       try {
         JSONObject json = new JSONObject(response);
         String[] keys = CanonicalJSON.getNames(json);
-        return (keys.length == 1) ? json.getString(JSONObject
+        return (keys.length == 1) ? json.getString(CanonicalJSON
                 .getNames(json)[0]) : response;
       } catch (JSONException e) {
         e.printStackTrace();
