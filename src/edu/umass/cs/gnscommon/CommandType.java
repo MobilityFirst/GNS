@@ -1258,14 +1258,16 @@ public enum CommandType {
                       boolean notForRogueClients, String description,
                       String[] requiredParameters, String[] optionalParameters,
                       CommandFlag... flags) {
-    this.number = number;
-    this.category = category;
+
 
     try {
       this.commandClass = Class.forName(commandClassName);
     } catch (ClassNotFoundException e) {
-      e.printStackTrace();
+      System.out.println("Class not found " + commandClassName);
+
     }
+    this.number = number;
+    this.category = category;
     this.returnType = returnType;
 
     this.canBeSafelyCoordinated = canBeSafelyCoordinated;

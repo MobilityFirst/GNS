@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -22,6 +23,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,6 +56,7 @@ public class KeyPairUtils {
       try {
         byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
         byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
+
         KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
         PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
