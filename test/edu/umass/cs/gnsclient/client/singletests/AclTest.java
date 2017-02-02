@@ -368,29 +368,58 @@ public class AclTest extends DefaultGNSTest {
    * Remove from the CL
    */
   @Test
-  public void test_142_ACLRemoveDeeperFieldACL() throws Exception {
-    clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
-            "test.deeper.field", GNSProtocol.ALL_GUIDS.toString());
+  public void test_142_ACLRemoveDeeperFieldACL() {
+    try {
+      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
+              "test.deeper.field", GNSProtocol.ALL_GUIDS.toString());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it ACLRemoveDeeperFieldACL: " + e);
+
+    }
   }
 
   /**
    * Check that the ACL is empty
    */
   @Test
-  public void test_144_ACLCheckForAllFieldsEmpty() throws JSONException, Exception {
-    JSONArray expected = new JSONArray();
-    JSONAssert.assertEquals(expected,
-            clientCommands.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
-                    "test.deeper.field", masterGuid.getGuid()), true);
+  public void test_144_ACLCheckDeeperFieldEmpty() {
+    try {
+      JSONArray expected = new JSONArray();
+      JSONAssert.assertEquals(expected,
+              clientCommands.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+                      "test.deeper.field", masterGuid.getGuid()), true);
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it ACLCheckDeeperFieldEmpty: " + e);
+
+    }
+  }
+  
+  /**
+   * Remove from the CL
+   */
+  @Test
+  public void test_145_ACLRemoveDeeperFieldACLAgain() {
+    try {
+      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
+              "test.deeper.field", GNSProtocol.ALL_GUIDS.toString());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it ACLRemoveDeeperFieldACL: " + e);
+
+    }
   }
 
   /**
    * Check that the ACL exists
    */
   @Test
-  public void test_146_CheckAllFieldsAcl() throws Exception {
-    Assert.assertTrue(clientCommands.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry,
-            "test.deeper.field"));
+  public void test_146_ACLCheckDeeperFieldACLExists() {
+    try {
+      Assert.assertTrue(clientCommands.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry,
+              "test.deeper.field"));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it ACLCheckDeeperFieldACLExists: " + e);
+
+    }
   }
 
   /**
@@ -402,7 +431,7 @@ public class AclTest extends DefaultGNSTest {
       try {
         clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
       } catch (ClientException | IOException e) {
-        Utils.failWithStackTrace("Problem adding acl: " + e);
+        Utils.failWithStackTrace("Problem deleting acl: " + e);
 
       }
     } catch (Exception e) {
@@ -420,7 +449,7 @@ public class AclTest extends DefaultGNSTest {
       try {
         Assert.assertFalse(clientCommands.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
       } catch (ClientException | IOException e) {
-        Utils.failWithStackTrace("Problem adding acl: " + e);
+        Utils.failWithStackTrace("Problem checking acl exists: " + e);
 
       }
     } catch (Exception e) {
@@ -438,11 +467,49 @@ public class AclTest extends DefaultGNSTest {
       try {
         clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
       } catch (ClientException | IOException e) {
-        Utils.failWithStackTrace("Problem adding acl: " + e);
+        Utils.failWithStackTrace("Problem deleting acl: " + e);
 
       }
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception when we were not expecting it ACLDeleteDeeperFieldACL: " + e);
+
+    }
+  }
+  
+  /**
+   * Try to delete it again
+   */
+  @Test
+  public void test_154_ACLRemoveFromNonexistantField() {
+    try {
+      try {
+        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, "NonexistantField", 
+                GNSProtocol.ALL_GUIDS.toString());
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Problem removing acl: " + e);
+
+      }
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it ACLRemoveFromNonexistantField: " + e);
+
+    }
+  }
+
+  
+  /**
+   * Try to delete it again
+   */
+  @Test
+  public void test_156_ACLDeleteNonexistantField() {
+    try {
+      try {
+        clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "NonexistantField");
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Problem deleting acl: " + e);
+
+      }
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it ACLDeleteNonexistantField: " + e);
 
     }
   }
@@ -451,7 +518,7 @@ public class AclTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_150_ACLTestCleanup() {
+  public void test_999_ACLTestCleanup() {
     try {
       clientCommands.guidRemove(masterGuid, barneyEntry.getGuid());
       clientCommands.guidRemove(masterGuid, westyEntry.getGuid());

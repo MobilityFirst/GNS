@@ -114,7 +114,7 @@ public class DiskMapRecords implements NoSQLRecords {
   }
 
   /**
-   * arun: The methods below copy a JSONObject recursively without stringification while
+   * The methods below copy a JSONObject recursively without stringification while
    * converting BasicDBObject and BasicDBList as needed. As in any JSONObject, it is assumed
    * that there are no cyclic pointers.
    *
@@ -122,7 +122,7 @@ public class DiskMapRecords implements NoSQLRecords {
    * @return a JSON Object
    * @throws org.json.JSONException
    */
-  protected static JSONObject recursiveCopyJSONObject(JSONObject record)
+  private static JSONObject recursiveCopyJSONObject(JSONObject record)
           throws JSONException {
     String[] keys = JSONObject.getNames(record);
     JSONObject copy = new JSONObject();
@@ -152,6 +152,7 @@ public class DiskMapRecords implements NoSQLRecords {
     return copy;
   }
 
+  // Used in MongoRecords
   static JSONObject recursiveCopyMap(Map<String, ?> map)
           throws JSONException {
     JSONObject copy = new JSONObject();
@@ -291,11 +292,9 @@ public class DiskMapRecords implements NoSQLRecords {
           switch (valuesMapKeys.get(i).type()) {
             case LIST_STRING:
               JSONDotNotation.putWithDotNotation(json, fieldName, valuesMapValues.get(i));
-              //json.put(fieldName, valuesMapValues.get(i));
               break;
             case USER_JSON:
               JSONDotNotation.putWithDotNotation(json, fieldName, JSONParse(valuesMapValues.get(i)));
-              //json.put(fieldName, JSONParse(valuesMapValues.get(i)));
               break;
             default:
               LOGGER.log(Level.WARNING,
@@ -344,7 +343,6 @@ public class DiskMapRecords implements NoSQLRecords {
           String fieldName = mapKeys.get(i).getName();
           LOGGER.log(Level.FINE, "Removing: {0}", fieldName);
           JSONDotNotation.removeWithDotNotation(fieldName, json);
-          //json.remove(fieldName);
         }
         LOGGER.log(Level.FINE, "Json after:{0}", json);
         record.put(mapField.getName(), json);
