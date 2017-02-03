@@ -45,7 +45,7 @@ The following simple sequence of steps can be used to determine if a particular 
             - If yes, allow access
             - Otherwise, deny access
     - If not
-        - Is `R` the top-most field in dotted notation?
+        - Is `X` the top-most field in dotted notation?
             - If yes
                 - Does the `ALL` field has a read ACL?
                     - If yes
