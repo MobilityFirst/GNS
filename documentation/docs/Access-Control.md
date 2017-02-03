@@ -36,6 +36,7 @@ If a particular field `X` has a read ACL, every GUID listed under it will have e
 If a particular field `X` has a write ACL, every GUID listed under it will have explicit write access to the value of `X`. This is true even if a parent field of `X` does not grant such an access.
 (Example)
 
+### Determining access ###
 The following simple sequence of steps can be used to determine if a particular field `X` belonging to a record of GUID `R` can be read by a GUID `G`:
 
 - Does `R` has a read ACL?
@@ -62,11 +63,12 @@ The following simple sequence of steps can be used to determine if a particular 
 ### Important note ###
 1. Having no ACL at all is different from having an empty ACL. If a field has empty ACL, it is considered private and other GUIDs will not be allowed to access it. However, if no ACL is present, the default behavior is to check the parent field's ACL and then finally default to the `ALL` field's ACL.
 
+### ACL Exceptions ###
 What happens when access is denied?
 When access is denied, appropriate exception is communicated to the client.
 (Example)
 
-Coming soon:
+### Coming soon: ###
 - ACL behavior in Groups
 - ACL operations - explanation of each operation with an example demonstrating its use in each client library.
 - A link to the @ACL Reference page that provides an exhaustive listing of access types that can be set, ACL Operations and the default values.
