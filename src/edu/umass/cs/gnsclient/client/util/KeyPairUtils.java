@@ -1,13 +1,13 @@
 
 package edu.umass.cs.gnsclient.client.util;
 
+import edu.umass.cs.gnsclient.client.CryptoUtils;
 import edu.umass.cs.gnsclient.client.util.keystorage.AbstractKeyStorage;
 import edu.umass.cs.gnsclient.client.util.keystorage.IOSKeyStorage;
 import edu.umass.cs.gnsclient.client.util.keystorage.JavaPreferencesKeyStore;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -16,13 +16,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.LinkedList;
@@ -57,6 +63,9 @@ public class KeyPairUtils {
         byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
         byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
 
+        System.out.println( " PrivateString is " + privateString);
+        System.out.println( "\n PublicString is " + publicString);
+
         KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
         PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
@@ -88,6 +97,7 @@ public class KeyPairUtils {
     createSingleton();
     String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
     String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
+
     keyStorageObj.put(generateKey(gnsName, username, PUBLIC), publicString);
     keyStorageObj.put(generateKey(gnsName, username, PRIVATE), privateString);
     keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
@@ -227,7 +237,8 @@ public class KeyPairUtils {
   }
 
 
-  public static void main(String args[]) {
+  public static void main(String args[]) throws Exception{
+
 
   }
 
