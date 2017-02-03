@@ -3,6 +3,7 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.IOSKeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -581,7 +582,7 @@ public static final CommandPacket batchCreateGUIDs(
       String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
               .getPublic().getEncoded());
       // Squirrel this away now just in case the call below times out.
-      KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
+      IOSKeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
       guidEntry = new GuidEntry(alias, guid, keyPair.getPublic(),
               keyPair.getPrivate());
     }

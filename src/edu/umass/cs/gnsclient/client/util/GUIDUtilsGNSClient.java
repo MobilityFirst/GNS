@@ -37,7 +37,7 @@ public class GUIDUtilsGNSClient {
       String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
               .getPublic().getEncoded());
       // Squirrel this away now just in case the call below times out.
-      KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
+      IOSKeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
       return new GuidEntry(alias, guid, keyPair.getPublic(),
               keyPair.getPrivate());
     }
@@ -122,7 +122,7 @@ public class GUIDUtilsGNSClient {
     }
 
     public static GuidEntry lookupGuidEntryFromDatabase(GNSClient client, String name) {
-      return KeyPairUtils.getGuidEntry(client.getGNSProvider(), name);
+      return IOSKeyPairUtils.getGuidEntry(client.getGNSProvider(), name);
     }
 
   public static GuidEntry createAndSaveGuidEntry(String alias, String hostport)
@@ -131,6 +131,6 @@ public class GUIDUtilsGNSClient {
   }
 
   public static GuidEntry lookupGuidEntryFromDatabase(String gnsInstance, String name) {
-    return KeyPairUtils.getGuidEntry(gnsInstance, name);
+    return IOSKeyPairUtils.getGuidEntry(gnsInstance, name);
   }
 }
