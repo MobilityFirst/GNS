@@ -577,8 +577,7 @@ public static final CommandPacket batchCreateGUIDs(
     GuidEntry guidEntry = GUIDUtilsGNSClient.lookupGuidEntryFromDatabase(gnsInstance, alias);
 
     if (guidEntry == null) {
-      KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
-              .generateKeyPair();
+      KeyPair keyPair = IOSKeyPairUtils.generateKeyPair();
       String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
               .getPublic().getEncoded());
       // Squirrel this away now just in case the call below times out.

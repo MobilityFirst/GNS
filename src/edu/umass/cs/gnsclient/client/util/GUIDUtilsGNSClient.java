@@ -31,9 +31,8 @@ public class GUIDUtilsGNSClient {
     static GuidEntry generateAndSaveKeyPairForGuidAlias(String gnsInstance,
                                                         String alias) throws NoSuchAlgorithmException, EncryptionException {
 
-              KeyPairGenerator kg = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
-              //kg.initialize(1024);
-      KeyPair keyPair  =    kg.generateKeyPair();
+
+      KeyPair keyPair  =    IOSKeyPairUtils.generateKeyPair();
       String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
               .getPublic().getEncoded());
       // Squirrel this away now just in case the call below times out.

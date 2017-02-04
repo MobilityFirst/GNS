@@ -15,13 +15,18 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.LinkedList;
 import java.util.List;
@@ -138,6 +143,18 @@ public class IOSKeyPairUtils {
     assert (keyStorageObj != null);
   }
 
+  public static KeyPair generateKeyPair() {
+    try {
+      KeyFactory fact = KeyFactory.getInstance("RSA");
+      PublicKey pub = fact.generatePublic(new RSAPublicKeySpec(new BigInteger("126183173082874844637952901960865809228783583450688814141148417648807958333099119644874791736663780530158327353949473953143599351828672745381741163148759593688040153756690753357693891591900736951681645734271187360570232481677612954701021664472857269048194483763294248853395681697580178537778135146755606080851"), new BigInteger("65537")));
+      PrivateKey priv = fact.generatePrivate(new RSAPrivateKeySpec(new BigInteger("126183173082874844637952901960865809228783583450688814141148417648807958333099119644874791736663780530158327353949473953143599351828672745381741163148759593688040153756690753357693891591900736951681645734271187360570232481677612954701021664472857269048194483763294248853395681697580178537778135146755606080851"), new BigInteger("15876626108021208918390521836051382622038686988027831017713808259945838601320404360767772901727719215888514386692515101661994297193634671382849956991083989554122755344196765004493909865687803605408109587648252347256902106306082790197547407143436778025637991525989203543883089994924508017995437871770596312209")));
+      KeyPair keyPair = new KeyPair(pub, priv);
+      return keyPair;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
 
   public static void main(String args[]) throws Exception{
 
