@@ -1263,6 +1263,7 @@ public enum CommandType {
     try {
       this.commandClass = Class.forName(commandClassName);
     } catch (ClassNotFoundException e) {
+      this.commandClass = String.class;
       System.out.println("Class not found " + commandClassName);
 
     }

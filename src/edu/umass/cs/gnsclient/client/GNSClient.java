@@ -8,6 +8,8 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsclient.client.util.GUIDUtilsGNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.IOSKeyPairUtils;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
@@ -35,6 +37,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -458,6 +462,9 @@ public class GNSClient {
 
 
 	public static void main(String[] args) throws Exception {
+		KeyPair kp = IOSKeyPairUtils.generateKeyPair();
+		System.out.println("SIGN" + CryptoUtils.signDigestOfMessage(kp.getPrivate(), "Hello WOrld"));
+
 		GNSClient client = new GNSClient();
 		GuidEntry guid;
 		guid = GUIDUtilsGNSClient.lookupOrCreateAccountGuid(client, "test",

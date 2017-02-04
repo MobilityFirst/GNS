@@ -427,7 +427,7 @@ public class Format {
           = new ThreadLocal<SimpleDateFormat>() {
     @Override
     protected SimpleDateFormat initialValue() {
-      SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+      SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
       return result;
     }
   };

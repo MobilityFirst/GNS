@@ -59,6 +59,7 @@ public class IOSKeyPairUtils {
     if (!guid.isEmpty() && !publicExpString.isEmpty() && !privateExpString.isEmpty()) {
       try {
           KeyPair kp = generateKeyPair();
+          System.out.println("No more; "+ ((RSAPublicKey)kp.getPublic()).getModulus().toString());
         return new GuidEntry(username, guid, kp.getPublic(), kp.getPrivate());
       } catch (EncryptionException e) {
         System.out.println(e.toString());
