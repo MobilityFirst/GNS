@@ -22,6 +22,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -53,23 +54,13 @@ public class IOSKeyPairUtils {
     createSingleton();
 
     String guid = keyStorageObj.get(generateKey(gnsName, username, GUID), "");
-    String publicString = keyStorageObj.get(generateKey(gnsName, username, PUBLIC), "");
-    String privateString = keyStorageObj.get(generateKey(gnsName, username, PRIVATE), "");
-    if (!guid.isEmpty() && !publicString.isEmpty() && !privateString.isEmpty()) {
+    String publicExpString = keyStorageObj.get(generateKey(gnsName, username, PUBLIC+"EXP"), "");
+    String privateExpString = keyStorageObj.get(generateKey(gnsName, username, PRIVATE+"EXP"), "");
+    if (!guid.isEmpty() && !publicExpString.isEmpty() && !privateExpString.isEmpty()) {
       try {
-        byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
-        byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
-
-        System.out.println( " PrivateString is " + privateString);
-        System.out.println( "\n PublicString is " + publicString);
-
-        KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
-        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
-        PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
-        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
-        PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
-        return new GuidEntry(username, guid, publicKey, privateKey);
-      } catch (NoSuchAlgorithmException | InvalidKeySpecException | EncryptionException e) {
+          KeyPair kp = generateKeyPair();
+        return new GuidEntry(username, guid, kp.getPublic(), kp.getPrivate());
+      } catch (EncryptionException e) {
         System.out.println(e.toString());
         return null;
       }
@@ -83,11 +74,18 @@ public class IOSKeyPairUtils {
   public static void saveKeyPair(String gnsName, String username, String guid, KeyPair keyPair) {
 
     createSingleton();
-    String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
-    String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
+    String publicExpString = ((RSAPublicKey)keyPair.getPublic()).getPublicExponent().toString();
+    String publicModString = ((RSAPublicKey)keyPair.getPublic()).getModulus().toString();
 
-    keyStorageObj.put(generateKey(gnsName, username, PUBLIC), publicString);
-    keyStorageObj.put(generateKey(gnsName, username, PRIVATE), privateString);
+    String privateExpString = ((RSAPrivateKey)keyPair.getPrivate()).getPrivateExponent().toString();
+    String privateModString = ((RSAPrivateKey)keyPair.getPrivate()).getModulus().toString();
+
+    keyStorageObj.put(generateKey(gnsName, username, PUBLIC+"EXP"), publicExpString);
+    keyStorageObj.put(generateKey(gnsName, username, PUBLIC+"MOD"), publicModString);
+
+    keyStorageObj.put(generateKey(gnsName, username, PRIVATE+"EXP"), privateExpString);
+    keyStorageObj.put(generateKey(gnsName, username, PRIVATE+"MOD"), privateModString);
+
     keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
   }
 
@@ -136,7 +134,7 @@ public class IOSKeyPairUtils {
     if (keyStorageObj == null) {
       synchronized (SINGLETON_OBJ_LOCK) {
         if (keyStorageObj == null) {
-            keyStorageObj = new JavaPreferencesKeyStore();
+            keyStorageObj = new IOSKeyStorage();
         }
       }
     }
