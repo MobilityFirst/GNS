@@ -462,13 +462,13 @@ public class GNSClient {
 
 
 	public static void main(String[] args) throws Exception {
-		KeyPair kp = IOSKeyPairUtils.generateKeyPair();
-		System.out.println("SIGN" + CryptoUtils.signDigestOfMessage(kp.getPrivate(), "Hello WOrld"));
 
 		GNSClient client = new GNSClient();
 		GuidEntry guid;
 		guid = GUIDUtilsGNSClient.lookupOrCreateAccountGuid(client, "test",
 				"password", true);
-		client.execute(GNSCommand.update(guid, new JSONObject()));
+		client.execute(GNSCommand.update(guid, new JSONObject("{\"Hello\":5}")));
+
+
 	}
 }

@@ -116,9 +116,11 @@ public class CryptoUtils {
     public static JSONObject createAndSignCommand(CommandType commandType,
                                                   GuidEntry querier, Object... keysAndValues) throws ClientException {
       try {
-        return querier != null ? createAndSignCommand(commandType,
+        JSONObject r =  querier != null ? createAndSignCommand(commandType,
                 querier.getPrivateKey(), querier.getPublicKey(), keysAndValues)
                 : createCommand(commandType, keysAndValues);
+        System.out.println("JSONObject: "+r);
+        return r;
       } catch (JSONException e) {
         throw new ClientException("Error encoding message", e);
       }
