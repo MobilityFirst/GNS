@@ -6,6 +6,7 @@ import edu.umass.cs.gnsclient.client.util.keystorage.IOSKeyStorage;
 import edu.umass.cs.gnsclient.client.util.keystorage.JavaPreferencesKeyStore;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 import java.io.DataInputStream;
@@ -15,13 +16,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
@@ -47,6 +51,8 @@ public class IOSKeyPairUtils {
 
 
   public static GuidEntry getGuidEntry(String gnsName, String username) {
+
+
     if (username == null) {
       return null;
     }
@@ -54,12 +60,9 @@ public class IOSKeyPairUtils {
     createSingleton();
 
     String guid = keyStorageObj.get(generateKey(gnsName, username, GUID), "");
-    String publicExpString = keyStorageObj.get(generateKey(gnsName, username, PUBLIC+"EXP"), "");
-    String privateExpString = keyStorageObj.get(generateKey(gnsName, username, PRIVATE+"EXP"), "");
-    if (!guid.isEmpty() && !publicExpString.isEmpty() && !privateExpString.isEmpty()) {
+    if (!guid.isEmpty()) {
       try {
           KeyPair kp = generateKeyPair();
-          System.out.println("No more; "+ ((RSAPublicKey)kp.getPublic()).getModulus().toString());
         return new GuidEntry(username, guid, kp.getPublic(), kp.getPrivate());
       } catch (EncryptionException e) {
         System.out.println(e.toString());
@@ -71,24 +74,6 @@ public class IOSKeyPairUtils {
   }
 
 
-
-  public static void saveKeyPair(String gnsName, String username, String guid, KeyPair keyPair) {
-
-    createSingleton();
-    String publicExpString = ((RSAPublicKey)keyPair.getPublic()).getPublicExponent().toString();
-    String publicModString = ((RSAPublicKey)keyPair.getPublic()).getModulus().toString();
-
-    String privateExpString = ((RSAPrivateKey)keyPair.getPrivate()).getPrivateExponent().toString();
-    String privateModString = ((RSAPrivateKey)keyPair.getPrivate()).getModulus().toString();
-
-    keyStorageObj.put(generateKey(gnsName, username, PUBLIC+"EXP"), publicExpString);
-    keyStorageObj.put(generateKey(gnsName, username, PUBLIC+"MOD"), publicModString);
-
-    keyStorageObj.put(generateKey(gnsName, username, PRIVATE+"EXP"), privateExpString);
-    keyStorageObj.put(generateKey(gnsName, username, PRIVATE+"MOD"), privateModString);
-
-    keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
-  }
 
 
   @Deprecated
@@ -148,7 +133,6 @@ public class IOSKeyPairUtils {
       PublicKey pub = fact.generatePublic(new RSAPublicKeySpec(new BigInteger("126183173082874844637952901960865809228783583450688814141148417648807958333099119644874791736663780530158327353949473953143599351828672745381741163148759593688040153756690753357693891591900736951681645734271187360570232481677612954701021664472857269048194483763294248853395681697580178537778135146755606080851"), new BigInteger("65537")));
       PrivateKey priv = fact.generatePrivate(new RSAPrivateKeySpec(new BigInteger("126183173082874844637952901960865809228783583450688814141148417648807958333099119644874791736663780530158327353949473953143599351828672745381741163148759593688040153756690753357693891591900736951681645734271187360570232481677612954701021664472857269048194483763294248853395681697580178537778135146755606080851"), new BigInteger("15876626108021208918390521836051382622038686988027831017713808259945838601320404360767772901727719215888514386692515101661994297193634671382849956991083989554122755344196765004493909865687803605408109587648252347256902106306082790197547407143436778025637991525989203543883089994924508017995437871770596312209")));
       KeyPair keyPair = new KeyPair(pub, priv);
-      System.out.println("PKEY:"+ ByteUtils.toHex(pub.getEncoded()));
       return keyPair;
     } catch (Exception e) {
       e.printStackTrace();
@@ -156,9 +140,31 @@ public class IOSKeyPairUtils {
     }
   }
 
+
+  public static String generateAndSaveKeyPair() {
+
+    return "GUID";
+  }
+
+  public static String getBase64OfPublicKeyFromGuid(String guid) {
+
+    byte[] bits = {};
+    String result = Base64.encodeToString(bits, false);
+    return result;
+  }
+
+  public static String signDigestOfMessage(String guid,
+                                           String message) throws NoSuchAlgorithmException,
+          InvalidKeyException, SignatureException,
+          UnsupportedEncodingException {
+    return "DIGEST";
+
+  }
+
   public static void main(String args[]) throws Exception{
 
 
   }
+
 
 }

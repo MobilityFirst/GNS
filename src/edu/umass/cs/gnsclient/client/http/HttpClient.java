@@ -7,6 +7,7 @@ import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.http.android.DownloadTask;
 import edu.umass.cs.gnsclient.client.util.GUIDUtilsHTTPClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.IOSKeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -21,14 +22,10 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.URIEncoderDecoder;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.utils.Config;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -852,7 +849,7 @@ public class HttpClient {
       PublicKey publicKey = keypair.getPublic();
       String signatureString;
 
-        signatureString = CryptoUtils.signDigestOfMessage(privateKey, canonicalJSON);
+        signatureString = IOSKeyPairUtils.signDigestOfMessage(privateKey, canonicalJSON);
 
       String signaturePart = KEYSEP + GNSProtocol.SIGNATURE.toString()
               // Base64 encode the signature first since it's guaranteed to be a lot of non-ASCII characters

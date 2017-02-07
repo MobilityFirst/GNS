@@ -463,9 +463,11 @@ public class GNSClient {
 
 	public static void main(String[] args) throws Exception {
 
+		IOSKeyPairUtils.generateKeyPair();
+
 		GNSClient client = new GNSClient();
 		GuidEntry guid;
-		guid = GUIDUtilsGNSClient.lookupOrCreateAccountGuid(client, "test",
+		guid = GUIDUtilsGNSClient.lookupOrCreateAccountGuid(client, "test@hello",
 				"password", true);
 		client.execute(GNSCommand.update(guid, new JSONObject("{\"Hello\":5}")));
 

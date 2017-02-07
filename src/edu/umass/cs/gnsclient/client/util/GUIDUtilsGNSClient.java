@@ -33,10 +33,9 @@ public class GUIDUtilsGNSClient {
 
 
       KeyPair keyPair  =    IOSKeyPairUtils.generateKeyPair();
-      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-              .getPublic().getEncoded());
+      String guid = IOSKeyPairUtils.generateAndSaveKeyPair();
       // Squirrel this away now just in case the call below times out.
-      IOSKeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
+      //IOSKeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
       return new GuidEntry(alias, guid, keyPair.getPublic(),
               keyPair.getPrivate());
     }

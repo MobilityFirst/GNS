@@ -87,19 +87,6 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     s.writeUTF(Base64.encodeToString(privateKey.getEncoded(), true));
   }
 
-  // arun: removed this method to make all fields final
-//  private void readObject(ObjectInputStream s) throws IOException {
-//    entityName = s.readUTF();
-//    guid = s.readUTF();
-//    KeyPair keypair;
-//    try {
-//      keypair = generateKeyPair(s.readUTF(), s.readUTF());
-//      publicKey = keypair.getPublic();
-//      privateKey = keypair.getPrivate();
-//    } catch (EncryptionException e) {
-//      throw new IOException(e);
-//    }
-//  }
 
   private static PrivateKey generatePrivateKey(String encodedPrivate)
           throws EncryptionException {
@@ -113,26 +100,6 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     }
   }
 
-
-  private static KeyPair generateKeyPair(String encodedPublic, String encodedPrivate)
-          throws EncryptionException {
-    byte[] encodedPublicKey = Base64.decode(encodedPublic);
-    byte[] encodedPrivateKey = Base64.decode(encodedPrivate);
-
-    try {
-      KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
-      X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
-              encodedPublicKey);
-      PublicKey thePublicKey = keyFactory.generatePublic(publicKeySpec);
-
-      PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
-              encodedPrivateKey);
-      PrivateKey thePrivateKey = keyFactory.generatePrivate(privateKeySpec);
-      return new KeyPair(thePublicKey, thePrivateKey);
-    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-      throw new EncryptionException("Failed to generate keypair", e);
-    }
-  }
 
   // Test code
 

@@ -229,20 +229,6 @@ public class GNSCommand extends CommandPacket {
   }
 
 
-  PublicKey publicKeyLookupFromAlias(String alias)
-          throws InvalidGuidException, ClientException, IOException {
-    throw new RuntimeException("Unimplementable");
-    // String guid = lookupGuid(alias);
-    // return publicKeyLookupFromGuid(guid);
-  }
-
-
-  public static final CommandPacket publicKeyLookupFromGUID(String targetGUID)
-          throws ClientException {
-    // FIXME: This is not correctly implemented
-    return lookupGUIDRecord(targetGUID);
-  }
-
 
   //FIXME: The name this of these violates the NOUNVERB naming convention adopted
   // almost everywhere else in here.
@@ -578,10 +564,7 @@ public static final CommandPacket batchCreateGUIDs(
 
     if (guidEntry == null) {
       KeyPair keyPair = IOSKeyPairUtils.generateKeyPair();
-      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-              .getPublic().getEncoded());
-      // Squirrel this away now just in case the call below times out.
-      IOSKeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
+      String guid = IOSKeyPairUtils.generateAndSaveKeyPair();
       guidEntry = new GuidEntry(alias, guid, keyPair.getPublic(),
               keyPair.getPrivate());
     }
@@ -593,9 +576,7 @@ public static final CommandPacket batchCreateGUIDs(
           throws ClientException, NoSuchAlgorithmException {
     return getCommand(commandType,
             guidEntry, GNSProtocol.NAME.toString(), alias,
-            GNSProtocol.PUBLIC_KEY.toString(),
-            Base64.encodeToString(
-                    guidEntry.publicKey.getEncoded(), false),
+            GNSProtocol.PUBLIC_KEY.toString(),IOSKeyPairUtils.getBase64OfPublicKeyFromGuid(guidEntry.getGuid()),
             GNSProtocol.PASSWORD.toString(),
             password != null ? Password.encryptAndEncodePassword(password, alias) : "");
   }
@@ -603,7 +584,7 @@ public static final CommandPacket batchCreateGUIDs(
   private static CommandPacket guidCreateHelper(GuidEntry accountGuid,
           String name, PublicKey publicKey) throws ClientException {
     byte[] publicKeyBytes = publicKey.getEncoded();
-    String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
+    String publicKeyString = IOSKeyPairUtils.getBase64OfPublicKeyFromGuid(accountGuid.getGuid());
     return getCommand(CommandType.AddGuid, accountGuid,
             GNSProtocol.GUID.toString(), accountGuid.getGuid(),
             GNSProtocol.NAME.toString(), name,
