@@ -52,7 +52,6 @@ import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnamed.DnsTranslator;
 import edu.umass.cs.gnsserver.gnamed.UdpDnsServer;
@@ -66,7 +65,6 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.httpserver.GNSHttpServer;
 import edu.umass.cs.gnsserver.httpserver.GNSHttpsServer;
-import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.localnameserver.LocalNameServer;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -111,6 +109,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         ClientMessenger, AppRequestParserBytes, Shutdownable {
 
   private String nodeID;
+  private InetSocketAddress nodeAddress;
   private GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
   private boolean constructed = false;
   /**
@@ -185,7 +184,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    * @throws IOException
    */
   public GNSApp(String[] args) throws IOException {
-    //AppReconfigurableNode.initOptions(args);
   }
 
   /**
@@ -197,6 +195,9 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
     this.messenger = (SSLMessenger<String, JSONObject>) messenger;
     this.nodeID = messenger.getMyID().toString();
+    this.nodeAddress = messenger.getListeningSocketAddress();
+    GNSConfig.getLogger().log(Level.INFO, "=== Node {0} listening on {1}===", 
+            new Object[]{nodeID, nodeAddress});
     try {
       if (!constructed) {
         this.GnsAppConstructor((JSONMessenger<String>) messenger);
@@ -294,10 +295,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
       switch (packetType) {
         case SELECT_REQUEST:
-            Select.handleSelectRequest((SelectRequestPacket<String>) request, this);
+            Select.handleSelectRequest((SelectRequestPacket) request, this);
           break;
         case SELECT_RESPONSE:
-            Select.handleSelectResponse((SelectResponsePacket<String>) request, this);
+            Select.handleSelectResponse((SelectResponsePacket) request, this);
           break;
         case COMMAND:
           CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
@@ -746,6 +747,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   }
 
   @Override
+  public InetSocketAddress getNodeAddress() {
+    return nodeAddress;
+  }
+
+  @Override
   public BasicRecordMap getDB() {
     return nameRecordDB;
   }
@@ -835,16 +841,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   public String toString() {
     return this.getClass().getSimpleName() + ":" + this.nodeID;
   }
-
-  @Override
-  // Currently only used by SelectOld
-  public void sendToID(String id, JSONObject msg) throws IOException {
-    // arun: active replica accepts app packets only on client-facing port
-    messenger.sendToAddress(
-            new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
-                    ReconfigurationConfig
-                    .getClientFacingPort(this.nodeConfig
-                            .getNodePort(id))), msg);
+  
+   @Override
+  public void sendToAddress(InetSocketAddress address, JSONObject msg) throws IOException {
+    messenger.sendToAddress(address, msg);      
   }
 
   @Override

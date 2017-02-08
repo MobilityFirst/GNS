@@ -31,7 +31,6 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.Select;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.AclCheckResult;
@@ -51,7 +50,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
@@ -566,17 +565,23 @@ public class FieldAccess {
             UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, message,
             timestamp, handler);
   }
+  
+  ///
+  /// SELECT METHODS
+  ///
 
-  private static JSONArray executeSelect(InternalRequestHeader header, SelectOperation operation, String key, Object value, Object otherValue, GNSApp app)
+  private static JSONArray executeSelect(InternalRequestHeader header, SelectOperation operation, String key, Object value, Object otherValue, 
+          GNSApplicationInterface<String> app)
           throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
-    SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, operation,
+    SelectRequestPacket packet = new SelectRequestPacket(-1, operation,
             SelectGroupBehavior.NONE, key, value, otherValue);
     return executeSelectHelper(header, packet, app);
   }
 
-  private static JSONArray executeSelectHelper(InternalRequestHeader header, SelectRequestPacket<String> packet, GNSApp app)
+  private static JSONArray executeSelectHelper(InternalRequestHeader header, SelectRequestPacket packet, 
+          GNSApplicationInterface<String> app)
           throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
-    SelectResponsePacket<String> responsePacket = Select.handleSelectRequestFromClient(header, packet, app);
+    SelectResponsePacket responsePacket = Select.handleSelectRequestFromClient(header, packet, app);
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
@@ -597,16 +602,12 @@ public class FieldAccess {
   public static CommandResponse select(InternalRequestHeader header, String key, Object value, ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      //if (Select.useLocalSelect()) {
       result = executeSelect(header, SelectOperation.EQUALS, key, value, null, handler.getApp());
-//      } else {
-//        result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
-//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      //} catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
+      // FIXME: why silently fail?
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -625,16 +626,12 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      //if (Select.useLocalSelect()) {
       result = executeSelect(header, SelectOperation.WITHIN, key, value, null, handler.getApp());
-//      } else {
-//        result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
-//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      //} catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
+      // FIXME: why silently fail?
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
 
@@ -655,16 +652,12 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      //if (Select.useLocalSelect()) {
       result = executeSelect(header, SelectOperation.NEAR, key, value, maxDistance, handler.getApp());
-//      } else {
-//        result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
-//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      //} catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
+      // FIXME: why silently fail?
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -681,17 +674,13 @@ public class FieldAccess {
   public static CommandResponse selectQuery(InternalRequestHeader header, String query, ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      //if (Select.useLocalSelect()) {
-      SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
+      SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, query);
       result = executeSelectHelper(header, packet, handler.getApp());
-//      } else {
-//        result = handler.getRemoteQuery().sendSelectQuery(query);
-//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      //} catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
+      // FIXME: why silently fail?
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -751,18 +740,14 @@ public class FieldAccess {
     JSONArray result;
 
     try {
-      //if (Select.useLocalSelect()) {
-      SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
+      SelectRequestPacket packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
               query, guid, interval);
       result = executeSelectHelper(header, packet, handler.getApp());
-//      } else {
-//        result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
-//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      //} catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
+      // FIXME: why silently fail?
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -779,17 +764,13 @@ public class FieldAccess {
   public static CommandResponse selectGroupLookupQuery(InternalRequestHeader header, String guid, ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      //if (Select.useLocalSelect()) {
-      SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
+      SelectRequestPacket packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
       result = executeSelectHelper(header, packet, handler.getApp());
-//      } else {
-//        result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
-//      }
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      //} catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
+      // FIXME: why silently fail?
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }

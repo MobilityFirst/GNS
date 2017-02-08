@@ -288,9 +288,9 @@ public class Packet {
           }
         // select
         case SELECT_REQUEST:
-          return new edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket<>(json, unstringer);
+          return new edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket(json);
         case SELECT_RESPONSE:
-          return new edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket<>(json, unstringer);
+          return new edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket(json);
         // paxos
         case PAXOS_PACKET:
           return null;

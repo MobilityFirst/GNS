@@ -25,7 +25,6 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
-import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
@@ -105,37 +104,37 @@ public class Admintercessor {
     adminResult = new ConcurrentHashMap<>(10, 0.75f, 3);
   }
 
-  /**
-   * Clears the database and reinitializes all indices.
-   *
-   * @param handler
-   * @return true if we were successful
-   */
-  public boolean sendResetDB(ClientRequestHandlerInterface handler) {
-    try {
-      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject(), handler);
-      return true;
-    } catch (JSONException | IOException e) {
-      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring this error while sending RESETDB request: {0}", e);
-    }
-    return false;
-  }
+//  /**
+//   * Clears the database and reinitializes all indices.
+//   *
+//   * @param handler
+//   * @return true if we were successful
+//   */
+//  public boolean sendResetDB(ClientRequestHandlerInterface handler) {
+//    try {
+//      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject(), handler);
+//      return true;
+//    } catch (JSONException | IOException e) {
+//      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring this error while sending RESETDB request: {0}", e);
+//    }
+//    return false;
+//  }
 
-  /**
-   * Sends the delete all records command.
-   *
-   * @param handler
-   * @return true if we were successful
-   */
-  public boolean sendDeleteAllRecords(ClientRequestHandlerInterface handler) {
-    try {
-      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject(), handler);
-      return true;
-    } catch (JSONException | IOException e) {
-      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Error while sending DELETEALLRECORDS request: {0}", e);
-    }
-    return false;
-  }
+//  /**
+//   * Sends the delete all records command.
+//   *
+//   * @param handler
+//   * @return true if we were successful
+//   */
+//  public boolean sendDeleteAllRecords(ClientRequestHandlerInterface handler) {
+//    try {
+//      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject(), handler);
+//      return true;
+//    } catch (JSONException | IOException e) {
+//      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Error while sending DELETEALLRECORDS request: {0}", e);
+//    }
+//    return false;
+//  }
 
   /**
    * Sends the clear cache command.
@@ -179,23 +178,23 @@ public class Admintercessor {
     return "Currently not supported.";
   }
 
-  /**
-   * Sends the change log level command.
-   *
-   * @param level
-   * @param handler
-   * @return true if we were successful
-   */
-  public boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface handler) {
-    try {
-      AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
-      sendAdminPacket(packet.toJSONObject(), handler);
-      return true;
-    } catch (JSONException | IOException e) {
-      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending CHANGELOGLEVEL request: {0}", e);
-    }
-    return false;
-  }
+//  /**
+//   * Sends the change log level command.
+//   *
+//   * @param level
+//   * @param handler
+//   * @return true if we were successful
+//   */
+//  public boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface handler) {
+//    try {
+//      AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
+//      sendAdminPacket(packet.toJSONObject(), handler);
+//      return true;
+//    } catch (JSONException | IOException e) {
+//      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending CHANGELOGLEVEL request: {0}", e);
+//    }
+//    return false;
+//  }
 
   private void waitForAdminResponse(int id) {
     try {

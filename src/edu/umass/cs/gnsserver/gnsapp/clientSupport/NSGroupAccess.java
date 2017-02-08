@@ -26,7 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
