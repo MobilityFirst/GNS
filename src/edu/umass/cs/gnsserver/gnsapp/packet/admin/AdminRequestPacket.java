@@ -38,17 +38,10 @@ public class AdminRequestPacket extends BasicPacketWithReturnAddress {
    * The admin operations.
    */
   public enum AdminOperation {
-
-    /** Remove record on every record. **/
-    DELETEALLRECORDS, 
-    /** clears the database and reinitializes all indices. **/
-    RESETDB, // 
     /** Clear the cache. **/
     CLEARCACHE,
     /** Prints the cache. **/
-    DUMPCACHE,
-    /** Set the logging level. **/
-    CHANGELOGLEVEL,
+    DUMPCACHE;
   };
 
   private final static String ID = "id";

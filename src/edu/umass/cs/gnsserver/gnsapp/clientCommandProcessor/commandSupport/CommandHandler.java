@@ -20,7 +20,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
@@ -28,6 +27,7 @@ import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
@@ -71,7 +71,7 @@ public class CommandHandler {
    * @throws UnknownHostException
    */
   public static void handleCommandPacket(CommandPacket packet,
-          boolean doNotReplyToClient, GNSApp app) throws JSONException,
+          boolean doNotReplyToClient, GNSApplicationInterface<String> app) throws JSONException,
           UnknownHostException {
     runCommand(addMessageWithoutSignatureToCommand(packet),
             commandModule.lookupCommand(PacketUtils.getCommand(packet)),
@@ -82,7 +82,7 @@ public class CommandHandler {
 
   private static void runCommand(CommandPacket commandPacket,
           AbstractCommand command, ClientRequestHandlerInterface handler,
-          boolean doNotReplyToClient, GNSApp app) {
+          boolean doNotReplyToClient, GNSApplicationInterface<String> app) {
     JSONObject jsonFormattedCommand = PacketUtils.getCommand(commandPacket);
     try {
       long receiptTime = System.currentTimeMillis(); // instrumentation
@@ -254,7 +254,7 @@ public class CommandHandler {
    */
   public static void handleCommandReturnValuePacketForApp(CommandPacket command, 
           ResponsePacket returnPacket, boolean doNotReplyToClient,
-          GNSApp app) throws JSONException, IOException {
+          GNSApplicationInterface<String> app) throws JSONException, IOException {
     if (!doNotReplyToClient) {
       app.sendToClient(command, returnPacket, returnPacket.toJSONObject());
     }

@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.failingtests;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
