@@ -385,7 +385,8 @@ public class Admintercessor {
                       handler.getGnsNodeConfig().getCcpAdminPort(handler.getActiveReplicaID())),
               tagName).toJSONObject(), handler);
     } catch (JSONException e) {
-      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error sending DUMP request for id {0} : {1}", new Object[]{id, e});
+      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error sending DUMP request for id {0} : {1}", 
+              new Object[]{id, e.getMessage()});
       return -1;
     } catch (IOException e) {
       return -1;

@@ -151,15 +151,15 @@ public class AppAdmin extends Thread implements Shutdownable {
                 }
               }
               GNSConfig.getLogger().log(Level.FINER,
-                      "NSListenrAdmin for {0} is {1}",
+                      "AppAdmin for {0} is {1}",
                       new Object[]{app.getNodeID(), jsonArray.toString()});
 
               dumpRequestPacket.setJsonArray(jsonArray);
               Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(),
                       dumpRequestPacket.getReturnAddress());
 
-              GNSConfig.getLogger().log(Level.FINE,
-                      "NSListenrAdmin: Response to id:{0} --> {1}",
+              GNSConfig.getLogger().log(Level.FINEST,
+                      "AppAdmin: Response to id:{0} --> {1}",
                       new Object[]{dumpRequestPacket.getId(), dumpRequestPacket.toString()});
               break;
             case ADMIN_REQUEST:

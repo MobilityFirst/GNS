@@ -131,7 +131,7 @@ public class ListenerAdmin extends Thread implements Shutdownable {
             DumpRequestPacket<String> incomingPacket = new DumpRequestPacket<>(incomingJSON, handler.getGnsNodeConfig());
             int incomingId = incomingPacket.getId();
             handler.getAdmintercessor().handleIncomingDumpResponsePackets(incomingJSON, handler);
-            ClientCommandProcessorConfig.getLogger().log(Level.INFO, "ListenerAdmin: Relayed response for {0} --> {1}", new Object[]{incomingId, dumpRequestPacket.toJSONObject()});
+            ClientCommandProcessorConfig.getLogger().log(Level.FINEST, "ListenerAdmin: Relayed response for {0} --> {1}", new Object[]{incomingId, dumpRequestPacket.toJSONObject()});
             int remaining = replicationMap.get(incomingId);
             remaining -= 1;
             if (remaining > 0) {
