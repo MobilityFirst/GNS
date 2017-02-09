@@ -24,70 +24,70 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Provides an CCP (ClientCommandProcessor) address to packets. Address can be null.
+ * Provides an NS return address to packets. Address can be null.
  *
  * @author westy
  */
-public abstract class BasicPacketWithReturnAddress extends BasicPacketWithClientAddress {
+public abstract class BasicPacketWithNSReturnAddress extends BasicPacketWithClientAddress {
 
   /**
-   * ccpAddress
+   * address
    */
-  private final static String RETURN_ADDRESS = "returnAddress";
+  private final static String NS_RETURN_ADDRESS = "ns_r_address";
 
   /**
-   * returnPort
+   * port
    */
-  private final static String RETURN_PORT = "returnPort";
+  private final static String NS_RETURN_PORT = "ns_r_port";
 
   /**
    * An invalid port.
    */
   protected final static int INVALID_PORT = -1;
-  //
+
   /**
-   * This is used by the Nameservers so they know which CCP to send the packet back to.
-   * Replaces lnsId.
+   * This is used by the Select so they know which NS to send the packet back to.
    */
-  private InetSocketAddress returnAddress = null;
+  private InetSocketAddress nameServerReturnAddress = null;
 
   /**
    * Creates a BasicPacketWithReturnAddress from a JSONObject.
-   * 
+   *
    * @param json
-   * @throws JSONException 
+   * @throws JSONException
    */
-  public BasicPacketWithReturnAddress(JSONObject json) throws JSONException {
+  public BasicPacketWithNSReturnAddress(JSONObject json) throws JSONException {
     super(json);
-    String address = json.optString(RETURN_ADDRESS, null);
-    int port = json.optInt(RETURN_PORT, INVALID_PORT);
-    this.returnAddress = address != null && port != INVALID_PORT
+    String address = json.optString(NS_RETURN_ADDRESS, null);
+    int port = json.optInt(NS_RETURN_PORT, INVALID_PORT);
+    this.nameServerReturnAddress = address != null && port != INVALID_PORT
             ? new InetSocketAddress(address, port) : null;
   }
-  
+
   /**
    * Creates a BasicPacketWithCCPAddress with a null return address.
    */
-  public BasicPacketWithReturnAddress() {
-    this.returnAddress = null;
+  public BasicPacketWithNSReturnAddress() {
+    super();
+    this.nameServerReturnAddress = null;
   }
-  
+
   /**
    * Creates a BasicPacketWithReturnAddress using address as the return address.
    *
    * @param address
    */
-  public BasicPacketWithReturnAddress(InetSocketAddress address) {
-    this.returnAddress = address;
+  public BasicPacketWithNSReturnAddress(InetSocketAddress address) {
+    super();
+    this.nameServerReturnAddress = address;
   }
-  
 
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
     super.addToJSONObject(json);
-    if (returnAddress != null) {
-      json.put(RETURN_ADDRESS, returnAddress.getHostString());
-      json.put(RETURN_PORT, returnAddress.getPort());
+    if (nameServerReturnAddress != null) {
+      json.put(NS_RETURN_ADDRESS, nameServerReturnAddress.getHostString());
+      json.put(NS_RETURN_PORT, nameServerReturnAddress.getPort());
     }
   }
 
@@ -96,8 +96,17 @@ public abstract class BasicPacketWithReturnAddress extends BasicPacketWithClient
    *
    * @return an address
    */
-  public InetSocketAddress getReturnAddress() {
-    return returnAddress;
+  public InetSocketAddress getNSReturnAddress() {
+    return nameServerReturnAddress;
+  }
+  
+  /**
+   * Sets the id of the name server (usually the one that is handling this packet).
+   *
+   * @param address
+   */
+  public void setNSReturnAddress(InetSocketAddress address) {
+    this.nameServerReturnAddress = address;
   }
 
 }

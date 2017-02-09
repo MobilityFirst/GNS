@@ -27,7 +27,7 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import java.io.UnsupportedEncodingException;

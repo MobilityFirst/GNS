@@ -27,7 +27,6 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
@@ -152,52 +151,20 @@ public class AppAdmin extends Thread implements Shutdownable {
                 }
               }
               GNSConfig.getLogger().log(Level.FINER,
-                      "NSListenrAdmin for {0} is {1}",
+                      "AppAdmin for {0} is {1}",
                       new Object[]{app.getNodeID(), jsonArray.toString()});
 
               dumpRequestPacket.setJsonArray(jsonArray);
               Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(),
                       dumpRequestPacket.getReturnAddress());
 
-              GNSConfig.getLogger().log(Level.FINE,
-                      "NSListenrAdmin: Response to id:{0} --> {1}",
+              GNSConfig.getLogger().log(Level.FINEST,
+                      "AppAdmin: Response to id:{0} --> {1}",
                       new Object[]{dumpRequestPacket.getId(), dumpRequestPacket.toString()});
               break;
             case ADMIN_REQUEST:
               AdminRequestPacket adminRequestPacket = new AdminRequestPacket(incomingJSON);
               switch (adminRequestPacket.getOperation()) {
-                case DELETEALLRECORDS:
-                  GNSConfig.getLogger().log(Level.FINE,
-                          "NSListenerAdmin ({0}) : Handling DELETEALLRECORDS request",
-                          app.getNodeID());
-                  long startTime = System.currentTimeMillis();
-                  int cnt = 0;
-                  AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(app.getDB());
-                  while (cursor.hasNext()) {
-                    NameRecord nameRecord = new NameRecord(app.getDB(), cursor.nextJSONObject());
-                    //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
-                    try {
-                      NameRecord.removeNameRecord(app.getDB(), nameRecord.getName());
-                    } catch (FieldNotFoundException e) {
-                      GNSConfig.getLogger().log(Level.SEVERE,
-                              "FieldNotFoundException. Field Name =  {0}",
-                              e.getMessage());
-                      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                    //DBNameRecord.removeNameRecord(nameRecord.getName());
-                    cnt++;
-                  }
-                  GNSConfig.getLogger().log(Level.FINE,
-                          "NSListenerAdmin ({0}) : Deleting {1} records took {2}ms",
-                          new Object[]{app.getNodeID(), cnt, System.currentTimeMillis() - startTime});
-                  break;
-                case CHANGELOGLEVEL:
-                  Level level = Level.parse(adminRequestPacket.getArgument());
-                  GNSConfig.getLogger().log(Level.INFO,
-                          "Changing log level to {0}",
-                          level.getName());
-                  GNSConfig.getLogger().setLevel(level);
-                  break;
                 case CLEARCACHE:
                   GNSConfig.getLogger().log(Level.WARNING,
                           "NSListenerAdmin ({0}) : Ignoring CLEARCACHE request", app.getNodeID());

@@ -22,7 +22,6 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,9 +32,10 @@ import org.json.JSONObject;
  * We also use this to do automatic group GUID maintenence.
  *
  * @author westy
- * @param <NodeIDType>
  */
-public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDType> implements ClientRequest {
+@SuppressWarnings("deprecation")
+public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
+        implements ClientRequest {
 
   private final static String ID = "id";
   private final static String KEY = "key";
@@ -73,9 +73,10 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param otherValue
    */
   @SuppressWarnings("unchecked")
-  public SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupBehavior,
+  public SelectRequestPacket(long id, SelectOperation selectOperation, 
+          SelectGroupBehavior groupBehavior,
           String key, Object value, Object otherValue) {
-    super(null);
+    super();
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.requestId = id;
     this.key = key;
@@ -99,9 +100,10 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param minRefreshInterval
    */
   @SuppressWarnings("unchecked")
-  private SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupOperation,
+  private SelectRequestPacket(long id, SelectOperation selectOperation, 
+          SelectGroupBehavior groupOperation,
           String query, String guid, int minRefreshInterval) {
-    super(null);
+    super();
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.requestId = id;
     this.query = query;
@@ -121,8 +123,9 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param query
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeQueryRequest(long id, String query) {
-    return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.NONE, query, null, -1);
+  public static SelectRequestPacket MakeQueryRequest(long id, String query) {
+    return new SelectRequestPacket(id, SelectOperation.QUERY, 
+            SelectGroupBehavior.NONE, query, null, -1);
   }
 
   /**
@@ -135,9 +138,10 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param refreshInterval
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeGroupSetupRequest(long id, String query, String guid,
+  public static SelectRequestPacket MakeGroupSetupRequest(long id, String query,
+          String guid,
           int refreshInterval) {
-    return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP,
+    return new SelectRequestPacket(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP,
             query, guid, refreshInterval);
   }
 
@@ -149,20 +153,18 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param guid
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeGroupLookupRequest(long id, String guid) {
-    return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, null, guid, -1);
+  public static SelectRequestPacket MakeGroupLookupRequest(long id, String guid) {
+    return new SelectRequestPacket(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, null, guid, -1);
   }
 
   /**
    * Constructs new SelectRequestPacket from a JSONObject
    *
    * @param json JSONObject representing this packet
-   * @param unstringer
    * @throws org.json.JSONException
    */
-  @SuppressWarnings("unchecked")
-  public SelectRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json, unstringer);
+  public SelectRequestPacket(JSONObject json) throws JSONException {
+    super(json);
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
       throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));
     }
