@@ -39,7 +39,7 @@ If a particular field `X` has a write ACL, every GUID listed under it will have 
 ### Determining access ###
 The following simple sequence of steps can be used to determine if a particular field `X` belonging to a record of GUID `R` can be read by a GUID `G`:
 
-- Does `R` has a read ACL?
+- Does `X` has a read ACL?
     - If yes 
         - Does it contain `G` or `ALL` GUIDs?
             - If yes, allow access
