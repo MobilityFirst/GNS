@@ -40,7 +40,7 @@ If a particular field `X` has a write ACL, every GUID listed under it will have 
 The following simple sequence of steps can be used to determine if a particular field `X` belonging to a record of GUID `R` can be read by a GUID `G`:
 
 <p align="center">
-  <img src="{{ site.url }}/assets/images/acl_algorithm.png"/>
+  <img src="/assets/images/acl_algorithm.png"/>
 </p>
 
 <!---
