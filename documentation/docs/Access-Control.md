@@ -39,6 +39,11 @@ If a particular field `X` has a write ACL, every GUID listed under it will have 
 ### Determining access ###
 The following simple sequence of steps can be used to determine if a particular field `X` belonging to a record of GUID `R` can be read by a GUID `G`:
 
+<p align="center">
+  <img src="/assets/images/acl_algorithm.png"/>
+</p>
+
+<!---
 - Does `X` has a read ACL?
     - If yes 
         - Does it contain `G` or `ALL` GUIDs?
@@ -56,7 +61,7 @@ The following simple sequence of steps can be used to determine if a particular 
                         - Deny access
             - If not
                 - Repeat these steps for the parent field of `X`
-
+--->
 (Example)
 
 
