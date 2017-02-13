@@ -62,13 +62,6 @@ public interface GNSApplicationInterface<NodeIDType> {
   BasicRecordMap getDB();
 
   /**
-   * Returns the node config.
-   *
-   * @return the node config
-   */
-  ReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig();
-
-  /**
    * Sends a JSON packet to a client.
    *
    * @param response

@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
 /**
  * @author arun, westy
@@ -50,6 +49,11 @@ public class GNSConfig {
   public static enum GNSC implements Config.ConfigurableEnum,
           Config.Disableable {
     /**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server. Except that as of Fall 2016 the iOS
+     * client doesn't currently support this.
+     *//**
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server. Except that as of Fall 2016 the iOS
@@ -315,7 +319,17 @@ public class GNSConfig {
      * Turn off active code handling. Default is true.
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_ACTIVE_CODE(true);
+    DISABLE_ACTIVE_CODE(true),
+    /**
+     * Server Admin port offset relative to reconfigurator port.
+     */
+    // Make sure this is different than all the other offsets.
+    SERVER_ADMIN_PORT_OFFSET(197),
+    /**
+     * Collating Admin port offset relative to reconfigurator port.
+     */
+    // Make sure this is different than all the other offsets.
+    COLLATING_ADMIN_PORT_OFFSET(297);
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;
