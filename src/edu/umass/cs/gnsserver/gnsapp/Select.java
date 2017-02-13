@@ -208,13 +208,16 @@ public class Select {
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     try {
-      // forward to all but self because...
+      
+      LOGGER.log(Level.FINER, "addresses: {0} node address: {1}", 
+              new Object[]{serverAddresses, app.getNodeAddress()});
+      // Forward to all but self because...
       for (InetSocketAddress address : serverAddresses) {
         if (!address.equals(app.getNodeAddress())) {
            InetSocketAddress offsetAddress = new InetSocketAddress(address.getAddress(),		            
                  ReconfigurationConfig.getClientFacingPort(address.getPort()));
-          LOGGER.info("NS " + app.getNodeID() + " sending select " 
-                  + outgoingJSON + " to " + offsetAddress + " (" + address + ")");
+          LOGGER.log(Level.INFO, "NS {0} sending select {1} to {2} ({3})", 
+                  new Object[]{app.getNodeID(), outgoingJSON, offsetAddress, address});
           app.sendToAddress(offsetAddress, outgoingJSON);
         }
       }

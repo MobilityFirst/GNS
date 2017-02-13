@@ -195,9 +195,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
     this.messenger = (SSLMessenger<String, JSONObject>) messenger;
     this.nodeID = messenger.getMyID().toString();
-    this.nodeAddress = messenger.getListeningSocketAddress();
-    GNSConfig.getLogger().log(Level.INFO, "=== Node {0} listening on {1}===", 
-            new Object[]{nodeID, nodeAddress});
     try {
       if (!constructed) {
         this.GnsAppConstructor((JSONMessenger<String>) messenger);
@@ -390,7 +387,9 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     this.nodeID = messenger.getMyID();
     GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<>();
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
-
+    this.nodeAddress = new InetSocketAddress(nodeConfig.getBindAddress(nodeID), nodeConfig.getNodePort(nodeID));
+    GNSConfig.getLogger().log(Level.INFO, "=== Node {0} listening on {1}===", 
+            new Object[]{nodeID, nodeAddress});
     NoSQLRecords noSqlRecords;
     try {
       Class<?> clazz = GNSConfig.GNSC.getNoSqlRecordsClass();
