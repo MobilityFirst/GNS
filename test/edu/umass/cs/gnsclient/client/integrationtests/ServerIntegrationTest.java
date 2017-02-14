@@ -3530,44 +3530,43 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
   }
 
-// FIXME: Determined why this is failing.
-//  /**
-//   * A basic test to insure that setting LNS Proxy minimally doesn't break.
-//   */
-//  
-//  @Test
-//  @Repeat(times = REPEAT)
-//  public void test_630_CheckLNSProxy() {
-//    try {
-//      //PaxosConfig.getActives() works here because the server and client use the same properties file.
-//      InetAddress lnsAddress = PaxosConfig.getActives().values().iterator().next().getAddress();
-//      clientCommands.setGNSProxy(new InetSocketAddress(lnsAddress, 24598));
-//    } catch (Exception e) {
-//      failWithStackTrace("Exception while setting proxy: ", e);
-//    }
-//    String guidString = null;
-//    try {
-//      guidString = clientCommands.lookupGuid(accountAlias);
-//    } catch (IOException | ClientException e) {
-//      failWithStackTrace("Exception while looking up guid: ", e);
-//    }
-//    JSONObject json = null;
-//    if (guidString != null) {
-//      try {
-//        json = clientCommands.lookupAccountRecord(guidString);
-//      } catch (IOException | ClientException e) {
-//        failWithStackTrace("Exception while looking up account record: ", e);
-//      }
-//    }
-//    Assert.assertNotNull("Account record is null", json);
-//    try {
-//      Assert.assertEquals("Account name doesn't match",
-//              accountAlias, json.getString(GNSProtocol.ACCOUNT_RECORD_USERNAME.toString()));
-//    } catch (JSONException e) {
-//      failWithStackTrace("Exception while looking up account name: ", e);
-//    }
-//    clientCommands.setGNSProxy(null);
-//  }
+  /**
+   * A basic test to insure that setting LNS Proxy minimally doesn't break.
+   */
+  // This requires that the LOCAL_NAME_SERVER_NODES config option be set.
+  @Test
+  @Repeat(times = REPEAT)
+  public void test_630_CheckLNSProxy() {
+    try {
+      //PaxosConfig.getActives() works here because the server and client use the same properties file.
+      InetAddress lnsAddress = PaxosConfig.getActives().values().iterator().next().getAddress();
+      clientCommands.setGNSProxy(new InetSocketAddress(lnsAddress, 24598));
+    } catch (Exception e) {
+      failWithStackTrace("Exception while setting proxy: ", e);
+    }
+    String guidString = null;
+    try {
+      guidString = clientCommands.lookupGuid(accountAlias);
+    } catch (IOException | ClientException e) {
+      failWithStackTrace("Exception while looking up guid: ", e);
+    }
+    JSONObject json = null;
+    if (guidString != null) {
+      try {
+        json = clientCommands.lookupAccountRecord(guidString);
+      } catch (IOException | ClientException e) {
+        failWithStackTrace("Exception while looking up account record: ", e);
+      }
+    }
+    Assert.assertNotNull("Account record is null", json);
+    try {
+      Assert.assertEquals("Account name doesn't match",
+              accountAlias, json.getString(GNSProtocol.ACCOUNT_RECORD_USERNAME.toString()));
+    } catch (JSONException e) {
+      failWithStackTrace("Exception while looking up account name: ", e);
+    }
+    clientCommands.setGNSProxy(null);
+  }
 
   // HELPER STUFF
   private static final String POLYGON = "Polygon";

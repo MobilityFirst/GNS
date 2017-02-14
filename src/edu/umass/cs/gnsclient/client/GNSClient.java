@@ -280,6 +280,7 @@ public class GNSClient {
 		if (isAnycast(packet)) {
 			return this.asyncClient.sendRequestAnycast(request, callback);
 		} else if (this.GNSProxy != null) {
+                  GNSClientConfig.getLogger().log(Level.INFO, "Sending using proxy to {0}", GNSProxy);
 			return this.asyncClient.sendRequest(request, this.GNSProxy,
 					callback);
 		} else {
