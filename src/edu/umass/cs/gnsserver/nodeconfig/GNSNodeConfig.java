@@ -244,9 +244,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   /**
    * Returns the TCP port of a Node.
-   * Only works for InetSocketAddress ids.
+   * Works for InetSocketAddresses and active replicas.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
-   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
    * @param id
    * @return an int

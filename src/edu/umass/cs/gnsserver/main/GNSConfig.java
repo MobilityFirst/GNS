@@ -53,11 +53,6 @@ public class GNSConfig {
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server. Except that as of Fall 2016 the iOS
      * client doesn't currently support this.
-     *//**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server. Except that as of Fall 2016 the iOS
-     * client doesn't currently support this.
      */
     ENABLE_SECRET_KEY(true),
     /**
@@ -163,7 +158,6 @@ public class GNSConfig {
     /* FIXME: arun: need to determine this timeout systematically, not an ad
 		 * hoc constant. */
     SELECT_REQUEST_TIMEOUT(5000),
-
     /**
      *
      */
