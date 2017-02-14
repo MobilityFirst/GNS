@@ -72,7 +72,7 @@ The following simple sequence of steps can be used to determine if a particular 
 
 _//Add a hyperlink to groups page_
 
-Members of a group will automatically inherit ACLs from the group GUID. Therefore, if a field has an ACL with explicit read access to a group GUID `G`, all GUIDs in `G`'s group will also have read access. This is helpful if you would like to grant access to multiple GUIDs in a similar way. For example, you can create a calendar group and put all your calendar applications (represented by their GUIDs) in this group. Granting write access to the `appointments` field in your GUID record to the group GUID will also allow all GUIDs under it to also access and update your appointments.
+Members of a group will automatically inherit ACLs from the group GUID. Therefore, if a field has an ACL with explicit read access to a group GUID `G`, all GUIDs in `G`'s group will also have read access. This is helpful if you would like to grant access to multiple GUIDs in a similar way. For example, you can create a calendar group and put all your calendar applications (represented by their GUIDs) in this group. Granting write access for the `appointments` field in your GUID record to the group GUID will also allow all GUIDs under it to access and update your appointments.
 
 (More detailed illustration/example)
 
