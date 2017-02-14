@@ -7,7 +7,7 @@ GNS is not just intended to be used to read and write your own data. Often, othe
 
 ### What exactly are ACLs in GNS? ###
 
-Access control lists or ACLs are a list of permissions associated with a particular field of a GNS record. You can specify separate lists for granting read and write privileges. Every field can therefore have a read ACL and a write ACL. It should be noted that a GUID has implicit read and write access to all the fields of its entire record.
+Access control lists or ACLs are a list of permissions associated with a particular field of a GNS record. You can specify separate lists for granting read and write privileges. Every field can therefore have a read ACL and a write ACL. It should be noted that a GUID has implicit read and write access to all the fields of its entire record. Additionally, an account GUID has implicit read and write access to the fields of all GUIDs created under it.
 
 ### The special `ALL` GUID ###
 
@@ -67,6 +67,11 @@ The following simple sequence of steps can be used to determine if a particular 
 
 ### Important note ###
 1. Having no ACL at all is different from having an empty ACL. If a field has empty ACL, it is considered private and other GUIDs will not be allowed to access it. However, if no ACL is present, the default behavior is to check the parent field's ACL and then finally default to the `ALL` field's ACL.
+
+### ACL Behavior in Groups ###
+_//Add a hyperlink to groups page_
+Members of a group will automatically inherit ACLs from the group GUID. Therefore, if a field has an ACL with explicit read access to a group GUID `G`, all GUIDs in `G`'s group will also have read access. This is helpful if you would like to grant access to multiple GUIDs in a similar way. For example, you can create a calendar group and put all your calendar applications (represented by their GUIDs) in this group. Granting write access to the `appointments` field in your GUID record to the group GUID will also allow all GUIDs under it to also access and update your appointments.
+(More detailed illustration/example)
 
 ### ACL Exceptions ###
 What happens when access is denied?
