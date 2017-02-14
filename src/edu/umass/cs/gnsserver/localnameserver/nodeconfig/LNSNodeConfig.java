@@ -18,7 +18,6 @@ package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.main.PortOffsets;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.nio.interfaces.NodeConfig;

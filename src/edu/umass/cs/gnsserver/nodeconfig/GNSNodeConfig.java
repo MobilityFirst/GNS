@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableSet;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.main.PortOffsets;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.nio.nioutils.InterfaceDelayEmulator;
 
@@ -35,7 +34,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -89,57 +87,24 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Contains information about each name server. <Key = HostID, Value = NodeInfo>
    *
    */
-  private ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> hostInfoMapping;
+  private final ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> hostInfoMapping;
 
   // arun: to correct legacy hack
   private boolean addSuffix = false;
 
   /**
-   * arun: For use with gigapaxos createApp.
+   * For use with gigapaxos createApp.
    *
    * @throws IOException
    */
   public GNSNodeConfig() throws IOException {
     Map<String, InetSocketAddress> activeMap = PaxosConfig.getActives();
-    hostInfoMapping = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>();
+    hostInfoMapping = new ConcurrentHashMap<>();
     for (String active : activeMap.keySet()) {
       addHostInfo(hostInfoMapping, valueOf(active),
-              activeMap.get(active).getAddress().toString(), activeMap
-              .get(active).getAddress().toString(), activeMap
-              .get(active).getPort());
-    }
-    //hostsFile = null;
-  }
-
-  /**
-   * Creates a GNSNodeConfig for the given nameServerID and initializes it from a name server host file.
-   * This supports the new hosts.txt style format.
-   *
-   * @param hostsFile
-   * @param nameServerID - specify null to mean the CPP
-   * @throws java.io.IOException
-   */
-  public GNSNodeConfig(String hostsFile, NodeIDType nameServerID) throws IOException {
-    if (nameServerID == null) {
-      this.isCPP = true;
-    }
-    this.nodeID = nameServerID;
-
-    //this.hostsFile = hostsFile;
-    if (isOldStyleFile(hostsFile)) {
-      throw new UnsupportedOperationException("THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: " + hostsFile);
-      //initFromOldStyleFile(hostsFile, nameServerID);
-    }
-    //readHostsFile(hostsFile);
-    // Informational purposes
-    for (Entry<NodeIDType, NodeInfo<NodeIDType>> hostInfoEntry : hostInfoMapping.entrySet()) {
-      GNSConfig.getLogger().log(Level.INFO,
-              "For {0} Id: {1} Host Name:{2} IP:{3} Start Port:{4}",
-              new Object[]{nameServerID == null ? "CPP" : nameServerID.toString(),
-                hostInfoEntry.getValue().getId().toString(),
-                hostInfoEntry.getValue().getIpAddress(),
-                hostInfoEntry.getValue().getExternalIPAddress(),
-                hostInfoEntry.getValue().getStartingPortNumber()});
+              activeMap.get(active).getAddress().toString(),
+              activeMap.get(active).getAddress().toString(),
+              activeMap.get(active).getPort());
     }
   }
 
@@ -279,6 +244,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   /**
    * Returns the TCP port of a Node.
+   * Only works for InetSocketAddress ids.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
@@ -293,10 +259,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
     NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id), copy = nodeInfo;
     if ((nodeInfo = getActiveReplicaInfo(id)) != null) {
-      return nodeInfo.getStartingPortNumber() + PortOffsets.PortType.ACTIVE_REPLICA_PORT.getOffset();
-      // Special case for Reconfigurator
-    } else if ((nodeInfo = getReconfiguratorInfo(id)) != null) {
-      return nodeInfo.getStartingPortNumber() + PortOffsets.PortType.RECONFIGURATOR_PORT.getOffset();
+      return nodeInfo.getActivePort();
     } else {
       GNSConfig.getLogger().log(Level.WARNING, "NodeId {0} not a valid Id!", id.toString());
       return INVALID_PORT;
@@ -314,17 +277,17 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   @Override
   public int getServerAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
-    return (nodeInfo == null) ? INVALID_PORT : 
-            nodeInfo.getStartingPortNumber()
-            + PortOffsets.PortType.SERVER_ADMIN_PORT.getOffset();
+    return (nodeInfo == null) ? INVALID_PORT
+            : nodeInfo.getActivePort()
+            + PortOffsets.SERVER_ADMIN_PORT.getOffset();
   }
 
   @Override
   public int getCollatingAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
-      return nodeInfo.getStartingPortNumber() 
-              + PortOffsets.PortType.COLLATING_ADMIN_PORT.getOffset();
+      return nodeInfo.getActivePort()
+              + PortOffsets.COLLATING_ADMIN_PORT.getOffset();
     } else {
       return INVALID_PORT;
     }
@@ -436,7 +399,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    *
    * @return the port
    */
-  public int getPortForTopLevelNode(NodeIDType nameServerId, PortOffsets.PortType portType) {
+  public int getPortForTopLevelNode(NodeIDType nameServerId, PortOffsets portType) {
     switch (portType) {
       case SERVER_ADMIN_PORT:
         return getServerAdminPort(nameServerId);

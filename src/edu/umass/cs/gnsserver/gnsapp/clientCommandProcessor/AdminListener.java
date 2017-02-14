@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
 
-import edu.umass.cs.gnsserver.main.PortOffsets;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
@@ -27,6 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
 
+import edu.umass.cs.gnsserver.nodeconfig.PortOffsets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -127,7 +127,7 @@ public class AdminListener extends Thread implements Shutdownable {
             Set<String> serverIds = handler.getNodeConfig().getActiveReplicas();
             //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
-            Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, PortOffsets.PortType.SERVER_ADMIN_PORT, null);
+            Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, PortOffsets.SERVER_ADMIN_PORT, null);
             ClientCommandProcessorConfig.getLogger().log(Level.INFO, "ListenerAdmin: Multicast out to {0} hosts for {1} --> {2}", new Object[]{serverIds.size(), id, dumpRequestPacket.toString()});
           } else {
             // INCOMING - send it out to original requester

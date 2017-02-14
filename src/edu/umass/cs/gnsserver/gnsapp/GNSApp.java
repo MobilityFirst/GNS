@@ -59,6 +59,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
+import edu.umass.cs.gnsserver.gnsapp.packet.PacketInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
@@ -132,7 +133,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    * now use a simpler and more sensible sendToClient method that tracks the
    * original CommandPacket explicitly throughout the execution chain.
    */
-  private static final boolean enqueueCommand() {
+  private static boolean enqueueCommand() {
     return false;
   }
   /**
@@ -148,15 +149,15 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   /**
    * The non-secure http server
    */
-  GNSHttpServer httpServer = null;
+  private GNSHttpServer httpServer = null;
   /**
    * The secure http server
    */
-  GNSHttpsServer httpsServer = null;
+  private GNSHttpsServer httpsServer = null;
   /**
    *
    */
-  LocalNameServer localNameServer = null;
+  private LocalNameServer localNameServer = null;
   /**
    * The UdpDnsServer that serves DNS requests through UDP.
    */
@@ -169,11 +170,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   /**
    * Handles admin requests from the client
    */
-  AdminListener adminListener = null;
+  private AdminListener adminListener = null;
   /**
    * Handles admin requests for each replica
    */
-  AppAdminServer appAdminServer = null;
+  private AppAdminServer appAdminServer = null;
 
   /**
    * Constructor invoked via reflection by gigapaxos.
@@ -199,16 +200,16 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       }
     } catch (IOException e) {
       e.printStackTrace();
-      GNSConfig.getLogger().severe("Unable to create app: exiting");
+      GNSConfig.getLogger().severe("Unable to create GNS app: exiting");
       System.exit(1);
     }
   }
 
-  private static PacketType[] types = {PacketType.COMMAND,
+  private static final PacketType[] PACKET_TYPES = {PacketType.COMMAND,
     PacketType.SELECT_REQUEST, PacketType.SELECT_RESPONSE,
     PacketType.INTERNAL_COMMAND};
 
-  private static PacketType[] mutualAuthTypes = {PacketType.ADMIN_COMMAND};
+  private static final PacketType[] MUTUAL_AUTH_TYPES = {PacketType.ADMIN_COMMAND};
 
   /**
    * arun: The code below {@link #incrResponseCount(ClientRequest)} and
@@ -223,10 +224,9 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
             && response instanceof ResponsePacket
             && (!doneOnce && (doneOnce = true))) {
       try {
-        this.cachedResponse = ((ResponsePacket) response)
+        this.cachedResponse = ((PacketInterface) response)
                 .toJSONObject();
       } catch (JSONException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }
@@ -323,10 +323,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                   .getResponse() != null ? ((ClientRequest) request)
                           .getResponse().getSummary()
                           : null});
-        this.outstanding.remove(request);
+        this.outstanding.remove(((RequestIdentifier) request).getRequestID());
       }
 
-    } catch (JSONException | IOException | ClientException e) {
+    } catch (JSONException | IOException | ClientException | InternalRequestException e) {
       e.printStackTrace();
     } catch (FailedDBOperationException e) {
       // all database operations throw this exception, therefore we keep
@@ -340,11 +340,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       GNSConfig.getLogger().log(Level.SEVERE,
               "Error handling request: {0}", request.toString());
       e.printStackTrace();
-    } catch (InternalRequestException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
     }
-
     return executed;
   }
 
@@ -395,10 +391,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       Class<?> clazz = GNSConfig.GNSC.getNoSqlRecordsClass();
       Constructor<?> constructor = clazz.getConstructor(String.class, int.class);
       noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, Config.getGlobalInt(GNSConfig.GNSC.MONGO_PORT));
-      GNSConfig.getLogger().info("Created noSqlRecords class: " + clazz.getName());
+      GNSConfig.getLogger().log(Level.INFO, "Created noSqlRecords class: {0}", clazz.getName());
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
       // fallback plan
-      GNSConfig.getLogger().warning("Problem creating noSqlRecords from config:" + e);
+      GNSConfig.getLogger().log(Level.WARNING, "Problem creating noSqlRecords from config:{0}", e.getMessage());
       noSqlRecords = new MongoRecords(nodeID, Config.getGlobalInt(GNSConfig.GNSC.MONGO_PORT));
     }
     this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
@@ -572,7 +568,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    */
   @Override
   public Set<IntegerPacketType> getRequestTypes() {
-    return new HashSet<>(Arrays.asList(types));
+    return new HashSet<>(Arrays.asList(PACKET_TYPES));
   }
 
   /**
@@ -581,7 +577,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    */
   @Override
   public Set<IntegerPacketType> getMutualAuthRequestTypes() {
-    Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(mutualAuthTypes));
+    Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(MUTUAL_AUTH_TYPES));
     if (InternalCommandPacket.SEPARATE_INTERNAL_TYPE) {
       maTypes.add(PacketType.INTERNAL_COMMAND);
     }
@@ -655,8 +651,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         NameRecord.removeNameRecord(nameRecordDB, name);
       } else // state does not equal null so we either create a new record
       // or update the existing one
-      {
-        if (!NameRecord.containsRecord(nameRecordDB, name)) {
+       if (!NameRecord.containsRecord(nameRecordDB, name)) {
           // create a new record
           try {
             ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
@@ -678,7 +673,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                     "Problem updating state: {0}", e.getMessage());
           }
         }
-      }
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE,
