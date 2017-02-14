@@ -77,8 +77,7 @@ public class UdpDnsServer extends Thread implements Shutdownable {
    */
   public UdpDnsServer(InetAddress addr, int port, String dnsServerIP, String gnsServerIP,
           ClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
-	// set it to null to make it non-recursive
-    this.dnsServer = null; //dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
+    this.dnsServer = dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
     this.gnsServer = gnsServerIP != null ? new SimpleResolver(gnsServerIP) : null;
     this.dnsCache = dnsServerIP != null ? new Cache() : null;
     this.dnsServerIP = dnsServerIP;
