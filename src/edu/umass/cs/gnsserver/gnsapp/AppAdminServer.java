@@ -45,9 +45,11 @@ import java.util.logging.Level;
 /**
  * A separate thread that runs in the NameServer that handles administrative (AKA non-data related, non-user)
  * type operations. All of the things in here are for server administration and debugging.
+ * Gets requests from Admintercessor through the AdminListener
+ * looks up stuff in the database and returns the results back to the AdminListener.
  */
 @SuppressWarnings("unchecked")
-public class AppAdmin extends Thread implements Shutdownable {
+public class AppAdminServer extends Thread implements Shutdownable {
 
   /**
    * Socket over which active name server request arrive *
@@ -64,16 +66,16 @@ public class AppAdmin extends Thread implements Shutdownable {
    * @param app
    * @param gnsNodeConfig
    */
-  public AppAdmin(GNSApplicationInterface<String> app, GNSNodeConfig<String> gnsNodeConfig) {
+  public AppAdminServer(GNSApplicationInterface<String> app, GNSNodeConfig<String> gnsNodeConfig) {
     super("NSListenerAdmin");
     this.app = app;
     this.gnsNodeConfig = gnsNodeConfig;
     try {
-      this.serverSocket = new ServerSocket(gnsNodeConfig.getAdminPort(app.getNodeID()));
+      this.serverSocket = new ServerSocket(gnsNodeConfig.getServerAdminPort(app.getNodeID()));
     } catch (IOException e) {
       GNSConfig.getLogger().log(Level.SEVERE,
               "Unable to create NSListenerAdmin server on port {0}: {1}",
-              new Object[]{gnsNodeConfig.getAdminPort(app.getNodeID()), e});
+              new Object[]{gnsNodeConfig.getServerAdminPort(app.getNodeID()), e});
     }
   }
 

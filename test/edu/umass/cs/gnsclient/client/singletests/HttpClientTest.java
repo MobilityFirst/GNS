@@ -675,7 +675,7 @@ public class HttpClientTest extends DefaultGNSTest {
     }
   }
 
-  /*
+  /**
    *
    */
   @Test

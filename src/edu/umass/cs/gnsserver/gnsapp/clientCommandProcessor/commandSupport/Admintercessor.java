@@ -23,7 +23,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.AdminListener;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
@@ -54,6 +54,8 @@ import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 
 /**
  * Implements some administrative functions for accessing the GNS.
+ * Uses the AdminListener to push stuff out to servers and listen for 
+ * responses.
  *
  * @author westy
  */
@@ -84,17 +86,17 @@ public class Admintercessor {
   private final ConcurrentMap<Integer, Map<String, TreeSet<NameRecord>>> dumpResult;
 
   /**
-   *
+   * The thread that collects results from the servers.
    */
-  private ListenerAdmin listenerAdmin = null;
+  private AdminListener adminListener = null;
 
   /**
    * Sets the listener admin.
    *
-   * @param listenerAdmin
+   * @param adminListener
    */
-  public void setListenerAdmin(ListenerAdmin listenerAdmin) {
-    this.listenerAdmin = listenerAdmin;
+  public void setAdminListener(AdminListener adminListener) {
+    this.adminListener = adminListener;
   }
 
   {
@@ -192,7 +194,8 @@ public class Admintercessor {
 
   // DUMP
   /**
-   * Sends the dump command to the LNS.
+   * Sends the dump command to the LNS. Waits for a response
+   * which is returned.
    *
    * @param handler
    * @return a string containing the contents of the GNS
@@ -380,9 +383,9 @@ public class Admintercessor {
     int id = nextDumpRequestID();
     ClientCommandProcessorConfig.getLogger().log(Level.INFO, "Sending dump request id = {0}", id);
     try {
-      sendAdminPacket(new DumpRequestPacket<String>(id,
+      handOffAdminPacket(new DumpRequestPacket<String>(id,
               new InetSocketAddress(handler.getNodeAddress().getAddress(),
-                      handler.getGnsNodeConfig().getCcpAdminPort(handler.getActiveReplicaID())),
+                      handler.getGnsNodeConfig().getCollatingAdminPort(handler.getActiveReplicaID())),
               tagName).toJSONObject(), handler);
     } catch (JSONException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error sending DUMP request for id {0} : {1}", 
@@ -394,10 +397,10 @@ public class Admintercessor {
     return id;
   }
 
-  private void sendAdminPacket(JSONObject json, ClientRequestHandlerInterface handler) throws IOException {
-    if (listenerAdmin != null) {
-      ClientCommandProcessorConfig.getLogger().log(Level.INFO, "Sending admin packet = {0}", json);
-      listenerAdmin.handlePacket(json, null, handler);
+  private void handOffAdminPacket(JSONObject json, ClientRequestHandlerInterface handler) throws IOException {
+    if (adminListener != null) {
+      ClientCommandProcessorConfig.getLogger().log(Level.INFO, "Calling listenerAdmin admin with packet = {0}", json);
+      adminListener.handlePacket(json, null, handler);
     } else {
       ClientCommandProcessorConfig.getLogger().log(Level.INFO, "LISTENER ADMIN HAS NOT BEEN SET!");
     }

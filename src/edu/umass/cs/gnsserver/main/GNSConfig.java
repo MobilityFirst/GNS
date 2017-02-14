@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
 /**
  * @author arun, westy
@@ -159,7 +158,6 @@ public class GNSConfig {
     /* FIXME: arun: need to determine this timeout systematically, not an ad
 		 * hoc constant. */
     SELECT_REQUEST_TIMEOUT(5000),
-
     /**
      *
      */
@@ -315,7 +313,17 @@ public class GNSConfig {
      * Turn off active code handling. Default is true.
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_ACTIVE_CODE(true);
+    DISABLE_ACTIVE_CODE(true),
+    /**
+     * Server Admin port offset relative to reconfigurator port.
+     */
+    // Make sure this is different than all the other offsets.
+    SERVER_ADMIN_PORT_OFFSET(197),
+    /**
+     * Collating Admin port offset relative to reconfigurator port.
+     */
+    // Make sure this is different than all the other offsets.
+    COLLATING_ADMIN_PORT_OFFSET(297);
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;
