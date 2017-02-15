@@ -53,16 +53,18 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class handles select operations which have a similar semantics to an SQL SELECT.
@@ -201,22 +203,22 @@ public class Select {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
       packet.setQuery(NSGroupAccess.getQueryString(header, packet.getGuid(), app.getRequestHandler()));
     }
-    InetSocketAddress returnAddress = new InetSocketAddress(app.getNodeAddress().getAddress(),		            
-                 ReconfigurationConfig.getClientFacingPort(app.getNodeAddress().getPort()));
+    InetSocketAddress returnAddress = new InetSocketAddress(app.getNodeAddress().getAddress(),
+            ReconfigurationConfig.getClientFacingPort(app.getNodeAddress().getPort()));
     packet.setNSReturnAddress(returnAddress);
     //packet.setNameServerID(app.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     try {
-      
-      LOGGER.log(Level.FINER, "addresses: {0} node address: {1}", 
+
+      LOGGER.log(Level.FINER, "addresses: {0} node address: {1}",
               new Object[]{serverAddresses, app.getNodeAddress()});
       // Forward to all but self because...
       for (InetSocketAddress address : serverAddresses) {
         if (!address.equals(app.getNodeAddress())) {
-           InetSocketAddress offsetAddress = new InetSocketAddress(address.getAddress(),		            
-                 ReconfigurationConfig.getClientFacingPort(address.getPort()));
-          LOGGER.log(Level.INFO, "NS {0} sending select {1} to {2} ({3})", 
+          InetSocketAddress offsetAddress = new InetSocketAddress(address.getAddress(),
+                  ReconfigurationConfig.getClientFacingPort(address.getPort()));
+          LOGGER.log(Level.INFO, "NS {0} sending select {1} to {2} ({3})",
                   new Object[]{app.getNodeID(), outgoingJSON, offsetAddress, address});
           app.sendToAddress(offsetAddress, outgoingJSON);
         }
@@ -376,9 +378,9 @@ public class Select {
     return SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, -1, null, new JSONArray(guids));
   }
 
-  private static void handledAllServersResponded(InternalRequestHeader header, 
+  private static void handledAllServersResponded(InternalRequestHeader header,
           SelectResponsePacket packet, NSSelectInfo info,
-          GNSApplicationInterface<String> replica) throws JSONException, 
+          GNSApplicationInterface<String> replica) throws JSONException,
           ClientException, IOException, InternalRequestException {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
@@ -387,7 +389,7 @@ public class Select {
     // we're done processing this select query
     QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
 
-    // Pull the records out of the info structure
+    // Create a response from the returned guids
     SelectResponsePacket response = createReponsePacket(header, packet.getId(), packet.getReturnAddress(), guids, replica);
     // and put the result where the coordinator can see it.
     QUERY_RESULT.put(packet.getNsQueryId(), response);
@@ -438,6 +440,30 @@ public class Select {
     NSSelectInfo info = new NSSelectInfo(id, serverAddresses, selectOperation, groupBehavior, query, minRefreshInterval, guid);
     QUERIES_IN_PROGRESS.put(id, info);
     return id;
+  }
+
+  private static List<String> getFieldsFromQuery(String line) {
+    List<String> result = new ArrayList<>();
+    // Create a Pattern object
+    Matcher m = Pattern.compile("~\\w+").matcher(line);
+    // Now create matcher object.
+    while (m.find()) {
+      result.add(m.group().substring(1));
+    }
+    return result;
+  }
+
+  private static List<String> getFieldsForQueryType(SelectRequestPacket request) {
+    switch (request.getSelectOperation()) {
+      case EQUALS:
+      case NEAR:
+      case WITHIN:
+        return new ArrayList<>(Arrays.asList(request.getKey()));
+      case QUERY:
+        return getFieldsFromQuery(request.getQuery());
+      default:
+        return new ArrayList<>();
+    }
   }
 
   private static JSONArray getJSONRecordsForSelect(SelectRequestPacket request,
@@ -498,4 +524,16 @@ public class Select {
     }
   }
 
+  public static void main(String[] args) throws JSONException, UnknownHostException {
+      String testQuery = "{\"~geoLocationCurrent\": {"
+            + "      $geoWithin: {"
+            + "         $geometry: {"
+            + "            type: \"Polygon\","
+            + "            coordinates: [ <coordinates> ]\n"
+            + "         }"
+            + "      }"
+            + "   }"
+            + "}";
+      System.out.println(getFieldsFromQuery(testQuery));
+  }
 }

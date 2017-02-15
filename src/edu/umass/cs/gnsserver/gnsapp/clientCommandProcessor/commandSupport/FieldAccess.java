@@ -570,15 +570,17 @@ public class FieldAccess {
   /// SELECT METHODS
   ///
 
-  private static JSONArray executeSelect(InternalRequestHeader header, SelectOperation operation, String key, Object value, Object otherValue, 
+  private static JSONArray executeSelect(InternalRequestHeader header, SelectOperation operation, String reader, String key, Object value, Object otherValue, 
+          String signature, String message,
           GNSApplicationInterface<String> app)
           throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
     SelectRequestPacket packet = new SelectRequestPacket(-1, operation,
-            SelectGroupBehavior.NONE, key, value, otherValue);
-    return executeSelectHelper(header, packet, app);
+            SelectGroupBehavior.NONE, reader, key, value, otherValue);
+    return executeSelectHelper(header, packet, signature, message, app);
   }
 
-  private static JSONArray executeSelectHelper(InternalRequestHeader header, SelectRequestPacket packet, 
+  private static JSONArray executeSelectHelper(InternalRequestHeader header, SelectRequestPacket packet,
+          String signature, String message,
           GNSApplicationInterface<String> app)
           throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
     SelectResponsePacket responsePacket = Select.handleSelectRequestFromClient(header, packet, app);
@@ -593,16 +595,22 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve all the guids matching the request.
    *
    * @param header
+   * @param reader
    * @param key - the key to match
    * @param value - the value to match
+   * @param signature
+   * @param message
    * @param handler
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse select(InternalRequestHeader header, String key, Object value, ClientRequestHandlerInterface handler) throws InternalRequestException {
+  public static CommandResponse select(InternalRequestHeader header, String reader, String key, Object value, 
+          String signature, String message,
+          ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      result = executeSelect(header, SelectOperation.EQUALS, key, value, null, handler.getApp());
+      result = executeSelect(header, SelectOperation.EQUALS, reader, key, value, null, 
+              signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
@@ -616,17 +624,24 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve all the guids within an area specified by a bounding box.
    *
    * @param header
+   * @param reader
    * @param key - the field to match - should be a location field
    * @param value - a bounding box
+   * @param signature
+   * @param message
    * @param handler
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse selectWithin(InternalRequestHeader header, String key, String value,
+  public static CommandResponse selectWithin(InternalRequestHeader header, String reader, 
+          String key, String value,
+          String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      result = executeSelect(header, SelectOperation.WITHIN, key, value, null, handler.getApp());
+      result = executeSelect(header, SelectOperation.WITHIN, reader, key, value, null, 
+              signature, message, 
+              handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
@@ -641,18 +656,25 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve all the guids within maxDistance of value.
    *
    * @param header
+   * @param reader
    * @param key - the field to match - should be a location field
    * @param value - the position
    * @param maxDistance - the maximum distance from position
+   * @param signature
+   * @param message
    * @param handler
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse selectNear(InternalRequestHeader header, String key, String value, String maxDistance,
+  public static CommandResponse selectNear(InternalRequestHeader header, 
+          String reader, String key, String value, String maxDistance,
+          String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      result = executeSelect(header, SelectOperation.NEAR, key, value, maxDistance, handler.getApp());
+      result = executeSelect(header, SelectOperation.NEAR, reader, key, value, maxDistance, 
+              signature, message, 
+              handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
@@ -666,16 +688,22 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve all the guid matching the query.
    *
    * @param header
+   * @param reader
    * @param query
+   * @param signature
+   * @param message
    * @param handler
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse selectQuery(InternalRequestHeader header, String query, ClientRequestHandlerInterface handler) throws InternalRequestException {
+  public static CommandResponse selectQuery(InternalRequestHeader header, 
+          String reader, String query, 
+          String signature, String message,
+          ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, query);
-      result = executeSelectHelper(header, packet, handler.getApp());
+      SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, reader, query);
+      result = executeSelectHelper(header, packet, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
@@ -690,18 +718,22 @@ public class FieldAccess {
    *
    * @param header
    * @param commandPacket
+   * @param reader
    * @param accountGuid
    * @param query
    * @param publicKey
    * @param interval - the refresh interval (queries made more quickly than this will get a cached value)
+   * @param signature
+   * @param message
    * @param handler
    * @return a command response
    * @throws InternalRequestException
    */
   public static CommandResponse selectGroupSetupQuery(InternalRequestHeader header,
           CommandPacket commandPacket,
-          String accountGuid, String query, String publicKey,
+          String reader, String accountGuid, String query, String publicKey,
           int interval,
+          String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     //String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
@@ -741,8 +773,8 @@ public class FieldAccess {
 
     try {
       SelectRequestPacket packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
-              query, guid, interval);
-      result = executeSelectHelper(header, packet, handler.getApp());
+              reader, query, guid, interval);
+      result = executeSelectHelper(header, packet, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
@@ -756,16 +788,22 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve the members of a context aware group guid.
    *
    * @param header
+   * @param reader
    * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
+   * @param signature
+   * @param message
    * @param handler
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse selectGroupLookupQuery(InternalRequestHeader header, String guid, ClientRequestHandlerInterface handler) throws InternalRequestException {
+  public static CommandResponse selectGroupLookupQuery(InternalRequestHeader header, 
+          String reader, String guid, 
+          String signature, String message,
+          ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      SelectRequestPacket packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
-      result = executeSelectHelper(header, packet, handler.getApp());
+      SelectRequestPacket packet = SelectRequestPacket.MakeGroupLookupRequest(-1, reader, guid);
+      result = executeSelectHelper(header, packet, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }

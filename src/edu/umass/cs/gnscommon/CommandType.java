@@ -680,7 +680,10 @@ public enum CommandType {
           + "This command is a shorthand for a mongo find query.",
           new String[]{GNSProtocol.FIELD.toString(),
             GNSProtocol.VALUE.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.READER.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
@@ -693,7 +696,10 @@ public enum CommandType {
           new String[]{GNSProtocol.FIELD.toString(),
             GNSProtocol.NEAR.toString(),
             GNSProtocol.MAX_DISTANCE.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.READER.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
@@ -706,7 +712,10 @@ public enum CommandType {
           + "This command is a shorthand for a mongo $geoWithin query.",
           new String[]{GNSProtocol.FIELD.toString(),
             GNSProtocol.WITHIN.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.READER.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
@@ -716,7 +725,10 @@ public enum CommandType {
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.READER.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   //
   // Select commands that maintain a group guid
   //
@@ -731,7 +743,10 @@ public enum CommandType {
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.GUID.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.READER.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
@@ -743,7 +758,10 @@ public enum CommandType {
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.QUERY.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.READER.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
@@ -755,7 +773,10 @@ public enum CommandType {
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString(),
             GNSProtocol.GUID.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.READER.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
@@ -769,7 +790,10 @@ public enum CommandType {
           new String[]{GNSProtocol.GUID.toString(),
             GNSProtocol.QUERY.toString(),
             GNSProtocol.INTERVAL.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.READER.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
@@ -783,7 +807,10 @@ public enum CommandType {
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString(),
             GNSProtocol.INTERVAL.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.READER.toString(),
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   //
   // Account commands
   //
