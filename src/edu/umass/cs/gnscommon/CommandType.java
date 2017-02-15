@@ -681,7 +681,7 @@ public enum CommandType {
           new String[]{GNSProtocol.FIELD.toString(),
             GNSProtocol.VALUE.toString()},
           // optional parameters
-          new String[]{GNSProtocol.READER.toString(),
+          new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
@@ -697,7 +697,7 @@ public enum CommandType {
             GNSProtocol.NEAR.toString(),
             GNSProtocol.MAX_DISTANCE.toString()},
           // optional parameters
-          new String[]{GNSProtocol.READER.toString(),
+          new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
@@ -713,7 +713,7 @@ public enum CommandType {
           new String[]{GNSProtocol.FIELD.toString(),
             GNSProtocol.WITHIN.toString()},
           // optional parameters
-          new String[]{GNSProtocol.READER.toString(),
+          new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
@@ -726,7 +726,7 @@ public enum CommandType {
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString()},
           // optional parameters
-          new String[]{GNSProtocol.READER.toString(),
+          new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   //
@@ -742,9 +742,9 @@ public enum CommandType {
           + "Returns all records for a group guid that was previously setup with SelectGroupSetupQuery. "
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
-          new String[]{GNSProtocol.GUID.toString()},
+          new String[]{GNSProtocol.ACCOUNT_GUID.toString()},
           // optional parameters
-          new String[]{GNSProtocol.READER.toString(),
+          new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
@@ -756,10 +756,10 @@ public enum CommandType {
           + "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
-          new String[]{GNSProtocol.GUID.toString(),
+          new String[]{GNSProtocol.ACCOUNT_GUID.toString(),
             GNSProtocol.QUERY.toString()},
           // optional parameters
-          new String[]{GNSProtocol.READER.toString(),
+          new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
@@ -772,9 +772,9 @@ public enum CommandType {
           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
           + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString(),
-            GNSProtocol.GUID.toString()},
+            GNSProtocol.ACCOUNT_GUID.toString()},
           // optional parameters
-          new String[]{GNSProtocol.READER.toString(),
+          new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
@@ -787,11 +787,11 @@ public enum CommandType {
           + "Interval is the minimum refresh interval of the query - lookups happening more quickly than this "
           + "interval will retrieve a stale value.For details see http://gns.name/wiki/index.php/Query_Syntax"
           + "Values are returned as a JSON array of guids.",
-          new String[]{GNSProtocol.GUID.toString(),
+          new String[]{GNSProtocol.ACCOUNT_GUID.toString(),
             GNSProtocol.QUERY.toString(),
             GNSProtocol.INTERVAL.toString()},
           // optional parameters
-          new String[]{GNSProtocol.READER.toString(),
+          new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
@@ -808,7 +808,7 @@ public enum CommandType {
           new String[]{GNSProtocol.QUERY.toString(),
             GNSProtocol.INTERVAL.toString()},
           // optional parameters
-          new String[]{GNSProtocol.READER.toString(),
+          new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   //

@@ -60,11 +60,11 @@ public class SelectQuery extends AbstractCommand {
   @Override
   public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException, InternalRequestException {
     JSONObject json = commandPacket.getCommand();
-    String reader = json.optString(GNSProtocol.READER.toString(), null);
+    String reader = json.optString(GNSProtocol.GUID.toString(), null);
     String query = json.getString(GNSProtocol.QUERY.toString());
     String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
     String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
-    return FieldAccess.selectQuery(header, reader, query, signature, message, handler);
+    return FieldAccess.selectQuery(header, commandPacket, reader, query, signature, message, handler);
   }
 
 }

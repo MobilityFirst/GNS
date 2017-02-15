@@ -60,8 +60,8 @@ public class SelectGroupSetupQuery extends AbstractCommand {
   @Override
   public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException, InternalRequestException {
     JSONObject json = commandPacket.getCommand();
-    String reader = json.optString(GNSProtocol.READER.toString(), null);
-    String accountGuid = json.getString(GNSProtocol.GUID.toString());
+    String reader = json.optString(GNSProtocol.GUID.toString(), null);
+    String accountGuid = json.getString(GNSProtocol.ACCOUNT_GUID.toString());
     String query = json.getString(GNSProtocol.QUERY.toString());
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
     int interval = json.optInt(GNSProtocol.INTERVAL.toString(), -1);

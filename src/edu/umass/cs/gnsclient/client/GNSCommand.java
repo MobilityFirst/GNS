@@ -1600,7 +1600,7 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket selectQuery(GuidEntry reader, String query)
           throws ClientException {
     return getCommand(CommandType.SelectQuery, reader,
-            GNSProtocol.READER.toString(), reader.getGuid(),
+            GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.QUERY.toString(), query);
   }
 
@@ -1628,7 +1628,7 @@ public class GNSCommand extends CommandPacket {
           GuidEntry accountGUID, String publicKey, String query, int interval)
           throws ClientException {
     return getCommand(CommandType.SelectGroupSetupQuery,
-            GNSProtocol.GUID.toString(), accountGUID.getGuid(),
+            GNSProtocol.ACCOUNT_GUID.toString(), accountGUID.getGuid(),
             GNSProtocol.PUBLIC_KEY.toString(), publicKey,
             GNSProtocol.QUERY.toString(), query,
             GNSProtocol.INTERVAL.toString(), interval);
@@ -1658,8 +1658,8 @@ public class GNSCommand extends CommandPacket {
           GuidEntry accountGUID, String publicKey, String query, int interval)
           throws ClientException {
     return getCommand(CommandType.SelectGroupSetupQuery, reader,
-            GNSProtocol.READER.toString(), reader.getGuid(),
-            GNSProtocol.GUID.toString(), accountGUID.getGuid(),
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.ACCOUNT_GUID.toString(), accountGUID.getGuid(),
             GNSProtocol.PUBLIC_KEY.toString(), publicKey,
             GNSProtocol.QUERY.toString(), query,
             GNSProtocol.INTERVAL.toString(), interval);
@@ -1680,7 +1680,7 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket selectLookupGroupQuery(String groupGUID)
           throws ClientException {
     return getCommand(CommandType.SelectGroupLookupQuery,
-            GNSProtocol.GUID.toString(), groupGUID);
+            GNSProtocol.ACCOUNT_GUID.toString(), groupGUID);
   }
 
   /**
@@ -1699,8 +1699,8 @@ public class GNSCommand extends CommandPacket {
           String groupGUID)
           throws ClientException {
     return getCommand(CommandType.SelectGroupLookupQuery, reader,
-            GNSProtocol.READER.toString(), reader.getGuid(),
-            GNSProtocol.GUID.toString(), groupGUID);
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.ACCOUNT_GUID.toString(), groupGUID);
   }
 
   /**
@@ -1735,7 +1735,7 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket select(GuidEntry reader, String field, String value)
           throws ClientException {
     return getCommand(CommandType.Select, reader,
-            GNSProtocol.READER.toString(), reader.getGuid(),
+            GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.FIELD.toString(), field, 
             GNSProtocol.VALUE.toString(), value);
   }
@@ -1780,7 +1780,7 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket selectWithin(GuidEntry reader, String field, JSONArray value)
           throws ClientException {
     return getCommand(CommandType.SelectWithin, reader,
-            GNSProtocol.READER.toString(), reader.getGuid(),
+            GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.FIELD.toString(), field, 
             GNSProtocol.WITHIN.toString(),
             value.toString());
@@ -1827,7 +1827,7 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket selectNear(GuidEntry reader, String field, JSONArray value,
           Double maxDistance) throws ClientException {
     return getCommand(CommandType.SelectNear, reader, 
-            GNSProtocol.READER.toString(), reader.getGuid(),
+            GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.FIELD.toString(), field, 
             GNSProtocol.NEAR.toString(), value.toString(), 
             GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance));
@@ -1958,8 +1958,10 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket activeCodeGet(String targetGUID,
           String action, GuidEntry querierGUID) throws ClientException {
-    return getCommand(CommandType.GetCode, querierGUID, GNSProtocol.GUID.toString(),
-            targetGUID, GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.READER.toString(), querierGUID.getGuid());
+    return getCommand(CommandType.GetCode, querierGUID, 
+            GNSProtocol.GUID.toString(), targetGUID, 
+            GNSProtocol.AC_ACTION.toString(), action, 
+            GNSProtocol.READER.toString(), querierGUID.getGuid());
   }
 
   /* ********************* More extended commands ********************** */

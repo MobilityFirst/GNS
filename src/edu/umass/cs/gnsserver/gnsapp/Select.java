@@ -442,30 +442,6 @@ public class Select {
     return id;
   }
 
-  private static List<String> getFieldsFromQuery(String line) {
-    List<String> result = new ArrayList<>();
-    // Create a Pattern object
-    Matcher m = Pattern.compile("~\\w+").matcher(line);
-    // Now create matcher object.
-    while (m.find()) {
-      result.add(m.group().substring(1));
-    }
-    return result;
-  }
-
-  private static List<String> getFieldsForQueryType(SelectRequestPacket request) {
-    switch (request.getSelectOperation()) {
-      case EQUALS:
-      case NEAR:
-      case WITHIN:
-        return new ArrayList<>(Arrays.asList(request.getKey()));
-      case QUERY:
-        return getFieldsFromQuery(request.getQuery());
-      default:
-        return new ArrayList<>();
-    }
-  }
-
   private static JSONArray getJSONRecordsForSelect(SelectRequestPacket request,
           GNSApplicationInterface<String> ar) throws FailedDBOperationException {
     JSONArray jsonRecords = new JSONArray();
@@ -522,18 +498,5 @@ public class Select {
         LOGGER.log(Level.FINE, "NS{0} DID NOT ADD record for {1}", new Object[]{ar.getNodeID(), name});
       }
     }
-  }
-
-  public static void main(String[] args) throws JSONException, UnknownHostException {
-      String testQuery = "{\"~geoLocationCurrent\": {"
-            + "      $geoWithin: {"
-            + "         $geometry: {"
-            + "            type: \"Polygon\","
-            + "            coordinates: [ <coordinates> ]\n"
-            + "         }"
-            + "      }"
-            + "   }"
-            + "}";
-      System.out.println(getFieldsFromQuery(testQuery));
   }
 }

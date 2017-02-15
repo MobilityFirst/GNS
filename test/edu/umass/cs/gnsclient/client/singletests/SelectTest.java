@@ -85,7 +85,7 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_01_CreateGuids() {
+  public void test_10_CreateGuids() {
     try {
       westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
       samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
@@ -100,7 +100,7 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_02_cats() {
+  public void test_20_cats() {
     try {
       clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "cats", "whacky", westyEntry);
 
@@ -148,7 +148,21 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_03_BasicSelect() {
+  public void test_30_BasicSelect() {
+    try {
+      JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
+      // best we can do since there will be one, but possibly more objects in results
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
+    }
+  }
+  
+  /**
+   *
+   */
+  @Test
+  public void test_31_BasicSelectWorldReadable() {
     try {
       JSONArray result = clientCommands.select("cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
@@ -162,7 +176,7 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_04_GeoSpatialSelect() {
+  public void test_40_GeoSpatialSelect() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(12));
@@ -178,7 +192,7 @@ public class SelectTest extends DefaultGNSTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = clientCommands.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
+      JSONArray result = clientCommands.selectNear(masterGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (JSONException | ClientException | IOException e) {
@@ -196,7 +210,7 @@ public class SelectTest extends DefaultGNSTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
+      JSONArray result = clientCommands.selectWithin(masterGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (JSONException | ClientException | IOException e) {
@@ -208,8 +222,53 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_05_QuerySelect() {
+  public void test_50_QuerySelect() {
     String fieldName = "testQuery";
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
+        createdGuids.add(testEntry); // save them so we can delete them later
+        JSONArray array = new JSONArray(Arrays.asList(25));
+        clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
+      }
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
+    }
+
+    try {
+      String query = "~" + fieldName + " : ($gt: 0)";
+      JSONArray result = clientCommands.selectQuery(masterGuid, query);
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing selectNear: " + e);
+    }
+
+    try {
+
+      JSONArray rect = new JSONArray();
+      JSONArray upperLeft = new JSONArray();
+      upperLeft.put(1.0);
+      upperLeft.put(1.0);
+      JSONArray lowerRight = new JSONArray();
+      lowerRight.put(-1.0);
+      lowerRight.put(-1.0);
+      rect.put(upperLeft);
+      rect.put(lowerRight);
+      JSONArray result = clientCommands.selectWithin(masterGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
+      // best we can do should be at least 5, but possibly more objects in results
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception executing selectWithin: " + e);
+    }
+  }
+  
+  @Test
+  public void test_51_QuerySelectWorldReadable() {
+    String fieldName = "testQueryWorldReadable";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
@@ -258,7 +317,7 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_06_CreateField() {
+  public void test_60_CreateField() {
     createIndexTestField = "testField" + RandomString.randomString(6);
     try {
       clientCommands.fieldUpdate(masterGuid, createIndexTestField, createGeoJSONPolygon(AREA_EXTENT));
@@ -271,7 +330,7 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_07_CreateIndex() {
+  public void test_70_CreateIndex() {
     try {
       clientCommands.fieldCreateIndex(masterGuid, createIndexTestField, "2dsphere");
     } catch (IOException | ClientException e) {
@@ -283,9 +342,9 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_08_SelectPass() {
+  public void test_80_SelectPass() {
     try {
-      JSONArray result = clientCommands.selectQuery(buildQuery(createIndexTestField, AREA_EXTENT));
+      JSONArray result = clientCommands.selectQuery(masterGuid, buildQuery(createIndexTestField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
@@ -300,7 +359,7 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_09_SelectCleanup() {
+  public void test_90_SelectCleanup() {
     try {
       for (GuidEntry guid : createdGuids) {
         clientCommands.guidRemove(masterGuid, guid.getGuid());

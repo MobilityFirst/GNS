@@ -51,6 +51,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
@@ -61,6 +63,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.time.DateUtils;
 
 /**
@@ -105,11 +109,11 @@ public class FieldAccess {
    * @param handler
    * @return the value of a single field
    */
-  public static CommandResponse lookupSingleField(InternalRequestHeader header, CommandPacket commandPacket, 
+  public static CommandResponse lookupSingleField(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    ResponseCode errorCode = signatureAndACLCheckForRead(header, commandPacket, guid, field, 
+    ResponseCode errorCode = signatureAndACLCheckForRead(header, commandPacket, guid, field,
             null, // fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -170,11 +174,11 @@ public class FieldAccess {
    * @param handler
    * @return the value of a single field
    */
-  public static CommandResponse lookupMultipleFields(InternalRequestHeader header, CommandPacket commandPacket, 
+  public static CommandResponse lookupMultipleFields(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, ArrayList<String> fields,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    ResponseCode errorCode = signatureAndACLCheckForRead(header, commandPacket, guid, 
+    ResponseCode errorCode = signatureAndACLCheckForRead(header, commandPacket, guid,
             null, //field
             fields,
             reader, signature, message, timestamp, handler.getApp());
@@ -219,7 +223,7 @@ public class FieldAccess {
           String guid, String field, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    ResponseCode errorCode = signatureAndACLCheckForRead(header, commandPacket, guid, field, 
+    ResponseCode errorCode = signatureAndACLCheckForRead(header, commandPacket, guid, field,
             null, // fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -253,12 +257,12 @@ public class FieldAccess {
    * @param timestamp
    * @return a command response
    */
-  public static CommandResponse lookupMultipleValues(InternalRequestHeader header,  CommandPacket commandPacket,
+  public static CommandResponse lookupMultipleValues(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
     ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket,
-            guid, GNSProtocol.ENTIRE_RECORD.toString(), 
+            guid, GNSProtocol.ENTIRE_RECORD.toString(),
             null, //fields
             reader, signature, message, timestamp,
             handler.getApp());
@@ -297,12 +301,12 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse lookupOne(InternalRequestHeader header, CommandPacket commandPacket, 
+  public static CommandResponse lookupOne(InternalRequestHeader header, CommandPacket commandPacket,
           String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    ResponseCode errorCode = signatureAndACLCheckForRead(header, commandPacket, guid, field, 
+    ResponseCode errorCode = signatureAndACLCheckForRead(header, commandPacket, guid, field,
             null, //fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -343,7 +347,7 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket,
-            guid, GNSProtocol.ENTIRE_RECORD.toString(), 
+            guid, GNSProtocol.ENTIRE_RECORD.toString(),
             null, //fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -565,29 +569,106 @@ public class FieldAccess {
             UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, message,
             timestamp, handler);
   }
-  
+
   ///
   /// SELECT METHODS
   ///
-
-  private static JSONArray executeSelect(InternalRequestHeader header, SelectOperation operation, String reader, String key, Object value, Object otherValue, 
+  private static JSONArray executeSelect(InternalRequestHeader header, CommandPacket commandPacket,
+          SelectOperation operation,
+          String reader, String key, Object value, Object otherValue,
           String signature, String message,
           GNSApplicationInterface<String> app)
           throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
     SelectRequestPacket packet = new SelectRequestPacket(-1, operation,
             SelectGroupBehavior.NONE, reader, key, value, otherValue);
-    return executeSelectHelper(header, packet, signature, message, app);
+    return executeSelectHelper(header, commandPacket, packet, reader, signature, message, app);
   }
 
-  private static JSONArray executeSelectHelper(InternalRequestHeader header, SelectRequestPacket packet,
-          String signature, String message,
+  private static JSONArray executeSelectHelper(InternalRequestHeader header, CommandPacket commandPacket,
+          SelectRequestPacket packet,
+          String reader, String signature, String message,
           GNSApplicationInterface<String> app)
           throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
+    // First do a signature check 
+    if (!signatureCheckForSelect(reader, signature, message, app)) {
+      return null;
+    }
+
     SelectResponsePacket responsePacket = Select.handleSelectRequestFromClient(header, packet, app);
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
-      return responsePacket.getGuids();
+      // Filter out any guids that don't pass an ACL check
+      JSONArray guids = responsePacket.getGuids();
+      signatureAndACLCheckFilter(header, commandPacket, packet, guids, reader, signature, message, app);
+      return guids;
     } else {
       return null;
+    }
+  }
+
+  private static boolean signatureCheckForSelect(String reader, String signature,
+          String message, GNSApplicationInterface<String> app) {
+    try {
+      if (signature == null || reader == null) {
+        // Return true... later check will catch fields that aren't world readable
+        LOGGER.log(Level.FINE, "Signature check for select: reader={0} signature={1}",
+                new Object[]{reader, signature});
+        return true;
+      }
+      boolean result = NSAccessSupport.verifySignature(
+              NSAuthentication.lookupPublicKeyLocallyWithCacheing(reader, app), signature, message);
+      LOGGER.log(Level.FINE, "Signature check for select: reader={0} result={1}",
+              new Object[]{reader, result});
+      return result;
+    } catch (FailedDBOperationException | InvalidKeyException | SignatureException 
+            | UnsupportedEncodingException | InvalidKeySpecException e) {
+       LOGGER.log(Level.FINE, "Signature check for select: reader={0} error={1}",
+              new Object[]{reader, e.getMessage()});
+       return false;
+    }
+  }
+
+  private static void signatureAndACLCheckFilter(InternalRequestHeader header, CommandPacket commandPacket,
+          SelectRequestPacket packet, JSONArray guids,
+          String reader, String signature, String message, GNSApplicationInterface<String> app) {
+    for (int i = 0; i < guids.length(); i++) {
+      try {
+        String guid = guids.getString(i);
+        List<String> fields = getFieldsForQueryType(packet);
+        ResponseCode responseCode = signatureAndACLCheckForRead(header, commandPacket, guid, null,
+                fields, reader, signature, message, null, app, true);
+        LOGGER.log(Level.FINE, "ACL check for select: guid={0} fields={1} responsecode={2}",
+                new Object[]{guid, fields, responseCode});
+        if (responseCode.isExceptionOrError()) {
+          guids.remove(i);
+        }
+      } catch (JSONException e) {
+
+      }
+
+    }
+  }
+
+  private static List<String> getFieldsFromQuery(String line) {
+    List<String> result = new ArrayList<>();
+    // Create a Pattern object
+    Matcher m = Pattern.compile("~\\w+").matcher(line);
+    // Now create matcher object.
+    while (m.find()) {
+      result.add(m.group().substring(1));
+    }
+    return result;
+  }
+
+  private static List<String> getFieldsForQueryType(SelectRequestPacket request) {
+    switch (request.getSelectOperation()) {
+      case EQUALS:
+      case NEAR:
+      case WITHIN:
+        return new ArrayList<>(Arrays.asList(request.getKey()));
+      case QUERY:
+        return getFieldsFromQuery(request.getQuery());
+      default:
+        return new ArrayList<>();
     }
   }
 
@@ -595,6 +676,7 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve all the guids matching the request.
    *
    * @param header
+   * @param commandPacket
    * @param reader
    * @param key - the key to match
    * @param value - the value to match
@@ -604,12 +686,13 @@ public class FieldAccess {
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse select(InternalRequestHeader header, String reader, String key, Object value, 
+  public static CommandResponse select(InternalRequestHeader header, CommandPacket commandPacket,
+          String reader, String key, Object value,
           String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      result = executeSelect(header, SelectOperation.EQUALS, reader, key, value, null, 
+      result = executeSelect(header, commandPacket, SelectOperation.EQUALS, reader, key, value, null,
               signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
@@ -624,6 +707,7 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve all the guids within an area specified by a bounding box.
    *
    * @param header
+   * @param commandPacket
    * @param reader
    * @param key - the field to match - should be a location field
    * @param value - a bounding box
@@ -633,14 +717,15 @@ public class FieldAccess {
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse selectWithin(InternalRequestHeader header, String reader, 
+  public static CommandResponse selectWithin(InternalRequestHeader header, CommandPacket commandPacket,
+          String reader,
           String key, String value,
           String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      result = executeSelect(header, SelectOperation.WITHIN, reader, key, value, null, 
-              signature, message, 
+      result = executeSelect(header, commandPacket, SelectOperation.WITHIN, reader, key, value, null,
+              signature, message,
               handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
@@ -656,6 +741,7 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve all the guids within maxDistance of value.
    *
    * @param header
+   * @param commandPacket
    * @param reader
    * @param key - the field to match - should be a location field
    * @param value - the position
@@ -666,14 +752,14 @@ public class FieldAccess {
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse selectNear(InternalRequestHeader header, 
+  public static CommandResponse selectNear(InternalRequestHeader header, CommandPacket commandPacket,
           String reader, String key, String value, String maxDistance,
           String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      result = executeSelect(header, SelectOperation.NEAR, reader, key, value, maxDistance, 
-              signature, message, 
+      result = executeSelect(header, commandPacket, SelectOperation.NEAR, reader, key, value, maxDistance,
+              signature, message,
               handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
@@ -688,6 +774,7 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve all the guid matching the query.
    *
    * @param header
+   * @param commandPacket
    * @param reader
    * @param query
    * @param signature
@@ -696,14 +783,14 @@ public class FieldAccess {
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse selectQuery(InternalRequestHeader header, 
-          String reader, String query, 
+  public static CommandResponse selectQuery(InternalRequestHeader header, CommandPacket commandPacket,
+          String reader, String query,
           String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
       SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, reader, query);
-      result = executeSelectHelper(header, packet, signature, message, handler.getApp());
+      result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
@@ -737,7 +824,7 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     //String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
-    // Check to see if the guid doesn't exists and if so createField it...
+    // Check to see if the guid doesn't exists and if so create it...
     if (AccountAccess.lookupGuidInfoAnywhere(header, guid, handler) == null) {
       // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.
       // FIXME: This should probably include authentication
@@ -774,7 +861,7 @@ public class FieldAccess {
     try {
       SelectRequestPacket packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
               reader, query, guid, interval);
-      result = executeSelectHelper(header, packet, signature, message, handler.getApp());
+      result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
@@ -788,22 +875,23 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve the members of a context aware group guid.
    *
    * @param header
+   * @param commandPacket
    * @param reader
-   * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
+   * @param accountGuid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
    * @param signature
    * @param message
    * @param handler
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse selectGroupLookupQuery(InternalRequestHeader header, 
-          String reader, String guid, 
+  public static CommandResponse selectGroupLookupQuery(InternalRequestHeader header, CommandPacket commandPacket,
+          String reader, String accountGuid,
           String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     JSONArray result;
     try {
-      SelectRequestPacket packet = SelectRequestPacket.MakeGroupLookupRequest(-1, reader, guid);
-      result = executeSelectHelper(header, packet, signature, message, handler.getApp());
+      SelectRequestPacket packet = SelectRequestPacket.MakeGroupLookupRequest(-1, reader, accountGuid);
+      result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
@@ -814,7 +902,7 @@ public class FieldAccess {
   }
 
   /**
-   * 
+   *
    * @param header
    * @param commandPacket
    * @param guid
@@ -834,6 +922,33 @@ public class FieldAccess {
           String reader, String signature, String message,
           Date timestamp,
           GNSApplicationInterface<String> app) {
+    return signatureAndACLCheckForRead(header, commandPacket, guid, field, fields, reader,
+            signature, message, timestamp, app,
+            false);
+  }
+
+  /**
+   *
+   * @param header
+   * @param commandPacket
+   * @param guid
+   * @param field
+   * @param fields
+   * @param reader
+   * @param signature
+   * @param message
+   * @param timestamp
+   * @param app
+   * @param skipSigCheck
+   * @return the ResponseCode
+   */
+  public static ResponseCode signatureAndACLCheckForRead(InternalRequestHeader header,
+          CommandPacket commandPacket,
+          String guid,
+          String field, List<String> fields,
+          String reader, String signature, String message,
+          Date timestamp,
+          GNSApplicationInterface<String> app, boolean skipSigCheck) {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
     LOGGER.log(Level.FINEST,
             "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2}",
@@ -846,7 +961,7 @@ public class FieldAccess {
       if (!header.verifyInternal() && !commandPacket.getCommandType().isMutualAuth()
               && (field != null || fields != null)) {
         errorCode = NSAuthentication.signatureAndACLCheck(header, guid, field, fields, reader,
-                signature, message, MetaDataTypeName.READ_WHITELIST, app);
+                signature, message, MetaDataTypeName.READ_WHITELIST, app, skipSigCheck);
       } else {
         LOGGER.log(Level.FINEST,
                 "reader={0}; internal={1} field={2}; fields={3};",
@@ -889,6 +1004,19 @@ public class FieldAccess {
       errorCode = ResponseCode.SIGNATURE_ERROR;
     }
     return errorCode;
+  }
+
+  public static void main(String[] args) throws JSONException, UnknownHostException {
+    String testQuery = "{\"~geoLocationCurrent\": {"
+            + "      $geoWithin: {"
+            + "         $geometry: {"
+            + "            type: \"Polygon\","
+            + "            coordinates: [ <coordinates> ]\n"
+            + "         }"
+            + "      }"
+            + "   }"
+            + "}";
+    System.out.println(getFieldsFromQuery(testQuery));
   }
 
 }
