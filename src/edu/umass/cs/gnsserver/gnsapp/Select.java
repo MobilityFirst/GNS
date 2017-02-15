@@ -25,12 +25,14 @@ package edu.umass.cs.gnsserver.gnsapp;
  * All Rights Reserved
  */
 import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -482,20 +484,31 @@ public class Select {
     return jsonRecords;
   }
 
+  private static boolean isGuidRecord(JSONObject json) {
+    JSONObject valuesMap = json.optJSONObject(NameRecord.VALUES_MAP.getName());
+    if (valuesMap != null) {
+      return valuesMap.has(AccountAccess.GUID_INFO);
+    }
+    return false;
+  }
+
   // takes the JSON records that are returned from an NS and stuffs the into the NSSelectInfo record
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info,
           GNSApplicationInterface<String> ar) throws JSONException {
     int length = jsonArray.length();
     LOGGER.log(Level.FINE,
             "NS{0} processing {1} records", new Object[]{ar.getNodeID(), length});
-    // org.json sucks... should have converted a long time ago
     for (int i = 0; i < length; i++) {
       JSONObject record = jsonArray.getJSONObject(i);
-      String name = record.getString(NameRecord.NAME.getName());
-      if (info.addResponseIfNotSeenYet(name, record)) {
-        LOGGER.log(Level.FINE, "NS{0} added record for {1}", new Object[]{ar.getNodeID(), name});
+      if (isGuidRecord(record)) { // Filter out any non-guids
+        String name = record.getString(NameRecord.NAME.getName());
+        if (info.addResponseIfNotSeenYet(name, record)) {
+          LOGGER.log(Level.FINE, "NS{0} added record for {1}", new Object[]{ar.getNodeID(), name});
+        } else {
+          LOGGER.log(Level.FINE, "NS{0} already saw record for {1}", new Object[]{ar.getNodeID(), name});
+        }
       } else {
-        LOGGER.log(Level.FINE, "NS{0} DID NOT ADD record for {1}", new Object[]{ar.getNodeID(), name});
+        LOGGER.log(Level.FINE, "NS{0} not a guid record {1}", new Object[]{ar.getNodeID(), record});
       }
     }
   }

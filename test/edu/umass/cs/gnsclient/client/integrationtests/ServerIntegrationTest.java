@@ -48,7 +48,6 @@ import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.AclAccessType;
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -69,8 +68,6 @@ import edu.umass.cs.utils.Util;
 
 import edu.umass.cs.utils.Utils;
 import java.awt.geom.Point2D;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 
@@ -1812,7 +1809,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     } catch (IOException e) {
       failWithStackTrace("Exception while doing Lookup testGuid: ", e);
     }
-     try {
+    try {
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(
               clientCommands.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
       Assert.assertThat(actual, Matchers.not(Matchers.hasItem(guidToDeleteEntry.getGuid())));
@@ -2489,18 +2486,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
   }
 
-  // @Test
-  // public void test_310_BasicSelect() {
-  // try {
-  // JSONArray result = client.select("cats", "fred");
-  // // best we can do since there will be one, but possibly more objects
-  // // in results
-  // Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
-  // } catch (Exception e) {
-  // fail("Exception when we were not expecting it: " , e);
-  // }
-  // }
-  private static final Set<GuidEntry> createdGuids = new HashSet<>();
+  private static final Set<GuidEntry> CREATED_GUIDS = new HashSet<>();
 
   // for use in SELECT test below.
   private static final long SELECT_WAIT = 500;
@@ -2522,7 +2508,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "geoTest-"
                 + RandomString.randomString(12));
-        createdGuids.add(testEntry); // save them so we can delete them later
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
         clientCommands.setLocation(testEntry, 0.0, 0.0);
 
         waitSettle(SELECT_WAIT); //See comment under the method header.
@@ -2569,26 +2555,72 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
 
     try {
-      for (GuidEntry guid : createdGuids) {
+      for (GuidEntry guid : CREATED_GUIDS) {
         clientCommands.guidRemove(masterGuid, guid.getGuid());
       }
-      createdGuids.clear();
+      CREATED_GUIDS.clear();
     } catch (ClientException | IOException e) {
       failWithStackTrace("Exception during cleanup: " + e);
     }
   }
 
   /**
-   * Tests that selectQuery works.
+   * Tests that selectQuery works with a reader.
    */
   @Test
-  public void test_330_QuerySelect() {
+  public void test_330_QuerySelectWithReader() {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid,
                 "queryTest-" + RandomString.randomString(12));
-        createdGuids.add(testEntry); // save them so we can delete them later
+        // Remove default all fields / all guids ACL;
+        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
+                GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
+        JSONArray array = new JSONArray(Arrays.asList(25));
+        clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName,
+                array, testEntry);
+      }
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception while trying to create the guids: ", e);
+    }
+
+    try {
+      waitSettle(SELECT_WAIT); //See comment under the method header for test_320_GeoSpatialSelect
+      String query = "~" + fieldName + " : ($gt: 0)";
+      JSONArray result = clientCommands.selectQuery(masterGuid, query);
+//      for (int i = 0; i < result.length(); i++) {
+//        System.out.print("guid: " + result.get(i).toString() + "  ");
+//      }
+      // best we can do should be at least 5, but possibly more objects in
+      // results
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception executing selectQuery: ", e);
+    }
+
+    try {
+      for (GuidEntry guid : CREATED_GUIDS) {
+        clientCommands.guidRemove(masterGuid, guid.getGuid());
+      }
+      CREATED_GUIDS.clear();
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception during cleanup: " + e);
+    }
+  }
+
+  /**
+   * Tests that selectQuery without a reader will return results from world readable fields.
+   */
+  @Test
+  public void test_331_QuerySelectWorldReadable() {
+    String fieldName = "testQueryWorldReadable";
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid,
+                "queryTest-" + RandomString.randomString(12));
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName,
                 array, testEntry);
@@ -2612,10 +2644,51 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
 
     try {
-      for (GuidEntry guid : createdGuids) {
+      for (GuidEntry guid : CREATED_GUIDS) {
         clientCommands.guidRemove(masterGuid, guid.getGuid());
       }
-      createdGuids.clear();
+      CREATED_GUIDS.clear();
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception during cleanup: " + e);
+    }
+  }
+
+  /**
+   * Tests that selectQuery without a reader will not return results from non-world readable fields.
+   */
+  @Test
+  public void test_332_QuerySelectWorldNotReadable() {
+    String fieldName = "testQueryWorldNotReadable";
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid,
+                "queryTest-" + RandomString.randomString(12));
+        // Remove default all fields / all guids ACL;
+        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
+                GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
+        JSONArray array = new JSONArray(Arrays.asList(25));
+        clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName,
+                array, testEntry);
+      }
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception while trying to create the guids: ", e);
+    }
+
+    try {
+      waitSettle(SELECT_WAIT); //See comment under the method header for test_320_GeoSpatialSelect
+      String query = "~" + fieldName + " : ($gt: 0)";
+      JSONArray result = clientCommands.selectQuery(query);
+      Assert.assertThat(result.length(), Matchers.equalTo(0));
+    } catch (ClientException | IOException e) {
+      failWithStackTrace("Exception executing selectQuery: ", e);
+    }
+
+    try {
+      for (GuidEntry guid : CREATED_GUIDS) {
+        clientCommands.guidRemove(masterGuid, guid.getGuid());
+      }
+      CREATED_GUIDS.clear();
     } catch (ClientException | IOException e) {
       failWithStackTrace("Exception during cleanup: " + e);
     }
@@ -3568,7 +3641,6 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 //    }
 //    clientCommands.setGNSProxy(null);
 //  }
-
   // HELPER STUFF
   private static final String POLYGON = "Polygon";
   private static final String COORDINATES = "coordinates";

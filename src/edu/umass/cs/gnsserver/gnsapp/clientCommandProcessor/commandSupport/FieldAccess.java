@@ -57,6 +57,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.utils.Config;
 import java.net.UnknownHostException;
 import java.util.Date;
@@ -598,7 +599,7 @@ public class FieldAccess {
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       // Filter out any guids that don't pass an ACL check
       JSONArray guids = responsePacket.getGuids();
-      signatureAndACLCheckFilter(header, commandPacket, packet, guids, reader, signature, message, app);
+      guids = signatureAndACLCheckFilter(header, commandPacket, packet, guids, reader, signature, message, app);
       return guids;
     } else {
       return null;
@@ -619,17 +620,17 @@ public class FieldAccess {
       LOGGER.log(Level.FINE, "Signature check for select: reader={0} result={1}",
               new Object[]{reader, result});
       return result;
-    } catch (FailedDBOperationException | InvalidKeyException | SignatureException 
-            | UnsupportedEncodingException | InvalidKeySpecException e) {
-       LOGGER.log(Level.FINE, "Signature check for select: reader={0} error={1}",
+    } catch (FailedDBOperationException | InvalidKeyException | SignatureException | UnsupportedEncodingException | InvalidKeySpecException e) {
+      LOGGER.log(Level.FINE, "Signature check for select: reader={0} error={1}",
               new Object[]{reader, e.getMessage()});
-       return false;
+      return false;
     }
   }
 
-  private static void signatureAndACLCheckFilter(InternalRequestHeader header, CommandPacket commandPacket,
+  private static JSONArray signatureAndACLCheckFilter(InternalRequestHeader header, CommandPacket commandPacket,
           SelectRequestPacket packet, JSONArray guids,
           String reader, String signature, String message, GNSApplicationInterface<String> app) {
+    JSONArray result = new JSONArray();
     for (int i = 0; i < guids.length(); i++) {
       try {
         String guid = guids.getString(i);
@@ -638,14 +639,15 @@ public class FieldAccess {
                 fields, reader, signature, message, null, app, true);
         LOGGER.log(Level.FINE, "ACL check for select: guid={0} fields={1} responsecode={2}",
                 new Object[]{guid, fields, responseCode});
-        if (responseCode.isExceptionOrError()) {
-          guids.remove(i);
+        if (responseCode.isOKResult()) {
+          result.put(guid);
         }
       } catch (JSONException e) {
-
+        // ignore json errros
+        LOGGER.log(Level.FINE, "Problem getting guid from json: {0}", e.getMessage());
       }
-
     }
+    return result;
   }
 
   private static List<String> getFieldsFromQuery(String line) {
@@ -950,7 +952,7 @@ public class FieldAccess {
           Date timestamp,
           GNSApplicationInterface<String> app, boolean skipSigCheck) {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
-    LOGGER.log(Level.FINEST,
+    LOGGER.log(Level.FINE,
             "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2}",
             new Object[]{guid, field, reader});
     try {

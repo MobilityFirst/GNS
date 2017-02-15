@@ -23,10 +23,13 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
+import edu.umass.cs.gnscommon.utils.StringUtil;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
 import java.awt.geom.Point2D;
@@ -157,7 +160,7 @@ public class SelectTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
-  
+
   /**
    *
    */
@@ -222,11 +225,14 @@ public class SelectTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_50_QuerySelect() {
+  public void test_50_QuerySelectwithReader() {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
+        // Remove default all fields / all guids ACL;
+        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
+                GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
         createdGuids.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
@@ -265,7 +271,7 @@ public class SelectTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception executing selectWithin: " + e);
     }
   }
-  
+
   @Test
   public void test_51_QuerySelectWorldReadable() {
     String fieldName = "testQueryWorldReadable";
@@ -308,6 +314,44 @@ public class SelectTest extends DefaultGNSTest {
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (JSONException | ClientException | IOException e) {
       Utils.failWithStackTrace("Exception executing selectWithin: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_52_QuerySelectWorldNotReadable() {
+    String fieldName = "testQueryWorldNotReadable";
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
+        // Remove default all fields / all guids ACL;
+        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
+                GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+        createdGuids.add(testEntry); // save them so we can delete them later
+        JSONArray array = new JSONArray(Arrays.asList(25));
+        clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
+      }
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while tryin to create the guids: " + e);
+    }
+    try {
+      JSONArray result = null;
+//      int retries = 10;
+//      do {
+        String query = "~" + fieldName + " : ($gt: 0)";
+        result = clientCommands.selectQuery(query);
+        for (int i = 0; i < result.length(); i++) {
+          System.out.println(result.get(i).toString());
+        }
+        ThreadUtils.sleep(100);
+      //} while (retries-- > 0 && result.length() != 0);
+      //Assert.assertNotNull(result);
+      // Should return none because we can't see them
+      Assert.assertThat(result.length(), Matchers.equalTo(0));
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing selectQuery: " + e);
     }
   }
 
@@ -354,12 +398,26 @@ public class SelectTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception executing second selectNear: " + e);
     }
   }
-  
+
+  @Test
+  public void test_90_EmptyQuery() {
+    try {
+      String query = "";
+      JSONArray result = clientCommands.selectQuery(query);
+      for (int i = 0; i < result.length(); i++) {
+        Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
+      }
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing emptyQuery " + e);
+    }
+
+  }
+
   /**
    *
    */
   @Test
-  public void test_90_SelectCleanup() {
+  public void test_999_SelectCleanup() {
     try {
       for (GuidEntry guid : createdGuids) {
         clientCommands.guidRemove(masterGuid, guid.getGuid());
@@ -416,5 +474,5 @@ public class SelectTest extends DefaultGNSTest {
             + "}"
             + "}";
   }
-  
+
 }
