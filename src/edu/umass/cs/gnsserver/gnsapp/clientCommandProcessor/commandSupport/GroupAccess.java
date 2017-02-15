@@ -214,7 +214,6 @@ public class GroupAccess {
                     GroupAccess.GROUP, members, header)).getResultString());
     boolean allGroupsUpdatesOK = true;
     for (String memberGuid : members.toStringSet()) {
-      //handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
       if (!GNSProtocol.OK_RESPONSE.toString().equals(handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid,
               GroupAccess.GROUPS, guid, header)).getResultString())) {
         allGroupsUpdatesOK = false;
