@@ -28,6 +28,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import com.sun.net.httpserver.HttpsExchange;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -200,7 +201,8 @@ public class GNSHttpServer {
 
           URI uri = exchange.getRequestURI();
           LOGGER.log(Level.FINE,
-                  "HTTP SERVER REQUEST FROM {0}: {1}", new Object[]{exchange.getRemoteAddress().getHostName(), uri.toString()});
+                  "HTTP SERVER REQUEST FROM {0}: {1}",
+                  new Object[]{exchange.getRemoteAddress().getHostName(), uri.toString()});
           String path = uri.getPath();
           String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
 
@@ -209,18 +211,19 @@ public class GNSHttpServer {
           CommandResponse response;
           if (!commandName.isEmpty()) {
             LOGGER.log(Level.FINE, "Action: {0} Query:{1}", new Object[]{commandName, query});
-            response = processQuery(host, commandName, query);
+            boolean secureServer = exchange instanceof HttpsExchange;
+            response = processQuery(host, commandName, query, secureServer);
           } else {
             response = new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, GNSProtocol.BAD_RESPONSE.toString()
                     + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString() + " Don't understand " + commandName + " " + query);
           }
-          LOGGER.log(Level.FINER, "Response: " + response);
+          LOGGER.log(Level.FINER, "Response: {0}", response);
           // FIXME: This totally ignores the error code.
           responseBody.write(response.getReturnValue().getBytes());
           responseBody.close();
         }
       } catch (Exception e) {
-        LOGGER.log(Level.SEVERE, "Error: " + e);
+        LOGGER.log(Level.SEVERE, "Error: {0}", e.getMessage());
         e.printStackTrace();
         try {
           String response = GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString() + " " + e;
@@ -241,7 +244,7 @@ public class GNSHttpServer {
    *
    * @throws InternalRequestException
    */
-  private CommandResponse processQuery(String host, String commandName, String queryString) throws InternalRequestException {
+  private CommandResponse processQuery(String host, String commandName, String queryString, boolean secureServer) throws InternalRequestException {
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
     try {
@@ -262,6 +265,14 @@ public class GNSHttpServer {
                 GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
                 + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
       }
+
+      //Only allow mutual auth commands if we're on a secure (HTTPS) server
+      if (commandType.isMutualAuth() && !secureServer) {
+        return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
+                GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
+                + " Not authorized to execute " + commandName + QUERYPREFIX + queryString);
+      }
+
       // The client currently just uses the command name (which is not part of the
       // query string above) so we need to stuff 
       // in the Command integer for the signature check and execution.
@@ -428,50 +439,7 @@ public class GNSHttpServer {
         String reconAddresses = "Recon addresses: " + ReconfigurationConfig.getReconfiguratorAddresses().toString();
         String numberOfNameServers = "Server count: " + requestHandler.getGnsNodeConfig().getNumberOfNodes();
         String recordsClass = "Records Class: " + GNSConfig.GNSC.getNoSqlRecordsClass();
-        //StringBuilder resultString = new StringBuilder();
-        // Servers
-//        resultString.append("Servers:");
-//        for (String topLevelNode : requestHandler.getGnsNodeConfig().getNodeIDs()) {
-//          resultString.append("<br>&nbsp;&nbsp;");
-//          resultString.append(topLevelNode);
-//          resultString.append("&nbsp;=&gt;&nbsp;");
-//          resultString.append(requestHandler.getGnsNodeConfig().getBindAddress(topLevelNode));
-//          resultString.append("&nbsp;&nbspPublic IP:&nbsp;");
-//          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(topLevelNode));
-//        }
-//        String nodeAddressesString = resultString.toString();
-        //Reconfigurators
-//        resultString = new StringBuilder();
-//        String prefix = "";
-//        for (String recon : requestHandler.getGnsNodeConfig().getReconfigurators()) {
-//          resultString.append("<br>&nbsp;&nbsp;");
-//          //resultString.append(prefix);
-//          resultString.append(recon);
-//          resultString.append("&nbsp;=&gt;&nbsp;");
-//          //resultString.append("(");
-//          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(recon).getHostName());
-//          resultString.append(":");
-//          resultString.append(requestHandler.getGnsNodeConfig().getNodePort(recon));
-//          //resultString.append(")");
-//          //prefix = ", ";
-//        }
-//        String reconfiguratorsString = "Reconfigurators: " + resultString.toString();
-        // Replicas
-//        resultString = new StringBuilder();
-//        prefix = "";
-//        for (String activeReplica : requestHandler.getGnsNodeConfig().getActiveReplicas()) {
-//          resultString.append("<br>&nbsp;&nbsp;");
-//          //resultString.append(prefix);
-//          resultString.append(activeReplica);
-//          resultString.append("&nbsp;=&gt;&nbsp;");
-//          //resultString.append("(");
-//          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(activeReplica).getHostName());
-//          resultString.append(":");
-//          resultString.append(requestHandler.getGnsNodeConfig().getNodePort(activeReplica));
-//          //resultString.append(")");
-//          //prefix = ", ";
-//        }
-//        String activeReplicasString = "Active replicas: " + resultString.toString();
+        String secureString = exchange instanceof HttpsExchange ? "Security: Secure" : "Security: Open";
         // Build the response
         responseBody.write(responsePreamble.getBytes());
         responseBody.write(buildVersionInfo.getBytes());
@@ -488,13 +456,9 @@ public class GNSHttpServer {
         responseBody.write("<br>".getBytes());
         responseBody.write(clientSSLMode.getBytes());
         responseBody.write("<br>".getBytes());
+        responseBody.write(secureString.getBytes());
+        responseBody.write("<br>".getBytes());
 
-//        responseBody.write(nodeAddressesString.getBytes());
-//        responseBody.write("<br>".getBytes());
-//        responseBody.write(reconfiguratorsString.getBytes());
-//        responseBody.write("<br>".getBytes());
-//        responseBody.write(activeReplicasString.getBytes());
-//        responseBody.write("<br>".getBytes());
         responseBody.write(recordsClass.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write("<br>".getBytes());
