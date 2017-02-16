@@ -1706,7 +1706,7 @@ public class GNSCommand extends CommandPacket {
   /**
    * Searches for all GUIDs whose {@code field} has the value {@code value}.
    * Requires the {@code field} be world readable.
-   * 
+   *
    * @param field
    * The field key.
    * @param value
@@ -1716,11 +1716,11 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket select(String field, String value)
           throws ClientException {
-    return getCommand(CommandType.Select, 
-            GNSProtocol.FIELD.toString(), field, 
+    return getCommand(CommandType.Select,
+            GNSProtocol.FIELD.toString(), field,
             GNSProtocol.VALUE.toString(), value);
   }
-  
+
   /**
    * Searches for all GUIDs whose {@code field} has the value {@code value}.
    *
@@ -1736,7 +1736,7 @@ public class GNSCommand extends CommandPacket {
           throws ClientException {
     return getCommand(CommandType.Select, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
-            GNSProtocol.FIELD.toString(), field, 
+            GNSProtocol.FIELD.toString(), field,
             GNSProtocol.VALUE.toString(), value);
   }
 
@@ -1757,11 +1757,11 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket selectWithin(String field, JSONArray value)
           throws ClientException {
-    return getCommand(CommandType.SelectWithin, 
-            GNSProtocol.FIELD.toString(), field, 
+    return getCommand(CommandType.SelectWithin,
+            GNSProtocol.FIELD.toString(), field,
             GNSProtocol.WITHIN.toString(), value.toString());
   }
-  
+
   /**
    * If {@code field} is a GeoSpatial field, the query searches for all GUIDs
    * that have fields that are within the bounding box specified by
@@ -1781,7 +1781,7 @@ public class GNSCommand extends CommandPacket {
           throws ClientException {
     return getCommand(CommandType.SelectWithin, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
-            GNSProtocol.FIELD.toString(), field, 
+            GNSProtocol.FIELD.toString(), field,
             GNSProtocol.WITHIN.toString(),
             value.toString());
   }
@@ -1791,7 +1791,7 @@ public class GNSCommand extends CommandPacket {
    * whose {@code field} is near {@code value} that is a point specified as a
    * two element JSONArray: [LONG, LAT]. {@code maxDistance} is in meters.
    * Requires that the {@code field} be world readable.
-   * 
+   *
    * @param field
    * The field key
    * @param value
@@ -1803,12 +1803,12 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket selectNear(String field, JSONArray value,
           Double maxDistance) throws ClientException {
-    return getCommand(CommandType.SelectNear, 
-            GNSProtocol.FIELD.toString(), field, 
-            GNSProtocol.NEAR.toString(), value.toString(), 
+    return getCommand(CommandType.SelectNear,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.NEAR.toString(), value.toString(),
             GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance));
   }
-  
+
   /**
    * If {@code field} is a GeoSpatial field, the query searches for all GUIDs
    * whose {@code field} is near {@code value} that is a point specified as a
@@ -1826,10 +1826,10 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket selectNear(GuidEntry reader, String field, JSONArray value,
           Double maxDistance) throws ClientException {
-    return getCommand(CommandType.SelectNear, reader, 
+    return getCommand(CommandType.SelectNear, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
-            GNSProtocol.FIELD.toString(), field, 
-            GNSProtocol.NEAR.toString(), value.toString(), 
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.NEAR.toString(), value.toString(),
             GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance));
   }
 
@@ -1958,9 +1958,9 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket activeCodeGet(String targetGUID,
           String action, GuidEntry querierGUID) throws ClientException {
-    return getCommand(CommandType.GetCode, querierGUID, 
-            GNSProtocol.GUID.toString(), targetGUID, 
-            GNSProtocol.AC_ACTION.toString(), action, 
+    return getCommand(CommandType.GetCode, querierGUID,
+            GNSProtocol.GUID.toString(), targetGUID,
+            GNSProtocol.AC_ACTION.toString(), action,
             GNSProtocol.READER.toString(), querierGUID.getGuid());
   }
 
