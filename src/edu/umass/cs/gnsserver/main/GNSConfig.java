@@ -262,9 +262,14 @@ public class GNSConfig {
     //
     /**
      * For the DNS service set to "all" or a node id if you want to start
-     * the DNS server when the app starts.
+     * the DNS server on the respective nodes when the app starts.
      */
     DNS_SERVER_NODES(NONE),
+    /**
+     * Specifies the IP address to send DNS queries to. Does not apply if
+     * {@link GNSC#DNS_GNS_ONLY} is set to true.
+     */
+    DNS_UPSTREAM_SERVER_IP("8.8.8.8"),
     /**
      * For the DNS service set to true if you want the DNS server to not
      * lookup records using DNS (will only lookup records in the GNS).
