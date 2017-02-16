@@ -47,9 +47,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
 /**
- *
- *
- * @author westy
+ * The secure HTTP server.
  */
 public class GNSHttpsServer extends GNSHttpServer {
 
@@ -66,10 +64,64 @@ public class GNSHttpsServer extends GNSHttpServer {
     super(port, requestHandler);
   }
 
+  /**
+   * Try to start the http server at the port.
+   *
+   * @param port
+   * @return true if it was started
+   */
+  @Override
+  public boolean tryPort(int port) {
+    try {
+      InetSocketAddress addr = new InetSocketAddress(port);
+      httpsServer = HttpsServer.create(addr, 0);
+      SSLContext sslContext = createSSLContext();
+      httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+        @Override
+        public void configure(HttpsParameters parameters) {
+          // initialise the SSL context
+          SSLContext context = getSSLContext();
+          SSLEngine engine = context.createSSLEngine();
+          //parameters.setNeedClientAuth(false);
+          parameters.setCipherSuites(engine.getEnabledCipherSuites());
+          parameters.setProtocols(engine.getEnabledProtocols());
+
+          // get the default parameters
+          SSLParameters sslParameters = context.getDefaultSSLParameters();
+          sslParameters.setNeedClientAuth(true);
+          parameters.setNeedClientAuth(true);
+          parameters.setSSLParameters(sslParameters);
+        }
+      });
+
+      httpsServer.createContext("/", new EchoHttpHandler());
+      httpsServer.createContext("/" + GNS_PATH, new DefaultHttpHandler());
+      httpsServer.setExecutor(Executors.newCachedThreadPool());
+      httpsServer.start();
+      // Need to do this for the places where we expose the secure http service to the user
+      requestHandler.setHttpsServerPort(port);
+
+      LOG.log(Level.INFO,
+              "HTTPS server is listening on port {0}", port);
+      return true;
+    } catch (BindException e) {
+      LOG.log(Level.FINE,
+              "HTTPS server failed to start on port {0} due to {1}",
+              new Object[]{port, e.getMessage()});
+      return false;
+    } catch (IOException | NoSuchAlgorithmException | KeyStoreException | CertificateException | UnrecoverableKeyException | KeyManagementException e) {
+      LOG.log(Level.FINE,
+              "HTTPS server failed to start on port {0} due to {1}",
+              new Object[]{port, e.getMessage()});
+      e.printStackTrace();
+      return false;
+    }
+  }
+
   private SSLContext createSSLContext()
           throws CertificateException, IOException, KeyManagementException, KeyStoreException,
           NoSuchAlgorithmException, UnrecoverableKeyException {
-    
+
     char[] keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword").toCharArray();
     FileInputStream ksInputStream = new FileInputStream(System.getProperty("javax.net.ssl.keyStore"));
     KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -90,61 +142,6 @@ public class GNSHttpsServer extends GNSHttpServer {
     // setup the HTTPS context and parameters
     sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
     return sslContext;
-  }
-
-  /**
-   * Try to start the http server at the port.
-   *
-   * @param port
-   * @return true if it was started
-   */
-  @Override
-  public boolean tryPort(int port) {
-    try {
-      InetSocketAddress addr = new InetSocketAddress(port);
-      httpsServer = HttpsServer.create(addr, 0);
-      SSLContext sslContext = createSSLContext();
-      httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
-        @Override
-        public void configure(HttpsParameters parameters) {
-            // initialise the SSL context
-            SSLContext context = getSSLContext();
-            SSLEngine engine = context.createSSLEngine();
-            //parameters.setNeedClientAuth(false);
-            parameters.setCipherSuites(engine.getEnabledCipherSuites());
-            parameters.setProtocols(engine.getEnabledProtocols());
-
-            // get the default parameters
-            SSLParameters sslParameters = context.getDefaultSSLParameters();
-            sslParameters.setNeedClientAuth(true); 
-            parameters.setNeedClientAuth(true); 
-            parameters.setSSLParameters(sslParameters);
-        }
-      });
-
-      httpsServer.createContext("/", new EchoHttpHandler());
-      httpsServer.createContext("/" + GNS_PATH, new DefaultHttpHandler());
-      httpsServer.setExecutor(Executors.newCachedThreadPool());
-      httpsServer.start();
-      // Need to do this for the places where we expose the secure http service to the user
-      requestHandler.setHttpsServerPort(port);
-
-      LOG.log(Level.INFO,
-              "HTTPS server is listening on port {0}", port);
-      return true;
-    } catch (BindException e) {
-      LOG.log(Level.FINE,
-              "HTTPS server failed to start on port {0} due to {1}",
-              new Object[]{port, e});
-      return false;
-    } catch (IOException | NoSuchAlgorithmException | KeyStoreException 
-            | CertificateException | UnrecoverableKeyException | KeyManagementException e) {
-      LOG.log(Level.FINE,
-              "HTTPS server failed to start on port {0} due to {1}",
-              new Object[]{port, e});
-      e.printStackTrace();
-      return false;
-    }
   }
 
   /**

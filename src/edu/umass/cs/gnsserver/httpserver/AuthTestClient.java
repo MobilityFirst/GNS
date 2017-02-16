@@ -32,6 +32,9 @@ import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+/**
+ * A test class to verify proper functioning of client authorization in the HTTP server.
+ */
 public class AuthTestClient {
 
   private static String NO_KEYSTORE = "";
@@ -40,7 +43,6 @@ public class AuthTestClient {
   private static String CLIENT_PWD = System.getProperty("javax.net.ssl.keyStorePassword");
 
   public static void main(String[] args) throws Exception {
-
     AuthTestClient cl = new AuthTestClient();
     System.out.println("No keystore:");
     cl.testIt(NO_KEYSTORE);
@@ -48,7 +50,7 @@ public class AuthTestClient {
     cl.testIt(AUTH_KEYSTORE);
   }
 
-  public void testIt(String jksFile) {
+  private void testIt(String jksFile) {
     try {
       String https_url = "https://localhost:24803/";
       URL url;
@@ -60,8 +62,7 @@ public class AuthTestClient {
       conn.setDoOutput(true);
       conn.setUseCaches(false);
 
-      try ( // Print response
-              BufferedReader bir = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+      try (BufferedReader bir = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
         String line;
         while ((line = bir.readLine()) != null) {
           System.out.println(line);
@@ -70,7 +71,6 @@ public class AuthTestClient {
       conn.disconnect();
     } catch (SSLHandshakeException | SocketException e) {
       System.out.println(e.getMessage());
-      System.out.println("");
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -98,18 +98,15 @@ public class AuthTestClient {
     return sslContext.getSocketFactory();
   }
 
+  // Fixes the "java.security.cert.CertificateException: No name matching localhost found" issue
+  // For localhost testing only
   static {
-    //for localhost testing only
     javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
             new javax.net.ssl.HostnameVerifier() {
-
       @Override
       public boolean verify(String hostname,
               javax.net.ssl.SSLSession sslSession) {
-        if (hostname.equals("localhost")) {
-          return true;
-        }
-        return false;
+        return hostname.equals("localhost");
       }
     });
   }
