@@ -39,8 +39,8 @@ public class ByteificationComparisonFail extends DefaultGNSTest {
   
   private static JSONObject testJson;
   private final int TEST_RUNS = 1000000;
-  private static RequestPacket packet128;
-  private static RequestPacket packet1024;
+  //private static RequestPacket packet128;
+  //private static RequestPacket packet1024;
   
   /**
    *
@@ -49,8 +49,8 @@ public class ByteificationComparisonFail extends DefaultGNSTest {
   @BeforeClass
   public static void setupBeforClass() throws JSONException {
 
-    packet128 = new RequestPacket(new String(Util.getRandomAlphanumericBytes(128)), false);
-    packet1024 = new RequestPacket(new String(Util.getRandomAlphanumericBytes(1024)), false);
+    //packet128 = new RequestPacket(new String(Util.getRandomAlphanumericBytes(128)), false);
+    //packet1024 = new RequestPacket(new String(Util.getRandomAlphanumericBytes(1024)), false);
     //json128=packet128.toJSONObject();
     //json1024=packet1024.toJSONObject();
 
@@ -78,6 +78,7 @@ public class ByteificationComparisonFail extends DefaultGNSTest {
 
   /**
    *
+   * @param byteificationComparison
    * @throws UnsupportedEncodingException
    * @throws JSONException
    * @throws ClientException
@@ -104,6 +105,7 @@ public class ByteificationComparisonFail extends DefaultGNSTest {
 
   /**
    *
+   * @param byteificationComparison
    * @throws UnsupportedEncodingException
    * @throws JSONException
    * @throws ClientException
@@ -132,6 +134,7 @@ public class ByteificationComparisonFail extends DefaultGNSTest {
 
   /**
    *
+   * @param byteificationComparison
    * @throws UnsupportedEncodingException
    * @throws JSONException
    * @throws ClientException
@@ -170,6 +173,7 @@ public class ByteificationComparisonFail extends DefaultGNSTest {
 
   /**
    *
+   * @param byteificationComparison
    * @throws UnsupportedEncodingException
    * @throws JSONException
    * @throws ClientException
@@ -206,6 +210,7 @@ public class ByteificationComparisonFail extends DefaultGNSTest {
 
   /**
    *
+   * @param byteificationComparison
    * @throws UnsupportedEncodingException
    * @throws JSONException
    * @throws ClientException

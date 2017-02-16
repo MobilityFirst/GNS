@@ -478,6 +478,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * its cache, re-query, and pick randomly upon an active replica error; and
    * pick the replica closest by distance and load otherwise.
    */
+  @SuppressWarnings("javadoc")
   private static void waitSettle(long wait) {
     try {
       if (wait > 0) {
@@ -612,6 +613,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    *
    * @throws Exception
    */
+  @SuppressWarnings("javadoc")
   private GuidEntry test_035_RemoveAccountWithPasswordCreateAccount(String accountToRemoveWithPassword) throws Exception {
     /* FIXED: GuidUtils.lookupOrCreateAccountGuid() is safe 
 	 * since the account verification step is coordinated later on in its chain.
@@ -632,6 +634,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * @throws IOException
    * @throws ClientException
    */
+  @SuppressWarnings("javadoc")
   private void test_036_RemoveAccountWithPasswordCheckAccount(GuidEntry accountToRemoveGuid) throws ClientException, IOException {
     //CHECKED FOR VALIDITY
     client.execute(GNSCommand.lookupAccountRecord(accountToRemoveGuid.getGuid()));
@@ -643,6 +646,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    *
    * @throws Exception
    */
+  @SuppressWarnings("javadoc")
   private void test_037_RemoveAccountWithPasswordRemoveAccount(String accountToRemoveWithPassword) throws Exception {
     //CHECKED FOR VALIDITY
     client.execute(GNSCommand.accountGuidRemoveWithPassword(accountToRemoveWithPassword, REMOVE_ACCOUNT_PASSWORD));
@@ -654,6 +658,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    *
    * @throws IOException
    */
+  @SuppressWarnings("javadoc")
   private void test_038_RemoveAccountWithPasswordCheckAccountAfterRemove(String accountToRemoveWithPassword) throws IOException {
     //CHECKED FOR VALIDITY
     try {
@@ -703,6 +708,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    *
    * @throws Exception
    */
+  @SuppressWarnings("javadoc")
   private GuidEntry test_050_CreateSubGuid() throws Exception {
     //CHECKED FOR VALIDITY
     GuidEntry subGuidEntry = clientCommands.guidCreate(masterGuid, "subGuid"
@@ -716,6 +722,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    *
    * @throws Exception
    */
+  @SuppressWarnings("javadoc")
   private void test_060_FieldNotFoundException(GuidEntry subGuidEntry) throws Exception {
     //CHECKED FOR VALIDITY
     try {
@@ -732,6 +739,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    *
    * @throws Exception
    */
+  @SuppressWarnings("javadoc")
   private void test_070_FieldExistsFalse(GuidEntry subGuidEntry) throws Exception {
     //CHECKED FOR VALIDITY
     try {
@@ -748,6 +756,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * @throws IOException
    * @throws ClientException
    */
+  @SuppressWarnings("javadoc")
   private void test_080_CreateFieldForFieldExists(GuidEntry subGuidEntry) throws ClientException, IOException {
     //CHECKED FOR VALIDITY
     clientCommands.fieldCreateOneElementList(subGuidEntry.getGuid(),
@@ -759,6 +768,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    *
    * @throws Exception
    */
+  @SuppressWarnings("javadoc")
   private void test_090_FieldExistsTrue(GuidEntry subGuidEntry) throws Exception {
     //CHECKED FOR VALIDITY
     Assert.assertTrue(clientCommands.fieldExists(subGuidEntry.getGuid(),
@@ -796,7 +806,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     System.out.print(s + " ");
   }
 
-  /**
+  /*
    * @throws IOException
    * @throws ClientException
    *
@@ -810,7 +820,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   //
   // Start with some simple tests to insure that basic ACL mechanics work
   //
-  /**
+  /*
    * Add the ALL_GUID to GNSProtocol.ENTIRE_RECORD.toString() if it's not there already.
    *
    * @throws Exception
@@ -828,7 +838,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
   }
 
-  /**
+  /*
    * @throws Exception
    * @throws JSONException
    *

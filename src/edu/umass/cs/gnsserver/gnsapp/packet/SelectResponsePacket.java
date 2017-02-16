@@ -67,7 +67,7 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
   private ResponseCode responseCode;
   private String errorMessage;
 
-  /**
+  /*
    * Constructs a new SelectResponsePacket
    *
    * @param id

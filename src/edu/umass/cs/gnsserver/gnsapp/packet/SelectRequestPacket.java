@@ -76,7 +76,6 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @param value
    * @param otherValue
    */
-  @SuppressWarnings("unchecked")
   public SelectRequestPacket(long id, SelectOperation selectOperation, 
           SelectGroupBehavior groupBehavior,
           String reader, String key, Object value, Object otherValue) {
@@ -93,7 +92,7 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
     this.guid = null;
   }
 
-  /**
+  /*
    * Helper to construct a SelectRequestPacket for a context aware group guid.
    *
    * @param id
@@ -104,7 +103,6 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @param guid
    * @param minRefreshInterval
    */
-  @SuppressWarnings("unchecked")
   private SelectRequestPacket(long id, SelectOperation selectOperation, 
           SelectGroupBehavior groupOperation,
           String reader, String query, String guid, int minRefreshInterval) {
@@ -126,6 +124,7 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
+   * @param reader
    * @param query
    * @return a SelectRequestPacket
    */
@@ -139,6 +138,7 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
+   * @param reader
    * @param query
    * @param guid
    * @param refreshInterval
@@ -156,6 +156,7 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
+   * @param reader
    * @param guid
    * @return a SelectRequestPacket
    */

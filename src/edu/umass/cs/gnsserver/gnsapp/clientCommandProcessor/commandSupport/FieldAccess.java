@@ -653,7 +653,7 @@ public class FieldAccess {
   private static List<String> getFieldsFromQuery(String line) {
     List<String> result = new ArrayList<>();
     // Create a Pattern object
-    Matcher m = Pattern.compile("~\\w+").matcher(line);
+    Matcher m = Pattern.compile("~\\w+(\\.\\w+)*").matcher(line);
     // Now create matcher object.
     while (m.find()) {
       result.add(m.group().substring(1));
@@ -958,7 +958,6 @@ public class FieldAccess {
     try {
       assert (header != null);
 
-      // Fixme: Not following the logic in here.
       // note: reader can also be null here
       if (!header.verifyInternal() && !commandPacket.getCommandType().isMutualAuth()
               && (field != null || fields != null)) {
@@ -969,7 +968,7 @@ public class FieldAccess {
                 "reader={0}; internal={1} field={2}; fields={3};",
                 new Object[]{reader, header.verifyInternal(), field, fields});
 
-        // internal and mutual auth commands don't need even ACL checks
+        // internal and mutual auth commands don't need ACL checks
         if ((header.verifyInternal()
                 && (GNSProtocol.INTERNAL_QUERIER.toString().equals(reader)))
                 || commandPacket.getCommandType().isMutualAuth()) {
@@ -1009,15 +1008,14 @@ public class FieldAccess {
   }
 
   public static void main(String[] args) throws JSONException, UnknownHostException {
-    String testQuery = "{\"~geoLocationCurrent\": {"
-            + "      $geoWithin: {"
-            + "         $geometry: {"
-            + "            type: \"Polygon\","
-            + "            coordinates: [ <coordinates> ]\n"
-            + "         }"
-            + "      }"
-            + "   }"
-            + "}";
+    String testQuery = "$or: [{~geoLocationCurrent:{"
+            + "$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}},"
+            + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}}]";
+   
     System.out.println(getFieldsFromQuery(testQuery));
   }
 
