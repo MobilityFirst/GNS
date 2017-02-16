@@ -52,6 +52,7 @@ import javax.net.ssl.TrustManagerFactory;
  * @author westy
  */
 public class GNSHttpsServer extends GNSHttpServer {
+
   private HttpsServer httpsServer = null;
 
   private final static Logger LOG = Logger.getLogger(GNSHttpsServer.class.getName());
@@ -65,14 +66,30 @@ public class GNSHttpsServer extends GNSHttpServer {
     super(port, requestHandler);
   }
 
-  /**
-   *
-   */
-  @Override
-  public final void stop() {
-    if (httpsServer != null) {
-      httpsServer.stop(0);
-    }
+  private SSLContext createSSLContext()
+          throws CertificateException, IOException, KeyManagementException, KeyStoreException,
+          NoSuchAlgorithmException, UnrecoverableKeyException {
+    
+    char[] keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword").toCharArray();
+    FileInputStream ksInputStream = new FileInputStream(System.getProperty("javax.net.ssl.keyStore"));
+    KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+    keyStore.load(ksInputStream, keyStorePassword);
+    // setup the key manager factory
+    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+    keyManagerFactory.init(keyStore, keyStorePassword);
+
+    char[] trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword").toCharArray();
+    FileInputStream tsInputStream = new FileInputStream(System.getProperty("javax.net.ssl.trustStore"));
+    KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+    trustStore.load(tsInputStream, trustStorePassword);
+    // setup the trust manager factory
+    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+    trustManagerFactory.init(trustStore);
+
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    // setup the HTTPS context and parameters
+    sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+    return sslContext;
   }
 
   /**
@@ -86,42 +103,22 @@ public class GNSHttpsServer extends GNSHttpServer {
     try {
       InetSocketAddress addr = new InetSocketAddress(port);
       httpsServer = HttpsServer.create(addr, 0);
-
-      SSLContext sslContext = SSLContext.getInstance("TLS");
-
-      char[] keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword").toCharArray();
-      FileInputStream inputStream = new FileInputStream(System.getProperty("javax.net.ssl.keyStore"));
-      KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-      keyStore.load(inputStream, keyStorePassword);
-
-      // setup the key manager factory
-      KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-      keyManagerFactory.init(keyStore, keyStorePassword);
-
-      // setup the trust manager factory
-      TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
-      trustManagerFactory.init(keyStore);
-
-      // setup the HTTPS context and parameters
-      sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+      SSLContext sslContext = createSSLContext();
       httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
         @Override
         public void configure(HttpsParameters parameters) {
-          try {
             // initialise the SSL context
-            SSLContext context = SSLContext.getDefault();
+            SSLContext context = getSSLContext();
             SSLEngine engine = context.createSSLEngine();
-            parameters.setNeedClientAuth(false);
+            //parameters.setNeedClientAuth(false);
             parameters.setCipherSuites(engine.getEnabledCipherSuites());
             parameters.setProtocols(engine.getEnabledProtocols());
 
             // get the default parameters
-            SSLParameters defaultSSLParameters = context.getDefaultSSLParameters();
-            parameters.setSSLParameters(defaultSSLParameters);
-
-          } catch (NoSuchAlgorithmException e) {
-            LOG.log(Level.SEVERE, "Failed to configure HTTPS service: " + e);
-          }
+            SSLParameters sslParameters = context.getDefaultSSLParameters();
+            sslParameters.setNeedClientAuth(true); 
+            parameters.setNeedClientAuth(true); 
+            parameters.setSSLParameters(sslParameters);
         }
       });
 
@@ -149,4 +146,15 @@ public class GNSHttpsServer extends GNSHttpServer {
       return false;
     }
   }
+
+  /**
+   * Stops the https server.
+   */
+  @Override
+  public final void stop() {
+    if (httpsServer != null) {
+      httpsServer.stop(0);
+    }
+  }
+
 }
