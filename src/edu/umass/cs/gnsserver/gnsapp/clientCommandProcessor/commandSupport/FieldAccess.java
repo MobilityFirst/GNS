@@ -51,13 +51,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.utils.Config;
 import java.net.UnknownHostException;
 import java.util.Date;
@@ -789,6 +788,12 @@ public class FieldAccess {
           String reader, String query,
           String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
+    if (queryContainsEvil(query)) {
+      return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
+              GNSProtocol.BAD_RESPONSE.toString() + " "
+              + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
+              + " Bad query operators in " + query);
+    }
     JSONArray result;
     try {
       SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, reader, query);
@@ -800,6 +805,60 @@ public class FieldAccess {
       // FIXME: why silently fail?
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+  }
+
+  private static boolean queryContainsEvil(String query) {
+    try {
+      JSONObject jsonQuery = new JSONObject("{" + query + "}");
+      return jsonObjectKeyContains(NameRecord.VALUES_MAP.getName(), jsonQuery)
+              || jsonObjectKeyContains("$where", jsonQuery);
+    } catch (JSONException e) {
+      return false;
+    }
+  }
+
+  private static boolean jsonObjectKeyContains(String key, JSONObject jsonObject) {
+    LOGGER.log(Level.FINEST, "{0} {1}", new Object[]{key, jsonObject.toString()});
+    String[] keys = JSONObject.getNames(jsonObject);
+    if (keys != null) {
+      for (String subKey : keys) {
+        if (subKey.contains(key)) {
+          return true;
+        }
+        JSONObject subJson = jsonObject.optJSONObject(subKey);
+        if (subJson != null) {
+          if (jsonObjectKeyContains(key, subJson)) {
+            return true;
+          }
+        }
+        JSONArray subArray = jsonObject.optJSONArray(subKey);
+        if (subArray != null) {
+          if (jsonArrayHasKey(key, subArray)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean jsonArrayHasKey(String key, JSONArray jsonArray) {
+    LOGGER.log(Level.FINEST, "{0} {1}", new Object[]{key, jsonArray.toString()});
+    for (int i = 0; i < jsonArray.length(); i++) {
+      JSONObject subObject = jsonArray.optJSONObject(i);
+      if (subObject != null) {
+        if (jsonObjectKeyContains(key, subObject)) {
+          return true;
+        }
+      }
+      JSONArray subArray = jsonArray.optJSONArray(i);
+      if (subArray != null) {
+        if (jsonArrayHasKey(key, subArray)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -1014,9 +1073,36 @@ public class FieldAccess {
             + "\"type\":\"Polygon\"}}}},"
             + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
             + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
-            + "\"type\":\"Polygon\"}}}}]";
-   
+            + "\"type\":\"Polygon\"}}}},"
+            + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":$where}}}}"
+            + "]";
+
     System.out.println(getFieldsFromQuery(testQuery));
+
+    System.out.println(queryContainsEvil(testQuery));
+
+    String testQueryBad = "$or: [{~geoLocationCurrent:{"
+            + "$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}},"
+            + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}},"
+            + "{~customLocations.location:{$geoIntersects:{$where:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}}"
+            + "]";
+
+    System.out.println(getFieldsFromQuery(testQueryBad));
+
+    System.out.println(queryContainsEvil(testQueryBad));
+
+    String testQuery3 = "nr_valuesMap.secret:{$regex : ^i_like_cookies}";
+    System.out.println(queryContainsEvil(testQuery3));
+    String testQuery4 = "$where : \"this.nr_valuesMap.secret == 'i_like_cookies'\"";
+    System.out.println(queryContainsEvil(testQuery4));
   }
 
 }

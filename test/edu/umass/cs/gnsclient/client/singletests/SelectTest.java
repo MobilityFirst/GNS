@@ -476,10 +476,47 @@ public class SelectTest extends DefaultGNSTest {
       for (int i = 0; i < result.length(); i++) {
         Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
       }
-    } catch (ClientException | IOException | JSONException e) {
-      Utils.failWithStackTrace("Exception executing emptyQuery " + e);
+    } catch (IOException | JSONException | ClientException e) {
+      Utils.failWithStackTrace("Exception executing empty query " + e);
     }
+  }
 
+  /**
+   * Check an empty query
+   */
+  @Test
+  public void test_98_EvilOperators() {
+    try {
+      String query = "nr_valuesMap.secret:{$regex : ^i_like_cookies}";
+      JSONArray result = clientCommands.selectQuery(query);
+      for (int i = 0; i < result.length(); i++) {
+        Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
+      }
+      Utils.failWithStackTrace("Should have throw an exception");
+    } catch (IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing evil query " + e);
+    } catch (ClientException e) {
+      // Expected
+    }
+  }
+
+  /**
+   * Check an empty query
+   */
+  @Test
+  public void test_99_EvilOperators2() {
+    try {
+      String query = "$where : \"this.nr_valuesMap.secret == 'i_like_cookies'\"";
+      JSONArray result = clientCommands.selectQuery(query);
+      for (int i = 0; i < result.length(); i++) {
+        Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
+      }
+      Utils.failWithStackTrace("Should have throw an exception");
+    } catch (IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing evil query " + e);
+    } catch (ClientException e) {
+      // Expected
+    }
   }
 
   /**
