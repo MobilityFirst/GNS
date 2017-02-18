@@ -24,6 +24,20 @@ show_help () {
 	Ex: $0 master:abcde sample_test \"ant test\" 10
 	    $0 master:abcde sample_test \"\`cat path/to/file.sh\`\" 10
 	    $0 master:abcde --status sample_test --clean
+
+	    This script can be used to trigger multiple test runs on Travis CI.
+	    The same script can also be later used to identify if there were any 
+	    failures. Typical use cases include measuring the failure rate of GNS
+	    at a particular commit in a particular branch.
+	    <handle> is a unique identifier used to identify a particular instantiation
+	    of the script.
+	    <rep_times> is the number of Travis instances to be started. Each instance
+	    runs the command for about 50 minutes repeatedly.
+
+	    This script requires Travis CLI to be installed. It can also be used on a server 
+	    like date.cs.umass.edu without installing Travis CLI (by manually providing 
+	    Travis token when asked). Instead of providing a single-line command, 
+	    \"\`cat file.sh\`\" can be used to execute the contents of file.sh on Travis.
 	"
 }
 
