@@ -107,7 +107,7 @@ public class CreateIndexTest extends DefaultGNSTest {
   @Test
   public void test_03_SelectPass() {
     try {
-      JSONArray result = clientCommands.selectQuery(buildQuery(testField, AREA_EXTENT));
+      JSONArray result = clientCommands.selectQuery(masterGuid, buildQuery(testField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }

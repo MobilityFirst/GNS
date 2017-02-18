@@ -865,7 +865,7 @@ public class MultipleClientTest extends DefaultGNSTest {
   @Test
   public void test_31_BasicSelect() {
     try {
-      JSONArray result = getRandomClient().select("cats", "fred");
+      JSONArray result = getRandomClient().select(masterGuid, "cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
     } catch (IOException | ClientException e) {
