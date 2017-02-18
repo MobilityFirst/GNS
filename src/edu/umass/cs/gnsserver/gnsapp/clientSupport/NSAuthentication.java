@@ -111,7 +111,7 @@ public class NSAuthentication {
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
           FailedDBOperationException, UnsupportedEncodingException {
     // Do a check for unsigned reads if there is no signature
-    if (signature == null) {
+    if ((!skipSigCheck && signature == null) || accessorGuid == null) {
       if (NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp)) {
         return ResponseCode.NO_ERROR;
       } else {
@@ -120,9 +120,9 @@ public class NSAuthentication {
         return ResponseCode.ACCESS_ERROR;
       }
     }
-    // If the signature isn't null a null accessorGuid is also an access failure because
+    // If the signature is being checking and isn't null a null accessorGuid is also an access failure because
     // only unsigned reads (handled above) can have a null accessorGuid
-    if (accessorGuid == null) {
+    if (!skipSigCheck && accessorGuid == null) {
       ClientSupportConfig.getLogger().log(Level.WARNING, "Name {0} key={1} : NULL accessorGuid",
               new Object[]{guid, field});
       return ResponseCode.ACCESS_ERROR;

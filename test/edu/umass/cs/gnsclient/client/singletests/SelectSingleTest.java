@@ -144,7 +144,7 @@ public class SelectSingleTest extends DefaultGNSTest {
   @Test
   public void test_03_BasicSelect() {
     try {
-      JSONArray result = clientCommands.select("cats", "fred");
+      JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
     } catch (ClientException | IOException e) {

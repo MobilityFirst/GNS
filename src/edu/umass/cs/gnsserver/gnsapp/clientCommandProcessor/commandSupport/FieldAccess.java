@@ -55,7 +55,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.utils.Config;
 import java.net.UnknownHostException;
@@ -63,8 +62,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.lang3.time.DateUtils;
 
 /**
@@ -595,10 +592,10 @@ public class FieldAccess {
     }
 
     SelectResponsePacket responsePacket = Select.handleSelectRequestFromClient(header, packet, app);
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
-      // Filter out any guids that don't pass an ACL check
+    if (responsePacket != null
+            && // Fixme: probably should just have handleSelectRequestFromClient throw a clientException
+            SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       JSONArray guids = responsePacket.getGuids();
-      guids = signatureAndACLCheckFilter(header, commandPacket, packet, guids, reader, signature, message, app);
       return guids;
     } else {
       return null;
@@ -623,53 +620,6 @@ public class FieldAccess {
       LOGGER.log(Level.FINE, "Signature check for select: reader={0} error={1}",
               new Object[]{reader, e.getMessage()});
       return false;
-    }
-  }
-
-  private static JSONArray signatureAndACLCheckFilter(InternalRequestHeader header, CommandPacket commandPacket,
-          SelectRequestPacket packet, JSONArray guids,
-          String reader, String signature, String message, GNSApplicationInterface<String> app) {
-    JSONArray result = new JSONArray();
-    for (int i = 0; i < guids.length(); i++) {
-      try {
-        String guid = guids.getString(i);
-        List<String> fields = getFieldsForQueryType(packet);
-        ResponseCode responseCode = signatureAndACLCheckForRead(header, commandPacket, guid, null,
-                fields, reader, signature, message, null, app, true);
-        LOGGER.log(Level.FINE, "ACL check for select: guid={0} fields={1} responsecode={2}",
-                new Object[]{guid, fields, responseCode});
-        if (responseCode.isOKResult()) {
-          result.put(guid);
-        }
-      } catch (JSONException e) {
-        // ignore json errros
-        LOGGER.log(Level.FINE, "Problem getting guid from json: {0}", e.getMessage());
-      }
-    }
-    return result;
-  }
-
-  private static List<String> getFieldsFromQuery(String line) {
-    List<String> result = new ArrayList<>();
-    // Create a Pattern object
-    Matcher m = Pattern.compile("~\\w+(\\.\\w+)*").matcher(line);
-    // Now create matcher object.
-    while (m.find()) {
-      result.add(m.group().substring(1));
-    }
-    return result;
-  }
-
-  private static List<String> getFieldsForQueryType(SelectRequestPacket request) {
-    switch (request.getSelectOperation()) {
-      case EQUALS:
-      case NEAR:
-      case WITHIN:
-        return new ArrayList<>(Arrays.asList(request.getKey()));
-      case QUERY:
-        return getFieldsFromQuery(request.getQuery());
-      default:
-        return new ArrayList<>();
     }
   }
 
@@ -788,7 +738,7 @@ public class FieldAccess {
           String reader, String query,
           String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
-    if (queryContainsEvil(query)) {
+    if (Select.queryContainsEvil(query)) {
       return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
               GNSProtocol.BAD_RESPONSE.toString() + " "
               + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
@@ -805,60 +755,6 @@ public class FieldAccess {
       // FIXME: why silently fail?
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
-  }
-
-  private static boolean queryContainsEvil(String query) {
-    try {
-      JSONObject jsonQuery = new JSONObject("{" + query + "}");
-      return jsonObjectKeyContains(NameRecord.VALUES_MAP.getName(), jsonQuery)
-              || jsonObjectKeyContains("$where", jsonQuery);
-    } catch (JSONException e) {
-      return false;
-    }
-  }
-
-  private static boolean jsonObjectKeyContains(String key, JSONObject jsonObject) {
-    LOGGER.log(Level.FINEST, "{0} {1}", new Object[]{key, jsonObject.toString()});
-    String[] keys = JSONObject.getNames(jsonObject);
-    if (keys != null) {
-      for (String subKey : keys) {
-        if (subKey.contains(key)) {
-          return true;
-        }
-        JSONObject subJson = jsonObject.optJSONObject(subKey);
-        if (subJson != null) {
-          if (jsonObjectKeyContains(key, subJson)) {
-            return true;
-          }
-        }
-        JSONArray subArray = jsonObject.optJSONArray(subKey);
-        if (subArray != null) {
-          if (jsonArrayHasKey(key, subArray)) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
-  private static boolean jsonArrayHasKey(String key, JSONArray jsonArray) {
-    LOGGER.log(Level.FINEST, "{0} {1}", new Object[]{key, jsonArray.toString()});
-    for (int i = 0; i < jsonArray.length(); i++) {
-      JSONObject subObject = jsonArray.optJSONObject(i);
-      if (subObject != null) {
-        if (jsonObjectKeyContains(key, subObject)) {
-          return true;
-        }
-      }
-      JSONArray subArray = jsonArray.optJSONArray(i);
-      if (subArray != null) {
-        if (jsonArrayHasKey(key, subArray)) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   /**
@@ -1064,45 +960,6 @@ public class FieldAccess {
       errorCode = ResponseCode.SIGNATURE_ERROR;
     }
     return errorCode;
-  }
-
-  public static void main(String[] args) throws JSONException, UnknownHostException {
-    String testQuery = "$or: [{~geoLocationCurrent:{"
-            + "$geoIntersects:{$geometry:{\"coordinates\":"
-            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
-            + "\"type\":\"Polygon\"}}}},"
-            + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
-            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
-            + "\"type\":\"Polygon\"}}}},"
-            + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
-            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
-            + "\"type\":$where}}}}"
-            + "]";
-
-    System.out.println(getFieldsFromQuery(testQuery));
-
-    System.out.println(queryContainsEvil(testQuery));
-
-    String testQueryBad = "$or: [{~geoLocationCurrent:{"
-            + "$geoIntersects:{$geometry:{\"coordinates\":"
-            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
-            + "\"type\":\"Polygon\"}}}},"
-            + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
-            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
-            + "\"type\":\"Polygon\"}}}},"
-            + "{~customLocations.location:{$geoIntersects:{$where:{\"coordinates\":"
-            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
-            + "\"type\":\"Polygon\"}}}}"
-            + "]";
-
-    System.out.println(getFieldsFromQuery(testQueryBad));
-
-    System.out.println(queryContainsEvil(testQueryBad));
-
-    String testQuery3 = "nr_valuesMap.secret:{$regex : ^i_like_cookies}";
-    System.out.println(queryContainsEvil(testQuery3));
-    String testQuery4 = "$where : \"this.nr_valuesMap.secret == 'i_like_cookies'\"";
-    System.out.println(queryContainsEvil(testQuery4));
   }
 
 }
