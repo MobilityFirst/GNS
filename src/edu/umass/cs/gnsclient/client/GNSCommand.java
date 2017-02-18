@@ -120,6 +120,7 @@ public class GNSCommand extends CommandPacket {
    * awaiting a response in the async client unless ENABLE_ID_TRANSFORM is
    * true.
    */
+  @SuppressWarnings("javadoc")
   private static long randomLong() {
     return (long) (Math.random() * Long.MAX_VALUE);
   }
@@ -272,6 +273,22 @@ public class GNSCommand extends CommandPacket {
             : CommandType.ReadArrayUnsigned, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.FIELD.toString(), GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.READER.toString(),
             querierGUID != null ? querierGUID.getGuid() : null);
+  }
+
+  /**
+   * Reads the entire record for {@code targetGUID}.
+   * Sent on the mutual auth channel. Can only be sent from a client that
+   * has the correct ssl keys.
+   *
+   * @param targetGUID
+   * The guid being queried.
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket readSecure(String targetGUID) throws ClientException {
+    return getCommand(CommandType.ReadSecured,
+            GNSProtocol.GUID.toString(), targetGUID,
+            GNSProtocol.FIELD.toString(), GNSProtocol.ENTIRE_RECORD.toString());
   }
 
   /**
@@ -482,9 +499,11 @@ public class GNSCommand extends CommandPacket {
    *
    * @param alias
    * @return CommandPacket
+   * @throws edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException
    * @throws ClientException
+   * @throws java.io.IOException
    */
-  PublicKey publicKeyLookupFromAlias(String alias)
+  public PublicKey publicKeyLookupFromAlias(String alias)
           throws InvalidGuidException, ClientException, IOException {
     throw new RuntimeException("Unimplementable");
     // String guid = lookupGuid(alias);
@@ -521,31 +540,35 @@ public class GNSCommand extends CommandPacket {
    * @throws java.io.IOException
    * @throws java.security.NoSuchAlgorithmException
    */
+  //FIXME: The name this of these violates the NOUNVERB naming convention adopted
+  // almost everywhere else in here.
   public static final CommandPacket createAccount(
           String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
     @SuppressWarnings("deprecation") // FIXME
-	GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
+    GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
     return accountGuidCreateInternal(alias, password, CommandType.RegisterAccount, guidEntry);
   }
 
-	/**
-	 * Same as {@link #createAccount(String, String)} but with no
-	 * password.
-	 * 
-	 * @param alias
-	 * @return CommandPacket
-	 * @throws ClientException
-	 * @throws IOException
-	 * @throws NoSuchAlgorithmException
-	 */
-	public static final CommandPacket createAccount(
-			String alias) throws ClientException, IOException,
-			NoSuchAlgorithmException {
-		@SuppressWarnings("deprecation") // FIXME
-		GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
-		return accountGuidCreateInternal(alias, null,
-				CommandType.RegisterAccount, guidEntry);
-	}
+  /**
+   * Same as {@link #createAccount(String, String)} but with no
+   * password.
+   *
+   * @param alias
+   * @return CommandPacket
+   * @throws ClientException
+   * @throws IOException
+   * @throws NoSuchAlgorithmException
+   */
+  //FIXME: The name this of these violates the NOUNVERB naming convention adopted
+  // almost everywhere else in here.
+  public static final CommandPacket createAccount(
+          String alias) throws ClientException, IOException,
+          NoSuchAlgorithmException {
+    @SuppressWarnings("deprecation") // FIXME
+    GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
+    return accountGuidCreateInternal(alias, null,
+            CommandType.RegisterAccount, guidEntry);
+  }
 
   /**
    * Register a new account guid with the name {@code alias} and a password
@@ -568,7 +591,7 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket createAccountSecure(
           String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
     @SuppressWarnings("deprecation")
-	GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
+    GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
     return accountGuidCreateInternal(alias, password, CommandType.RegisterAccountSecured, guidEntry);
   }
 
@@ -622,8 +645,8 @@ public class GNSCommand extends CommandPacket {
    * Deletes the account.
    * Sent on the mutual auth channel. Can only be sent from a client that
    * has the correct ssl keys. Does not send a signature.
-   * 
-   *  @param name 
+   *
+   * @param name
    *
    * @return CommandPacket
    * @throws ClientException
@@ -667,7 +690,9 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   @SuppressWarnings("deprecation") // FIXME:
-public static final CommandPacket createGUID(
+//FIXME: The name this of these violates the NOUNVERB naming convention adopted
+// almost everywhere else in here.
+  public static final CommandPacket createGUID(
           GuidEntry accountGUID, String alias) throws ClientException {
     try {
       return guidCreateHelper(accountGUID, alias, GuidUtils
@@ -690,7 +715,7 @@ public static final CommandPacket createGUID(
    * @throws ClientException
    */
   @SuppressWarnings("deprecation") // FIXME
-public static final CommandPacket batchCreateGUIDs(
+  public static final CommandPacket batchCreateGUIDs(
           GuidEntry accountGUID, Set<String> aliases) throws ClientException {
 
     List<String> aliasList = new ArrayList<>(aliases);
@@ -725,8 +750,8 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket removeGUID(GuidEntry targetGUID)
           throws ClientException {
-    return getCommand(CommandType.RemoveGuidNoAccount, targetGUID, GNSProtocol.GUID.toString(),
-            targetGUID.getGuid());
+    return getCommand(CommandType.RemoveGuidNoAccount, targetGUID,
+            GNSProtocol.GUID.toString(), targetGUID.getGuid());
   }
 
   /**
@@ -737,10 +762,13 @@ public static final CommandPacket batchCreateGUIDs(
    * @return CommandPacket
    * @throws ClientException
    */
+  //FIXME: The name this of these violates the NOUNVERB naming convention adopted
+  // almost everywhere else in here.
   public static final CommandPacket removeGUID(GuidEntry accountGUID,
           String targetGUID) throws ClientException {
-    return getCommand(CommandType.RemoveGuid, accountGUID, GNSProtocol.ACCOUNT_GUID.toString(),
-            accountGUID.getGuid(), GNSProtocol.GUID.toString(), targetGUID);
+    return getCommand(CommandType.RemoveGuid, accountGUID,
+            GNSProtocol.ACCOUNT_GUID.toString(), accountGUID.getGuid(),
+            GNSProtocol.GUID.toString(), targetGUID);
   }
 
   // GROUP COMMANDS
@@ -998,7 +1026,7 @@ public static final CommandPacket batchCreateGUIDs(
    * @param guid
    * @param field
    * The field key.
-   * @param accesserGUID 
+   * @param accesserGUID
    * @return CommandPacket
    * @throws ClientException
    * if the query is not accepted by the server.
@@ -1048,7 +1076,7 @@ public static final CommandPacket batchCreateGUIDs(
    * @param guid
    * @param field
    * The field key.
-   * @param accesserGUID 
+   * @param accesserGUID
    * @return CommandPacket
    * @throws ClientException
    * if the query is not accepted by the server.
@@ -1521,10 +1549,11 @@ public static final CommandPacket batchCreateGUIDs(
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.WRITER.toString(), querierGUID.getGuid());
   }
 
-  /* *********************** SELECT *********************** */
+  // *********************** SELECT *********************** 
   /**
    * Selects all guid records that match {@code query}. The result type of the
    * execution result of this query is {@link CommandResultType#LIST}.
+   * Requires all fields accessed to be world readable.
    *
    * The query syntax is described here:
    * https://gns.name/wiki/index.php?title=Query_Syntax
@@ -1548,10 +1577,39 @@ public static final CommandPacket batchCreateGUIDs(
   }
 
   /**
+   * Selects all guid records that match {@code query}. The result type of the
+   * execution result of this query is {@link CommandResultType#LIST}.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * There are some predefined field names such as
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+   * default.
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spatial coordinates.
+   *
+   * @param reader
+   * @param query
+   * The select query being issued.
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectQuery(GuidEntry reader, String query)
+          throws ClientException {
+    return getCommand(CommandType.SelectQuery, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.QUERY.toString(), query);
+  }
+
+  /**
    * Set up a context-aware group guid corresponding to the query. Requires
    * {@code accountGuid} and {@code publicKey} that are used to set up the new
    * guid or look it up if it already exists. The result type of the execution
    * result of this query is {@link CommandResultType#LIST}.
+   * Requires all fields accessed to be world readable.
    *
    * The query syntax is described here:
    * https://gns.name/wiki/index.php?title=Query_Syntax
@@ -1569,8 +1627,41 @@ public static final CommandPacket batchCreateGUIDs(
   public static final CommandPacket selectSetupGroupQuery(
           GuidEntry accountGUID, String publicKey, String query, int interval)
           throws ClientException {
-    return getCommand(CommandType.SelectGroupSetupQuery, GNSProtocol.GUID.toString(),
-            accountGUID.getGuid(), GNSProtocol.PUBLIC_KEY.toString(), publicKey, GNSProtocol.QUERY.toString(), query,
+    return getCommand(CommandType.SelectGroupSetupQuery,
+            GNSProtocol.ACCOUNT_GUID.toString(), accountGUID.getGuid(),
+            GNSProtocol.PUBLIC_KEY.toString(), publicKey,
+            GNSProtocol.QUERY.toString(), query,
+            GNSProtocol.INTERVAL.toString(), interval);
+  }
+
+  /**
+   * Set up a context-aware group guid corresponding to the query. Requires
+   * {@code accountGuid} and {@code publicKey} that are used to set up the new
+   * guid or look it up if it already exists. The result type of the execution
+   * result of this query is {@link CommandResultType#LIST}.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * @param reader
+   * @param accountGUID
+   * The guid issuing the query.
+   * @param publicKey
+   * @param query
+   * The select query.
+   * @param interval
+   * The refresh interval in seconds (default 60).
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectSetupGroupQuery(GuidEntry reader,
+          GuidEntry accountGUID, String publicKey, String query, int interval)
+          throws ClientException {
+    return getCommand(CommandType.SelectGroupSetupQuery, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.ACCOUNT_GUID.toString(), accountGUID.getGuid(),
+            GNSProtocol.PUBLIC_KEY.toString(), publicKey,
+            GNSProtocol.QUERY.toString(), query,
             GNSProtocol.INTERVAL.toString(), interval);
   }
 
@@ -1579,6 +1670,7 @@ public static final CommandPacket batchCreateGUIDs(
    * query. The results may be stale if the queries that happen more quickly
    * than the refresh interval given during setup. The result type of the
    * execution result of this query is {@link CommandResultType#LIST}.
+   * Requires all fields accessed to be world readable.
    *
    * @param groupGUID
    * The group guid being queried.
@@ -1587,11 +1679,33 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket selectLookupGroupQuery(String groupGUID)
           throws ClientException {
-    return getCommand(CommandType.SelectGroupLookupQuery, GNSProtocol.GUID.toString(), groupGUID);
+    return getCommand(CommandType.SelectGroupLookupQuery,
+            GNSProtocol.ACCOUNT_GUID.toString(), groupGUID);
+  }
+
+  /**
+   * Looks up the membership of a context-aware group guid created using a
+   * query. The results may be stale if the queries that happen more quickly
+   * than the refresh interval given during setup. The result type of the
+   * execution result of this query is {@link CommandResultType#LIST}.
+   *
+   * @param reader
+   * @param groupGUID
+   * The group guid being queried.
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectLookupGroupQuery(GuidEntry reader,
+          String groupGUID)
+          throws ClientException {
+    return getCommand(CommandType.SelectGroupLookupQuery, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.ACCOUNT_GUID.toString(), groupGUID);
   }
 
   /**
    * Searches for all GUIDs whose {@code field} has the value {@code value}.
+   * Requires the {@code field} be world readable.
    *
    * @param field
    * The field key.
@@ -1602,7 +1716,28 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket select(String field, String value)
           throws ClientException {
-    return getCommand(CommandType.Select, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value);
+    return getCommand(CommandType.Select,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.VALUE.toString(), value);
+  }
+
+  /**
+   * Searches for all GUIDs whose {@code field} has the value {@code value}.
+   *
+   * @param reader
+   * @param field
+   * The field key.
+   * @param value
+   * The value that is being searched.
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket select(GuidEntry reader, String field, String value)
+          throws ClientException {
+    return getCommand(CommandType.Select, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.VALUE.toString(), value);
   }
 
   /**
@@ -1611,6 +1746,7 @@ public static final CommandPacket batchCreateGUIDs(
    * {@code value} as nested JSONArrays of paired tuples: [[LONG_UL,
    * LAT_UL],[LONG_BR, LAT_BR]]. The result type of the execution result of
    * this query is {@link CommandResultType#LIST}.
+   * Requires that the {@code field} be world readable.
    *
    * @param field
    * The field key.
@@ -1621,7 +1757,32 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket selectWithin(String field, JSONArray value)
           throws ClientException {
-    return getCommand(CommandType.SelectWithin, GNSProtocol.FIELD.toString(), field, GNSProtocol.WITHIN.toString(),
+    return getCommand(CommandType.SelectWithin,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.WITHIN.toString(), value.toString());
+  }
+
+  /**
+   * If {@code field} is a GeoSpatial field, the query searches for all GUIDs
+   * that have fields that are within the bounding box specified by
+   * {@code value} as nested JSONArrays of paired tuples: [[LONG_UL,
+   * LAT_UL],[LONG_BR, LAT_BR]]. The result type of the execution result of
+   * this query is {@link CommandResultType#LIST}.
+   *
+   * @param reader
+   * @param field
+   * The field key.
+   * @param value
+   * - [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectWithin(GuidEntry reader, String field, JSONArray value)
+          throws ClientException {
+    return getCommand(CommandType.SelectWithin, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.WITHIN.toString(),
             value.toString());
   }
 
@@ -1629,6 +1790,7 @@ public static final CommandPacket batchCreateGUIDs(
    * If {@code field} is a GeoSpatial field, the query searches for all GUIDs
    * whose {@code field} is near {@code value} that is a point specified as a
    * two element JSONArray: [LONG, LAT]. {@code maxDistance} is in meters.
+   * Requires that the {@code field} be world readable.
    *
    * @param field
    * The field key
@@ -1641,8 +1803,34 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket selectNear(String field, JSONArray value,
           Double maxDistance) throws ClientException {
-    return getCommand(CommandType.SelectNear, GNSProtocol.FIELD.toString(), field, GNSProtocol.NEAR.toString(),
-            value.toString(), GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance));
+    return getCommand(CommandType.SelectNear,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.NEAR.toString(), value.toString(),
+            GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance));
+  }
+
+  /**
+   * If {@code field} is a GeoSpatial field, the query searches for all GUIDs
+   * whose {@code field} is near {@code value} that is a point specified as a
+   * two element JSONArray: [LONG, LAT]. {@code maxDistance} is in meters.
+   *
+   * @param reader
+   * @param field
+   * The field key
+   * @param value
+   * - [LONG, LAT]
+   * @param maxDistance
+   * - distance in meters
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectNear(GuidEntry reader, String field, JSONArray value,
+          Double maxDistance) throws ClientException {
+    return getCommand(CommandType.SelectNear, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.NEAR.toString(), value.toString(),
+            GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance));
   }
 
   /**
@@ -1770,8 +1958,10 @@ public static final CommandPacket batchCreateGUIDs(
    */
   public static final CommandPacket activeCodeGet(String targetGUID,
           String action, GuidEntry querierGUID) throws ClientException {
-    return getCommand(CommandType.GetCode, querierGUID, GNSProtocol.GUID.toString(),
-            targetGUID, GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.READER.toString(), querierGUID.getGuid());
+    return getCommand(CommandType.GetCode, querierGUID,
+            GNSProtocol.GUID.toString(), targetGUID,
+            GNSProtocol.AC_ACTION.toString(), action,
+            GNSProtocol.READER.toString(), querierGUID.getGuid());
   }
 
   /* ********************* More extended commands ********************** */
@@ -2251,6 +2441,7 @@ public static final CommandPacket batchCreateGUIDs(
    * @throws ClientException
    */
   @Deprecated
+  // FIXME: This should probably go away.
   public static final CommandPacket fieldReadArrayFirstElement(String targetGUID, String field,
           GuidEntry reader) throws ClientException {
     return getCommand(reader != null ? CommandType.ReadArrayOne
@@ -2272,6 +2463,7 @@ public static final CommandPacket batchCreateGUIDs(
    * @throws ClientException
    */
   @Deprecated
+  // FIXME: This should probably go away.
   public static final CommandPacket fieldReadArrayFirstElement(GuidEntry targetGUID, String field)
           throws ClientException {
     return fieldReadArrayFirstElement(targetGUID.getGuid(), field, targetGUID);

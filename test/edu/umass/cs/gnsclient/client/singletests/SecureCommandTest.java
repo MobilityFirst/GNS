@@ -21,12 +21,18 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.json.JSONArray;
@@ -42,15 +48,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SecureCommandTest {
-
-  private static GNSClient client;
-
-  /**
-   *
-   */
-  public SecureCommandTest() {
-  }
+public class SecureCommandTest extends DefaultGNSTest {
 
   /**
    *
@@ -59,9 +57,9 @@ public class SecureCommandTest {
   public void test_01_SecureCreateClient() {
     try {
       client = new GNSClient();
-      //client.setForceCoordinatedReads(true);
+      client.setForceCoordinatedReads(true);
     } catch (IOException e) {
-      failWithStackTrace("Exception creating client: ", e);
+      Utils.failWithStackTrace("Exception creating client: ", e);
     }
   }
 
@@ -78,8 +76,8 @@ public class SecureCommandTest {
       client.execute(GNSCommand.createAccountSecure(
               accountAlias,
               "password"));
-    } catch (Exception e) {
-      failWithStackTrace("Exception while creating account: ", e);
+    } catch (ClientException | IOException | NoSuchAlgorithmException e) {
+      Utils.failWithStackTrace("Exception while creating account: ", e);
     }
   }
 
@@ -90,15 +88,15 @@ public class SecureCommandTest {
   public void test_03_SecureCheckAccount() {
     try {
       accountGuid = client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
-    } catch (Exception e) {
-      failWithStackTrace("Exception while looking up guid: ", e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while looking up guid: ", e);
     }
     JSONObject json = null;
     if (accountGuid != null) {
       try {
         json = client.execute(GNSCommand.lookupAccountRecord(accountGuid)).getResultJSONObject();
-      } catch (Exception e) {
-        failWithStackTrace("Exception while looking up account record: ", e);
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Exception while looking up account record: ", e);
       }
     }
     // Also make sure the verified flag is set
@@ -106,7 +104,7 @@ public class SecureCommandTest {
       try {
         Assert.assertTrue(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
       } catch (Exception e) {
-        failWithStackTrace("Exception while getting field from account record: ", e);
+        Utils.failWithStackTrace("Exception while getting field from account record: ", e);
       }
     }
   }
@@ -123,7 +121,7 @@ public class SecureCommandTest {
               GNSProtocol.ENTIRE_RECORD.toString())).getResultJSONArray();
       JSONAssert.assertEquals(expected, actual, false);
     } catch (ClientException | IOException | JSONException e) {
-      failWithStackTrace("Exception while retrieving account record acl: ", e);
+      Utils.failWithStackTrace("Exception while retrieving account record acl: ", e);
     }
   }
 
@@ -134,14 +132,14 @@ public class SecureCommandTest {
    *
    */
   @Test
-  public void test_07_AddSecondGuid() {
+  public void test_07_SecureAddSecondGuid() {
     secondAccountAlias = "SECOND" + RandomString.randomString(12);
     try {
       client.execute(GNSCommand.createAccountSecure(
               secondAccountAlias,
               "password"));
-    } catch (Exception e) {
-      failWithStackTrace("Exception while creating account: ", e);
+    } catch (ClientException | IOException | NoSuchAlgorithmException e) {
+      Utils.failWithStackTrace("Exception while creating account: ", e);
     }
   }
 
@@ -149,11 +147,11 @@ public class SecureCommandTest {
    *
    */
   @Test
-  public void test_08_GetGuid() {
+  public void test_08_SecureGetGuid() {
     try {
       secondAccountGuid = client.execute(GNSCommand.lookupGUID(secondAccountAlias)).getResultString();
-    } catch (Exception e) {
-      failWithStackTrace("Exception while looking up guid: ", e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while looking up guid: ", e);
     }
   }
 
@@ -161,12 +159,12 @@ public class SecureCommandTest {
    *
    */
   @Test
-  public void test_09_AddAcl() {
+  public void test_09_SecureAddAcl() {
     try {
       client.execute(GNSCommand.aclAddSecure(AclAccessType.READ_WHITELIST, accountGuid,
               GNSProtocol.ENTIRE_RECORD.toString(), secondAccountGuid));
-    } catch (Exception e) {
-      failWithStackTrace("Exception while looking up guid: ", e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while looking up guid: ", e);
     }
   }
 
@@ -174,7 +172,7 @@ public class SecureCommandTest {
    *
    */
   @Test
-  public void test_10_AddAclCheck() {
+  public void test_10_SecureAddAclCheck() {
     try {
       JSONArray expected
               = new JSONArray(new ArrayList<>(Arrays.asList(GNSProtocol.EVERYONE.toString(), secondAccountGuid)));
@@ -182,7 +180,7 @@ public class SecureCommandTest {
               GNSProtocol.ENTIRE_RECORD.toString())).getResultJSONArray();
       JSONAssert.assertEquals(expected, actual, false);
     } catch (ClientException | IOException | JSONException e) {
-      failWithStackTrace("Exception while retrieving account record acl: ", e);
+      Utils.failWithStackTrace("Exception while retrieving account record acl: ", e);
     }
   }
 
@@ -190,12 +188,12 @@ public class SecureCommandTest {
    * Remove the acl.
    */
   @Test
-  public void test_11_RemoveAcl() {
+  public void test_11_SecureRemoveAcl() {
     try {
       client.execute(GNSCommand.aclRemoveSecure(AclAccessType.READ_WHITELIST, accountGuid,
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.EVERYONE.toString()));
-    } catch (Exception e) {
-      failWithStackTrace("Exception while looking up guid: ", e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while looking up guid: ", e);
     }
   }
 
@@ -203,7 +201,7 @@ public class SecureCommandTest {
    * Check to ensure the acl was removed.
    */
   @Test
-  public void test_12_RemoveAclCheck() {
+  public void test_12_SecureRemoveAclCheck() {
     try {
       JSONArray expected
               = new JSONArray(new ArrayList<>(Arrays.asList(secondAccountGuid)));
@@ -211,7 +209,39 @@ public class SecureCommandTest {
               GNSProtocol.ENTIRE_RECORD.toString())).getResultJSONArray();
       JSONAssert.assertEquals(expected, actual, true);
     } catch (ClientException | IOException | JSONException e) {
-      failWithStackTrace("Exception while retrieving account record acl: ", e);
+      Utils.failWithStackTrace("Exception while retrieving account record acl: ", e);
+    }
+  }
+  
+  /**
+   * Remove the account.
+   */
+  @Test
+  public void test_15_SecureRead() {
+    GuidEntry masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+    try {
+      client.execute(GNSCommand.createGUID(masterGuid, "whatever"));
+      GuidEntry testGuid = GuidUtils.lookupGuidEntryFromDatabase(client, "whatever");
+      client.execute(GNSCommand.fieldUpdate(testGuid, "fred", "value"));
+      JSONObject actual = client.execute(GNSCommand.readSecure(testGuid.getGuid())).getResultJSONObject(); 
+      JSONAssert.assertEquals(new JSONObject().put("fred", "value"),
+              actual, JSONCompareMode.STRICT);
+      client.execute(GNSCommand.removeGUID(masterGuid, testGuid.getGuid()));
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception while removing account record: ", e);
+    }
+  }
+  
+  
+  /**
+   * Remove the account.
+   */
+  @Test
+  public void test_19_SecureRemoveAccount() {
+    try {
+      client.execute(GNSCommand.accountGuidRemoveSecure(secondAccountAlias));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing account record: ", e);
     }
   }
 
@@ -223,7 +253,7 @@ public class SecureCommandTest {
     try {
       client.execute(GNSCommand.accountGuidRemoveSecure(accountAlias));
     } catch (ClientException | IOException e) {
-      failWithStackTrace("Exception while removing account record: ", e);
+      Utils.failWithStackTrace("Exception while removing account record: ", e);
     }
   }
 
@@ -235,17 +265,21 @@ public class SecureCommandTest {
 
     try {
       client.execute(GNSCommand.lookupGUID(accountAlias)).getResultString();
-      failWithStackTrace("Should have throw a client "
+      Utils.failWithStackTrace("Should have throw a client "
               + "exception while looking the guid for " + accountAlias);
     } catch (ClientException | IOException e) {
     }
   }
 
-  private static final void failWithStackTrace(String message, Exception... e) {
-    if (e != null && e.length > 0) {
-      e[0].printStackTrace();
+  /**
+   * Remove the account.
+   */
+  @Test
+  public void test_22_SecureRemoveAccountAgain() {
+    try {
+      client.execute(GNSCommand.accountGuidRemoveSecure(accountAlias));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing account record: ", e);
     }
-    org.junit.Assert.fail(message);
   }
-
 }

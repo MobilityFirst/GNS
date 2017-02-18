@@ -73,8 +73,6 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithReturnAddress 
     this.type = Packet.PacketType.DUMP_REQUEST;
     this.id = id;
     this.primaryNameServer = primaryNameServer;
-    //this.localNameServer = localNameServer;
-    //this.lnsAddress = lnsAddress;
     this.jsonArray = jsonArray;
     this.argument = argument;
   }

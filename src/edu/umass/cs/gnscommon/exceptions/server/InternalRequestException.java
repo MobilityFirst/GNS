@@ -32,7 +32,7 @@ public class InternalRequestException extends ServerException {
 	}
 
 	/**
-	 * Creates a new <code>GnrsException</code> object
+	 * Creates a new <code>InternalRequestException</code> object
 	 * 
 	 * @param message
 	 */
@@ -41,7 +41,7 @@ public class InternalRequestException extends ServerException {
 	}
 
 	/**
-	 * Creates a new <code>GnrsException</code> object
+	 * Creates a new <code>InternalRequestException</code> object
 	 * 
 	 * @param throwable
 	 */

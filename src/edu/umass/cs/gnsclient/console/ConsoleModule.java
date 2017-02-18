@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,6 +56,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.logging.Level;
 
 import org.json.JSONException;
@@ -77,8 +77,7 @@ public class ConsoleModule {
   /**
    *
    */
-  @SuppressWarnings("javadoc")
-  protected Completor consoleCompletor;
+  private Completor consoleCompletor;
   private String promptString = CONSOLE_PROMPT + "not connected>";
   private GNSClientCommands gnsClient;
   private GuidEntry currentGuid;
@@ -240,19 +239,18 @@ public class ConsoleModule {
    */
   protected String loadCommandsFromProperties(String moduleID) {
 
-    //System.out.println(this.getClass().getClassLoader().getResource(".").getPath());
+    System.out.println(this.getClass().getClassLoader().getResource(".").getPath());
     Properties props = new Properties();
     try {
       String propertiesFile = System.getProperty("console.commands", DEFAULT_COMMAND_PROPERTIES_FILE);
       GNSClientConfig.getLogger().log(Level.INFO, "Loading commands from {0}", propertiesFile);
-      InputStream is = ClassLoader.getSystemResourceAsStream(propertiesFile);
-//      GNSClientConfig.getLogger().warning("THREAD: "
-//              + Thread.currentThread().getContextClassLoader().getResourceAsStream(propertiesFile));
-      if (is == null) {
+      // Fixme: this fails (inputStream is null) when we try to run this from junit
+      InputStream inputStream = ClassLoader.getSystemResourceAsStream(propertiesFile);
+      if (inputStream == null) {
         GNSClientConfig.getLogger().log(Level.WARNING, "Unable to load from {0}", propertiesFile);
         return null;
       }
-      props.load(is);
+      props.load(inputStream);
     } catch (IOException e) {
       // fail silently: no commands will be loaded
     } catch (RuntimeException e) {
@@ -317,15 +315,6 @@ public class ConsoleModule {
   }
 
   /**
-   * Get all the commands for this module
-   *
-   * @return <code>TreeSet</code> of commands (commandName|commandObject)
-   */
-  public TreeSet<ConsoleCommand> getCommands() {
-    return commands;
-  }
-
-  /**
    * Get the prompt string for this module
    *
    * @return <code>String</code> to place before prompt
@@ -361,7 +350,7 @@ public class ConsoleModule {
     }
     while (!quit) {
 
-      Hashtable<String, ConsoleCommand> hashCommands = getHashCommands();
+      Map<String, ConsoleCommand> hashCommands = getHashCommands();
       try {
         String commandLine;
         if (silent) {
@@ -380,9 +369,11 @@ public class ConsoleModule {
         }
 
         handleCommandLine(commandLine, hashCommands);
+      } catch (UnknownCommandException e) {
+        printString(e.getMessage() + "\n");
       } catch (Exception e) {
-        printString("Error during console commnand execution: " + e.getMessage() + "\n");
-
+        printString("Error during console command execution: " + e.getMessage() + "\n");
+        e.printStackTrace();
       }
     }
     GNSClientConfig.getLogger().fine("Quitting");
@@ -405,7 +396,7 @@ public class ConsoleModule {
   }
 
   private boolean lastWasCR = false;
-  private List<Byte> currentLine = new ArrayList<>();
+  private final List<Byte> currentLine = new ArrayList<>();
 
   /**
    * Implements SEQUOIA-887. We would like to create a BufferedReader to use its
@@ -480,8 +471,8 @@ public class ConsoleModule {
    *
    * @return <code>Hashtable</code> list of <code>String</code> objects
    */
-  public final Hashtable<String, ConsoleCommand> getHashCommands() {
-    Hashtable<String, ConsoleCommand> hashCommands = new Hashtable<String, ConsoleCommand>();
+  public final Map<String, ConsoleCommand> getHashCommands() {
+    HashMap<String, ConsoleCommand> hashCommands = new HashMap<>();
     for (ConsoleCommand consoleCommand : commands) {
       hashCommands.put(consoleCommand.getCommandName(), consoleCommand);
     }
@@ -495,18 +486,15 @@ public class ConsoleModule {
    * @param hashCommands the list of commands available for this module
    * @throws Exception if fails *
    */
-  public final void handleCommandLine(String commandLine, Hashtable<String, ConsoleCommand> hashCommands)
+  public final void handleCommandLine(String commandLine, Map<String, ConsoleCommand> hashCommands)
           throws Exception {
-    StringTokenizer st = new StringTokenizer(commandLine);
-    if (st.hasMoreTokens()) {
-      ConsoleCommand command = findConsoleCommand(commandLine, hashCommands);
-      GNSClientConfig.getLogger().log(Level.FINE, "Command:{0}", command);
-      if (command != null) {
-        command.execute(commandLine.substring(command.getCommandName().length()));
-        return;
-      }
+    ConsoleCommand command = findConsoleCommand(commandLine, hashCommands);
+    GNSClientConfig.getLogger().log(Level.FINE, "Command:{0}", command);
+    if (command != null) {
+      command.execute(commandLine.substring(command.getCommandName().length()));
+      return;
     }
-    throw new Exception("Command " + commandLine + " is not supported here");
+    throw new UnknownCommandException("Command " + commandLine + " is not supported here");
   }
 
   /**
@@ -521,14 +509,12 @@ public class ConsoleModule {
    * command from the <code>commandLine</code> or <code>null</code> if
    * there is no matching
    */
-  public ConsoleCommand findConsoleCommand(String commandLine, Hashtable<String, ConsoleCommand> hashCommands) {
+  public ConsoleCommand findConsoleCommand(String commandLine, Map<String, ConsoleCommand> hashCommands) {
     ConsoleCommand foundCommand = null;
-    for (Iterator<?> iter = hashCommands.entrySet().iterator(); iter.hasNext();) {
-      @SuppressWarnings("rawtypes")
-      Map.Entry commandEntry = (Map.Entry) iter.next();
-      String commandName = (String) commandEntry.getKey();
+    for (Map.Entry<String, ConsoleCommand> commandEntry : hashCommands.entrySet()) {
+      String commandName = commandEntry.getKey();
       if (commandLine.startsWith(commandName)) {
-        ConsoleCommand command = (ConsoleCommand) commandEntry.getValue();
+        ConsoleCommand command = commandEntry.getValue();
         if (foundCommand == null) {
           foundCommand = command;
         }
@@ -652,13 +638,13 @@ public class ConsoleModule {
 
   /**
    * Sets the current GNSProtocol.GUID.toString() with the provided GNSProtocol.GUID.toString() and checks if the account is
- verified.
+   * verified.
    *
    * @param guid the GNSProtocol.GUID.toString() to use as current GNSProtocol.GUID.toString()
    */
   public void setCurrentGuidAndCheckForVerified(GuidEntry guid) {
     this.currentGuid = guid;
-    if (gnsClient != null) {
+    if (currentGuid != null && gnsClient != null) {
       accountVerified = checkGnsIsAccountVerified(currentGuid);
     }
     if (!accountVerified && currentGuid != null) {
@@ -668,7 +654,7 @@ public class ConsoleModule {
 
   /**
    * Sets the guid as default GNSProtocol.GUID.toString() in user preferences and checks if the account
- is verified.
+   * is verified.
    *
    * @param guid the GNSProtocol.GUID.toString() to set as default GNSProtocol.GUID.toString()
    */
@@ -761,8 +747,7 @@ public class ConsoleModule {
      */
     private boolean isACompleteCommand(String input) {
       boolean foundCompleteCommand = false;
-      for (Iterator<ConsoleCommand> iter = commands.iterator(); iter.hasNext();) {
-        ConsoleCommand command = iter.next();
+      for (ConsoleCommand command : commands) {
         if (input.equals(command.getCommandName())) {
           foundCompleteCommand = !otherCommandsStartWith(command.getCommandName());
         }
@@ -771,8 +756,7 @@ public class ConsoleModule {
     }
 
     private boolean otherCommandsStartWith(String commandName) {
-      for (Iterator<ConsoleCommand> iter = commands.iterator(); iter.hasNext();) {
-        ConsoleCommand command = iter.next();
+      for (ConsoleCommand command : commands) {
         if (command.getCommandName().startsWith(commandName) && !command.getCommandName().equals(commandName)) {
           return true;
         }

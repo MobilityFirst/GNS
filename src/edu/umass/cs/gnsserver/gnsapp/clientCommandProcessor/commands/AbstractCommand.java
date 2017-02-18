@@ -56,7 +56,7 @@ public abstract class AbstractCommand implements CommandInterface, Comparable<Ab
   protected CommandModule module;
 
   /**
-   * Creates a new <code>ConsoleCommand</code> object
+   * Creates a new <code>AbstractCommand</code> object
    *
    * @param module
    */

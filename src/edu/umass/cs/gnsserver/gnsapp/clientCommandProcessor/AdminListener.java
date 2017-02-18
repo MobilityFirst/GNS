@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
 
-import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
@@ -27,6 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
 
+import edu.umass.cs.gnsserver.nodeconfig.PortOffsets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,12 +40,14 @@ import java.util.Set;
 import java.util.logging.Level;
 
 /**
- * A separate thread that runs in the replica that handles administrative (AKA non-data related, non-user)
- * type operations. All of the things in here are for server administration and debugging.
+ * Handles administrative (AKA non-data( type operations. 
+ * All of the things in here are for server administration and debugging.
+ * Called directly by the client support code. Also runs a listener that
+ * server nodes send things back to. 
  *
  * @author Westy
  */
-public class ListenerAdmin extends Thread implements Shutdownable {
+public class AdminListener extends Thread implements Shutdownable {
 
   /**
    * Socket over which active name server request arrive. *
@@ -65,10 +67,10 @@ public class ListenerAdmin extends Thread implements Shutdownable {
    * @param handler
    * @throws IOException
    */
-  public ListenerAdmin(ClientRequestHandlerInterface handler) throws IOException {
+  public AdminListener(ClientRequestHandlerInterface handler) throws IOException {
     super("ListenerAdmin");
     this.serverSocket
-            = new ServerSocket(handler.getGnsNodeConfig().getCcpAdminPort(handler.getActiveReplicaID()));
+            = new ServerSocket(handler.getGnsNodeConfig().getCollatingAdminPort(handler.getActiveReplicaID()));
     replicationMap = new HashMap<>();
     this.handler = handler;
   }
@@ -78,9 +80,10 @@ public class ListenerAdmin extends Thread implements Shutdownable {
    */
   @Override
   public void run() {
-    int numRequest = 0;
     ClientCommandProcessorConfig.getLogger().log(Level.INFO,
-            "Server Node {0} starting Admin Server on port {1}", new Object[]{handler.getNodeAddress(), serverSocket.getLocalPort()});
+            "Server Node {0} starting Admin Server on port {1}", 
+            new Object[]{handler.getNodeAddress(), 
+              serverSocket.getLocalPort()});
     while (true) {
       Socket socket;
       JSONObject incomingJSON;
@@ -119,19 +122,19 @@ public class ListenerAdmin extends Thread implements Shutdownable {
           if (dumpRequestPacket.getPrimaryNameServer() == null) {
             // OUTGOING - multicast it to all the nameservers
             int id = dumpRequestPacket.getId();
-            ClientCommandProcessorConfig.getLogger().info("ListenerAdmin: Request from local HTTP server");
+            ClientCommandProcessorConfig.getLogger().info("ListenerAdmin: Dump request from local server");
             JSONObject json = dumpRequestPacket.toJSONObject();
             Set<String> serverIds = handler.getNodeConfig().getActiveReplicas();
             //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
-            Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, OldHackyConstants.PortType.NS_ADMIN_PORT, null);
+            Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, PortOffsets.SERVER_ADMIN_PORT, null);
             ClientCommandProcessorConfig.getLogger().log(Level.INFO, "ListenerAdmin: Multicast out to {0} hosts for {1} --> {2}", new Object[]{serverIds.size(), id, dumpRequestPacket.toString()});
           } else {
             // INCOMING - send it out to original requester
             DumpRequestPacket<String> incomingPacket = new DumpRequestPacket<>(incomingJSON, handler.getGnsNodeConfig());
             int incomingId = incomingPacket.getId();
             handler.getAdmintercessor().handleIncomingDumpResponsePackets(incomingJSON, handler);
-            ClientCommandProcessorConfig.getLogger().log(Level.INFO, "ListenerAdmin: Relayed response for {0} --> {1}", new Object[]{incomingId, dumpRequestPacket.toJSONObject()});
+            ClientCommandProcessorConfig.getLogger().log(Level.FINEST, "ListenerAdmin: Relayed response for {0} --> {1}", new Object[]{incomingId, dumpRequestPacket.toJSONObject()});
             int remaining = replicationMap.get(incomingId);
             remaining -= 1;
             if (remaining > 0) {
@@ -147,31 +150,7 @@ public class ListenerAdmin extends Thread implements Shutdownable {
         case ADMIN_REQUEST:
           AdminRequestPacket incomingPacket = new AdminRequestPacket(incomingJSON);
           switch (incomingPacket.getOperation()) {
-            // Calls remove record on every record
-            case DELETEALLRECORDS:
-            // Clears the database and reinitializes all indices.
-            case RESETDB:
-              ClientCommandProcessorConfig.getLogger().log(Level.FINE, "LNSListenerAdmin ({0}" + ") " + ": Forwarding {1} request", new Object[]{handler.getNodeAddress(), incomingPacket.getOperation().toString()});
-              Set<String> serverIds = handler.getNodeConfig().getActiveReplicas();
-              //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
-              Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, OldHackyConstants.PortType.NS_ADMIN_PORT, null);
-              // clear the cache
-              //handler.invalidateCache();
-              break;
-            case CHANGELOGLEVEL:
-              Level level = Level.parse(incomingPacket.getArgument());
-              ClientCommandProcessorConfig.getLogger().log(Level.INFO, "Changing log level to {0}",
-                      level.getName());
-              ClientCommandProcessorConfig.getLogger().setLevel(level);
-              // send it on to the NSs
-              ClientCommandProcessorConfig.getLogger().log(Level.FINE,
-                      "LNSListenerAdmin ({0}" + ") " + ": Forwarding {1} request",
-                      new Object[]{handler.getNodeAddress(), incomingPacket.getOperation().toString()});
-              serverIds = handler.getNodeConfig().getActiveReplicas();
-              //serverIds = handler.getGnsNodeConfig().getNodeIDs();
-              Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds,
-                      incomingJSON, 2, OldHackyConstants.PortType.NS_ADMIN_PORT, null);
-              break;
+            // deliberately nothing here for now
             default:
               ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
                       "Unknown admin request in packet: {0}", incomingJSON);

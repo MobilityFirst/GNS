@@ -42,6 +42,7 @@
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${build.classes.dir}"/>
     <mkdir dir="${build.test.classes.dir}"/>
+    <mkdir dir="logs"/>
   </target>
 
   <!-- pretty much everything depends on this -->
@@ -388,8 +389,55 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
   <target name="runtest" description="Runs the test you specify on the command line with -Dtest=" 
           depends="compiletest, ensure-test-name, pkgtest">
   </target>
+  
+  <target name="testnoserver" description="Runs the test you specify on the command line with -Dtest=" 
+          depends="compiletest, ensure-test-name">
+    <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
+    <property name="alias" value=""/>
+    <property name="password" value=""/>
+    <property name="count" value=""/>
+    <property name="gigapaxosConfig" value="conf/gnsclient.3local.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.junit.properties"/>
+    <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-DstartServer=true"/>
+      <jvmarg value="-DstopServer=false"/>
+      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
+      <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
+      <jvmarg value="-DwaitTillAllServersReady=${waitTillAllServersReady}"/>
+      <jvmarg value="-DsingleJVM=${singleJVM}"/>
+      <jvmarg value="-Dforceclear=${forceclear}"/>
+      <jvmarg value="-Dserver.command=bin/gpServer.sh"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
 
-  <target name="runtestWithKeyStore" 
+      <batchtest>
+        <fileset dir="${test.dir}">
+          <include name="**/${test}.java"/>
+        </fileset>
+      </batchtest>
+
+      <batchtest>
+        <fileset dir="${build.test.classes.dir}">
+          <include name="**/${test}/*Test.class"/>
+        </fileset>
+      </batchtest>
+
+      <batchtest>
+        <fileset dir="${build.classes.dir}">
+          <include name="**/*ZDefaultGNSTest.class"/>
+        </fileset>
+      </batchtest>
+
+    </junit>
+  </target>
+
+  <target name="testnoserverwithkeystore" 
           description="Runs with the correct keystore the test you specify on the command line -Dtest=" 
           depends="compiletest, ensure-test-name">
     <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->

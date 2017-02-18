@@ -9,7 +9,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.json.JSONException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -199,7 +198,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 			Assert.assertEquals(
 					clients[numClients > 1 ? 1 : 0].fieldRead(guid, someField),
 					(someValue));
-		} catch (IOException | ClientException | JSONException e) {
+		} catch (IOException | ClientException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {

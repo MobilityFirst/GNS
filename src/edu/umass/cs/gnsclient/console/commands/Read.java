@@ -23,19 +23,18 @@ import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.StringUtil;
+import java.io.IOException;
 import org.json.JSONObject;
 
 /**
  * Reads a field in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class Read extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldRead</code> object
+   * Creates a new <code>Read</code> object
    *
    * @param module
    */
@@ -78,23 +77,26 @@ public class Read extends ConsoleCommand {
 
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;
-      if (st.countTokens() == 0) {
-        guid = module.getCurrentGuid().getGuid();
-      } else if (st.countTokens() == 1) {
-        guid = st.nextToken();
-        if (!StringUtil.isValidGuidString(guid)) {
-          // We probably have an alias, lookup the GUID
-          guid = gnsClient.lookupGuid(guid);
-        }
-      } else {
-        console.printString("Wrong number of arguments for this command.\n");
-        return;
+      switch (st.countTokens()) {
+        case 0:
+          guid = module.getCurrentGuid().getGuid();
+          break;
+        case 1:
+          guid = st.nextToken();
+          if (!StringUtil.isValidGuidString(guid)) {
+            // We probably have an alias, lookup the GUID
+            guid = gnsClient.lookupGuid(guid);
+          }
+          break;
+        default:
+          wrongArguments();
+          return;
       }
 
       JSONObject value = gnsClient.read(guid, module.getCurrentGuid());
       console.printString(value.toString());
       console.printNewline();
-    } catch (Exception e) {
+    } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

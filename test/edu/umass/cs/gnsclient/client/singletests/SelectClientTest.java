@@ -19,21 +19,24 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.hamcrest.Matchers.*;
-
+import java.util.HashSet;
+import java.util.Set;
+import org.hamcrest.Matchers;
 import org.json.JSONArray;
 
-import static org.junit.Assert.*;
-
+import org.json.JSONException;
+import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -43,28 +46,27 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SelectClientTest {
+public class SelectClientTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
+  private static final Set<GuidEntry> createdGuids = new HashSet<>();
 
   /**
    *
    */
   public SelectClientTest() {
-    if (client == null) {
-       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+    if (clientCommands == null) {
+      try {
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
     }
   }
@@ -77,24 +79,40 @@ public class SelectClientTest {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
+        createdGuids.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
-        client.fieldReplaceOrCreateList(testEntry, fieldName, array);
+        clientCommands.fieldReplaceOrCreateList(testEntry, fieldName, array);
       }
-    } catch (Exception e) {
-      fail("Exception while trying to create the guids: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
     }
 
     try {
       String query = "~" + fieldName + " : ($gt: 0)";
-      JSONArray result = client.selectQuery(query);
+      JSONArray result = clientCommands.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(5));
-    } catch (Exception e) {
-      fail("Exception executing selectNear: " + e);
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing selectNear: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_02_SelectCleanup() {
+    try {
+      for (GuidEntry guid : createdGuids) {
+        clientCommands.guidRemove(masterGuid, guid.getGuid());
+      }
+      createdGuids.clear();
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception during cleanup: " + e);
     }
   }
 

@@ -30,7 +30,7 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -288,27 +288,24 @@ public class NSFieldAccess {
    *
    * @param guid
    * @param field
-   * @param allowRemoteQuery
+   * @param allowRemoteLookup
    * @param handler
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ResultValue lookupListFieldAnywhere(InternalRequestHeader header, String guid, String field,
-          boolean allowRemoteQuery, ClientRequestHandlerInterface handler) throws FailedDBOperationException {
+          boolean allowRemoteLookup, ClientRequestHandlerInterface handler) throws FailedDBOperationException {
     ResultValue result = lookupListFieldLocallySafe(guid, field, handler.getApp().getDB());
     // if values wasn't found and the guid doesn't exist on this server 
     // and we're allowed then send a query to another server
-    if (result.isEmpty() && !handler.getApp().getDB().containsName(guid) && allowRemoteQuery) {
+    if (result.isEmpty() && !handler.getApp().getDB().containsName(guid) && allowRemoteLookup) {
       try {
-        //ClientSupportConfig.getLogger().info("RQ: ");
-        //String stringResult = handler.getRemoteQuery().fieldReadArray(guid, field);
         String stringResult = handler.getInternalClient().execute(GNSCommandInternal.fieldRead(guid, field, header)).getResultString();
         result = new ResultValue(stringResult);
       } catch (Exception e) {
         ClientSupportConfig.getLogger().log(Level.SEVERE,
                 "Problem getting record from remote server: {0}", e);
       }
-      //result = lookupListFieldQueryLNS(guid, field, activeReplica, lnsAddress);
       if (!result.isEmpty()) {
         ClientSupportConfig.getLogger().log(Level.FINE, "@@@@@@ Field {0} in {1}"
                 + " not found on this server but was found thru remote query. "
@@ -337,7 +334,6 @@ public class NSFieldAccess {
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !gnsApp.getDB().containsName(guid)) {
       try {
-        //String stringResult = gnsApp.getRequestHandler().getRemoteQuery().fieldRead(guid, field);
     	  String stringResult = gnsApp.getRequestHandler().getInternalClient().execute(GNSCommandInternal.fieldRead(guid, field, header)).getResultString();
         if (stringResult != null) {
           result = new ValuesMap();

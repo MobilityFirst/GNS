@@ -101,7 +101,7 @@ public abstract class LNSConsistentNodeConfig implements
    */
   @Override
   public InetAddress getBindAddress(InetSocketAddress id) {
-    return this.nodeConfig.getBindAddress(id);
+    throw new RuntimeException("The use of this method is not permitted");
   }
 
   /**

@@ -96,16 +96,11 @@ public class CreateGuidTest {
   public static void main(String args[]) throws Exception {
     try {
       CommandLine parser = initializeOptions(args);
-      if (parser.hasOption("help") || args.length == 0
-              || !parser.hasOption("host")
-              || !parser.hasOption("port")) {
+      if (parser.hasOption("help") || args.length == 0) {
         printUsage();
-        System.out.println("-host and -port are required!");
         System.exit(1);
       }
       String alias = parser.getOptionValue("alias");
-      String host = parser.getOptionValue("host");
-      String portString = parser.getOptionValue("port");
       new CreateGuidTest(alias != null ? alias : ACCOUNT_ALIAS);
       System.exit(0);
     } catch (HeadlessException e) {
@@ -125,17 +120,9 @@ public class CreateGuidTest {
     Option alias = OptionBuilder.withArgName("alias").hasArg()
             .withDescription("the alias (HRN) to use for the account")
             .create("alias");
-    Option host = OptionBuilder.withArgName("host").hasArg()
-            .withDescription("the GNS host")
-            .create("host");
-    Option port = OptionBuilder.withArgName("port").hasArg()
-            .withDescription("the GNS port")
-            .create("port");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(alias);
-    commandLineOptions.addOption(host);
-    commandLineOptions.addOption(port);
     commandLineOptions.addOption(help);
 
     CommandLineParser parser = new GnuParser();

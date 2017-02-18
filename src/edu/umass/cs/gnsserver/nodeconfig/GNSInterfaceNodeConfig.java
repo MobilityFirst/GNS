@@ -53,15 +53,7 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends
    * @param id
    * @return an int
    */
-  public abstract int getAdminPort(NodeIDType id);
-
-  /**
-   * Returns the Ccp for the given node.
-   *
-   * @param id
-   * @return an int
-   */
-  public abstract int getCcpPort(NodeIDType id);
+  public abstract int getServerAdminPort(NodeIDType id);
   
   /**
    * Returns the Ccp admin port for the given node.
@@ -69,7 +61,7 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends
    * @param id
    * @return and id
    */
-  public abstract int getCcpAdminPort(NodeIDType id);
+  public abstract int getCollatingAdminPort(NodeIDType id);
 
   /**
    * Returns the average ping latency to the given node.

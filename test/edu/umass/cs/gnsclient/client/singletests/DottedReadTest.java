@@ -26,26 +26,28 @@ import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS using the UniversalGnsClientFull.
+ * Test read fields with dot notation.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class DottedReadTest {
+public class DottedReadTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client = null;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
 
@@ -53,17 +55,17 @@ public class DottedReadTest {
    *
    */
   public DottedReadTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
     }
   }
@@ -72,12 +74,12 @@ public class DottedReadTest {
    *
    */
   @Test
-  public void test_1_CreateFields() {
+  public void test_10_CreateFields() {
     try {
-      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -85,7 +87,7 @@ public class DottedReadTest {
    *
    */
   @Test
-  public void test_2_Update() {
+  public void test_20_Update() {
     try {
       JSONObject json = new JSONObject();
       JSONObject subJson = new JSONObject();
@@ -96,9 +98,9 @@ public class DottedReadTest {
       subsubJson.put("left", "eight");
       subJson.put("sally", subsubJson);
       json.put("flapjack", subJson);
-      client.update(westyEntry, json);
-    } catch (Exception e) {
-      fail("Exception while adding field \"flapjack\": " + e);
+      clientCommands.update(westyEntry, json);
+    } catch (JSONException | IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception while adding field \"flapjack\": " + e);
     }
   }
 
@@ -106,7 +108,7 @@ public class DottedReadTest {
    *
    */
   @Test
-  public void test_3_ReadAll() {
+  public void test_30_ReadAll() {
     try {
       JSONObject expected = new JSONObject();
       JSONObject subJson = new JSONObject();
@@ -116,11 +118,11 @@ public class DottedReadTest {
       subsubJson.put("left", "eight");
       subJson.put("sally", subsubJson);
       expected.put("flapjack", subJson);
-      JSONObject actual = client.read(westyEntry);
+      JSONObject actual = clientCommands.read(westyEntry);
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       //System.out.println(actual);
-    } catch (Exception e) {
-      fail("Exception while reading JSON: " + e);
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while reading JSON: " + e);
     }
   }
 
@@ -128,12 +130,12 @@ public class DottedReadTest {
    *
    */
   @Test
-  public void test_4_ReadDeep() {
+  public void test_40_ReadDeep() {
     try {
-      String actual = client.fieldRead(westyEntry.getGuid(), "flapjack.sally.right", westyEntry);
-      assertEquals("seven", actual);
-    } catch (Exception e) {
-      fail("Exception while reading \"flapjack.sally.right\": " + e);
+      String actual = clientCommands.fieldRead(westyEntry.getGuid(), "flapjack.sally.right", westyEntry);
+      Assert.assertEquals("seven", actual);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while reading \"flapjack.sally.right\": " + e);
     }
   }
 
@@ -141,15 +143,15 @@ public class DottedReadTest {
    *
    */
   @Test
-  public void test_5_ReadMid() {
+  public void test_50_ReadMid() {
     try {
-      String actual = client.fieldRead(westyEntry.getGuid(), "flapjack.sally", westyEntry);
+      String actual = clientCommands.fieldRead(westyEntry.getGuid(), "flapjack.sally", westyEntry);
       String expected = "{ \"left\" : \"eight\" , \"right\" : \"seven\"}";
       //System.out.println("expected:" + expected);
       //System.out.println("actual:" + actual);
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
-    } catch (Exception e) {
-      fail("Exception while reading \"flapjack.sally\": " + e);
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception while reading \"flapjack.sally\": " + e);
     }
   }
 
@@ -157,15 +159,27 @@ public class DottedReadTest {
    *
    */
   @Test
-  public void test_6_ReadShallow() {
+  public void test_60_ReadShallow() {
     try {
-      String actual = client.fieldRead(westyEntry.getGuid(), "flapjack", westyEntry);
+      String actual = clientCommands.fieldRead(westyEntry.getGuid(), "flapjack", westyEntry);
       String expected = "{ \"sammy\" : \"green\" , \"sally\" : { \"left\" : \"eight\" , \"right\" : \"seven\"}}";
       //System.out.println("expected:" + expected);
       //System.out.println("actual:" + actual);
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
-    } catch (Exception e) {
-      fail("Exception while reading \"flapjack\": " + e);
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception while reading \"flapjack\": " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_70_Cleanup() {
+    try {
+      clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing test account guid: " + e);
     }
   }
 

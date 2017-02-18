@@ -22,14 +22,15 @@ package edu.umass.cs.gnsclient.client.singletests;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
-
-import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -37,28 +38,26 @@ import org.junit.Test;
  *
  * @author westy
  */
-public class PerformanceTest {
+public class PerformanceTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
 
   /**
    *
    */
   public PerformanceTest() {
-    if (client == null) {
-       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+    if (clientCommands == null) {
+      try {
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
     }
   }
@@ -79,43 +78,50 @@ public class PerformanceTest {
       try {
         String guidName = "testGUID" + RandomString.randomString(20);
         System.out.println("Creating guid: " + guidName);
-        tempEntry = client.guidCreate(masterGuid, guidName);
-      } catch (Exception e) {
-        fail("Exception creating guid: " + e);
+        tempEntry = clientCommands.guidCreate(masterGuid, guidName);
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Exception creating guid: " + e);
       }
 
-      for (int j = 0; j < numFields; j++) {
-        String fieldName = RandomString.randomString(10);
-        String fieldValue = RandomString.randomString(10);
-        System.out.println("Creating field #" + j + " : " + fieldName);
+      if (tempEntry != null) {
+        for (int j = 0; j < numFields; j++) {
+          String fieldName = RandomString.randomString(10);
+          String fieldValue = RandomString.randomString(10);
+          System.out.println("Creating field #" + j + " : " + fieldName);
+          try {
+            clientCommands.fieldCreateOneElementList(tempEntry, fieldName, fieldValue);
+          } catch (IOException | ClientException e) {
+            Utils.failWithStackTrace("Exception creating field: " + e);
+          }
+          try {
+            clientCommands.fieldReadArray(tempEntry.getGuid(), fieldName, tempEntry);
+          } catch (ClientException | IOException e) {
+            Utils.failWithStackTrace("Exception reading field: " + e);
+          }
+          ArrayList<String> allValues = new ArrayList<>();
+          for (int k = 0; k < numValues; k++) {
+            allValues.add(RandomString.randomString(valueSizeIncrement));
+          }
+          try {
+            clientCommands.fieldAppend(tempEntry.getGuid(), fieldName, new JSONArray(allValues), tempEntry);
+          } catch (IOException | ClientException e) {
+            Utils.failWithStackTrace("Exception appending value onto field: " + e);
+          }
+          JSONArray array;
+          try {
+            array = clientCommands.fieldReadArray(tempEntry.getGuid(), fieldName, tempEntry);
+            System.out.println("Length of array = " + array.toString().length());
+          } catch (ClientException | IOException e) {
+            Utils.failWithStackTrace("Exception appending value onto field: " + e);
+          }
+        }
+        System.out.println("Done with guid #" + i);
         try {
-          client.fieldCreateOneElementList(tempEntry, fieldName, fieldValue);
-        } catch (Exception e) {
-          fail("Exception creating field: " + e);
+          clientCommands.guidRemove(masterGuid, tempEntry.getGuid());
+        } catch (ClientException | IOException e) {
+          Utils.failWithStackTrace("Exception while deleting guid: " + e);
         }
-        try {
-          client.fieldReadArray(tempEntry.getGuid(), fieldName, tempEntry);
-        } catch (Exception e) {
-          fail("Exception reading field: " + e);
-        }
-        ArrayList<String> allValues = new ArrayList<String>();
-        for (int k = 0; k < numValues; k++) {
-          allValues.add(RandomString.randomString(valueSizeIncrement));
-        }
-        try {
-          client.fieldAppend(tempEntry.getGuid(), fieldName, new JSONArray(allValues), tempEntry);
-        } catch (Exception e) {
-          fail("Exception appending value onto field: " + e);
-        }
-        JSONArray array = null;
-        try {
-          array = client.fieldReadArray(tempEntry.getGuid(), fieldName, tempEntry);
-        } catch (Exception e) {
-          fail("Exception appending value onto field: " + e);
-        }
-        System.out.println("Length of array = " + array.toString().length());
       }
-      System.out.println("Done with guid #" + i);
     }
   }
 }

@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -32,6 +31,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * OUT OF DATE: THIS WILL BE UPDATED SHORTLY TO REFLECT THE LATEST CLIENT CHANGES.
@@ -99,7 +99,7 @@ public class GNSQuickStart {
 
     // Load the private key from a file
     PrivateKey privateKey = KeyPairUtils.getPrivateKeyFromPKCS8File(privateKeyFile);
-    System.out.println("Retrieved private key: " + ByteUtils.toHex(privateKey.getEncoded()).toString());
+    System.out.println("Retrieved private key: " + DatatypeConverter.printHexBinary(privateKey.getEncoded()));
 
     // Create a GuidEntry
     GuidEntry accountGuid = new GuidEntry(accountId, guid, publicKey, privateKey);

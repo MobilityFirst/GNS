@@ -16,25 +16,17 @@
 
 package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
+import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
-import edu.umass.cs.gnsserver.nodeconfig.HostFileLoader;
-import edu.umass.cs.gnsserver.nodeconfig.HostSpec;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
@@ -98,40 +90,11 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     for (InetSocketAddress address : reconfigurators) {
       addHostInfo(hostInfoMapping, address.toString(), address
               .getAddress().toString(), address.getAddress().toString(),
-              address.getPort() > 0 ? address.getPort()
-                      : OldHackyConstants.DEFAULT_STARTING_PORT);
+              address.getPort());
     }
     GNSConfig.getLogger().log(Level.INFO, "LNS mapping = {0}", this.hostInfoMapping);
     //this.hostsFile = null;
   }
-
-  /**
-   * Creates a LNSNodeConfig initializes it from a name server host file. This
-   * supports the new hosts.txt style format.
-   *
-   * @param hostsFile
-   * @throws java.io.IOException
-   */
-//  public LNSNodeConfig(String hostsFile) throws IOException {
-//    this.hostsFile = hostsFile;
-//    if (isOldStyleFile(hostsFile)) {
-//      throw new UnsupportedOperationException(
-//              "THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: "
-//              + hostsFile);
-//      // initFromOldStyleFile(hostsFile, nameServerID);
-//    }
-//    readHostsFile(hostsFile);
-//    // Informational purposes
-//    for (Entry<Object, LNSNodeInfo> hostInfoEntry : hostInfoMapping
-//            .entrySet()) {
-//      GNSConfig.getLogger().log(Level.INFO, "For LNS "
-//              + " Id: {0} Host:{1} Start Port:{2}",
-//              new Object[]{hostInfoEntry.getValue().getId().toString(),
-//                hostInfoEntry.getValue().getIpAddress(),
-//                hostInfoEntry.getValue().getStartingPortNumber()});
-//    }
-//    startCheckingForUpdates();
-//  }
 
   /**
    * Returns the set of active replica addresses.
@@ -140,13 +103,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
    */
   @Override
   public Set<InetSocketAddress> getActiveReplicas() {
-    Set<InetSocketAddress> result = new HashSet<>();
-    for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
-      result.add(new InetSocketAddress(hostInfo.getIpAddress(), hostInfo
-              .getStartingPortNumber()
-              + OldHackyConstants.PortType.ACTIVE_REPLICA_PORT.getOffset()));
-    }
-    return result;
+    return new HashSet<>(PaxosConfig.getActives().values());
   }
 
   /**
@@ -156,16 +113,10 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
    */
   @Override
   public Set<InetSocketAddress> getReconfigurators() {
-    Set<InetSocketAddress> result = new HashSet<>();
-    for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
-      result.add(new InetSocketAddress(hostInfo.getIpAddress(), hostInfo
-              .getStartingPortNumber()
-              + OldHackyConstants.PortType.RECONFIGURATOR_PORT.getOffset()));
-    }
-    return result;
+    return ReconfigurationConfig.getReconfiguratorAddresses();
   }
 
-  /**
+  /*
    * Returns the "top-level" host ID for any given nodeID.
    *
    * @param id
@@ -290,46 +241,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     return version;
   }
 
-  // /
-  // / READING AND RECHECKING OF HOSTS FILE
-  // /
-  /**
-   *
-   * Read a host file to create a mapping of node information for name
-   * servers.
-   *
-   * @param hostsFile
-   * @param nameServerID
-   * @throws NumberFormatException
-   */
-//  @SuppressWarnings("unchecked")
-//  private void readHostsFile(String hostsFile) throws IOException {
-//    List<HostSpec> hosts = null;
-//    try {
-//      hosts = HostFileLoader.loadHostFile(hostsFile);
-//      version = HostFileLoader.getFileVersion();
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//      throw new IOException("Problem loading hosts file: " + e);
-//    }
-//    // save the old one... maybe we'll need it again?
-//    ConcurrentMap<Object, LNSNodeInfo> previousHostInfoMapping = hostInfoMapping;
-//    // Create a new one so we don't hose the old one if the new file is
-//    // bogus
-//    ConcurrentMap<Object, LNSNodeInfo> newHostInfoMapping = new ConcurrentHashMap<>(
-//            16, 0.75f, 8);
-//    for (HostSpec spec : hosts) {
-//      addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(),
-//              spec.getExternalIP(),
-//              spec.getStartPort() != null ? spec.getStartPort()
-//                      : OldHackyConstants.DEFAULT_STARTING_PORT);
-//    }
-//    // ok.. things are cool... actually update
-//    hostInfoMapping = newHostInfoMapping;
-//    // ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, getNodeIDs());
-//  }
-
-  /**
+  /*
    * Adds a LNSNodeInfo object to the list maintained by this config instance.
    *
    * @param id
@@ -353,7 +265,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     mapping.put(id, nodeInfo);
   }
 
-  /**
+  /*
    * Adds a LNSNodeInfo object to the list maintained by this config instance.
    *
    * @param id
@@ -366,63 +278,8 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
             id,
             ipAddress,
             externalIP,
-            startingPort != null ? startingPort : OldHackyConstants.DEFAULT_STARTING_PORT,
+            startingPort,
             0, 0, 0);
-  }
-
-  //private static final long UPDATE_CHECK_PERIOD = 60000; // 60 seconds
-
-  //private TimerTask timerTask = null;
-
-//  private void startCheckingForUpdates() {
-//    Timer t = new Timer();
-//    t.scheduleAtFixedRate(timerTask = new TimerTask() {
-//      @Override
-//      public void run() {
-//        checkForUpdates();
-//      }
-//    }, UPDATE_CHECK_PERIOD, // run first occurrence later
-//            UPDATE_CHECK_PERIOD);
-//    GNSConfig.getLogger().log(Level.INFO,
-//            "Checking for hosts updates every {0} seconds", UPDATE_CHECK_PERIOD / 1000);
-//  }
-
-//  private void checkForUpdates() {
-//    try {
-//      GNSConfig.getLogger().fine("Checking for hosts update");
-//      if (HostFileLoader.isChangedFileVersion(hostsFile)) {
-//        GNSConfig.getLogger().info("Reading updated hosts file");
-//        readHostsFile(hostsFile);
-//      }
-//    } catch (IOException e) {
-//      GNSConfig.getLogger().log(Level.SEVERE,
-//              "Problem reading hosts file:{0}", e);
-//    }
-//
-//  }
-
-  /**
-   * Returns true if the file is the old style (has lots of fields).
-   *
-   * @param file
-   * @return true if the file is the old style
-   */
-  private boolean isOldStyleFile(String file) throws IOException {
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader(file));
-      if (!reader.ready()) {
-        throw new IOException("Problem reading host config file "
-                + file);
-      }
-      String line = reader.readLine();
-      if (line == null) {
-        throw new IOException("Hosts file is empty" + file);
-      }
-      return line.split("\\s+").length > 4;
-    } catch (IOException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "Problem reading hosts file:{0}", e);
-      return false;
-    }
   }
 
   /**
@@ -430,9 +287,6 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
    */
   @Override
   public void shutdown() {
-//    if (timerTask != null) {
-//      timerTask.cancel();
-//    }
   }
 
   @Override
@@ -474,17 +328,12 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
   }
 
   @Override
-  public int getAdminPort(InetSocketAddress id) {
+  public int getServerAdminPort(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public int getCcpPort(InetSocketAddress id) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public int getCcpAdminPort(InetSocketAddress id) {
+  public int getCollatingAdminPort(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 }

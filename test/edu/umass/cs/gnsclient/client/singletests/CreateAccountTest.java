@@ -19,16 +19,20 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
 import org.json.JSONObject;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -39,22 +43,24 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateAccountTest {
+public class CreateAccountTest extends DefaultGNSTest {
 
-  private static String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
+  private static final String TEST_ACCOUNT_ALIAS = "support-"
+          + RandomString.randomString(24) + "@gns.name";
+  private static final String TEST_ACCOUNT_PASSWORD = "password";
+  private static GuidEntry testGuid;
 
   /**
    *
    */
   public CreateAccountTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
     }
   }
@@ -65,9 +71,10 @@ public class CreateAccountTest {
   @Test
   public void test_01_CreateAccount() {
     try {
-      GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+      testGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+              TEST_ACCOUNT_ALIAS, TEST_ACCOUNT_PASSWORD, true);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -78,24 +85,36 @@ public class CreateAccountTest {
   public void test_02_CheckAccount() {
     String guidString = null;
     try {
-      guidString = client.lookupGuid(ACCOUNT_ALIAS);
+      guidString = clientCommands.lookupGuid(TEST_ACCOUNT_ALIAS);
     } catch (Exception e) {
-      fail("Exception while looking up guid: " + e);
+      Utils.failWithStackTrace("Exception while looking up guid: " + e);
     }
     JSONObject json = null;
     if (guidString != null) {
       try {
-        json = client.lookupAccountRecord(guidString);
+        json = clientCommands.lookupAccountRecord(guidString);
       } catch (Exception e) {
-        fail("Exception while looking up account record: " + e);
+        Utils.failWithStackTrace("Exception while looking up account record: " + e);
       }
     }
     if (json != null) {
       try {
-        assertFalse(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
+        Assert.assertTrue(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
       } catch (Exception e) {
-        fail("Exception while getting field from account record: " + e);
+        Utils.failWithStackTrace("Exception while getting field from account record: " + e);
       }
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_03_CheckAccountCleanup() {
+    try {
+      clientCommands.accountGuidRemove(testGuid);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing test account guid: " + e);
     }
   }
 

@@ -115,7 +115,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
   }
 
-  
   /**
    * Creates a CommandPacket instance from a JSONObject.
    *
@@ -578,7 +577,13 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   private String getRespStr() throws ClientException {
     this.finish();
     if (this.result != null) {
-      return CommandUtils.checkResponse((ResponsePacket) this.result, this).getReturnValue();
+      ResponsePacket responsePacket = CommandUtils.checkResponse((ResponsePacket) this.result, this);
+      // checkResponse explicitly returns null!
+      if (responsePacket == null) {
+        return null;
+      } else {
+        return responsePacket.getReturnValue();
+      }
     } else {
       return null;
     }
@@ -608,24 +613,23 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     return this;
   }
 
-	/**
-	 * arun: The getResult methods below must satisfy the following invariants:
-	 * (1) A successful (without exceptions) invocation of the method can return
-	 * a non-null value at most once. This invariant implies that this.result
-	 * should be set to null upon a successful invocation.
-	 *
-	 * (2) The method is atomic (all-or-none), i.e., exceptions because of the
-	 * caller expecting the wrong result type, e.g., invoking getResultList when
-	 * the response is a Map, should not change any state and still allow the
-	 * caller to still call other getResult methods until one is successful.
-	 * This invariant implies that @code{this.result} should be reset to null
-	 * only for successful calls.
-	 * 
-	 * The above invariants are not implemented here. JDBC implementations discourage
-	 * repeat calls for performance reasons, but we don't currently have this concern
-	 * because we fetch and store the entire result.
-	 */
-  
+  /**
+   * arun: The getResult methods below must satisfy the following invariants:
+   * (1) A successful (without exceptions) invocation of the method can return
+   * a non-null value at most once. This invariant implies that this.result
+   * should be set to null upon a successful invocation.
+   *
+   * (2) The method is atomic (all-or-none), i.e., exceptions because of the
+   * caller expecting the wrong result type, e.g., invoking getResultList when
+   * the response is a Map, should not change any state and still allow the
+   * caller to still call other getResult methods until one is successful.
+   * This invariant implies that @code{this.result} should be reset to null
+   * only for successful calls.
+   *
+   * The above invariants are not implemented here. JDBC implementations discourage
+   * repeat calls for performance reasons, but we don't currently have this concern
+   * because we fetch and store the entire result.
+   */
   /**
    * @return The result of executing this command.
    * @throws ClientException
@@ -663,7 +667,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public JSONObject getResultJSONObject() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      JSONObject json = responseStr!=null ? new JSONObject(responseStr) : new JSONObject();
+      JSONObject json = responseStr != null ? new JSONObject(responseStr) : new JSONObject();
       return json;
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
@@ -679,7 +683,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public Map<String, ?> getResultMap() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      Map<String, ?> map = Util.JSONObjectToMap(responseStr!= null ? new JSONObject(responseStr) : new JSONObject());
+      Map<String, ?> map = Util.JSONObjectToMap(responseStr != null ? new JSONObject(responseStr) : new JSONObject());
       return map;
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
@@ -694,7 +698,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public List<?> getResultList() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      List<?> list = Util.JSONArrayToList(responseStr!=null ? new JSONArray(responseStr) : new JSONArray());
+      List<?> list = Util.JSONArrayToList(responseStr != null ? new JSONArray(responseStr) : new JSONArray());
       return list;
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
@@ -709,7 +713,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public JSONArray getResultJSONArray() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      return responseStr!=null ? new JSONArray(responseStr) : new JSONArray();
+      return responseStr != null ? new JSONArray(responseStr) : new JSONArray();
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
               e.getMessage());

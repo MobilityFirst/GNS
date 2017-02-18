@@ -22,7 +22,6 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,12 +32,14 @@ import org.json.JSONObject;
  * We also use this to do automatic group GUID maintenence.
  *
  * @author westy
- * @param <NodeIDType>
  */
-public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDType> implements ClientRequest {
+@SuppressWarnings("deprecation")
+public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
+        implements ClientRequest {
 
   private final static String ID = "id";
   private final static String KEY = "key";
+  private final static String READER = "reader";
   private final static String VALUE = "value";
   private final static String OTHERVALUE = "otherValue";
   private final static String QUERY = "query";
@@ -48,8 +49,10 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
   private final static String GROUP_BEHAVIOR = "group";
   private final static String GUID = "guid";
   private final static String REFRESH = "refresh";
+  
   //
   private long requestId;
+  private String reader;
   private String key;
   private Object value;
   private Object otherValue;
@@ -68,16 +71,18 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param id
    * @param selectOperation
    * @param key
+   * @param reader
    * @param groupBehavior
    * @param value
    * @param otherValue
    */
-  @SuppressWarnings("unchecked")
-  public SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupBehavior,
-          String key, Object value, Object otherValue) {
-    super(null);
+  public SelectRequestPacket(long id, SelectOperation selectOperation, 
+          SelectGroupBehavior groupBehavior,
+          String reader, String key, Object value, Object otherValue) {
+    super();
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.requestId = id;
+    this.reader = reader;
     this.key = key;
     this.value = value;
     this.otherValue = otherValue;
@@ -87,7 +92,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
     this.guid = null;
   }
 
-  /**
+  /*
    * Helper to construct a SelectRequestPacket for a context aware group guid.
    *
    * @param id
@@ -98,12 +103,13 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * @param guid
    * @param minRefreshInterval
    */
-  @SuppressWarnings("unchecked")
-  private SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupOperation,
-          String query, String guid, int minRefreshInterval) {
-    super(null);
+  private SelectRequestPacket(long id, SelectOperation selectOperation, 
+          SelectGroupBehavior groupOperation,
+          String reader, String query, String guid, int minRefreshInterval) {
+    super();
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.requestId = id;
+    this.reader = reader;
     this.query = query;
     this.selectOperation = selectOperation;
     this.groupBehavior = groupOperation;
@@ -118,11 +124,13 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
+   * @param reader
    * @param query
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeQueryRequest(long id, String query) {
-    return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.NONE, query, null, -1);
+  public static SelectRequestPacket MakeQueryRequest(long id, String reader, String query) {
+    return new SelectRequestPacket(id, SelectOperation.QUERY, 
+             SelectGroupBehavior.NONE, reader, query, null, -1);
   }
 
   /**
@@ -130,15 +138,17 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
+   * @param reader
    * @param query
    * @param guid
    * @param refreshInterval
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeGroupSetupRequest(long id, String query, String guid,
+  public static SelectRequestPacket MakeGroupSetupRequest(long id, String reader, String query,
+          String guid,
           int refreshInterval) {
-    return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP,
-            query, guid, refreshInterval);
+    return new SelectRequestPacket(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP,
+            reader, query, guid, refreshInterval);
   }
 
   /**
@@ -146,28 +156,29 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
+   * @param reader
    * @param guid
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeGroupLookupRequest(long id, String guid) {
-    return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, null, guid, -1);
+  public static SelectRequestPacket MakeGroupLookupRequest(long id, String reader, String guid) {
+    return new SelectRequestPacket(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, 
+            reader, null, guid, -1);
   }
 
   /**
    * Constructs new SelectRequestPacket from a JSONObject
    *
    * @param json JSONObject representing this packet
-   * @param unstringer
    * @throws org.json.JSONException
    */
-  @SuppressWarnings("unchecked")
-  public SelectRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json, unstringer);
+  public SelectRequestPacket(JSONObject json) throws JSONException {
+    super(json);
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
       throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));
     }
     this.type = Packet.getPacketType(json);
     this.requestId = json.getLong(ID);
+    this.reader = json.has(READER) ? json.getString(READER) : null;
     this.key = json.has(KEY) ? json.getString(KEY) : null;
     this.value = json.optString(VALUE, null);
     this.otherValue = json.optString(OTHERVALUE, null);
@@ -199,6 +210,9 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
     json.put(ID, requestId);
+    if (reader != null) {
+      json.put(READER, reader);
+    }
     if (key != null) {
       json.put(KEY, key);
     }
@@ -259,6 +273,17 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
   public void setRequestId(long requestId) {
     this.requestId = requestId;
   }
+
+  /**
+   * Return the reader.
+   * 
+   * @return  the reader
+   */
+  public String getReader() {
+    return reader;
+  }
+  
+  
 
   /**
    * Return the key.

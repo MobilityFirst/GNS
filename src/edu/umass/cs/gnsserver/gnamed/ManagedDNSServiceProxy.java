@@ -192,12 +192,8 @@ public class ManagedDNSServiceProxy implements Runnable {
 		}	
 	}
 	
-	private static void updateCode(GuidEntry entry, String code){
-		try {
-			client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
-		} catch (ClientException | IOException e) {
-			e.printStackTrace();
-		}
+	private static void updateCode(GuidEntry entry, byte[] code) throws ClientException, IOException {
+	  client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
 	}
 	
 	
@@ -275,7 +271,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 				case UPDATE_CODE:{
 					GuidEntry guid = deserializeGuid(req.getString(GUID_FIELD));
 					String code = req.getString(CODE_FIELD);
-					updateCode(guid, code);
+					updateCode(guid, code.getBytes("UTF-8"));
 				}
 				case REMOVE_CODE:{
 					GuidEntry guid = deserializeGuid(req.getString(GUID_FIELD));

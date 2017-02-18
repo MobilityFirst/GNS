@@ -19,55 +19,42 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
+import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
-
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
-
-import static org.junit.Assert.*;
-
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Basic test for the GNS using the UniversalTcpClient.
+ * Tests the LNS using the GNS Proxy feature.
  *
  */
+// This requires that the LOCAL_NAME_SERVER_NODES config option be set.
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ClientLNSTest {
+public class ClientLNSTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
 
   /**
    *
    */
   public ClientLNSTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setGNSProxy(new InetSocketAddress("127.0.0.1", 24598));
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        //PaxosConfig.getActives() works here because the server and client use the same properties file.
+        InetAddress lnsAddress = PaxosConfig.getActives().values().iterator().next().getAddress();
+        clientCommands.setGNSProxy(new InetSocketAddress(lnsAddress, 24598));
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
-    }
-  }
-
-  /**
-   *
-   */
-  @Test
-  public void test_01_CreateAccount() {
-    try {
-      GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -78,15 +65,15 @@ public class ClientLNSTest {
   public void test_02_CheckAccount() {
     String guidString = null;
     try {
-      guidString = client.lookupGuid(ACCOUNT_ALIAS);
-    } catch (Exception e) {
-      fail("Exception while looking up guid: " + e);
+      guidString = clientCommands.lookupGuid(globalAccountName);
+    } catch (IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception while looking up guid: " + e);
     }
     if (guidString != null) {
       try {
-        client.lookupAccountRecord(guidString);
-      } catch (Exception e) {
-        fail("Exception while looking up account record: " + e);
+        clientCommands.lookupAccountRecord(guidString);
+      } catch (IOException | ClientException e) {
+        Utils.failWithStackTrace("Exception while looking up account record: " + e);
       }
     }
   }

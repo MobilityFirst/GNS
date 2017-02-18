@@ -26,7 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -73,7 +73,7 @@ public class NSGroupAccess {
    * cached value.
    */
   public static final int DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT = 60; //seconds
-  
+
   /**
    * Return the members of a the group guid.
    *
@@ -129,7 +129,7 @@ public class NSGroupAccess {
     // this guid could be on another NS hence the true below
     return NSFieldAccess.lookupListFieldAnywhere(header, guid, GroupAccess.GROUPS, false, handler).toStringSet();
   }
-  
+
   ///
   /// Support code for context sensitive group guids
   ///
@@ -143,12 +143,11 @@ public class NSGroupAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
- * @throws InternalRequestException 
+   * @throws InternalRequestException
    */
   public static void updateLastUpdate(InternalRequestHeader header, String guid, Date lastUpdate, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException, InternalRequestException {
-    //handler.getRemoteQuery().fieldUpdate(guid, GROUP_LAST_UPDATE, lastUpdate.getTime());
-	  handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GROUP_LAST_UPDATE, lastUpdate.getTime()+"", header));
+    handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GROUP_LAST_UPDATE, lastUpdate.getTime() + "", header));
   }
 
   /**
@@ -161,11 +160,10 @@ public class NSGroupAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
- * @throws InternalRequestException 
+   * @throws InternalRequestException
    */
   public static void updateMinRefresh(InternalRequestHeader header, String guid, int minRefresh, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException, InternalRequestException {
-    //handler.getRemoteQuery().fieldUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, minRefresh);
     handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, minRefresh, header));
   }
 
@@ -179,11 +177,10 @@ public class NSGroupAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
- * @throws InternalRequestException 
+   * @throws InternalRequestException
    */
   public static void updateQueryString(InternalRequestHeader header, String guid, String queryString, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException, InternalRequestException {
-//    handler.getRemoteQuery().fieldUpdate(guid, GROUP_QUERY_STRING, queryString);
     handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GROUP_QUERY_STRING, queryString, header));
   }
 
@@ -262,7 +259,7 @@ public class NSGroupAccess {
     }
     return null;
   }
-  
+
   /**
    *
    * @param header

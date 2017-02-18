@@ -19,22 +19,25 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import static org.hamcrest.Matchers.*;
+import org.hamcrest.Matchers;
 
 import org.json.JSONArray;
 
-import static org.junit.Assert.*;
+import org.json.JSONException;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -45,11 +48,9 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SelectSingleTest {
+public class SelectSingleTest extends DefaultGNSTest {
 
-  private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static String password = "password";
-  private static GNSClientCommands client = null;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
@@ -58,25 +59,17 @@ public class SelectSingleTest {
    *
    */
   public SelectSingleTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
-      }
-      if (System.getProperty("alias") != null
-              && !System.getProperty("alias").isEmpty()) {
-        accountAlias = System.getProperty("alias");
-      }
-      if (System.getProperty("password") != null
-              && !System.getProperty("password").isEmpty()) {
-        password = System.getProperty("password");
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, password, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception while creating account guid: " + e);
+        Utils.failWithStackTrace("Exception while creating account guid: " + e);
       }
     }
   }
@@ -85,14 +78,14 @@ public class SelectSingleTest {
    *
    */
   @Test
-  public void test_1_CreateGuids() {
+  public void test_01_CreateGuids() {
     try {
-      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
-    } catch (Exception e) {
-      fail("Exception registering guids: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception registering guids: " + e);
     }
   }
 
@@ -100,47 +93,48 @@ public class SelectSingleTest {
    *
    */
   @Test
-  public void test_2_cats() {
+  @SuppressWarnings("deprecation")
+  public void test_02_cats() {
     try {
-      client.fieldCreateOneElementList(westyEntry.getGuid(), "cats", "whacky", westyEntry);
+      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "cats", "whacky", westyEntry);
 
-      assertEquals("whacky",
-              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
+      Assert.assertEquals("whacky",
+              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
 
-      client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", new JSONArray(
+      clientCommands.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("hooch", "maya", "red", "sox", "toby")), westyEntry);
 
-      HashSet<String> expected = new HashSet<String>(Arrays.asList("hooch",
+      HashSet<String> expected = new HashSet<>(Arrays.asList("hooch",
               "maya", "red", "sox", "toby", "whacky"));
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(clientCommands
               .fieldReadArray(westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
-      client.fieldClear(westyEntry.getGuid(), "cats", new JSONArray(
+      clientCommands.fieldClear(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("maya", "toby")), westyEntry);
-      expected = new HashSet<String>(Arrays.asList("hooch", "red", "sox",
+      expected = new HashSet<>(Arrays.asList("hooch", "red", "sox",
               "whacky"));
-      actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
+      actual = JSONUtils.JSONArrayToHashSet(clientCommands.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
-      client.fieldReplaceFirstElement(westyEntry.getGuid(), "cats", "maya", westyEntry);
-      assertEquals("maya",
-              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
+      clientCommands.fieldReplaceFirstElement(westyEntry.getGuid(), "cats", "maya", westyEntry);
+      Assert.assertEquals("maya",
+              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
 
-      client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("maya", "fred"));
-      actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
+      clientCommands.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
+      expected = new HashSet<>(Arrays.asList("maya", "fred"));
+      actual = JSONUtils.JSONArrayToHashSet(clientCommands.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
+      Assert.assertEquals(expected, actual);
 
-      client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("maya", "fred"));
-      actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
+      clientCommands.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
+      expected = new HashSet<>(Arrays.asList("maya", "fred"));
+      actual = JSONUtils.JSONArrayToHashSet(clientCommands.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
-      assertEquals(expected, actual);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting testing DB: " + e);
+      Assert.assertEquals(expected, actual);
+    } catch (IOException | ClientException | JSONException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting testing DB: " + e);
     }
   }
 
@@ -148,13 +142,13 @@ public class SelectSingleTest {
    *
    */
   @Test
-  public void test_3_BasicSelect() {
+  public void test_03_BasicSelect() {
     try {
-      JSONArray result = client.select("cats", "fred");
+      JSONArray result = clientCommands.select("cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(1));
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -162,11 +156,12 @@ public class SelectSingleTest {
    *
    */
   @Test
-  public void test_999_Stop() {
+  public void test_04_SelectCleanup() {
     try {
-      client.close();
-    } catch (Exception e) {
-      fail("Exception during stop: " + e);
+      clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
+      clientCommands.guidRemove(masterGuid, samEntry.getGuid());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception during cleanup: " + e);
     }
   }
 }

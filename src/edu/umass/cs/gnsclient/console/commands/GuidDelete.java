@@ -24,75 +24,64 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.io.IOException;
 
 /**
  * Command that deletes a GUID/alias/Keypair from the GNS and user preferences
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
-public class GuidDelete extends ConsoleCommand
-{
+public class GuidDelete extends ConsoleCommand {
 
   /**
    * Creates a new <code>GuidDelete</code> object
-   * 
+   *
    * @param module
    */
-  public GuidDelete(ConsoleModule module)
-  {
+  public GuidDelete(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Deletes alias from the GNS (also deletes local keypair information if any)";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "guid_delete";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "alias";
   }
 
   /**
    * Override execute to not check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
+  public void execute(String commandText) throws Exception {
     parse(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if (st.countTokens() != 1)
-      {
-        console.printString("Wrong number of arguments for this command.\n");
+      if (st.countTokens() != 1) {
+        wrongArguments();
         return;
       }
       String aliasName = st.nextToken();
 
-      if (!module.isSilent())
-      {
+      if (!module.isSilent()) {
         console.printString("Looking up alias " + aliasName + " certificates...\n");
       }
       GuidEntry guidToDelete = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
 
-      if (guidToDelete == null)
-      {
+      if (guidToDelete == null) {
         console.printString("There is no local information for alias " + aliasName);
         console.printNewline();
         return;
@@ -103,10 +92,7 @@ public class GuidDelete extends ConsoleCommand
       KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
       console.printString("Keys for " + aliasName + " removed from local repository.");
       console.printNewline();
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
+    } catch (IOException | ClientException e) {
       console.printString("Failed to remove alias or delete keys ( " + e + ")\n");
     }
   }
