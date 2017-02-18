@@ -55,9 +55,6 @@ import org.json.JSONException;
  */
 public class GroupAccess {
 
-  // DONT FORGET TO CHECK THE CommandCategorys of the group commands
-  // before you enable the new update methods.
-  //private static final boolean USE_OLD_UPDATE = false;
   /**
    * Hidden field that stores group members
    */

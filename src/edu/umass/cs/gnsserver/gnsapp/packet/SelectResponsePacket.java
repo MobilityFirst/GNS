@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;
 
@@ -68,7 +67,7 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
   private ResponseCode responseCode;
   private String errorMessage;
 
-  /**
+  /*
    * Constructs a new SelectResponsePacket
    *
    * @param id

@@ -25,12 +25,14 @@ package edu.umass.cs.gnsserver.gnsapp;
  * All Rights Reserved
  */
 import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,16 +55,18 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class handles select operations which have a similar semantics to an SQL SELECT.
@@ -201,22 +205,22 @@ public class Select {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
       packet.setQuery(NSGroupAccess.getQueryString(header, packet.getGuid(), app.getRequestHandler()));
     }
-    InetSocketAddress returnAddress = new InetSocketAddress(app.getNodeAddress().getAddress(),		            
-                 ReconfigurationConfig.getClientFacingPort(app.getNodeAddress().getPort()));
+    InetSocketAddress returnAddress = new InetSocketAddress(app.getNodeAddress().getAddress(),
+            ReconfigurationConfig.getClientFacingPort(app.getNodeAddress().getPort()));
     packet.setNSReturnAddress(returnAddress);
     //packet.setNameServerID(app.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     try {
-      
-      LOGGER.log(Level.FINER, "addresses: {0} node address: {1}", 
+
+      LOGGER.log(Level.FINER, "addresses: {0} node address: {1}",
               new Object[]{serverAddresses, app.getNodeAddress()});
       // Forward to all but self because...
       for (InetSocketAddress address : serverAddresses) {
         if (!address.equals(app.getNodeAddress())) {
-           InetSocketAddress offsetAddress = new InetSocketAddress(address.getAddress(),		            
-                 ReconfigurationConfig.getClientFacingPort(address.getPort()));
-          LOGGER.log(Level.INFO, "NS {0} sending select {1} to {2} ({3})", 
+          InetSocketAddress offsetAddress = new InetSocketAddress(address.getAddress(),
+                  ReconfigurationConfig.getClientFacingPort(address.getPort()));
+          LOGGER.log(Level.INFO, "NS {0} sending select {1} to {2} ({3})",
                   new Object[]{app.getNodeID(), outgoingJSON, offsetAddress, address});
           app.sendToAddress(offsetAddress, outgoingJSON);
         }
@@ -376,9 +380,9 @@ public class Select {
     return SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, -1, null, new JSONArray(guids));
   }
 
-  private static void handledAllServersResponded(InternalRequestHeader header, 
+  private static void handledAllServersResponded(InternalRequestHeader header,
           SelectResponsePacket packet, NSSelectInfo info,
-          GNSApplicationInterface<String> replica) throws JSONException, 
+          GNSApplicationInterface<String> replica) throws JSONException,
           ClientException, IOException, InternalRequestException {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
@@ -387,7 +391,7 @@ public class Select {
     // we're done processing this select query
     QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
 
-    // Pull the records out of the info structure
+    // Create a response from the returned guids
     SelectResponsePacket response = createReponsePacket(header, packet.getId(), packet.getReturnAddress(), guids, replica);
     // and put the result where the coordinator can see it.
     QUERY_RESULT.put(packet.getNsQueryId(), response);
@@ -480,22 +484,32 @@ public class Select {
     return jsonRecords;
   }
 
+  private static boolean isGuidRecord(JSONObject json) {
+    JSONObject valuesMap = json.optJSONObject(NameRecord.VALUES_MAP.getName());
+    if (valuesMap != null) {
+      return valuesMap.has(AccountAccess.GUID_INFO);
+    }
+    return false;
+  }
+
   // takes the JSON records that are returned from an NS and stuffs the into the NSSelectInfo record
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info,
           GNSApplicationInterface<String> ar) throws JSONException {
     int length = jsonArray.length();
     LOGGER.log(Level.FINE,
             "NS{0} processing {1} records", new Object[]{ar.getNodeID(), length});
-    // org.json sucks... should have converted a long time ago
     for (int i = 0; i < length; i++) {
       JSONObject record = jsonArray.getJSONObject(i);
-      String name = record.getString(NameRecord.NAME.getName());
-      if (info.addResponseIfNotSeenYet(name, record)) {
-        LOGGER.log(Level.FINE, "NS{0} added record for {1}", new Object[]{ar.getNodeID(), name});
+      if (isGuidRecord(record)) { // Filter out any non-guids
+        String name = record.getString(NameRecord.NAME.getName());
+        if (info.addResponseIfNotSeenYet(name, record)) {
+          LOGGER.log(Level.FINE, "NS{0} added record for {1}", new Object[]{ar.getNodeID(), name});
+        } else {
+          LOGGER.log(Level.FINE, "NS{0} already saw record for {1}", new Object[]{ar.getNodeID(), name});
+        }
       } else {
-        LOGGER.log(Level.FINE, "NS{0} DID NOT ADD record for {1}", new Object[]{ar.getNodeID(), name});
+        LOGGER.log(Level.FINE, "NS{0} not a guid record {1}", new Object[]{ar.getNodeID(), record});
       }
     }
   }
-
 }

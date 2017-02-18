@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,8 +32,6 @@ import java.util.concurrent.TimeUnit;
  * @author westy, arun
  */
 public class RunCommand {
-
-	private static final Timer timer = new Timer(true);
 	private static final int MAX_LINES = 1024;
 	private static final long PROCESS_WAIT_TIMEOUT = 30;
 

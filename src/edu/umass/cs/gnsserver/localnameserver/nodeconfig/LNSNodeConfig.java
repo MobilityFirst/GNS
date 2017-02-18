@@ -116,7 +116,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     return ReconfigurationConfig.getReconfiguratorAddresses();
   }
 
-  /**
+  /*
    * Returns the "top-level" host ID for any given nodeID.
    *
    * @param id
@@ -241,7 +241,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     return version;
   }
 
-  /**
+  /*
    * Adds a LNSNodeInfo object to the list maintained by this config instance.
    *
    * @param id
@@ -265,7 +265,7 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
     mapping.put(id, nodeInfo);
   }
 
-  /**
+  /*
    * Adds a LNSNodeInfo object to the list maintained by this config instance.
    *
    * @param id
