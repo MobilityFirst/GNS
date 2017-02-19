@@ -22,9 +22,9 @@ package edu.umass.cs.gnsclient.console.commands;
 import java.util.StringTokenizer;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
@@ -55,7 +55,7 @@ public class Select extends ConsoleCommand {
 
   @Override
   public String getCommandParameters() {
-    return "field value";
+    return "[alias] field value";
   }
 
   /**
@@ -74,16 +74,33 @@ public class Select extends ConsoleCommand {
       GNSClientCommands gnsClient = module.getGnsClient();
 
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if (st.countTokens() != 2) {
-        wrongArguments();
-        return;
+      GuidEntry guidEntry;
+      switch (st.countTokens()) {
+        case 2:
+          guidEntry = null;
+          break;
+        case 3:
+          String alias = st.nextToken();
+          guidEntry = KeyPairUtils.getGuidEntry(module.getGnsInstance(), alias);
+          if (guidEntry == null) {
+            console.printString("Unknown alias " + alias);
+            console.printNewline();
+            return;
+          }
+          break;
+        default:
+          wrongArguments();
+          return;
       }
       String field = st.nextToken();
 
       String value = st.nextToken();
-
-      // Fixme: add a version that uses the reader
-      JSONArray result = gnsClient.select(field, value);
+      JSONArray result;
+      if (guidEntry != null) {
+        result = gnsClient.select(guidEntry, field, value);
+      } else {
+        result = gnsClient.select(field, value);
+      }
       console.printString(result.toString());
       console.printNewline();
     } catch (IOException | ClientException e) {
