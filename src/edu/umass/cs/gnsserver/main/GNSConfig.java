@@ -262,9 +262,14 @@ public class GNSConfig {
     //
     /**
      * For the DNS service set to "all" or a node id if you want to start
-     * the DNS server when the app starts.
+     * the DNS server on the respective nodes when the app starts.
      */
     DNS_SERVER_NODES(NONE),
+    /**
+     * Specifies the IP address to send DNS queries to. Does not apply if
+     * {@link GNSC#DNS_GNS_ONLY} is set to true.
+     */
+    DNS_UPSTREAM_SERVER_IP("8.8.8.8"),
     /**
      * For the DNS service set to true if you want the DNS server to not
      * lookup records using DNS (will only lookup records in the GNS).
@@ -296,13 +301,6 @@ public class GNSConfig {
      * The alias of the private key in the java keyStore.
      */
     PRIVATE_KEY_ALIAS("node100"),
-    /**
-     * Set this to true to use the older ACL paradigm. Default is false.
-     * Under the old model empty ACLs did not prevent us from going further
-     * up the tree toward the root to check for access.
-     * Temporary - The use of this will go away at some point.
-     */
-    USE_OLD_ACL_MODEL(false),
     /**
      * Set this to true to use the old HTTP query handling. Default is false.
      * Older HTTP server didn't support multiple server installations.

@@ -86,7 +86,6 @@ public class GNSHttpServer {
    */
   protected static final String GNS_PATH = Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH);
   private HttpServer httpServer = null;
-  private int port;
   // handles command processing
   private final CommandModule commandModule;
   // newer handles command processing
@@ -135,7 +134,6 @@ public class GNSHttpServer {
       // Find the first port after starting port that actually works.
       // Usually if 8080 is busy we can get 8081.
       if (tryPort(startingPort + cnt)) {
-        port = startingPort + cnt;
         break;
       }
       edu.umass.cs.utils.Util.suicide(GNSConfig.getLogger(), "Unable to start GNS HTTP server; exiting");
@@ -237,7 +235,7 @@ public class GNSHttpServer {
     }
   }
 
-  /**
+  /*
    * Process queries for the http service. Converts the URI of e the HTTP query into
    * the JSON Object format that is used by the CommandModeule class, then finds
    * executes the matching command.
@@ -245,6 +243,7 @@ public class GNSHttpServer {
    * @throws InternalRequestException
    */
   private CommandResponse processQuery(String host, String commandName, String queryString, boolean secureServer) throws InternalRequestException {
+
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
     try {

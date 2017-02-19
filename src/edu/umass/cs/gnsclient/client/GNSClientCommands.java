@@ -360,7 +360,7 @@ public class GNSClientCommands extends GNSClient {
   // SELECT COMMANDS
   /**
    * Selects all records that match query. Returns the result of the query as
-   * a JSONArray of guids.
+   * a JSONArray of guids. Requires that all fields accessed be world readable.
    *
    * The query syntax is described here:
    * https://gns.name/wiki/index.php?title=Query_Syntax
@@ -387,9 +387,38 @@ public class GNSClientCommands extends GNSClient {
   }
 
   /**
+   * Selects all records that match query. Returns the result of the query as
+   * a JSONArray of guids.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * Currently there are two predefined field names in the GNS client (this is
+   * in edu.umass.cs.gnsclient.client.GNSCommandProtocol):
+   * GNSProtocol.LOCATION_FIELD_NAME.toString() = "geoLocation";
+   * Defined as a "2d" index in the database.
+   * GNSProtocol.IPADDRESS_FIELD_NAME.toString() = "netAddress";
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spacial coordinates.
+   *
+   * @param reader
+   * @param query
+   * - the query
+   * @return - a JSONArray of guids
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public JSONArray selectQuery(GuidEntry reader, String query) throws ClientException, IOException {
+    return execute(GNSCommand.selectQuery(reader, query)).getResultJSONArray();
+  }
+
+  /**
    * Set up a context aware group guid using a query. Requires a accountGuid
    * and a publicKey which are used to set up the new guid or look it up if it
-   * already exists.
+   * already exists. Requires that all fields accessed be world readable.
    *
    * Also returns the result of the query as a JSONArray of guids.
    *
@@ -415,10 +444,40 @@ public class GNSClientCommands extends GNSClient {
   }
 
   /**
+   * Set up a context aware group guid using a query. Requires a accountGuid
+   * and a publicKey which are used to set up the new guid or look it up if it
+   * already exists.
+   *
+   * Also returns the result of the query as a JSONArray of guids.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * @param reader
+   * @param accountGuid
+   * @param publicKey
+   * @param query
+   * the query
+   * @param interval
+   * - the refresh interval in seconds - default is 60 - (queries
+   * that happens quicker than this will get stale results)
+   * @return a JSONArray of guids
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public JSONArray selectSetupGroupQuery(GuidEntry reader, GuidEntry accountGuid,
+          String publicKey, String query, int interval) throws ClientException, IOException {
+    return execute(GNSCommand.selectSetupGroupQuery(reader, accountGuid, publicKey,
+            query, interval)).getResultJSONArray();
+  }
+
+  /**
    * Look up the value of a context aware group guid using a query. Returns
    * the result of the query as a JSONArray of guids. The results will be
    * stale if the queries that happen more quickly than the refresh interval
-   * given during setup.
+   * given during setup. Requires that all fields accessed be world readable.
    *
    * @param guid
    * @return a JSONArray of guids
@@ -429,6 +488,24 @@ public class GNSClientCommands extends GNSClient {
    */
   public JSONArray selectLookupGroupQuery(String guid) throws ClientException, IOException {
     return execute(GNSCommand.selectLookupGroupQuery(guid)).getResultJSONArray();
+  }
+  
+  /**
+   * Look up the value of a context aware group guid using a query. Returns
+   * the result of the query as a JSONArray of guids. The results will be
+   * stale if the queries that happen more quickly than the refresh interval
+   * given during setup.
+   *
+   * @param reader
+   * @param guid
+   * @return a JSONArray of guids
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public JSONArray selectLookupGroupQuery(GuidEntry reader, String guid) throws ClientException, IOException {
+    return execute(GNSCommand.selectLookupGroupQuery(reader, guid)).getResultJSONArray();
   }
 
   // ACCOUNT COMMANDS
@@ -1462,7 +1539,7 @@ public class GNSClientCommands extends GNSClient {
   //
   /**
    * Returns all GUIDs that have a field that contains the given value as a
-   * JSONArray containing guids.
+   * JSONArray containing guids. Field must be world readable.
    *
    * @param field
    * @param value
@@ -1475,12 +1552,30 @@ public class GNSClientCommands extends GNSClient {
   public JSONArray select(String field, String value) throws ClientException, IOException {
     return execute(GNSCommand.select(field, value)).getResultJSONArray();
   }
-
+  
+  /**
+   * Returns all GUIDs that have a field that contains the given value as a
+   * JSONArray containing guids.
+   *
+   * @param reader
+   * @param field
+   * @param value
+   * @return a JSONArray containing the guids of all the matched records
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public JSONArray select(GuidEntry reader, String field, String value) throws ClientException, IOException {
+    return execute(GNSCommand.select(reader, field, value)).getResultJSONArray();
+  }
+  
   /**
    * If field is a GeoSpatial field queries the GNS server return all the
    * guids that have fields that are within value which is a bounding box
    * specified as a nested JSONArrays of paired tuples: [[LONG_UL,
    * LAT_UL],[LONG_BR, LAT_BR]]
+   * Field must be world readable.
    *
    * @param field
    * @param value
@@ -1495,11 +1590,33 @@ public class GNSClientCommands extends GNSClient {
           throws ClientException, IOException {
     return execute(GNSCommand.selectWithin(field, value)).getResultJSONArray();
   }
+  
+  /**
+   * If field is a GeoSpatial field queries the GNS server return all the
+   * guids that have fields that are within value which is a bounding box
+   * specified as a nested JSONArrays of paired tuples: [[LONG_UL,
+   * LAT_UL],[LONG_BR, LAT_BR]]
+   *
+   * @param reader
+   * @param field
+   * @param value
+   * - [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
+   * @return a JSONArray containing the guids of all the matched records
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public JSONArray selectWithin(GuidEntry reader, String field, JSONArray value)
+          throws ClientException, IOException {
+    return execute(GNSCommand.selectWithin(reader, field, value)).getResultJSONArray();
+  }
 
   /**
    * If field is a GeoSpatial field queries the GNS server and returns all the
    * guids that have fields that are near value which is a point specified as
    * a two element JSONArray: [LONG, LAT]. Max Distance is in meters.
+   * Field must be world readable.
    *
    * @param field
    * @param value
@@ -1515,6 +1632,28 @@ public class GNSClientCommands extends GNSClient {
   public JSONArray selectNear(String field, JSONArray value,
           Double maxDistance) throws ClientException, IOException {
     return execute(GNSCommand.selectNear(field, value, maxDistance)).getResultJSONArray();
+  }
+  
+  /**
+   * If field is a GeoSpatial field queries the GNS server and returns all the
+   * guids that have fields that are near value which is a point specified as
+   * a two element JSONArray: [LONG, LAT]. Max Distance is in meters.
+   *
+   * @param reader
+   * @param field
+   * @param value
+   * - [LONG, LAT]
+   * @param maxDistance
+   * - distance in meters
+   * @return a JSONArray containing the guids of all the matched records
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public JSONArray selectNear(GuidEntry reader, String field, JSONArray value,
+          Double maxDistance) throws ClientException, IOException {
+    return execute(GNSCommand.selectNear(reader, field, value, maxDistance)).getResultJSONArray();
   }
 
   /**

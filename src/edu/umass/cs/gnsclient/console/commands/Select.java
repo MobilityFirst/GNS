@@ -82,6 +82,7 @@ public class Select extends ConsoleCommand {
 
       String value = st.nextToken();
 
+      // Fixme: add a version that uses the reader
       JSONArray result = gnsClient.select(field, value);
       console.printString(result.toString());
       console.printNewline();

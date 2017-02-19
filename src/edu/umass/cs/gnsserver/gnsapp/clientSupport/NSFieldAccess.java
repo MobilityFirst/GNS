@@ -209,13 +209,12 @@ public class NSFieldAccess {
   public static ResultValue lookupListFieldLocallyNoAuth(String guid, String field,
           BasicRecordMap database)
           throws FailedDBOperationException, FieldNotFoundException, RecordNotFoundException {
-    ResultValue result = null;
     NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
             ColumnFieldType.LIST_STRING, field);
     ClientSupportConfig.getLogger().log(Level.FINE,
             "LOOKUPFIELDONTHISSERVER: {0} : {1} -> {2}",
             new Object[]{guid, field, nameRecord});
-    result = nameRecord.getUserKeyAsArray(field);
+    ResultValue result = nameRecord.getUserKeyAsArray(field);
 
     if (result != null) {
       return result;
@@ -322,6 +321,7 @@ public class NSFieldAccess {
    * sends a read query from this Name Server to a Local Name Server.
    * Returns the value of a field in a GNSProtocol.GUID.toString() as a ValuesMap
    *
+   * @param header
    * @param guid
    * @param field
    * @param gnsApp

@@ -37,6 +37,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -645,12 +646,30 @@ public class MongoRecords implements NoSQLRecords {
   private DBObject parseMongoQuery(String query, ColumnField valuesMapField) {
     // convert something like this: ~fred : ($gt: 0) into the queryable 
     // format, namely this: {~nr_valuesMap.fred : ($gt: 0)}
-    query = "{" + query + "}";
-    query = query.replace("(", "{");
-    query = query.replace(")", "}");
-    query = query.replace("~", valuesMapField.getName() + ".");
-    DBObject parse = (DBObject) JSON.parse(query);
+    String edittedQuery = query;
+    edittedQuery = "{" + edittedQuery + "}";
+    edittedQuery = edittedQuery.replace("(", "{");
+    edittedQuery = edittedQuery.replace(")", "}");
+    edittedQuery = edittedQuery.replace("~", valuesMapField.getName() + ".");
+    // Filter out HRN records
+    String guidFilter = "{" + NameRecord.VALUES_MAP.getName() + "." + AccountAccess.GUID_INFO + ": { $exists: true}}";
+    edittedQuery = buildAndQuery(guidFilter, edittedQuery);
+    DatabaseConfig.getLogger().log(Level.INFO, "Edited query = {0}", edittedQuery);
+    DBObject parse = (DBObject) JSON.parse(edittedQuery);
     return parse;
+  }
+  
+  public static String buildAndQuery(String... querys) {
+    StringBuilder result = new StringBuilder();
+    result.append("{$and: [");
+    String prefix = "";
+    for (String query : querys) {
+      result.append(prefix);
+      result.append(query);
+      prefix = ",";
+    }
+    result.append("]}");
+    return result.toString();
   }
 
   @Override

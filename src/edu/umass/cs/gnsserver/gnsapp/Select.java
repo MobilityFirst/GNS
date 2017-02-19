@@ -25,13 +25,17 @@ package edu.umass.cs.gnsserver.gnsapp;
  * All Rights Reserved
  */
 import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,16 +57,23 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.util.Collection;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class handles select operations which have a similar semantics to an SQL SELECT.
@@ -201,22 +212,22 @@ public class Select {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
       packet.setQuery(NSGroupAccess.getQueryString(header, packet.getGuid(), app.getRequestHandler()));
     }
-    InetSocketAddress returnAddress = new InetSocketAddress(app.getNodeAddress().getAddress(),		            
-                 ReconfigurationConfig.getClientFacingPort(app.getNodeAddress().getPort()));
+    InetSocketAddress returnAddress = new InetSocketAddress(app.getNodeAddress().getAddress(),
+            ReconfigurationConfig.getClientFacingPort(app.getNodeAddress().getPort()));
     packet.setNSReturnAddress(returnAddress);
     //packet.setNameServerID(app.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     try {
-      
-      LOGGER.log(Level.FINER, "addresses: {0} node address: {1}", 
+
+      LOGGER.log(Level.FINER, "addresses: {0} node address: {1}",
               new Object[]{serverAddresses, app.getNodeAddress()});
       // Forward to all but self because...
       for (InetSocketAddress address : serverAddresses) {
         if (!address.equals(app.getNodeAddress())) {
-           InetSocketAddress offsetAddress = new InetSocketAddress(address.getAddress(),		            
-                 ReconfigurationConfig.getClientFacingPort(address.getPort()));
-          LOGGER.log(Level.INFO, "NS {0} sending select {1} to {2} ({3})", 
+          InetSocketAddress offsetAddress = new InetSocketAddress(address.getAddress(),
+                  ReconfigurationConfig.getClientFacingPort(address.getPort()));
+          LOGGER.log(Level.INFO, "NS {0} sending select {1} to {2} ({3})",
                   new Object[]{app.getNodeID(), outgoingJSON, offsetAddress, address});
           app.sendToAddress(offsetAddress, outgoingJSON);
         }
@@ -252,6 +263,7 @@ public class Select {
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
+      jsonRecords = aclCheckFilterForRecordsArray(request, jsonRecords, request.getReader(), app);
       response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(
               request.getId(), request.getClientAddress(),
               request.getCcpQueryId(), request.getNsQueryId(),
@@ -288,10 +300,10 @@ public class Select {
             "NS {0} {1} received query {2}",
             new Object[]{Select.class.getSimpleName(),
               app.getNodeID(), request.getSummary()});
-    // SelectRequestPacket request = new SelectRequestPacket(incomingJSON, app.getGNSNodeConfig());
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
+      jsonRecords = aclCheckFilterForRecordsArray(request, jsonRecords, request.getReader(), app);
       @SuppressWarnings("unchecked")
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(),
               request.getClientAddress(),
@@ -301,19 +313,65 @@ public class Select {
               new Object[]{app.getNodeID(), jsonRecords.length(), request.getSummary()});
       // and send them back to the originating NS
       app.sendToAddress(request.getNSReturnAddress(), response.toJSONObject());
-      //app.sendToID(request.getNameServerID(), response.toJSONObject());
     } catch (FailedDBOperationException | JSONException | IOException e) {
       LOGGER.log(Level.SEVERE, "Exception while handling select request: {0}", e);
-      e.printStackTrace();
       SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(),
               request.getClientAddress(),
               request.getNsQueryId(), app.getNodeAddress(), e.getMessage());
       try {
         app.sendToAddress(request.getNSReturnAddress(), failResponse.toJSONObject());
-        //app.sendToID(request.getNameServerID(), failResponse.toJSONObject());
       } catch (IOException f) {
         LOGGER.log(Level.SEVERE, "Unable to send Failure SelectResponsePacket: {0}", f);
       }
+    }
+  }
+
+  private static JSONArray aclCheckFilterForRecordsArray(SelectRequestPacket packet, JSONArray records,
+          String reader, GNSApplicationInterface<String> app) {
+    JSONArray result = new JSONArray();
+    for (int i = 0; i < records.length(); i++) {
+      try {
+        JSONObject record = records.getJSONObject(i);
+        String guid = record.getString(NameRecord.NAME.getName());
+        List<String> fields = getFieldsForQueryType(packet);
+        ResponseCode responseCode = NSAuthentication.signatureAndACLCheck(null, guid, null, fields, reader,
+                null, null, MetaDataTypeName.READ_WHITELIST, app, true);
+//        ResponseCode responseCode = signatureAndACLCheckForRead(header, commandPacket, guid, null,
+//                fields, reader, signature, message, null, app, true);
+        LOGGER.log(Level.FINE, "ACL check for select: guid={0} fields={1} responsecode={2}",
+                new Object[]{guid, fields, responseCode});
+        if (responseCode.isOKResult()) {
+          result.put(record);
+        }
+      } catch (JSONException | InvalidKeyException | InvalidKeySpecException | SignatureException | NoSuchAlgorithmException | FailedDBOperationException | UnsupportedEncodingException e) {
+        // ignore json errros
+        LOGGER.log(Level.FINE, "Problem getting guid from json: {0}", e.getMessage());
+      }
+    }
+    return result;
+  }
+
+  private static List<String> getFieldsFromQuery(String line) {
+    List<String> result = new ArrayList<>();
+    // Create a Pattern object
+    Matcher m = Pattern.compile("~\\w+(\\.\\w+)*").matcher(line);
+    // Now create matcher object.
+    while (m.find()) {
+      result.add(m.group().substring(1));
+    }
+    return result;
+  }
+
+  private static List<String> getFieldsForQueryType(SelectRequestPacket request) {
+    switch (request.getSelectOperation()) {
+      case EQUALS:
+      case NEAR:
+      case WITHIN:
+        return new ArrayList<>(Arrays.asList(request.getKey()));
+      case QUERY:
+        return getFieldsFromQuery(request.getQuery());
+      default:
+        return new ArrayList<>();
     }
   }
 
@@ -376,9 +434,9 @@ public class Select {
     return SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, -1, null, new JSONArray(guids));
   }
 
-  private static void handledAllServersResponded(InternalRequestHeader header, 
+  private static void handledAllServersResponded(InternalRequestHeader header,
           SelectResponsePacket packet, NSSelectInfo info,
-          GNSApplicationInterface<String> replica) throws JSONException, 
+          GNSApplicationInterface<String> replica) throws JSONException,
           ClientException, IOException, InternalRequestException {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
@@ -387,7 +445,7 @@ public class Select {
     // we're done processing this select query
     QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
 
-    // Pull the records out of the info structure
+    // Create a response from the returned guids
     SelectResponsePacket response = createReponsePacket(header, packet.getId(), packet.getReturnAddress(), guids, replica);
     // and put the result where the coordinator can see it.
     QUERY_RESULT.put(packet.getNsQueryId(), response);
@@ -480,22 +538,136 @@ public class Select {
     return jsonRecords;
   }
 
+  private static boolean isGuidRecord(JSONObject json) {
+    JSONObject valuesMap = json.optJSONObject(NameRecord.VALUES_MAP.getName());
+    if (valuesMap != null) {
+      return valuesMap.has(AccountAccess.GUID_INFO);
+    }
+    return false;
+  }
+
   // takes the JSON records that are returned from an NS and stuffs the into the NSSelectInfo record
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info,
           GNSApplicationInterface<String> ar) throws JSONException {
     int length = jsonArray.length();
     LOGGER.log(Level.FINE,
             "NS{0} processing {1} records", new Object[]{ar.getNodeID(), length});
-    // org.json sucks... should have converted a long time ago
     for (int i = 0; i < length; i++) {
       JSONObject record = jsonArray.getJSONObject(i);
-      String name = record.getString(NameRecord.NAME.getName());
-      if (info.addResponseIfNotSeenYet(name, record)) {
-        LOGGER.log(Level.FINE, "NS{0} added record for {1}", new Object[]{ar.getNodeID(), name});
+      if (isGuidRecord(record)) { // Filter out any non-guids
+        String name = record.getString(NameRecord.NAME.getName());
+        if (info.addResponseIfNotSeenYet(name, record)) {
+          LOGGER.log(Level.FINE, "NS{0} added record for {1}", new Object[]{ar.getNodeID(), name});
+        } else {
+          LOGGER.log(Level.FINE, "NS{0} already saw record for {1}", new Object[]{ar.getNodeID(), name});
+        }
       } else {
-        LOGGER.log(Level.FINE, "NS{0} DID NOT ADD record for {1}", new Object[]{ar.getNodeID(), name});
+        LOGGER.log(Level.FINE, "NS{0} not a guid record {1}", new Object[]{ar.getNodeID(), record});
       }
     }
+  }
+
+  /**
+   * Returns true if a query contains operations that are not allowed.
+   * Currently $where is not allowed as well as attempts to use
+   * internal keys.
+   *
+   * @param query
+   * @return
+   */
+  public static boolean queryContainsEvil(String query) {
+    try {
+      JSONObject jsonQuery = new JSONObject("{" + query + "}");
+      return jsonObjectKeyContains(NameRecord.VALUES_MAP.getName(), jsonQuery)
+              || jsonObjectKeyContains("$where", jsonQuery);
+    } catch (JSONException e) {
+      return false;
+    }
+  }
+
+  // Traverses the json looking for a key that contains the string
+  private static boolean jsonObjectKeyContains(String key, JSONObject jsonObject) {
+    LOGGER.log(Level.FINEST, "{0} {1}", new Object[]{key, jsonObject.toString()});
+    String[] keys = JSONObject.getNames(jsonObject);
+    if (keys != null) {
+      for (String subKey : keys) {
+        if (subKey.contains(key)) {
+          return true;
+        }
+        JSONObject subJson = jsonObject.optJSONObject(subKey);
+        if (subJson != null) {
+          if (jsonObjectKeyContains(key, subJson)) {
+            return true;
+          }
+        }
+        JSONArray subArray = jsonObject.optJSONArray(subKey);
+        if (subArray != null) {
+          if (jsonArrayKeyContains(key, subArray)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  // Traverses the json looking for a key that contains the string
+  private static boolean jsonArrayKeyContains(String key, JSONArray jsonArray) {
+    LOGGER.log(Level.FINEST, "{0} {1}", new Object[]{key, jsonArray.toString()});
+    for (int i = 0; i < jsonArray.length(); i++) {
+      JSONObject subObject = jsonArray.optJSONObject(i);
+      if (subObject != null) {
+        if (jsonObjectKeyContains(key, subObject)) {
+          return true;
+        }
+      }
+      JSONArray subArray = jsonArray.optJSONArray(i);
+      if (subArray != null) {
+        if (jsonArrayKeyContains(key, subArray)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  public static void main(String[] args) throws JSONException, UnknownHostException {
+    String testQuery = "$or: [{~geoLocationCurrent:{"
+            + "$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}},"
+            + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}},"
+            + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":$where}}}}"
+            + "]";
+
+    System.out.println(getFieldsFromQuery(testQuery));
+
+    System.out.println(queryContainsEvil(testQuery));
+
+    String testQueryBad = "$or: [{~geoLocationCurrent:{"
+            + "$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}},"
+            + "{~customLocations.location:{$geoIntersects:{$geometry:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}},"
+            + "{~customLocations.location:{$geoIntersects:{$where:{\"coordinates\":"
+            + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"
+            + "\"type\":\"Polygon\"}}}}"
+            + "]";
+
+    System.out.println(getFieldsFromQuery(testQueryBad));
+
+    System.out.println(queryContainsEvil(testQueryBad));
+
+    String testQuery3 = "nr_valuesMap.secret:{$regex : ^i_like_cookies}";
+    System.out.println(queryContainsEvil(testQuery3));
+    String testQuery4 = "$where : \"this.nr_valuesMap.secret == 'i_like_cookies'\"";
+    System.out.println(queryContainsEvil(testQuery4));
   }
 
 }

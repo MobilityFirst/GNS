@@ -51,7 +51,7 @@ public class SelectWithin extends AbstractCommand {
   /**
    *
    * @return the command type
-   * 
+   *
    */
   @Override
   public CommandType getCommandType() {
@@ -61,10 +61,12 @@ public class SelectWithin extends AbstractCommand {
   @Override
   public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException, InternalRequestException {
     JSONObject json = commandPacket.getCommand();
+    String reader = json.optString(GNSProtocol.GUID.toString(), null);
     String field = json.getString(GNSProtocol.FIELD.toString());
     String within = json.getString(GNSProtocol.WITHIN.toString());
-    return FieldAccess.selectWithin(header, field, within, handler);
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
+    return FieldAccess.selectWithin(header, commandPacket, reader, field, within, signature, message, handler);
   }
 
-  
 }

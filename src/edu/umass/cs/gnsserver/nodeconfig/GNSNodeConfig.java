@@ -256,7 +256,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     if (id instanceof InetSocketAddress) {
       return ((InetSocketAddress) id).getPort();
     }
-    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id), copy = nodeInfo;
+    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
     if ((nodeInfo = getActiveReplicaInfo(id)) != null) {
       return nodeInfo.getActivePort();
     } else {
@@ -532,16 +532,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return version;
   }
 
-  /**
-   * Adds a NodeInfo object to the list maintained by this config instance.
-   *
-   * @param id
-   * @param ipAddress
-   * @param startingPort
-   * @param pingLatency
-   * @param latitude
-   * @param longitude
-   */
+  /* Adds a NodeInfo object to the list maintained by this config instance. */
   private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
           String externalIP, int startingPort, long pingLatency, double latitude, double longitude) {
     // FIXME: THIS IS GOING TO BLOW UP FOR NON-STRING IDS!
@@ -554,38 +545,10 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     mapping.put(id, nodeInfo);
   }
 
-  /**
-   * Adds a NodeInfo object to the list maintained by this config instance.
-   *
-   * @param id
-   * @param ipAddress
-   */
+  /* Adds a NodeInfo object to the list maintained by this config instance. */
   private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
           String externalIP, Integer startingPort) {
     addHostInfo(mapping, id, ipAddress, externalIP, startingPort, 0, 0, 0);
-  }
-
-  /**
-   * Returns true if the file is the old style (has lots of fields).
-   *
-   * @param file
-   * @return true if the file is the old style
-   */
-  private boolean isOldStyleFile(String file) throws IOException {
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader(file));
-      if (!reader.ready()) {
-        throw new IOException("Problem reading host config file " + file);
-      }
-      String line = reader.readLine();
-      if (line == null) {
-        throw new IOException("Hosts file is empty" + file);
-      }
-      return line.split("\\s+").length > 4;
-    } catch (IOException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "Problem reading hosts file:{0}", e);
-      return false;
-    }
   }
 
   @Override

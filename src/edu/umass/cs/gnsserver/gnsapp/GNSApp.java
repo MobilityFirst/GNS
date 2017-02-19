@@ -881,14 +881,16 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                 .info("GNS Server IP"
                         + Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP));
         udpDnsServer = new UdpDnsServer(
-                Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8",
+                Inet4Address.getByName("0.0.0.0"), 53, 
+                Config.getGlobalString(GNSConfig.GNSC.DNS_UPSTREAM_SERVER_IP),
                 Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP),
                 requestHandler);
         udpDnsServer.start();
       } else {
         udpDnsServer = new UdpDnsServer(
-                Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", null,
-                requestHandler);
+                Inet4Address.getByName("0.0.0.0"), 53, 
+                Config.getGlobalString(GNSConfig.GNSC.DNS_UPSTREAM_SERVER_IP),
+                null, requestHandler);
         udpDnsServer.start();
       }
     } catch (BindException e) {
