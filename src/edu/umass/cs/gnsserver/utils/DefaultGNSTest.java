@@ -384,6 +384,7 @@ public class DefaultGNSTest extends DefaultTest {
 		removeCreatedState();
 		closeServers(DefaultProps.FORCECLEAR.key);
 		closeClients();
+		//printReverseEngineeredType();
 	}
 
 	private static void removeCreatedState() throws ClientException,

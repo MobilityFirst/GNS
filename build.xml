@@ -375,24 +375,38 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-Dalias=${alias}"/>
-      <jvmarg value="-Dpassword=${password}"/>
-      <jvmarg value="-Dcount=${count}"/>
+      <jvmarg value="-DstartServer=true"/>
+      <jvmarg value="-DstopServer=false"/>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
       <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
-      <!-- add this if you want SSL debugging enabled -->
-      <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
+      <jvmarg value="-DwaitTillAllServersReady=${waitTillAllServersReady}"/>
+      <jvmarg value="-DsingleJVM=${singleJVM}"/>
+      <jvmarg value="-Dforceclear=${forceclear}"/>
+      <jvmarg value="-Dserver.command=bin/gpServer.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
       <!-- Make sure these libraries are included -->
       <classpath refid="classpath.test" />
-      <formatter type="plain" usefile="false"/>
+
       <batchtest>
         <fileset dir="${test.dir}">
           <include name="**/${test}.java"/>
         </fileset>
       </batchtest>
+
+      <batchtest>
+        <fileset dir="${build.test.classes.dir}">
+          <include name="**/${test}/*Test.class"/>
+        </fileset>
+      </batchtest>
+
+      <batchtest>
+        <fileset dir="${build.classes.dir}">
+          <include name="**/*ZDefaultGNSTest.class"/>
+        </fileset>
+      </batchtest>
+
     </junit>
   </target>
 

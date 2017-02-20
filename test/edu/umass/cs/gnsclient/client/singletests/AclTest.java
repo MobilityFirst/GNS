@@ -58,6 +58,7 @@ public class AclTest extends DefaultGNSTest {
   private static GuidEntry samEntry;
   private static GuidEntry barneyEntry;
 
+  
   /**
    * This test tests all manner of ACL uses.
    */
