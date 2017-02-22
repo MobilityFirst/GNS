@@ -324,6 +324,8 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-Djavax.net.ssl.keyStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DstopServer=false"/>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
@@ -363,15 +365,17 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
           depends="compiletest, ensure-test-name, pkgtest">
   </target>
   
-  <target name="testnoserver" description="Runs the test you specify on the command line with -Dtest=" 
-          depends="compiletest, ensure-test-name">
-    <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
-    <property name="alias" value=""/>
-    <property name="password" value=""/>
-    <property name="count" value=""/>
-    <property name="gigapaxosConfig" value="conf/gnsclient.3local.properties"/>
-    <property name="java.util.logging.config.file" value="conf/logging.gns.junit.properties"/>
-    <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
+  <target name="pkgtestNoKeyStore" description="Starts servers specified in properties file. unit tests run without the keystore"
+          depends="compile, compiletest">
+    <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
+    <property name="singleJVM" value="false"/>
+    <property name="waitTillAllServersReady" value="000"/>
+    <property name="startServer" value="true"/>
+    <property name="singleJVM" value="false"/>
+    <property name="forceclear" value="false"/>
+    <junit printsummary="yes" fork="true" forkmode="once" haltonfailure="on" showoutput="yes">
+      <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
@@ -410,8 +414,46 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
+  <target name="runtestNoKeyStore" description="Runs the test you specify on the command line with -Dtest=" 
+          depends="compiletest, ensure-test-name, pkgtestNoKeyStore">
+  </target>
+  
+  <target name="testnoserver" 
+          description="Runs with the correct keystore the test you specify on the command line -Dtest Does not start a server=" 
+          depends="compiletest, ensure-test-name">
+    <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
+    <property name="alias" value=""/>
+    <property name="password" value=""/>
+    <property name="count" value=""/>
+    <property name="gigapaxosConfig" value="conf/gnsclient.3local.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.junit.properties"/>
+    <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-Dalias=${alias}"/>
+      <jvmarg value="-Dpassword=${password}"/>
+      <jvmarg value="-Dcount=${count}"/>
+      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
+      <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
+      <!-- add this if you want SSL debugging enabled -->
+      <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+      <formatter type="plain" usefile="false"/>
+      <batchtest>
+        <fileset dir="${test.dir}">
+          <include name="**/${test}.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
   <target name="testnoserverwithkeystore" 
-          description="Runs with the correct keystore the test you specify on the command line -Dtest=" 
+          description="Runs with the correct keystore the test you specify on the command line -Dtest= Does not start a server" 
           depends="compiletest, ensure-test-name">
     <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
     <property name="alias" value=""/>
@@ -533,8 +575,8 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
-  <target name="test" description="Runs the default integration test against a 3 node server." 
-          depends="compile, compiletest">
+  <target name="test" description="Runs the default integration test and all the singles tests against a 3 node server." 
+          depends="compile, compiletest, runSingleTests">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
     <property name="waitTillAllServersReady" value="000"/>
