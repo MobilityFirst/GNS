@@ -87,6 +87,7 @@ public class SelectClientTest extends DefaultGNSTest {
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
     }
+    waitSettle(100);
 
     try {
       String query = "~" + fieldName + " : ($gt: 0)";
@@ -113,6 +114,16 @@ public class SelectClientTest extends DefaultGNSTest {
       createdGuids.clear();
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception during cleanup: " + e);
+    }
+  }
+  
+  private static void waitSettle(long wait) {
+    try {
+      if (wait > 0) {
+        Thread.sleep(wait);
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
   }
 

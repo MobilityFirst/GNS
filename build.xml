@@ -304,6 +304,10 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </javac>
   </target>
   
+  <target name="test" description="Runs the default integration test and all the singles tests against a 3 node server." 
+          depends="compile, compiletest, runSingleTests">
+  </target>
+  
   <target name="runSingleTests" description="Runs all of the singletests">
     <antcall target="runtest">
       <param name="test" value="singletests"/>
@@ -418,7 +422,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
           depends="compiletest, ensure-test-name, pkgtestNoKeyStore">
   </target>
   
-  <target name="testnoserver" 
+  <target name="testNoServer" 
           description="Runs with the correct keystore the test you specify on the command line -Dtest Does not start a server=" 
           depends="compiletest, ensure-test-name">
     <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
@@ -452,7 +456,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
-  <target name="testnoserverwithkeystore" 
+  <target name="testNoServerWithKeyStore" 
           description="Runs with the correct keystore the test you specify on the command line -Dtest= Does not start a server" 
           depends="compiletest, ensure-test-name">
     <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
@@ -575,8 +579,8 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
-  <target name="test" description="Runs the default integration test and all the singles tests against a 3 node server." 
-          depends="compile, compiletest, runSingleTests">
+  <target name="runIntegrationTest" description="Runs the default integration test and all the singles tests against a 3 node server." 
+          depends="compile, compiletest">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
     <property name="waitTillAllServersReady" value="000"/>

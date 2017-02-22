@@ -133,6 +133,7 @@ public class SelectSingleTest extends DefaultGNSTest {
       actual = JSONUtils.JSONArrayToHashSet(clientCommands.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
       Assert.assertEquals(expected, actual);
+      waitSettle(100);
     } catch (IOException | ClientException | JSONException e) {
       Utils.failWithStackTrace("Exception when we were not expecting testing DB: " + e);
     }
@@ -164,4 +165,15 @@ public class SelectSingleTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception during cleanup: " + e);
     }
   }
+  
+  private static void waitSettle(long wait) {
+    try {
+      if (wait > 0) {
+        Thread.sleep(wait);
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
 }
