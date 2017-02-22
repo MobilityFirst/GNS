@@ -304,7 +304,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </javac>
   </target>
   
-  <target name="test" description="Runs the default integration test and all the singles tests against a 3 node server." 
+  <target name="test" description="Runs all the singles tests against a 3 node server." 
           depends="compile, compiletest, runSingleTests">
   </target>
   
@@ -579,7 +579,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
-  <target name="runIntegrationTest" description="Runs the default integration test and all the singles tests against a 3 node server." 
+  <target name="runIntegrationTest" description="Runs the default integration test a 3 node server." 
           depends="compile, compiletest">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>

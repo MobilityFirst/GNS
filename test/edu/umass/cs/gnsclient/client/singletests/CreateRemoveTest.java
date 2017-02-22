@@ -43,7 +43,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CreateRemoveTest extends DefaultGNSTest {
 
-  private static final int REPEAT = 10;
+  private static final int REPEAT = 50;
 
   private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
@@ -68,92 +68,24 @@ public class CreateRemoveTest extends DefaultGNSTest {
   }
 
   /**
-   * Creates a guid.
-   *
    * @throws Exception
    */
   @Test
   @Repeat(times = REPEAT)
-  public void test_010_CreateEntity() throws Exception {
-    // CHECKED FOR VALIDITY
-    String alias = "testGUID" + RandomString.randomString(12);
-    String createdGUID = client.execute(GNSCommand.createGUID(masterGuid, alias))
-            .getResultString();
-    Assert.assertEquals(alias, GuidUtils.getGUIDKeys(alias).entityName);
-    Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
-    // deprecated client test
-    // GuidEntry guidEntry = clientCommands.guidCreate(masterGuid, alias);
-    // Assert.assertNotNull(guidEntry);
-    // Assert.assertEquals(alias, guidEntry.getEntityName());
-  }
-
-  /**
-   * @throws Exception
-   */
-  @Test
-  @Repeat(times = REPEAT * 10)
   public void test_001_CreateAndUpdate() throws Exception {
     // CHECKED FOR VALIDITY
     String alias = "testGUID" + RandomString.randomString(12);
     String createdGUID = client.execute(
             GNSCommand.createGUID(masterGuid, alias)).getResultString();
     GuidEntry createdGUIDEntry = GuidUtils.getGUIDKeys(alias);
+    Assert.assertEquals(alias, createdGUIDEntry.entityName);
+    Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
     String key = "key1", value = "value1";
     client.execute(GNSCommand.update(createdGUID,
             new JSONObject().put(key, value), createdGUIDEntry));
     Assert.assertEquals(value,
             client.execute(GNSCommand.fieldRead(createdGUIDEntry, key)).getResultMap().get(key));
-  }
-
-  /**
-   * Removes a guid.
-   *
-   * @throws IOException
-   * @throws ClientException
-   * @throws NoSuchAlgorithmException
-   */
-  @Test
-  public void test_020_RemoveCreated() throws NoSuchAlgorithmException,
-          ClientException, IOException {
-    // CHECKED FOR VALIDITY
-    String testGuidName = "testGUID" + RandomString.randomString(12);
-    GuidEntry testGuid;
-
-    testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
-    clientCommands.guidRemove(masterGuid, testGuid.getGuid());
-
-    try {
-      clientCommands.lookupGuidRecord(testGuid.getGuid());
-      Utils.failWithStackTrace("Lookup testGuid should have throw an exception.");
-    } catch (ClientException e) {
-      // expected
-    }
-  }
-
-  /**
-   * Removes a guid not using an account guid.
-   *
-   * @throws IOException
-   * @throws ClientException
-   * @throws NoSuchAlgorithmException
-   */
-  @Test
-  public void test_030_RemoveCreatedSansAccountInfo() throws NoSuchAlgorithmException, ClientException, IOException {
-    //CHECKED FOR VALIDITY
-    String testGuidName = "testGUID" + RandomString.randomString(12);
-
-    String testGUID = client.execute(GNSCommand.createGUID(masterGuid, testGuidName)).getResultString();
-    client.execute(GNSCommand.removeGUID(GuidUtils.getGUIDKeys(testGuidName)));
-//    GuidEntry testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
-//    clientCommands.guidRemove(testGuid);
-
-    try {
-//      clientCommands.lookupGuidRecord(testGuid.getGuid());
-      client.execute(GNSCommand.lookupGUID(testGUID));
-      Utils.failWithStackTrace("Lookup testGuid should have throw an exception.");
-    } catch (ClientException e) {
-      // expected
-    }
+    client.execute(GNSCommand.removeGUID(masterGuid, createdGUID));
   }
 
 }

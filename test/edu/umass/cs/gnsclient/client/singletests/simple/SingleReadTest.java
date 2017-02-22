@@ -17,14 +17,13 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.simple;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.utils.ThreadUtils;
 
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
@@ -37,11 +36,11 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
+ * Test reads.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SingleReadArrayTest extends DefaultGNSTest {
+public class SingleReadTest extends DefaultGNSTest {
 
   private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
@@ -50,7 +49,7 @@ public class SingleReadArrayTest extends DefaultGNSTest {
   /**
    *
    */
-  public SingleReadArrayTest() {
+  public SingleReadTest() {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
@@ -102,7 +101,7 @@ public class SingleReadArrayTest extends DefaultGNSTest {
   @Test
   public void test_03_CreateField() {
     try {
-      clientCommands.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
+      clientCommands.fieldUpdate(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
     } catch (IOException | ClientException e) {
       Utils.failWithStackTrace("Exception during create field: " + e);
     }
@@ -112,15 +111,10 @@ public class SingleReadArrayTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_04_ReadFieldTwice() {
+  public void test_04_ReadField() {
     try {
       // read my own field
-      Assert.assertEquals("work", clientCommands.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
-      Assert.assertEquals("work", clientCommands.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
-      ThreadUtils.sleep(5);
-      Assert.assertEquals("work", clientCommands.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
-      ThreadUtils.sleep(5);
-      Assert.assertEquals("work", clientCommands.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
+      Assert.assertEquals("work", clientCommands.fieldRead(subGuidEntry.getGuid(), "environment", subGuidEntry));
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }

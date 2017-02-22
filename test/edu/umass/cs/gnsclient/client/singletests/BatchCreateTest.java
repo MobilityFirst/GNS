@@ -75,12 +75,14 @@ public class BatchCreateTest extends DefaultGNSTest {
    * @throws Exception
    */
   @Test
-  @Repeat(times = 7)
+  // Fixme: put this back at 7 once removal is faster.
+  @Repeat(times = 1)
   public void test_500_Batch_Tests() throws Exception {
     GuidEntry accountGuidForBatch = test_510_CreateBatchAccountGuid();
     test_511_CreateBatch(accountGuidForBatch);
     test_512_CheckBatch(accountGuidForBatch);
     numberToCreate *= 2;
+    client.execute(GNSCommand.accountGuidRemove(accountGuidForBatch));
   }
 
   /**

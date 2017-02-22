@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.simple;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.AclAccessType;
