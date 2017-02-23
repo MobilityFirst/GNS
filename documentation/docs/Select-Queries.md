@@ -12,15 +12,16 @@ It has to be noted that access control is still enforced if you query the GNS da
 GUIDs for matching records will be returned only if you have read access to the field you are querying for.
 
 _// This is a non-exhaustive list, but try to add as much information as possible_
+
 ### Syntax ###
 The GNS query syntax draws several similarities from the MongoDB query syntax. Every field name in a query has to be preceded by the tilde ('~') character.
 The query follows a JSON name-value syntax. You can pass a name and a value to be matched with, or you can pass a list of name and value pairs to be matched using `and` or `or`.
 
 The general query syntax is `"~field" : value`. 
 `value` can be one of the following:
-- a string 
-- a number 
-- a condition
+* a string 
+* a number 
+* a condition
 
 If a string or a number is specified, an exact match will be performed.
 
