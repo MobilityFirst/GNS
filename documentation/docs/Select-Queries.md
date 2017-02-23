@@ -17,11 +17,9 @@ _// This is a non-exhaustive list, but try to add as much information as possibl
 The GNS query syntax draws several similarities from the MongoDB query syntax. Every field name in a query has to be preceded by the tilde ('~') character.
 The query follows a JSON name-value syntax. You can pass a name and a value to be matched with, or you can pass a list of name and value pairs to be matched using `and` or `or`.
 
-The general query syntax is `"~field" : value`. 
-`value` can be one of the following:
-* a string 
-* a number 
-* a condition
+The general query syntax is `"~field" : value` or `"~field" : ( operator : value ) `. 
+`value` can be either a string or a number.
+`operator` is a conditional operator.
 
 If a string or a number is specified, an exact match will be performed.
 
