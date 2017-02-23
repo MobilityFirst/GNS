@@ -291,22 +291,6 @@ public class GNSHttpServer extends GNSHttpProxy{
 		}
 	}
 
-	private static void sanityCheckMessage(JSONObject jsonCommand) throws JSONException,
-	UnsupportedEncodingException {
-		if (jsonCommand.has("originalMessageBase64")) {
-			String originalMessage = new String(Base64.decode(jsonCommand.getString("originalMessageBase64")),
-					GNSProtocol.CHARSET.toString());
-			jsonCommand.remove("originalMessageBase64");
-			String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
-			if (!originalMessage.equals(commandSansSignature)) {
-				LOGGER.log(Level.SEVERE, "signature message mismatch! original: {0} computed for signature: {1}", 
-						new Object[]{originalMessage, commandSansSignature});
-			} else {
-				LOGGER.log(Level.FINE, "######## original: {0}", 
-						originalMessage);
-			}
-		}
-	}
 
 	private static void processSignature(JSONObject jsonCommand) throws JSONException {
 		if (jsonCommand.has(GNSProtocol.SIGNATURE.toString())) {
@@ -324,23 +308,6 @@ public class GNSHttpServer extends GNSHttpProxy{
 		}
 	}
 
-	//make single field reads return just the value for backward compatibility 
-	private static String specialCaseSingleFieldRead(String response, CommandType commandType,
-			JSONObject jsonFormattedArguments) {
-		try {
-			if (commandType.isRead() && jsonFormattedArguments.has(GNSProtocol.FIELD.toString())
-					&& !jsonFormattedArguments.getString(GNSProtocol.FIELD.toString()).equals(GNSProtocol.ENTIRE_RECORD.toString())
-					&& JSONPacket.couldBeJSON(response) && response.startsWith("{")) {
-				String key = jsonFormattedArguments.getString(GNSProtocol.FIELD.toString());
-				JSONObject json = new JSONObject(response);
-				return json.getString(key);
-			}
-		} catch (JSONException e) {
-			LOGGER.log(Level.SEVERE, "Problem getting single key reponse for : {0}", e.getMessage());
-			// just return the response if there is some issue
-		}
-		return response;
-	}
 
 	private CommandPacket getResponseUsingGNSClient(GNSClient client,
 			JSONObject jsonFormattedArguments) throws ClientException, IOException, JSONException {
