@@ -98,7 +98,7 @@ public class GNSHttpServer extends GNSHttpProxy{
 		}
 		runServer(port);
 	}
-	
+
 
 	/**
 	 * Try to start the http server at the port.
@@ -118,7 +118,7 @@ public class GNSHttpServer extends GNSHttpProxy{
 			httpServer = HttpServer.create(addr, 0);
 
 			httpServer.createContext("/", new EchoHttpHandler());
-			
+
 			//This line here is what differs from the parent class, it uses a different HTTP Handler.
 			httpServer.createContext("/" + GNS_PATH, new DefaultHttpHandler());
 			httpServer.setExecutor(Executors.newCachedThreadPool());
