@@ -29,6 +29,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
@@ -121,10 +122,8 @@ public class GNSHttpProxy {
 	 * and executed them using a GNSClient.
 	 */
 	public static void main(String[] args){
-		String portString = System.getProperty("gnsProxy.port", "8080");
-		int port = Integer.parseInt(portString);
-		
-		String hostname = System.getProperty("gnsProxy.remoteHostname", "localhost");
+		int port = Config.getGlobalInt(GNSCC.HTTP_PROXY_PORT);
+		String hostname = Config.getGlobalString(GNSCC.HTTP_PROXY_INCOMING_HOSTNAME);
 		
 
 		GNSHttpProxy proxy = new GNSHttpProxy();
