@@ -277,9 +277,12 @@ public class DefaultGNSTest extends DefaultTest {
 		do {
 			File[] files = getMatchingFiles(getLogFileDir(), getLogFile());
 			numServersUp = 0;
-			for (File f : files)
+			for (File f : files) {
+                           if (!f.isDirectory()) {
 				numServersUp += Util.readFileAsString(f.getAbsolutePath())
 						.contains("server ready") ? 1 : 0;
+                           }
+                        }
 
 			System.out.println((numServersUp) + " out of "
 					+ Integer.toString(numServers) + " servers are ready.");
@@ -291,7 +294,9 @@ public class DefaultGNSTest extends DefaultTest {
 		return new File(dir).listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return (dir + "/" + name).startsWith(startsWith);
+				return (dir + "/" + name).startsWith(startsWith) &&
+                                        // Filter out lock files
+                                        !(dir + "/" + name).endsWith(".lck");
 			}
 		});
 	}
@@ -384,6 +389,7 @@ public class DefaultGNSTest extends DefaultTest {
 		removeCreatedState();
 		closeServers(DefaultProps.FORCECLEAR.key);
 		closeClients();
+		//printReverseEngineeredType();
 	}
 
 	private static void removeCreatedState() throws ClientException,

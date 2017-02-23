@@ -216,20 +216,20 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    * @throws InterruptedException
    *
    */
-  @BeforeClass
-  public static void setUpBeforeClass() throws FileNotFoundException,
-          IOException, InterruptedException {
-    DefaultGNSTest.setUpBeforeClass();
-    masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
-    clientCommands = (GNSClientCommands) new GNSClientCommands()
-            .setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
-    client = new GNSClient()
-            .setNumRetriesUponTimeout(2)
-            .setForceCoordinatedReads(true)
-            .setForcedTimeout(8000);
-
-  }
-
+  @BeforeClass  
+	public static void setUpBeforeClass() throws FileNotFoundException,
+			IOException, InterruptedException {
+		DefaultGNSTest.setUpBeforeClass();
+		masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
+		clientCommands = (GNSClientCommands) new GNSClientCommands()
+				.setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
+                client = new GNSClient()
+                             .setNumRetriesUponTimeout(2)
+                             .setForceCoordinatedReads(true)
+                             .setForcedTimeout(8000);
+    
+	}
+  
   /**
    * @throws FileNotFoundException
    * @throws IOException
@@ -237,7 +237,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
    */
   @Deprecated
   public static void setUpBeforeClassOld() throws FileNotFoundException, IOException, InterruptedException {
-    /* The waitTillAllServersReady parameter is not needed for
+		/* The waitTillAllServersReady parameter is not needed for
 		 * single-machine tests as we check the logs explicitly below. It is
 		 * still useful for distributed tests as there is no intentionally
 		 * support in gigapaxos' async client to detect if all servrs are up. */
@@ -387,22 +387,19 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   }
 
   public static void tearDownAfterClass() throws ClientException, IOException {
-    // to allow more time for remove
-    client.setForcedTimeout(TIMEOUT * 2);
-    DefaultGNSTest.tearDownAfterClass();
+	  // to allow more time for remove
+	  client.setForcedTimeout(TIMEOUT*2);
+	  DefaultGNSTest.tearDownAfterClass();
   }
-
   /**
    *
    */
 //  @AfterClass
   @Deprecated
   public static void tearDownAfterClassOld() {
-    if (clientCommands != null) {
-      clientCommands.close();
-    }
-    System.out.println("--" + RequestInstrumenter.getLog() + "--");
-    /* arun: need a more efficient, parallel implementation of removal of
+    if(clientCommands!=null) clientCommands.close();
+    System.out.println("--"+RequestInstrumenter.getLog()+"--");
+		/* arun: need a more efficient, parallel implementation of removal of
 		 * sub-guids, otherwise this times out. */
     //client.accountGuidRemove(masterGuid);
     if (System.getProperty("startServer") != null
