@@ -47,7 +47,6 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
@@ -58,7 +57,6 @@ import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import edu.umass.cs.gnsserver.utils.Util;
-import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
 
@@ -79,24 +77,14 @@ import java.io.UnsupportedEncodingException;
  *
  * @author westy
  */
-public class GNSHttpServer {
 
-	/**
-	 *
-	 */
-	protected static final String GNS_PATH = Config.getGlobalString(GNSConfig.GNSC.HTTP_SERVER_GNS_URL_PATH);
-	private HttpServer httpServer = null;
-	// handles command processing
-	private final CommandModule commandModule;
-	// newer handles command processing
-	private GNSClient client = null;
+public class GNSHttpServer extends GNSHttpProxy{
+
 
 	/**
 	 *
 	 */
 	protected final ClientRequestHandlerInterface requestHandler;
-	private final Date serverStartDate = new Date();
-
 	private final static Logger LOGGER = Logger.getLogger(GNSHttpServer.class.getName());
 
 	/**
@@ -105,49 +93,15 @@ public class GNSHttpServer {
 	 * @param requestHandler
 	 */
 	public GNSHttpServer(int port, ClientRequestHandlerInterface requestHandler) {
-		this.commandModule = new CommandModule();
+		super();
 		this.requestHandler = requestHandler;
-		if (!Config.getGlobalBoolean(GNSC.DISABLE_MULTI_SERVER_HTTP)) {
-			try {
-				this.client = new GNSClient() {
-					@Override
-					public String getLabel() {
-						return GNSHttpServer.class.getSimpleName();
-					}
-				};
-			} catch (IOException e) {
-				LOGGER.log(Level.SEVERE, "Unable to start GNS client:{0}", 
-						e.getMessage());
-			}
+		if (Config.getGlobalBoolean(GNSC.DISABLE_MULTI_SERVER_HTTP)) {
+			client.close();
+			client = null;
 		}
 		runServer(port);
 	}
 
-	/**
-	 * Start the server.
-	 *
-	 * @param startingPort
-	 */
-	public final void runServer(int startingPort) {
-		int cnt = 0;
-		do {
-			// Find the first port after starting port that actually works.
-			// Usually if 8080 is busy we can get 8081.
-			if (tryPort(startingPort + cnt)) {
-				break;
-			}
-			edu.umass.cs.utils.Util.suicide(GNSConfig.getLogger(), "Unable to start GNS HTTP server; exiting");
-		} while (cnt++ < 100);
-	}
-
-	/**
-	 * Stop everything.
-	 */
-	public void stop() {
-		if (httpServer != null) {
-			httpServer.stop(0);
-		}
-	}
 
 	/**
 	 * Try to start the http server at the port.
@@ -155,17 +109,23 @@ public class GNSHttpServer {
 	 * @param port
 	 * @return true if it was started
 	 */
-	public boolean tryPort(int port) {
+	public boolean tryPort(int port, String hostname) {
 		try {
-			InetSocketAddress addr = new InetSocketAddress(port);
+			InetSocketAddress addr;
+			if (hostname == null){
+				addr = new InetSocketAddress(port);
+			}
+			else{
+				addr = new InetSocketAddress(hostname, port);
+			}
 			httpServer = HttpServer.create(addr, 0);
 
 			httpServer.createContext("/", new EchoHttpHandler());
+			//This line here is what differs from the parent class, it uses a different HTTP Handler.
 			httpServer.createContext("/" + GNS_PATH, new DefaultHttpHandler());
 			httpServer.setExecutor(Executors.newCachedThreadPool());
 			httpServer.start();
-			// Need to do this for the places where we expose the insecure http service to the user
-			requestHandler.setHttpServerPort(port);
+
 			LOGGER.log(Level.INFO,
 					"HTTP server is listening on port {0}", port);
 			return true;
@@ -180,7 +140,7 @@ public class GNSHttpServer {
 	/**
 	 * The default handler.
 	 */
-	protected class DefaultHttpHandler implements HttpHandler {
+	protected class DefaultHttpHandler extends ProxyHttpHandler { 
 		/**
 		 *
 		 * @param exchange
@@ -458,7 +418,6 @@ public class GNSHttpServer {
 					responseBody.write("<br>".getBytes());
 					responseBody.write(secureString.getBytes());
 					responseBody.write("<br>".getBytes());
-
 					responseBody.write(recordsClass.getBytes());
 					responseBody.write("<br>".getBytes());
 					responseBody.write("<br>".getBytes());
@@ -472,6 +431,7 @@ public class GNSHttpServer {
 						responseBody.write("<br>".getBytes());
 					}
 					responseBody.write(responsePostamble.getBytes());
+
 				}
 			}
 		}

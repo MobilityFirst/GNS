@@ -43,7 +43,7 @@ import org.junit.Assert;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class HttpClientTest extends DefaultGNSTest {
 
-  private HttpClient httpClient;
+  protected HttpClient httpClient;
   private static GuidEntry masterGuid;
   private static GuidEntry httpOneEntry;
   private static GuidEntry httpTwoEntry;
