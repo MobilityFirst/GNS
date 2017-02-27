@@ -654,7 +654,7 @@ public class MongoRecords implements NoSQLRecords {
     // Filter out HRN records
     String guidFilter = "{" + NameRecord.VALUES_MAP.getName() + "." + AccountAccess.GUID_INFO + ": { $exists: true}}";
     edittedQuery = buildAndQuery(guidFilter, edittedQuery);
-    DatabaseConfig.getLogger().log(Level.INFO, "Edited query = {0}", edittedQuery);
+    DatabaseConfig.getLogger().log(Level.FINE, "Edited query = {0}", edittedQuery);
     DBObject parse = (DBObject) JSON.parse(edittedQuery);
     return parse;
   }
