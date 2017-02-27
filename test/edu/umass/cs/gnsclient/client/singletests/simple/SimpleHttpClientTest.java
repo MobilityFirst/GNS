@@ -35,7 +35,6 @@ public class SimpleHttpClientTest extends DefaultGNSTest {
   private static GuidEntry httpOneEntry;
   private static GuidEntry httpTwoEntry;
 
-
   /**
    *
    */
@@ -96,8 +95,8 @@ public class SimpleHttpClientTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception in Http_UpdateFields: ", e);
     }
   }
-  
-   /*
+
+  /**
    *
    */
   @Test

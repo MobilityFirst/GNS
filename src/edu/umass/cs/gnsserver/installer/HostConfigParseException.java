@@ -26,6 +26,7 @@ import edu.umass.cs.gnscommon.exceptions.server.ServerException;
  *
  * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
  */
+@Deprecated
 public class HostConfigParseException extends ServerException {
 
   private static final long serialVersionUID = 1L;

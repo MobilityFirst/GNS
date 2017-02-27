@@ -64,6 +64,7 @@ import org.apache.commons.cli.ParseException;
  *
  * @author westy
  */
+@Deprecated
 public class EC2Runner {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");

@@ -41,6 +41,7 @@ import java.util.List;
  * 
  * @author westy
  */
+@Deprecated
 public class Route53 {
 
   private static AmazonRoute53 route53;
