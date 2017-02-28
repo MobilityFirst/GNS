@@ -24,7 +24,6 @@ import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
-import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
@@ -76,7 +75,7 @@ public class BatchCreateTest extends DefaultGNSTest {
    */
   @Test
   // Fixme: put this back at 7 once removal is faster.
-  @Repeat(times = 1)
+  @Repeat(times = 5)
   public void test_500_Batch_Tests() throws Exception {
     GuidEntry accountGuidForBatch = test_510_CreateBatchAccountGuid();
     test_511_CreateBatch(accountGuidForBatch);

@@ -25,6 +25,7 @@ package edu.umass.cs.gnsserver.installer;
  * 
  * @author westy
  */
+@Deprecated
 public enum DataStoreType {
  
   /**

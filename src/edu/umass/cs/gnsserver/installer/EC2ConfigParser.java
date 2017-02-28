@@ -43,6 +43,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author westy
  */
+@Deprecated
 public class EC2ConfigParser {
   
   private static final String fileExtension = ".xml";

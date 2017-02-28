@@ -21,12 +21,10 @@ package edu.umass.cs.gnsclient.client.singletests.failingtests;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
@@ -60,13 +58,6 @@ public class AdminBadAuthTest extends DefaultGNSTest {
       this.asyncClient = new AsyncClientBad(reconfigurators,
               ReconfigurationConfig.getClientSSLMode(),
               ReconfigurationConfig.getClientPortOffset(), true);
-    }
-
-    /**
-     * @throws IOException
-     */
-    public BadClient() throws IOException {
-      super((InetSocketAddress) null);
     }
 
     /**
@@ -115,7 +106,7 @@ public class AdminBadAuthTest extends DefaultGNSTest {
       System.out.println("Client created and connected to server.");
     }
 
-    badClient = new BadClient();
+    badClient = new BadClient(ReconfigurationConfig.getReconfiguratorAddresses());
     badClient.setForceCoordinatedReads(true);
     connected = badClient instanceof GNSClient;
     if (connected) {
@@ -129,7 +120,7 @@ public class AdminBadAuthTest extends DefaultGNSTest {
    */
   @Test
   public void test_04_Dump() throws Exception {
-    clientCommands.dump();
+    System.out.println(clientCommands.dump());
   }
 
   /**
@@ -138,7 +129,7 @@ public class AdminBadAuthTest extends DefaultGNSTest {
   @Test
   public void test_14_Dump_BadClient() {
     try {
-      badClient.dump();
+      System.out.println(badClient.dump());
       Assert.fail("Should throw an exception.");
     } catch (Exception e) {
       System.out.println("Dump_BadClient throws an exception (expected):" + e.getMessage());

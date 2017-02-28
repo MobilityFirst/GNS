@@ -47,6 +47,7 @@ import org.xml.sax.SAXException;
  * 
  * @author westy
  */
+@Deprecated
 public class HostConfigParser {
 
   private static final String USERNAME = "username";

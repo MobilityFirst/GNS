@@ -81,6 +81,7 @@ import java.util.Set;
  *
  * @author westy
  */
+@Deprecated
 public class AWSEC2 {
 
   /*

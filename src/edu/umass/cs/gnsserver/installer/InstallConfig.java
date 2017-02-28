@@ -32,6 +32,7 @@ import java.util.Properties;
  * 
  * @author westy
  */
+@Deprecated
 public class InstallConfig {
 
   private static final String USER_NAME = "userName";

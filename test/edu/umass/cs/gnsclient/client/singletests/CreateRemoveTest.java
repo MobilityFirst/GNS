@@ -23,13 +23,11 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Repeat;
 import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -43,7 +41,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CreateRemoveTest extends DefaultGNSTest {
 
-  private static final int REPEAT = 50;
+  private static final int REPEAT = 100;
 
   private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
