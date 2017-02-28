@@ -38,8 +38,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -89,7 +89,7 @@ public class RetrieveAliases extends AbstractCommand {
         return new CommandResponse(ResponseCode.VERIFICATION_ERROR, GNSProtocol.BAD_RESPONSE.toString()
                 + " " + GNSProtocol.VERIFICATION_ERROR.toString() + " Account not verified");
       }
-      ArrayList<String> aliases = accountInfo.getAliases();
+      List<String> aliases = accountInfo.getAliases();
       return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(aliases).toString());
     } else {
       return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString()
