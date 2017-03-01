@@ -154,44 +154,44 @@ public class ByteUtils {
     return value;
   }
 
-//  /**
-//   * Converts a hexidecimal string to a byte array.
-//   * 
-//   * @param s
-//   * @return a byte array
-//   */
-//  public static byte[] hexStringToByteArray(String s) {
-//    int len = s.length();
-//    byte[] data = new byte[len / 2];
-//    for (int i = 0; i < len; i += 2) {
-//      data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
-//    }
-//    return data;
-//  }
+  /**
+   * Converts a hexidecimal string to a byte array.
+   *
+   * @param s
+   * @return a byte array
+   */
+  public static byte[] hexStringToByteArray(String s) {
+    int len = s.length();
+    byte[] data = new byte[len / 2];
+    for (int i = 0; i < len; i += 2) {
+      data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
+    }
+    return data;
+  }
 
-//  /**
-//   * Converts a byte array to a hex string.
-//   * 
-//   * @param bytes
-//   * @return the string
-//   */
-//  public static String toHex(byte[] bytes) {
-//    StringBuilder sb = new StringBuilder();
-//    for (int i = 0; i < bytes.length; i++) {
-//      sb.append(toHex(bytes[i]));
-//    }
-//    return sb.toString();
-//  }
+  /**
+   * Converts a byte array to a hex string.
+   *
+   * @param bytes
+   * @return the string
+   */
+  public static String toHex(byte[] bytes) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < bytes.length; i++) {
+      sb.append(toHex(bytes[i]));
+    }
+    return sb.toString();
+  }
 //
-//  /**
-//   * Converts a byte to a two digit hex string.
-//   * 
-//   * @param b
-//   * @return the string
-//   */
-//  public static String toHex(byte b) {
-//    return String.format("%02X", b);
-//  }
+  /**
+   * Converts a byte to a two digit hex string.
+   *
+   * @param b
+   * @return the string
+   */
+  public static String toHex(byte b) {
+    return String.format("%02X", b);
+  }
   
   
   

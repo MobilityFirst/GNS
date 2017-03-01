@@ -29,6 +29,7 @@ import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
@@ -59,7 +60,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  *
@@ -185,8 +185,8 @@ public class CommandUtils {
       // but the iOS client does as well so we need to keep it like this.
       // Also note that the secret based method doesn't do this - it just returns a string
       // using the ISO-8859-1 charset.
-      String result = DatatypeConverter.printHexBinary(signedString);
-      //String result = ByteUtils.toHex(signedString);
+      //String result = DatatypeConverter.printHexBinary(signedString);
+      String result = ByteUtils.toHex(signedString);
       return result;
     }
   }
