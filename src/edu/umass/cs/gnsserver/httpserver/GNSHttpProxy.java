@@ -27,6 +27,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsExchange;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
@@ -46,6 +47,7 @@ import java.util.concurrent.Executors;
 import edu.umass.cs.gnscommon.ResponseCode;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
@@ -53,12 +55,14 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,6 +94,8 @@ public class GNSHttpProxy {
 	protected final CommandModule commandModule;
 	// newer handles command processing
 	protected GNSClient client = null;
+	protected DefaultHttpHandler httpHandler;
+	protected EchoHttpProxyHandler echoHandler;
 
 	/**
 	 *
@@ -105,6 +111,8 @@ public class GNSHttpProxy {
 	 */
 	public GNSHttpProxy() {
 		this.commandModule = new CommandModule();
+		this.httpHandler = new DefaultHttpHandler();
+		this.echoHandler = new EchoHttpProxyHandler();
 		try {
 			this.client = new GNSClient() {
 				public String getLabel() {
@@ -193,8 +201,8 @@ public class GNSHttpProxy {
 			}
 			httpServer = HttpServer.create(addr, 0);
 
-			httpServer.createContext("/", new EchoHttpHandler());
-			httpServer.createContext("/" + GNS_PATH, new ProxyHttpHandler());
+			httpServer.createContext("/", echoHandler);
+			httpServer.createContext("/" + GNS_PATH, httpHandler);
 			httpServer.setExecutor(Executors.newCachedThreadPool());
 			httpServer.start();
 
@@ -212,7 +220,7 @@ public class GNSHttpProxy {
 	/**
 	 * The default handler.
 	 */
-	protected class ProxyHttpHandler implements HttpHandler {
+	protected class DefaultHttpHandler implements HttpHandler {
 
 		/**
 		 *
@@ -229,42 +237,54 @@ public class GNSHttpProxy {
 					responseHeaders.set("Content-Type", "text/plain");
 					exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
 
-					OutputStream responseBody = exchange.getResponseBody();
+					try (OutputStream responseBody = exchange.getResponseBody()) {
+						URI uri = exchange.getRequestURI();
+						LOGGER.log(Level.FINE,
+								"HTTP SERVER REQUEST FROM {0}: {1}",
+								new Object[]{exchange.getRemoteAddress().getHostName(), uri.toString()});
+						String path = uri.getPath();
+						String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
 
-					URI uri = exchange.getRequestURI();
-					LOGGER.log(Level.FINE,
-							"HTTP SERVER REQUEST FROM {0}: {1}", new Object[]{exchange.getRemoteAddress().getHostName(), uri.toString()});
-					String path = uri.getPath();
-					String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
+						String commandName = path.replaceFirst("/" + GNS_PATH + "/", "");
 
-					String commandName = path.replaceFirst("/" + GNS_PATH + "/", "");
-
-					CommandResponse response;
-					if (!commandName.isEmpty()) {
-						LOGGER.log(Level.FINE, "Action: {0} Query:{1}", new Object[]{commandName, query});
-						response = processQuery(host, commandName, query);
-					} else {
-						response = new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, GNSProtocol.BAD_RESPONSE.toString()
-								+ " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString() + " Don't understand " + commandName + " " + query);
+						CommandResponse response;
+						if (!commandName.isEmpty()) {
+							LOGGER.log(Level.FINE, "Action: {0} Query:{1}", new Object[]{commandName, query});
+							boolean secureServer = exchange instanceof HttpsExchange;
+							response = processQuery(host, commandName, query, secureServer);
+						} else {
+							response = new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED, GNSProtocol.BAD_RESPONSE.toString()
+									+ " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString() + " Don't understand " + commandName + " " + query);
+						}
+						LOGGER.log(Level.FINER, "Response: {0}", response);
+						// FIXME: This totally ignores the error code.
+						responseBody.write(response.getReturnValue().getBytes());
 					}
-					LOGGER.log(Level.FINER, "Response: " + response);
-					// FIXME: This totally ignores the error code.
-					responseBody.write(response.getReturnValue().getBytes());
-					responseBody.close();
 				}
 			} catch (Exception e) {
-				LOGGER.log(Level.SEVERE, "Error: " + e);
+				LOGGER.log(Level.SEVERE, "Error: {0}", e.getMessage());
 				e.printStackTrace();
 				try {
 					String response = GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString() + " " + e;
-					OutputStream responseBody = exchange.getResponseBody();
-					responseBody.write(response.getBytes());
-					responseBody.close();
+					try (OutputStream responseBody = exchange.getResponseBody()) {
+						responseBody.write(response.getBytes());
+					}
 				} catch (Exception f) {
 					// at this point screw it
 				}
 			}
 		}
+	}
+	
+	/**
+	 * In GNSHttpProxy this does nothing since it does not handle local commands.
+	 * However, children of this class (such as GNSHttpServer)
+	 * may override this in order to execute commands locally.
+	 * 
+	 */
+	protected CommandResponse handleCommandLocally(JSONObject jsonCommand, 
+			CommandType commandType, String commandName, String queryString) throws JSONException{
+		throw new UnsupportedOperationException("GNSHttpProxy cannot execute commands locally.");
 	}
 
 	/**
@@ -274,7 +294,8 @@ public class GNSHttpProxy {
 	 *
 	 * @throws InternalRequestException
 	 */
-	protected CommandResponse processQuery(String host, String commandName, String queryString) throws InternalRequestException {
+	protected CommandResponse processQuery(String host, String commandName, String queryString, boolean secureServer) throws InternalRequestException {
+
 		// Convert the URI into a JSONObject, stuffing in some extra relevant fields like
 		// the signature, and the message signed.
 		try {
@@ -295,6 +316,14 @@ public class GNSHttpProxy {
 						GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
 						+ " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
 			}
+
+			//Only allow mutual auth commands if we're on a secure (HTTPS) server
+			if (commandType.isMutualAuth() && !secureServer) {
+				return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
+						GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
+						+ " Not authorized to execute " + commandName + QUERYPREFIX + queryString);
+			}
+
 			// The client currently just uses the command name (which is not part of the
 			// query string above) so we need to stuff 
 			// in the Command integer for the signature check and execution.
@@ -303,27 +332,28 @@ public class GNSHttpProxy {
 			// This makes necessary changes to the jsonCommand so don't remove this call
 			// unless you know what you're doing and also change the code in the HTTP client.
 			sanityCheckMessage(jsonCommand);
-			// This proxy invokes the GNS client to send commands out.
-
-
-			// Send the command remotely using a client
-			try {
-				LOGGER.log(Level.FINE, "Sending command out to a remote server: " + jsonCommand);
-				CommandPacket commandResponsePacket = getResponseUsingGNSClient(client, jsonCommand);
-				return new CommandResponse(ResponseCode.NO_ERROR,
-						// Some crap here to make single field reads return just the value for backward compatibility 
-						// There is similar code to this other places.
-						specialCaseSingleFieldRead(commandResponsePacket.getResultString(),
-								commandType, jsonCommand));
-			} catch (IOException | ClientException e) {
-				return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
-						+ GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.toString());
-				//      } catch (ClientException e) {
-				//        return new CommandResponse(ResponseCode.GNSProtocol.UNSPECIFIED_ERROR.toString(),
-				//                GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
-				//                + " Sorry, don't understand " + commandName + QUERYPREFIX + queryString);
+			// Hair below is to handle some commands locally (creates, delets, selects, admin)
+			// and the rest by invoking the GNS client and sending them out.
+			// Client will be null if GNSC.DISABLE_MULTI_SERVER_HTTP (see above)
+			// is true (or there was a problem).
+			if (client == null || commandType.isLocallyHandled()) {
+				// EXECUTE IT LOCALLY
+				return handleCommandLocally(jsonCommand, commandType, commandName, queryString);
+			} else {
+				// Send the command remotely using a client
+				try {
+					LOGGER.log(Level.FINE, "Sending command out to a remote server: {0}", jsonCommand);
+					CommandPacket commandResponsePacket = getResponseUsingGNSClient(client, jsonCommand);
+					return new CommandResponse(ResponseCode.NO_ERROR,
+							// Some crap here to make single field reads return just the value for backward compatibility 
+							// There is similar code to this other places.
+							specialCaseSingleFieldRead(commandResponsePacket.getResultString(),
+									commandType, jsonCommand));
+				} catch (IOException | ClientException e) {
+					return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
+							+ GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.toString());
+				}
 			}
-
 		} catch (JSONException | UnsupportedEncodingException e) {
 			return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
 					+ GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.toString());
@@ -365,7 +395,7 @@ public class GNSHttpProxy {
 		return response;
 	}
 
-	private CommandPacket getResponseUsingGNSClient(GNSClient client,
+	protected CommandPacket getResponseUsingGNSClient(GNSClient client,
 			JSONObject jsonFormattedArguments) throws ClientException, IOException, JSONException {
 		LOGGER.log(Level.FINE, "jsonFormattedCommand =" + jsonFormattedArguments.toString());
 
@@ -384,11 +414,41 @@ public class GNSHttpProxy {
 		return returnPacket;
 
 	}
+	
+	protected static void processSignature(JSONObject jsonCommand) throws JSONException {
+		if (jsonCommand.has(GNSProtocol.SIGNATURE.toString())) {
+			// Squirrel away the signature.
+			String signature = jsonCommand.getString(GNSProtocol.SIGNATURE.toString());
+			// Pull it out of the command because we don't want to have it there when we check the message.
+			jsonCommand.remove(GNSProtocol.SIGNATURE.toString());
+			// Convert it to a conanical string (the message) that we can use later to check against the signature.
+			String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
+			// Put the decoded signature back as well as the message that we're going to
+			// later compare the signature against.
+			jsonCommand.put(GNSProtocol.SIGNATURE.toString(), signature).put(GNSProtocol.SIGNATUREFULLMESSAGE.toString(),
+					commandSansSignature);
+
+		}
+	}
 
 	/**
 	 * Returns info about the server.
 	 */
-	protected class EchoHttpHandler implements HttpHandler {
+	protected class EchoHttpProxyHandler implements HttpHandler {
+		
+		/**
+		 * Any strings in the list returned by this method will be printed in the echo response.
+		 * This method may be overridden in children classes that wish to add more information to
+		 * the response body.
+		 * @return
+		 */
+		protected List<String> getAdditionalInformation(){
+			List<String> info = new ArrayList<String>(0);
+			
+			//Put additional information here, or override this method in a subclass.
+			
+			return info;
+		}
 
 		/**
 		 *
@@ -403,61 +463,67 @@ public class GNSHttpProxy {
 				responseHeaders.set("Content-Type", "text/HTML");
 				exchange.sendResponseHeaders(200, 0);
 
-				OutputStream responseBody = exchange.getResponseBody();
-				Headers requestHeaders = exchange.getRequestHeaders();
-				Set<String> keySet = requestHeaders.keySet();
-				Iterator<String> iter = keySet.iterator();
+				try (OutputStream responseBody = exchange.getResponseBody()) {
+					Headers requestHeaders = exchange.getRequestHeaders();
+					Set<String> keySet = requestHeaders.keySet();
+					Iterator<String> iter = keySet.iterator();
 
-				String buildVersion = GNSConfig.readBuildVersion();
-				String buildVersionInfo = "Build Version: Unable to lookup!";
-				if (buildVersion != null) {
-					buildVersionInfo = "Build Version: " + buildVersion;
-				}
-				String responsePreamble = "<html><head><title>GNS Server Status</title></head><body><p>";
-				String responsePostamble = "</p></body></html>";
-				String serverStartDateString = "Server start time: " + Format.formatDualDate(serverStartDate);
-				String serverUpTimeString = "Server uptime: " + DurationFormatUtils.formatDurationWords(new Date().getTime() - serverStartDate.getTime(), true, true);
-				String serverSSLMode = "Server SSL mode: " + ReconfigurationConfig.getServerSSLMode().toString();
-				String clientSSLMode = "Client SSL mode: " + ReconfigurationConfig.getClientSSLMode().toString();
-				String reconAddresses = "Recon addresses: " + ReconfigurationConfig.getReconfiguratorAddresses().toString();
-
-				String recordsClass = "Records Class: " + GNSConfig.GNSC.getNoSqlRecordsClass();
-
-				// Build the response
-				responseBody.write(responsePreamble.getBytes());
-				responseBody.write(buildVersionInfo.getBytes());
-				responseBody.write("<br>".getBytes());
-				responseBody.write(serverStartDateString.getBytes());
-				responseBody.write("<br>".getBytes());
-				responseBody.write(serverUpTimeString.getBytes());
-				responseBody.write("<br>".getBytes());
-				responseBody.write(reconAddresses.getBytes());
-				responseBody.write("<br>".getBytes());
-				responseBody.write(serverSSLMode.getBytes());
-				responseBody.write("<br>".getBytes());
-				responseBody.write(clientSSLMode.getBytes());
-				responseBody.write("<br>".getBytes());
-
-				//        responseBody.write(nodeAddressesString.getBytes());
-				//        responseBody.write("<br>".getBytes());
-				//        responseBody.write(reconfiguratorsString.getBytes());
-				//        responseBody.write("<br>".getBytes());
-				//        responseBody.write(activeReplicasString.getBytes());
-				//        responseBody.write("<br>".getBytes());
-				responseBody.write(recordsClass.getBytes());
-				responseBody.write("<br>".getBytes());
-				responseBody.write("<br>".getBytes());
-				responseBody.write("Request Headers:".getBytes());
-				responseBody.write("<br>".getBytes());
-				while (iter.hasNext()) {
-					String key = iter.next();
-					List<String> values = requestHeaders.get(key);
-					String s = key + " = " + values.toString() + "\n";
-					responseBody.write(s.getBytes());
+					String buildVersion = GNSConfig.readBuildVersion();
+					String buildVersionInfo = "Build Version: Unable to lookup!";
+					if (buildVersion != null) {
+						buildVersionInfo = "Build Version: " + buildVersion;
+					}
+					String responsePreamble = "<html><head><title>GNS Server Status</title></head><body><p>";
+					String responsePostamble = "</p></body></html>";
+					String serverStartDateString = "Server start time: " + Format.formatDualDate(serverStartDate);
+					String serverUpTimeString = "Server uptime: " + DurationFormatUtils.formatDurationWords(new Date().getTime() - serverStartDate.getTime(), true, true);
+					String serverSSLMode = "Server SSL mode: " + ReconfigurationConfig.getServerSSLMode().toString();
+					String clientSSLMode = "Client SSL mode: " + ReconfigurationConfig.getClientSSLMode().toString();
+					String reconAddresses = "Recon addresses: " + ReconfigurationConfig.getReconfiguratorAddresses().toString();
+	
+					
+					String recordsClass = "Records Class: " + GNSConfig.GNSC.getNoSqlRecordsClass();
+					String secureString = exchange instanceof HttpsExchange ? "Security: Secure" : "Security: Open";
+					// Build the response
+					responseBody.write(responsePreamble.getBytes());
+					responseBody.write(buildVersionInfo.getBytes());
 					responseBody.write("<br>".getBytes());
+					responseBody.write(serverStartDateString.getBytes());
+					responseBody.write("<br>".getBytes());
+					responseBody.write(serverUpTimeString.getBytes());
+					responseBody.write("<br>".getBytes());
+					
+					//Get any additional (child class) information
+					List<String> additonalInformation = getAdditionalInformation();
+					
+					for (String info : additonalInformation){
+						responseBody.write(info.getBytes());
+						responseBody.write("<br>".getBytes());
+					}
+					
+					responseBody.write(reconAddresses.getBytes());
+					responseBody.write("<br>".getBytes());
+					responseBody.write(serverSSLMode.getBytes());
+					responseBody.write("<br>".getBytes());
+					responseBody.write(clientSSLMode.getBytes());
+					responseBody.write("<br>".getBytes());
+					responseBody.write(secureString.getBytes());
+					responseBody.write("<br>".getBytes());
+					responseBody.write(recordsClass.getBytes());
+					responseBody.write("<br>".getBytes());
+					responseBody.write("<br>".getBytes());
+					responseBody.write("Request Headers:".getBytes());
+					responseBody.write("<br>".getBytes());
+					while (iter.hasNext()) {
+						String key = iter.next();
+						List<String> values = requestHeaders.get(key);
+						String s = key + " = " + values.toString() + "\n";
+						responseBody.write(s.getBytes());
+						responseBody.write("<br>".getBytes());
+					}
+					responseBody.write(responsePostamble.getBytes());
+
 				}
-				responseBody.write(responsePostamble.getBytes());
-				responseBody.close();
 			}
 		}
 	}

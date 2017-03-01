@@ -65,7 +65,7 @@ public class GNSHttpsServer extends GNSHttpServer {
   }
 
   /**
-   * Try to start the http server at the port.
+   * Try to start the https server at the port.
    *
    * @param port
    * @return true if it was started
@@ -94,7 +94,7 @@ public class GNSHttpsServer extends GNSHttpServer {
         }
       });
 
-      httpsServer.createContext("/", new EchoHttpHandler());
+      httpsServer.createContext("/", echoHandler);
       httpsServer.createContext("/" + GNS_PATH, new DefaultHttpHandler());
       httpsServer.setExecutor(Executors.newCachedThreadPool());
       httpsServer.start();
