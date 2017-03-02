@@ -31,7 +31,6 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
 import edu.umass.cs.gnscommon.utils.StringUtil;
-import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
 import java.awt.geom.Point2D;
@@ -155,6 +154,7 @@ public class SelectTest extends DefaultGNSTest {
   @Test
   public void test_30_BasicSelect() {
     try {
+      waitSettle(100);
       JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
@@ -187,6 +187,7 @@ public class SelectTest extends DefaultGNSTest {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(12));
         createdGuids.add(testEntry); // save them so we can delete them later
         clientCommands.setLocation(testEntry, 0.0, 0.0);
+        waitSettle(100);
       }
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
@@ -239,6 +240,7 @@ public class SelectTest extends DefaultGNSTest {
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
+      waitSettle(100);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
@@ -287,6 +289,7 @@ public class SelectTest extends DefaultGNSTest {
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
+      waitSettle(100);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
@@ -338,22 +341,18 @@ public class SelectTest extends DefaultGNSTest {
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
+      waitSettle(100);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while tryin to create the guids: " + e);
     }
     try {
       JSONArray result = null;
-//      int retries = 10;
-//      do {
       String query = "~" + fieldName + " : ($gt: 0)";
       result = clientCommands.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
-      ThreadUtils.sleep(100);
-      //} while (retries-- > 0 && result.length() != 0);
-      //Assert.assertNotNull(result);
-      // Should return none because we can't see them
+      waitSettle(100);
       Assert.assertThat(result.length(), Matchers.equalTo(0));
     } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception executing selectQuery: " + e);
@@ -393,6 +392,7 @@ public class SelectTest extends DefaultGNSTest {
   @Test
   public void test_80_SelectPass() {
     try {
+      waitSettle(100);
       JSONArray result = clientCommands.selectQuery(masterGuid, buildLocationQuery(createIndexTestField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
@@ -600,6 +600,16 @@ public class SelectTest extends DefaultGNSTest {
     }
     result.append("]");
     return result.toString();
+  }
+
+  private static void waitSettle(long wait) {
+    try {
+      if (wait > 0) {
+        Thread.sleep(wait);
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
 }

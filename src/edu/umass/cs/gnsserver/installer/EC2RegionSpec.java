@@ -26,6 +26,7 @@ import edu.umass.cs.aws.support.RegionRecord;
  * 
  * @author westy
  */
+@Deprecated
 public class EC2RegionSpec {
 
   private RegionRecord region;

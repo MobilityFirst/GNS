@@ -46,6 +46,7 @@ import org.w3c.dom.Element;
  *
  * @author westy
  */
+@Deprecated
 public class WriteConfFile {
 
   /**

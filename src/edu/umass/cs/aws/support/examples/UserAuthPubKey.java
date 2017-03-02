@@ -37,6 +37,7 @@ import javax.swing.JOptionPane;
  *
  *
  */
+@Deprecated
 public class UserAuthPubKey {
 
   /**

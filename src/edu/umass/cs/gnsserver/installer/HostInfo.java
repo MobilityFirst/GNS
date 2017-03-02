@@ -26,6 +26,7 @@ import java.net.UnknownHostException;
 /**
  * Information about instances that have started
  */
+@Deprecated
 public class HostInfo {
   private final String id;
   private final String hostname;

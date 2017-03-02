@@ -28,6 +28,7 @@ import java.util.Map;
  * 
  * @author westy
  */
+@Deprecated
 public class AMIRecord {
   private final String name;
   private final String description;

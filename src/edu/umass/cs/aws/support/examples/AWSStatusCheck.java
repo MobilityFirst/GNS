@@ -68,6 +68,7 @@ import java.util.Set;
  *
  * @author westy
  */
+@Deprecated
 public class AWSStatusCheck {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
