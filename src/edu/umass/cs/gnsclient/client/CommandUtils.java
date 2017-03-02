@@ -335,8 +335,7 @@ public class CommandUtils {
    * number of key and value pairs.
    * 
    * @param commandType
-   * @param privateKey
-   * @param publicKey
+   * @param guidEntry
    * @param keysAndValues
    * @return Signed command.
    * @throws ClientException

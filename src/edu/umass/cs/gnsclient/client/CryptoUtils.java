@@ -82,7 +82,7 @@ public class CryptoUtils {
     /**
      * Signs a digest of a message using private key of the given guid.
      *
-     * @param privateKey
+     * @param guidEntry
      * @param message
      * @return a signed digest of the message string encoded as a hex string
      * @throws InvalidKeyException
@@ -126,8 +126,7 @@ public class CryptoUtils {
     }
 
     /**
-     * @param privateKey
-     * @param publicKey
+     * @param guidEntry
      * @param message
      * @return Signature encoded as a hex string
      * @throws NoSuchAlgorithmException
