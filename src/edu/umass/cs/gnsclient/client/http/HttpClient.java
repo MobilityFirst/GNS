@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsclient.client.http;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
+import edu.umass.cs.gnsclient.client.CryptoUtils;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 
 import java.io.BufferedReader;
@@ -1836,9 +1837,9 @@ public class HttpClient {
       PublicKey publicKey = keypair.getPublic();
       String signatureString;
       if (Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_SECRET_KEY)) {
-        signatureString = CommandUtils.signDigestOfMessage(privateKey, publicKey, canonicalJSON);
+        signatureString = CryptoUtils.signDigestOfMessage(privateKey, publicKey, canonicalJSON);
       } else {
-        signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
+        signatureString = CryptoUtils.signDigestOfMessage(privateKey, canonicalJSON);
       }
       String signaturePart = KEYSEP + GNSProtocol.SIGNATURE.toString()
               // Base64 encode the signature first since it's guaranteed to be a lot of non-ASCII characters
