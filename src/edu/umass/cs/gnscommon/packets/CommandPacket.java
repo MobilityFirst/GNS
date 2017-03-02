@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
 
+import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -600,6 +601,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    */
   CommandPacket setResult(ResponsePacket responsePacket) {
     // Note: this method has nothing to do with setResponse(ClientRequest)
+     GNSClientConfig.getLogger().log(
+			Level.INFO,
+			"Set result for {0}",
+			new Object[] {responsePacket});
     synchronized (this) {
       if (this.result == null) {
         this.executed = true;

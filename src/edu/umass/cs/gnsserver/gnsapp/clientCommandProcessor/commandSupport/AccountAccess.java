@@ -1449,7 +1449,7 @@ public class AccountAccess {
    * @param commandPacket
    * @param guidInfo
    * @param accountInfo - can be null in which case we look it up
-   * @param ignoreAccountGuid
+   * @param deletingAccountGuid - this will be true when we're deleting an account guid
    * @param handler
    * @return the command response
    */
@@ -1459,13 +1459,13 @@ public class AccountAccess {
   private static CommandResponse removeGuidInternal(InternalRequestHeader header,
           CommandPacket commandPacket,
           GuidInfo guidInfo, AccountInfo accountInfo,
-          boolean ignoreAccountGuid, ClientRequestHandlerInterface handler) {
+          boolean deletingAccountGuid, ClientRequestHandlerInterface handler) {
     GNSConfig.getLogger().log(Level.FINE,
             "REMOVE: GUID INFO: {0} ACCOUNT INFO: {1}",
             new Object[]{guidInfo, accountInfo});
     // First make sure guid is not an account GUID
     // (unless we're sure it's not because we're deleting an account guid)
-    if (!ignoreAccountGuid) {
+    if (!deletingAccountGuid) {
       if (lookupAccountInfoFromGuidAnywhere(header, guidInfo.getGuid(), handler) != null) {
         return new CommandResponse(ResponseCode.BAD_GUID_ERROR,
                 GNSProtocol.BAD_RESPONSE.toString() + " "
@@ -1508,7 +1508,7 @@ public class AccountAccess {
     }
     // Step 2 - update the account info record unless this is part of an account guid delete
     ResponseCode accountInfoResponseCode;
-    if (!ignoreAccountGuid) {
+    if (!deletingAccountGuid) {
       accountInfo.removeGuid(guidInfo.getGuid());
       accountInfo.noteUpdate();
       accountInfoResponseCode = updateAccountInfoNoAuthentication(header, commandPacket,

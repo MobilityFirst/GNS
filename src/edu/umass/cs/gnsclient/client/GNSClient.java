@@ -432,8 +432,11 @@ public class GNSClient {
 
 	private static CommandPacket defaultHandleResponse(
 			CommandPacket commandPacket, Request response) {
-		return PacketUtils.setResult(commandPacket,
-				defaultHandleResponse(response));
+          GNSClientConfig.getLogger().log(
+			Level.INFO,
+			"Handle reponse {0} for request {1}",
+			new Object[] {response.getSummary(), commandPacket.getSummary()});
+		return PacketUtils.setResult(commandPacket, defaultHandleResponse(response));
 	}
 
 	/**
@@ -469,6 +472,7 @@ public class GNSClient {
 	 * @throws IOException
 	 * @throws ClientException 
 	 */
+        @Deprecated
 	protected ResponsePacket getCommandValueReturnPacket(CommandPacket packet)
 			throws IOException, ClientException {
 		return this.getResponsePacket(packet, 0);

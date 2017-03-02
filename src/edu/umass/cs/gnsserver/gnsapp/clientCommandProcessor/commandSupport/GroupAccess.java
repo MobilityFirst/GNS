@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import com.google.common.collect.Sets;
+import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
@@ -35,12 +36,17 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.collections4.ListUtils;
 import org.json.JSONException;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
@@ -406,6 +412,8 @@ public class GroupAccess {
     }
   }
 
+  public static final boolean DO_IT_IN_PARALLEL = true;
+
   /**
    * Removes all group links back to the guid when we're deleting a guid.
    *
@@ -423,6 +431,17 @@ public class GroupAccess {
           String memberGuid, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException,
           InternalRequestException {
+    if (!DO_IT_IN_PARALLEL) {
+      return removeGuidFromGroupsSerial(header, commandPacket, memberGuid, handler);
+    } else {
+      return removeGuidFromGroupsInParallel(header, commandPacket, memberGuid, handler);
+    }
+  }
+
+  private static ResponseCode removeGuidFromGroupsSerial(InternalRequestHeader header, CommandPacket commandPacket,
+          String memberGuid, ClientRequestHandlerInterface handler)
+          throws ClientException, IOException, JSONException,
+          InternalRequestException {
 
     LOGGER.log(Level.FINE, "DELETE CLEANUP: {0}", memberGuid);
     try {
@@ -437,6 +456,51 @@ public class GroupAccess {
                 handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(groupGuid,
                         GroupAccess.GROUP, memberGuid, header)).getResultString())) {
           allUpdatesOK = false;
+        }
+      }
+      if (allUpdatesOK) {
+        return ResponseCode.NO_ERROR;
+      } else {
+        return ResponseCode.UPDATE_ERROR;
+      }
+    } catch (FailedDBOperationException e) {
+      LOGGER.log(Level.SEVERE, "Unabled to remove guid from groups:{0}", e);
+      return ResponseCode.UPDATE_ERROR;
+    }
+  }
+
+  private static ResponseCode removeGuidFromGroupsInParallel(InternalRequestHeader header, CommandPacket commandPacket,
+          String memberGuid, ClientRequestHandlerInterface handler)
+          throws ClientException, IOException, JSONException,
+          InternalRequestException {
+
+    LOGGER.log(Level.INFO, "DELETE CLEANUP FOR: {0}", memberGuid);
+    try {
+      boolean allUpdatesOK = true;
+      List<String> allGroupGuids = new ArrayList<>(GroupAccess.lookupGroupsAnywhere(header, commandPacket, memberGuid,
+              GNSProtocol.INTERNAL_QUERIER.toString(),
+              null, null,
+              null, handler, true).toStringSet());
+      // do 10 at a time
+      for (List<String> groupGuids : ListUtils.partition(allGroupGuids, 10)) {
+        LOGGER.log(Level.INFO, "Doing first 10: {0}", groupGuids.toString());
+        List<RequestFuture<CommandPacket>> futures = new ArrayList<>();
+        // We're ignoring signatures and authentication
+        for (String groupGuid : groupGuids) {
+          LOGGER.log(Level.INFO, "GROUP CLEANUP OF: {0}", groupGuid);
+          futures.add(handler.getInternalClient().executeAsync(GNSCommandInternal.fieldRemove(groupGuid,
+                  GroupAccess.GROUP, memberGuid, header)));
+        }
+        for (RequestFuture<CommandPacket> future : futures) {
+          try {
+            LOGGER.log(Level.INFO, "CHECKING RESULT: {0}", future.toString());
+            LOGGER.log(Level.INFO, "RESULT IS : {0}", future.get().getResultString());
+            if (!GNSProtocol.OK_RESPONSE.toString().equals(future.get().getResultString())) {
+              allUpdatesOK = false;
+            }
+          } catch (InterruptedException | ExecutionException | ClientException e) {
+            allUpdatesOK = false;
+          }
         }
       }
       if (allUpdatesOK) {
