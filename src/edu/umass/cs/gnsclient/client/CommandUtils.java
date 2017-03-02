@@ -37,6 +37,8 @@ import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 
 import java.util.Date;
+import java.util.Random;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,6 +51,16 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 public class CommandUtils {
 
 
+  static Random random;
+  static {
+    random = new Random();
+  }
+  /**
+   * @return Random long.
+   */
+  public static String getRandomRequestNonce() {
+    return (random.nextLong() + "");
+  }
 
   /**
    * Creates a command object from the given action string and a variable
@@ -326,7 +338,7 @@ public class CommandUtils {
       result.put(GNSProtocol.TIMESTAMP.toString(),
               Format.formatDateISO8601UTC(new Date()));
     }
-    result.put(GNSProtocol.NONCE.toString(), CryptoUtils.getRandomRequestNonce());
+    result.put(GNSProtocol.NONCE.toString(), getRandomRequestNonce());
     return result;
   }
   

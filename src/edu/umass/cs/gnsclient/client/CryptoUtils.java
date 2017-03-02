@@ -19,7 +19,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.util.Random;
 import java.util.logging.Level;
 
 
@@ -34,7 +33,7 @@ public class CryptoUtils {
     /* arun: at least as many instances as cores for parallelism. */
     static Signature[] signatureInstances = new Signature[2 * Runtime
             .getRuntime().availableProcessors()];
-    static Random random;
+
     private static int sigIndex = 0;
     private static int mdIndex = 0;
     private static int cipherIndex = 0;
@@ -45,7 +44,6 @@ public class CryptoUtils {
                 signatureInstances[i] = Signature
                         .getInstance(GNSProtocol.SIGNATURE_ALGORITHM.toString());
             }
-            random = new Random();
         } catch (NoSuchAlgorithmException e) {
             GNSConfig.getLogger().log(Level.SEVERE,
                     "Unable to initialize for authentication:{0}", e);
@@ -180,10 +178,4 @@ public class CryptoUtils {
         }
     }
 
-    /**
-     * @return Random long.
-     */
-    public static String getRandomRequestNonce() {
-      return (random.nextLong() + "");
-    }
 }
