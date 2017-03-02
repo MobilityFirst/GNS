@@ -51,7 +51,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 public class CommandUtils {
 
 
-  static Random random;
+  private static Random random;
   static {
     random = new Random();
   }
