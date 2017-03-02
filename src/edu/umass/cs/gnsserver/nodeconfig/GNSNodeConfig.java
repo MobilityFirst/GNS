@@ -19,15 +19,11 @@
  */
 package edu.umass.cs.gnsserver.nodeconfig;
 
-import com.google.common.collect.ImmutableSet;
-
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.nio.nioutils.InterfaceDelayEmulator;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -119,7 +115,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @Override
   public Set<NodeIDType> getNodeIDs() {
-    return ImmutableSet.copyOf(hostInfoMapping.keySet());
+    return hostInfoMapping.keySet();
   }
 
   /**
