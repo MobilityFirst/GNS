@@ -55,7 +55,7 @@ public class HttpProxyTest extends HttpClientTest {
    *
    */
   public HttpProxyTest() {
-	  httpClient = new HttpClient("127.0.0.1", 8080);
+	  httpClient = new HttpClient("127.0.0.1", Config.getGlobalInt(GNSCC.HTTP_PROXY_PORT));
   }
   
   /**

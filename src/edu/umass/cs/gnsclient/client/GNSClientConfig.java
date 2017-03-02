@@ -93,7 +93,7 @@ public class GNSClientConfig {
     /**
      * The port that GNSHttpProxy listens for incoming commands on.
      */
-	HTTP_PROXY_PORT(8080),
+	HTTP_PROXY_PORT(8090),
 	  
 	/**
 	 * The hostname that GNSHttpProxy will allow incoming commands from.
