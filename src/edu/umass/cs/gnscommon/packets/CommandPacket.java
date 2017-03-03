@@ -225,10 +225,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
           throw new RuntimeException("Should never come here");
         case HOMEBREW:
           return JSONByteConverter.fromBytesHardcoded(bbuf);
-        case JACKSON:
-          return JSONByteConverter.fromBytesJackson(bbuf);
-        case MSGPACK:
-          return JSONByteConverter.fromBytesMsgpack(bbuf);
         case STRING_WING:
           return fromBytesStringerHack(bbuf);
         default:
@@ -240,7 +236,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   }
 
   private static enum ByteMode {
-    ORG_JSON(0), HOMEBREW(1), JACKSON(2), MSGPACK(3), STRING_WING(4);
+    ORG_JSON(0), HOMEBREW(1), STRING_WING(2);
 
     private final int val;
 
@@ -280,14 +276,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
           return this.appendByteifiedInnerJSONCommand(
                   this.toByteBufferWithOuterFields(),
                   JSONByteConverter.toBytesHardcoded(this.command));
-        case JACKSON:
-          return this.appendByteifiedInnerJSONCommand(
-                  this.toByteBufferWithOuterFields(),
-                  JSONByteConverter.toBytesJackson(this.command));
-        case MSGPACK:
-          return this.appendByteifiedInnerJSONCommand(
-                  this.toByteBufferWithOuterFields(),
-                  JSONByteConverter.toBytesMsgpack(this.command));
         case STRING_WING:
           // different from above three
           return this.toBytesWingItAsString(
@@ -595,7 +583,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    * Used to set the response obtained by executing this request.
    *
    *
-   * @param responseStr
+   * @param responsePacket
    * @return this
    */
   CommandPacket setResult(ResponsePacket responsePacket) {
