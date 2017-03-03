@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.contextservice.client.ContextServiceClient;
+import edu.umass.cs.contextservice.config.ContextServiceConfig.PrivacySchemes;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -100,11 +101,10 @@ public class ContextServiceTest extends DefaultGNSTest {
         String csIP = parsed[0];
         int csPort = Integer.parseInt(parsed[1]);
 
-        ContextServiceClient<Integer> csClient = new ContextServiceClient<>(
-                csIP, csPort);
+        ContextServiceClient csClient = new ContextServiceClient(csIP, csPort, false, PrivacySchemes.NO_PRIVACY);
 
         // context service query format
-        String query = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE geoLocationCurrentLat >= 40 "
+        String query = "geoLocationCurrentLat >= 40 "
                 + "AND geoLocationCurrentLat <= 50 AND "
                 + "geoLocationCurrentLong >= -80 AND "
                 + "geoLocationCurrentLong <= -70";
