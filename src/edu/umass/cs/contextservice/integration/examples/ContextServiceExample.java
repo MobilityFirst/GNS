@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import edu.umass.cs.contextservice.client.ContextServiceClient;
+import edu.umass.cs.contextservice.config.ContextServiceConfig.PrivacySchemes;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -72,7 +73,7 @@ public class ContextServiceExample {
   /**
    *
    */
-  public static ContextServiceClient<Integer> csClient;
+  public static ContextServiceClient csClient;
 
   /**
    *
@@ -116,10 +117,9 @@ public class ContextServiceExample {
 
     System.out.println("csHost " + csHost + " csPort " + csPort);
 
-    csClient = new ContextServiceClient<Integer>(csHost, csPort);
+    csClient = new ContextServiceClient (csHost, csPort, false, PrivacySchemes.NO_PRIVACY);
 
-    String csSearchQuery = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE "
-            + "latitude >= 32 AND latitude <= 33 AND "
+    String csSearchQuery = "latitude >= 32 AND latitude <= 33 AND "
             + "longitude >= -98 AND longitude <= -97";
 
     System.out.println("\n Issuing a search query to context service "
