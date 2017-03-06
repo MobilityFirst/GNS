@@ -148,20 +148,7 @@ public class KeyPairUtils {
     String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
             .getPublic().getEncoded());
     GuidEntry guidEntry = new GuidEntry(gnsName, guid, keyPair.getPublic(), keyPair.getPrivate());
-    if (IS_ANDROID) {
-      KeyPairUtilsAndroid.saveKeyPairToPreferences(gnsName, username, guid, keyPair);
-      return guidEntry;
-    }
-
-    createSingleton();
-
-    String publicString =  DatatypeConverter.printHexBinary(keyPair.getPublic().getEncoded());
-    String privateString =  DatatypeConverter.printHexBinary(keyPair.getPrivate().getEncoded());
-    //String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
-    //String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
-    keyStorageObj.put(generateKey(gnsName, username, PUBLIC), publicString);
-    keyStorageObj.put(generateKey(gnsName, username, PRIVATE), privateString);
-    keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
+    saveKeyPair(gnsName, username, guid, keyPair);
     return guidEntry;
   }
 
