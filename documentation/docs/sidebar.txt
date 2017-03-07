@@ -1,7 +1,6 @@
 Under construction
     Access-Control.html Access Control
     Select-Queries.html Select Queries
-    Getting-Started.html Getting Started
 Section title
     Building-from-source.html Building from source
     Command-Line-Interface.html Command Line Interface
