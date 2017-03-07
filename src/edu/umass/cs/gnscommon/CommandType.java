@@ -36,635 +36,635 @@ public enum CommandType {
   /**
    *
    */
-  Append(110, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,
+  Append(110, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append",
           CommandResultType.NULL, true, false,
           "Appends the value onto the field for the given GUID. "
-          + "Treats the list as a set, removing duplicates. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "Treats the list as a set, removing duplicates. "
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendList(111, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendList.class,
+  AppendList(111, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendList",
           CommandResultType.NULL, true, false,
           "Appends the value onto of this field for the given GUID. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendListUnsigned(113, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListUnsigned.class,
+  AppendListUnsigned(113, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListUnsigned",
           CommandResultType.NULL, true, false,
           "Appends the value onto of this field for the given GUID. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be world writeable as this command does not specify "
-          + "the writer and is not signed.",
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be world writeable as this command does not specify "
+                  + "the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendListWithDuplication(114, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplication.class,
+  AppendListWithDuplication(114, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplication",
           CommandResultType.NULL, true, false,
           "Appends the values onto this field for the given GUID. "
-          + "Treats the list as a list, allows dupicates. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "Treats the list as a list, allows dupicates. "
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendListWithDuplicationUnsigned(116, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationUnsigned.class,
+  AppendListWithDuplicationUnsigned(116, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationUnsigned",
           CommandResultType.NULL, true, false,
           "Appends the values onto of this field for the given GUID. "
-          + "Treats the list as a list, allows dupicate. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "Treats the list as a list, allows dupicate. "
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendOrCreate(120, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreate.class,
+  AppendOrCreate(120, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreate",
           CommandResultType.NULL, true, false,
           "Adds a field to the GNS for the given guid if it doesn't not exist "
-          + "otherwise append value onto existing value. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "otherwise append value onto existing value. "
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendOrCreateList(121, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateList.class,
+  AppendOrCreateList(121, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateList",
           CommandResultType.NULL, true, false,
           "Adds a field to the GNS for the given guid if it doesn not exist "
-          + "otherwise appends values onto existing value. "
-          + "Value is a list of items formated as a JSON list. Field must be writeable by the WRITER guid.",
+                  + "otherwise appends values onto existing value. "
+                  + "Value is a list of items formated as a JSON list. Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendOrCreateListUnsigned(123, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListUnsigned.class,
+  AppendOrCreateListUnsigned(123, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListUnsigned",
           CommandResultType.NULL, true, false,
           "Adds a field to the GNS for the given guid if it doesn not exist "
-          + "otherwise appends values onto existing value. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be world writeable as this command does not specify the "
-          + "writer and is not signed.",
+                  + "otherwise appends values onto existing value. "
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be world writeable as this command does not specify the "
+                  + "writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendOrCreateUnsigned(125, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateUnsigned.class,
+  AppendOrCreateUnsigned(125, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateUnsigned",
           CommandResultType.NULL, true, false,
           "Adds a field to the GNS for the given guid if it doesn't not exist "
-          + "otherwise append value onto existing value. "
-          + "Field must be world writeable as this command does not specify "
-          + "the writer and is not signed.",
+                  + "otherwise append value onto existing value. "
+                  + "Field must be world writeable as this command does not specify "
+                  + "the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendUnsigned(131, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendUnsigned.class,
+  AppendUnsigned(131, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendUnsigned",
           CommandResultType.NULL, true, false,
           "Appends the value onto the field for the given GUID. "
-          + "Treats the list as a set, removing duplicates."
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "Treats the list as a set, removing duplicates."
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendWithDuplication(132, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplication.class,
+  AppendWithDuplication(132, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplication",
           CommandResultType.NULL, true, false,
           "Appends the values onto this field for the given GUID. "
-          + "Treats the list as a list, allows dupicates. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "Treats the list as a list, allows dupicates. "
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  AppendWithDuplicationUnsigned(134, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationUnsigned.class,
+  AppendWithDuplicationUnsigned(134, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationUnsigned",
           CommandResultType.NULL, true, false,
           "Appends the values onto this field for the given GUID. "
-          + "Treats the list as a list, allows dupicates. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "Treats the list as a list, allows dupicates. "
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()}, new String[]{}),
   /**
    *
    */
-  Clear(140, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Clear.class,
+  Clear(140, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Clear",
           CommandResultType.NULL, true, false,
           "Clears the field from the GNS for the given GUID. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  ClearUnsigned(142, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearUnsigned.class,
+  ClearUnsigned(142, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearUnsigned",
           CommandResultType.NULL, true, false,
           "Clears the field from the GNS for the given guid after authenticating that "
-          + "GUID making request has access authority. "
-          + "Field must be world writeable as this command does not specify "
-          + "the writer and is not signed.",
+                  + "GUID making request has access authority. "
+                  + "Field must be world writeable as this command does not specify "
+                  + "the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.WRITER.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.WRITER.toString()}, new String[]{}),
   /**
    *
    */
-  Create(150, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Create.class,
+  Create(150, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Create",
           CommandResultType.NULL, true, false,
           "Adds a field to the GNS for the given GUID. Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           //optional parameters
           new String[]{GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString()}),
+                  GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  CreateEmpty(151, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmpty.class,
+  CreateEmpty(151, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmpty",
           CommandResultType.NULL, true, false,
           "Adds an empty field to the GNS for the given GUID. Field must be writeable by the WRITER guid."
-          + "A shorthand for Create with an missing value field.",
+                  + "A shorthand for Create with an missing value field.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
    */
-  CreateList(153, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateList.class,
+  CreateList(153, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateList",
           CommandResultType.NULL, true, false,
           "Adds a field to the GNS for the given GUID. Value is a list of items "
-          + "formated as a JSON list. Field must be writeable by the WRITER guid.",
+                  + "formated as a JSON list. Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // Optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  Read(160, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Read.class,
+  Read(160, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Read",
           CommandResultType.MAP, true, false,
           "Returns the value for the key from the GNS for the given guid after authenticating that "
-          + "READER making request has access authority. "
-          + "Field can use dot notation to access subfields. "
-          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
+                  + "READER making request has access authority. "
+                  + "Field can use dot notation to access subfields. "
+                  + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
           new String[]{GNSProtocol.GUID.toString()},
           // Optional parameters
           new String[]{GNSProtocol.FIELD.toString(),
-            GNSProtocol.FIELDS.toString(),
-            GNSProtocol.READER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.FIELDS.toString(),
+                  GNSProtocol.READER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
-  ReadSecured(161, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.ReadSecured.class,
+  ReadSecured(161, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.ReadSecured",
           CommandResultType.MAP, true, false,
           "Returns the value for the key from the GNS for the given guid after authenticating that "
-          + "READER making request has access authority. "
-          + "Field can use dot notation to access subfields. "
-          + "Specify +ALL+ as the <field> to return all fields as a JSON object. "
-          + "Sent on the mutual auth channel. "
-          + "Can only be sent from a client that has the correct ssl keys.",
+                  + "READER making request has access authority. "
+                  + "Field can use dot notation to access subfields. "
+                  + "Specify +ALL+ as the <field> to return all fields as a JSON object. "
+                  + "Sent on the mutual auth channel. "
+                  + "Can only be sent from a client that has the correct ssl keys.",
           new String[]{GNSProtocol.GUID.toString()},
           // Optional parameters
           new String[]{GNSProtocol.FIELD.toString(),
-            GNSProtocol.FIELDS.toString()},
+                  GNSProtocol.FIELDS.toString()},
           CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
   ),
   /**
    *
    */
-  ReadUnsigned(162, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadUnsigned.class,
+  ReadUnsigned(162, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadUnsigned",
           CommandResultType.MAP, true, false,
           "Returns the value for the key from the GNS for the given guid. Does not require authentication but "
-          + "field must be set to be readable by everyone. "
-          + "Specify +ALL+ as the <field> to return all fields. ",
+                  + "field must be set to be readable by everyone. "
+                  + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString()}, new String[]{}),
   /**
    *
    */
-  ReadMultiField(163, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiField.class,
+  ReadMultiField(163, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiField",
           CommandResultType.MAP, true, false,
           "Returns multiple values for the keys from the GNS for the given guid after "
-          + "authenticating that READER making request has access authority. "
-          + "Fields can use dot notation to access subfields.",
+                  + "authenticating that READER making request has access authority. "
+                  + "Fields can use dot notation to access subfields.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELDS.toString(),
-            GNSProtocol.READER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELDS.toString(),
+                  GNSProtocol.READER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  ReadMultiFieldUnsigned(164, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiFieldUnsigned.class,
+  ReadMultiFieldUnsigned(164, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiFieldUnsigned",
           CommandResultType.MAP, true, false,
           "Returns multiple values for the keys from the GNS for the given guid after "
-          + "authenticating that READER making request has access authority. "
-          + "Fields can use dot notation to access subfields.",
+                  + "authenticating that READER making request has access authority. "
+                  + "Fields can use dot notation to access subfields.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELDS.toString()}, new String[]{}),
+                  GNSProtocol.FIELDS.toString()}, new String[]{}),
   /**
    *
    */
-  ReadArray(170, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArray.class,
+  ReadArray(170, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArray",
           CommandResultType.LIST, true, false,
           "Returns the value of the field as an array from the GNS for the given guid after authenticating "
-          + "that READER making request has access authority. "
-          + "Values are always returned as a JSON list. "
-          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
+                  + "that READER making request has access authority. "
+                  + "Values are always returned as a JSON list. "
+                  + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString()},
+                  GNSProtocol.FIELD.toString()},
           // optional parameters
           new String[]{GNSProtocol.READER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
-  ReadArrayOne(171, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOne.class,
+  ReadArrayOne(171, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOne",
           CommandResultType.STRING, true, false,
           "Returns the first value of the field as an array from the GNS for the given guid after authenticating "
-          + "that the READER has access authority. Treats the value of field "
-          + "as a singleton item and returns that item. "
-          + "Specify +ALL+ as the <field> to return all fields. ",
+                  + "that the READER has access authority. Treats the value of field "
+                  + "as a singleton item and returns that item. "
+                  + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.READER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.READER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  ReadArrayOneUnsigned(173, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneUnsigned.class,
+  ReadArrayOneUnsigned(173, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneUnsigned",
           CommandResultType.STRING, true, false,
           "Returns the first value of the field as an array from the GNS for the given guid. "
-          + "Does not require authentication"
-          + " but field must be set to be readable by everyone. "
-          + "Treats the value of field as a singleton item and returns that item. "
-          + "Specify +ALL+ as the <field> to return all fields. ",
+                  + "Does not require authentication"
+                  + " but field must be set to be readable by everyone. "
+                  + "Treats the value of field as a singleton item and returns that item. "
+                  + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString()}, new String[]{}),
   /**
    *
    */
-  ReadArrayUnsigned(175, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayUnsigned.class,
+  ReadArrayUnsigned(175, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayUnsigned",
           CommandResultType.LIST, true, false,
           "Returns the value of the field as an array from the GNS. Does not require authentication but "
-          + "field must be set to be readable by everyone. Values are always returned as a JSON list. "
-          + "Specify +ALL+ as the <field> to return all fields. ",
+                  + "field must be set to be readable by everyone. Values are always returned as a JSON list. "
+                  + "Specify +ALL+ as the <field> to return all fields. ",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString()}, new String[]{}),
   /**
    *
    */
-  Remove(180, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Remove.class,
+  Remove(180, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Remove",
           CommandResultType.NULL, true, false,
           "Removes the value from the field for the given guid after authenticating that "
-          + "WRITER making request has access authority. "
-          + "Values are always returned as a JSON list. "
-          + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
+                  + "WRITER making request has access authority. "
+                  + "Values are always returned as a JSON list. "
+                  + "Specify +ALL+ as the <field> to return all fields as a JSON object.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  RemoveList(181, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveList.class,
+  RemoveList(181, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveList",
           CommandResultType.NULL, true, false,
           "Removes all the values from the field for the given GUID. "
-          + "Value is a list of items formated as a JSON list. Field must be writeable by the WRITER guid.",
+                  + "Value is a list of items formated as a JSON list. Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  RemoveListUnsigned(183, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListUnsigned.class,
+  RemoveListUnsigned(183, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListUnsigned",
           CommandResultType.NULL, true, false,
           "Removes all the values from the field for the given GUID. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()}, new String[]{}),
   /**
    *
    */
-  RemoveUnsigned(185, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveUnsigned.class,
+  RemoveUnsigned(185, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveUnsigned",
           CommandResultType.NULL, true, false,
           "Removes the value from the field for the given GUID. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()}, new String[]{}),
   /**
    *
    */
-  Replace(190, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Replace.class,
+  Replace(190, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Replace",
           CommandResultType.NULL, true, false,
           "Replaces the current value for the field from the GNS for the given guid with the given value. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  ReplaceList(191, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceList.class,
+  ReplaceList(191, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceList",
           CommandResultType.NULL, true, false,
           "Replaces the current value for the field from the GNS for the given guid with the given values. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  ReplaceListUnsigned(193, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListUnsigned.class,
+  ReplaceListUnsigned(193, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListUnsigned",
           CommandResultType.NULL, true, false,
           "Replaces the current value value for the field from the GNS for the given guid with the given values. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()}, new String[]{}),
   /**
    *
    */
-  ReplaceOrCreate(210, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreate.class,
+  ReplaceOrCreate(210, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreate",
           CommandResultType.NULL, true, false,
           "Adds field with the value to the GNS for the given guid if it doesn not exist otherwise "
-          + "replaces the value of the field for the given GUID. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "replaces the value of the field for the given GUID. "
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // Optional values
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  ReplaceOrCreateList(211, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateList.class,
+  ReplaceOrCreateList(211, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateList",
           CommandResultType.NULL, true, false,
           "Adds a field with the value to the GNS for the given guid if it does not exist otherwise "
-          + "replaces the value of this field for the given guid with the value. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "replaces the value of this field for the given guid with the value. "
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  ReplaceOrCreateListUnsigned(213, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListUnsigned.class,
+  ReplaceOrCreateListUnsigned(213, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListUnsigned",
           CommandResultType.NULL, true, false,
           "Adds a field to the GNS for the given guid if it does not exist otherwise "
-          + "replaces the value of this field for the given guid with the value. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "replaces the value of this field for the given guid with the value. "
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()},
           new String[]{}),
   /**
    *
    */
-  ReplaceOrCreateUnsigned(215, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateUnsigned.class,
+  ReplaceOrCreateUnsigned(215, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateUnsigned",
           CommandResultType.NULL, true, false,
           "Adds a field to the GNS for the given guid if it doesn not exist otherwise "
-          + "replaces the value of this field for the given GUID. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "replaces the value of this field for the given GUID. "
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()},
           new String[]{}),
   /**
    *
    */
-  ReplaceUnsigned(217, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUnsigned.class,
+  ReplaceUnsigned(217, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUnsigned",
           CommandResultType.NULL, true, false,
           "Replaces the current value field from the GNS for the given guid. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString()},
           new String[]{}),
   /**
    *
    */
-  ReplaceUserJSON(220, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSON.class,
+  ReplaceUserJSON(220, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSON",
           CommandResultType.NULL, true, false,
           "Replaces existing fields in JSON record with the given JSONObject's fields. "
-          + "Doesn't touch top-level fields that aren't in the given JSONObject.",
+                  + "Doesn't touch top-level fields that aren't in the given JSONObject.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.USER_JSON.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.USER_JSON.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  ReplaceUserJSONUnsigned(221, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSONUnsigned.class,
+  ReplaceUserJSONUnsigned(221, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSONUnsigned",
           CommandResultType.NULL, true, false,
           "Replaces existing fields in JSON record with the given JSONObject's fields. "
-          + "Field must be world writeable as this command does "
-          + "not specify the writer and is not signed. Doesn't touch top-level "
-          + "fields that aren't in the given JSONObject.",
+                  + "Field must be world writeable as this command does "
+                  + "not specify the writer and is not signed. Doesn't touch top-level "
+                  + "fields that aren't in the given JSONObject.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.USER_JSON.toString()},
+                  GNSProtocol.USER_JSON.toString()},
           new String[]{}),
   //Fixme: CREATE_INDEX should be an ADMIN_UPDATE command.
 
   /**
    *
    */
-  CreateIndex(230, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateIndex.class,
+  CreateIndex(230, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateIndex",
           CommandResultType.NULL, true, false,
           "Creates an index for field. The value is a string containing the index type.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  Substitute(231, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Substitute.class,
+  Substitute(231, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Substitute",
           CommandResultType.NULL, true, false,
           "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.OLD_VALUE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.OLD_VALUE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  SubstituteList(232, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteList.class,
+  SubstituteList(232, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteList",
           CommandResultType.NULL, true, false,
           "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be writeable by the WRITER guid. "
-          + "If the new value and old values list are different sizes this does the obvious things and "
-          + "stops when it runs out of values on the shorter list.",
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be writeable by the WRITER guid. "
+                  + "If the new value and old values list are different sizes this does the obvious things and "
+                  + "stops when it runs out of values on the shorter list.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.OLD_VALUE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.OLD_VALUE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  SubstituteListUnsigned(234, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListUnsigned.class,
+  SubstituteListUnsigned(234, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListUnsigned",
           CommandResultType.NULL, true, false,
           "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
-          + "Value is a list of items formated as a JSON list. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed. "
-          + "If the new value and old values list are different sizes this does the obvious things and "
-          + "stops when it runs out of values on the shorter list.",
+                  + "Value is a list of items formated as a JSON list. "
+                  + "Field must be world writeable as this command does not specify the writer and is not signed. "
+                  + "If the new value and old values list are different sizes this does the obvious things and "
+                  + "stops when it runs out of values on the shorter list.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.OLD_VALUE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.OLD_VALUE.toString()},
           new String[]{}),
   /**
    *
    */
-  SubstituteUnsigned(236, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned.class,
+  SubstituteUnsigned(236, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned",
           CommandResultType.NULL, true, false,
           "Replaces OLD_VALUE with newvalue in the field for the given GUID. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.OLD_VALUE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.OLD_VALUE.toString()},
           new String[]{}),
   /**
    *
    */
-  RemoveField(240, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveField.class,
+  RemoveField(240, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveField",
           CommandResultType.NULL, true, false,
           "Removes the field from the GNS for the given guid after authenticating "
-          + "that WRITER making request has access authority.",
+                  + "that WRITER making request has access authority.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  RemoveFieldUnsigned(242, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldUnsigned.class,
+  RemoveFieldUnsigned(242, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldUnsigned",
           CommandResultType.NULL, true, false,
           "Removes the field from the GNS for the given guid. "
-          + "Field must be world writeable as this command does not specify the writer and is not signed.",
+                  + "Field must be world writeable as this command does not specify the writer and is not signed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.WRITER.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.WRITER.toString()},
           new String[]{}),
   /**
    *
    */
-  Set(250, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Set.class,
+  Set(250, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Set",
           CommandResultType.NULL, true, false,
           "Replaces element N with newvalue in the field for the given GUID. "
-          + "Field must be writeable by the WRITER guid.",
+                  + "Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString(),
-            GNSProtocol.N.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.VALUE.toString(),
+                  GNSProtocol.N.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
-  SetFieldNull(252, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNull.class,
+  SetFieldNull(252, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNull",
           CommandResultType.NULL, true, false,
           "Sets the field to contain a null value. Field must be writeable by the WRITER guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   //
   // Basic select commands
@@ -673,62 +673,62 @@ public enum CommandType {
   /**
    *
    */
-  Select(310, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select.class,
+  Select(310, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select",
           CommandResultType.LIST, false, false,
           "Returns the guids of all records that have a field with the given value. "
-          + "Values are returned as a JSON array of guids. "
-          + "This command is a shorthand for a mongo find query.",
+                  + "Values are returned as a JSON array of guids. "
+                  + "This command is a shorthand for a mongo find query.",
           new String[]{GNSProtocol.FIELD.toString(),
-            GNSProtocol.VALUE.toString()},
+                  GNSProtocol.VALUE.toString()},
           // optional parameters
           new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
-  SelectNear(320, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNear.class,
+  SelectNear(320, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNear",
           CommandResultType.LIST, false, false,
           "Return the guids of all records that are within max distance of value. Key must be a GeoSpatial field. "
-          + "Value is a point specified as a JSONArray string tuple: [LONG, LAT]. Max Distance is in meters. "
-          + "Values are returned as a JSON array of guids. "
-          + "This command is a shorthand for a mongo $near query.",
+                  + "Value is a point specified as a JSONArray string tuple: [LONG, LAT]. Max Distance is in meters. "
+                  + "Values are returned as a JSON array of guids. "
+                  + "This command is a shorthand for a mongo $near query.",
           new String[]{GNSProtocol.FIELD.toString(),
-            GNSProtocol.NEAR.toString(),
-            GNSProtocol.MAX_DISTANCE.toString()},
+                  GNSProtocol.NEAR.toString(),
+                  GNSProtocol.MAX_DISTANCE.toString()},
           // optional parameters
           new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
-  SelectWithin(321, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin.class,
+  SelectWithin(321, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin",
           CommandResultType.LIST, false, false,
           "Returns the guids of all records that are within value which is a bounding box specified. "
-          + "Key must be a GeoSpatial field. "
-          + "Bounding box is a nested JSONArray string tuple of paired tuples: [[LONG_BOTTOM_LEFT, LAT_BOTTOM_LEFT],[LONG_UPPER_RIGHT, LAT_UPPER_RIGHT]] "
-          + "Values are returned as a JSON array of guids. "
-          + "This command is a shorthand for a mongo $geoWithin query.",
+                  + "Key must be a GeoSpatial field. "
+                  + "Bounding box is a nested JSONArray string tuple of paired tuples: [[LONG_BOTTOM_LEFT, LAT_BOTTOM_LEFT],[LONG_UPPER_RIGHT, LAT_UPPER_RIGHT]] "
+                  + "Values are returned as a JSON array of guids. "
+                  + "This command is a shorthand for a mongo $geoWithin query.",
           new String[]{GNSProtocol.FIELD.toString(),
-            GNSProtocol.WITHIN.toString()},
+                  GNSProtocol.WITHIN.toString()},
           // optional parameters
           new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
-  SelectQuery(322, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectQuery.class,
+  SelectQuery(322, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectQuery",
           CommandResultType.LIST, false, false,
           "Returns the guids of all records that satisfy the query. "
-          + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of guids.",
+                  + "For details see http://gns.name/wiki/index.php/Query_Syntax "
+                  + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString()},
           // optional parameters
           new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   //
   // Select commands that maintain a group guid
   //
@@ -736,81 +736,81 @@ public enum CommandType {
   /**
    *
    */
-  SelectGroupLookupQuery(311, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupLookupQuery.class,
+  SelectGroupLookupQuery(311, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupLookupQuery",
           CommandResultType.LIST, false, false,
           "Prototype functionality of a full-fledged Context Name Service. "
-          + "Returns all records for a group guid that was previously setup with SelectGroupSetupQuery. "
-          + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of guids.",
+                  + "Returns all records for a group guid that was previously setup with SelectGroupSetupQuery. "
+                  + "For details see http://gns.name/wiki/index.php/Query_Syntax "
+                  + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.ACCOUNT_GUID.toString()},
           // optional parameters
           new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
-  SelectGroupSetupQuery(312, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQuery.class,
+  SelectGroupSetupQuery(312, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQuery",
           CommandResultType.LIST, false, false,
           "Prototype functionality of a full-fledged Context Name Service. "
-          + "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
-          + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of guids.",
+                  + "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
+                  + "For details see http://gns.name/wiki/index.php/Query_Syntax "
+                  + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.ACCOUNT_GUID.toString(),
-            GNSProtocol.QUERY.toString()},
+                  GNSProtocol.QUERY.toString()},
           // optional parameters
           new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
-  SelectGroupSetupQueryWithGuid(313, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuid.class,
+  SelectGroupSetupQueryWithGuid(313, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuid",
           CommandResultType.LIST, false, false,
           "Prototype functionality of a full-fledged Context Name Service. "
-          + "Initializes the given group guid to automatically update and maintain all records that satisfy the query. "
-          + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of guids.",
+                  + "Initializes the given group guid to automatically update and maintain all records that satisfy the query. "
+                  + "For details see http://gns.name/wiki/index.php/Query_Syntax "
+                  + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString(),
-            GNSProtocol.ACCOUNT_GUID.toString()},
+                  GNSProtocol.ACCOUNT_GUID.toString()},
           // optional parameters
           new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
-  SelectGroupSetupQueryWithGuidAndInterval(314, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuidAndInterval.class,
+  SelectGroupSetupQueryWithGuidAndInterval(314, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuidAndInterval",
           CommandResultType.LIST, false, false,
           "Prototype functionality of a full-fledged Context Name Service. "
-          + "Initializes the group guid to automatically update and maintain all records that satisfy the query. "
-          + "Interval is the minimum refresh interval of the query - lookups happening more quickly than this "
-          + "interval will retrieve a stale value.For details see http://gns.name/wiki/index.php/Query_Syntax"
-          + "Values are returned as a JSON array of guids.",
+                  + "Initializes the group guid to automatically update and maintain all records that satisfy the query. "
+                  + "Interval is the minimum refresh interval of the query - lookups happening more quickly than this "
+                  + "interval will retrieve a stale value.For details see http://gns.name/wiki/index.php/Query_Syntax"
+                  + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.ACCOUNT_GUID.toString(),
-            GNSProtocol.QUERY.toString(),
-            GNSProtocol.INTERVAL.toString()},
+                  GNSProtocol.QUERY.toString(),
+                  GNSProtocol.INTERVAL.toString()},
           // optional parameters
           new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
    *
    */
-  SelectGroupSetupQueryWithInterval(315, CommandCategory.SELECT, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithInterval.class,
+  SelectGroupSetupQueryWithInterval(315, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithInterval",
           CommandResultType.LIST, false, false,
           "Prototype functionality of a full-fledged Context Name Service. "
-          + "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
-          + "Interval is the minimum refresh interval of the query - lookups happening more "
-          + "quickly than this interval will retrieve a stale value. "
-          + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of guids.",
+                  + "Initializes a new group guid to automatically update and maintain all records that satisfy the query. "
+                  + "Interval is the minimum refresh interval of the query - lookups happening more "
+                  + "quickly than this interval will retrieve a stale value. "
+                  + "For details see http://gns.name/wiki/index.php/Query_Syntax "
+                  + "Values are returned as a JSON array of guids.",
           new String[]{GNSProtocol.QUERY.toString(),
-            GNSProtocol.INTERVAL.toString()},
+                  GNSProtocol.INTERVAL.toString()},
           // optional parameters
           new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   //
   // Account commands
   //
@@ -818,101 +818,101 @@ public enum CommandType {
   /**
    *
    */
-  AddAlias(410, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddAlias.class,
+  AddAlias(410, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddAlias",
           CommandResultType.NULL, false, false,
           "Adds a additional human readble name to the account associated with the GUID. "
-          + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
+                  + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.NAME.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.NAME.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
    */
-  AddGuid(411, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddGuid.class,
+  AddGuid(411, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddGuid",
           CommandResultType.NULL, false, false,
           "Adds a guid to the account associated with the GUID. Must be signed by the guid. "
-          + "Returns +BADGUID+ if the guid has not been registered.",
+                  + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.NAME.toString(),
-            GNSProtocol.GUID.toString(),
-            GNSProtocol.PUBLIC_KEY.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.GUID.toString(),
+                  GNSProtocol.PUBLIC_KEY.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
    */
-  AddMultipleGuids(412, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuids.class,
+  AddMultipleGuids(412, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuids",
           CommandResultType.NULL, false, false,
           "Creates multiple guids for the account associated with the account guid. "
-          + "Must be signed by the account guid. Returns +BADGUID+ if the account guid has not been registered.",
+                  + "Must be signed by the account guid. Returns +BADGUID+ if the account guid has not been registered.",
           new String[]{GNSProtocol.NAMES.toString(),
-            GNSProtocol.GUID.toString(),
-            GNSProtocol.PUBLIC_KEYS.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.GUID.toString(),
+                  GNSProtocol.PUBLIC_KEYS.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
    */
-  AddMultipleGuidsFast(413, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFast.class,
+  AddMultipleGuidsFast(413, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFast",
           CommandResultType.NULL, false, false,
           "Creates multiple guids for the account associated with the account guid. "
-          + "Must be signed by the account guid. The created guids can only be accessed "
-          + "using the account guid because they have no private key info stored on the client. "
-          + "Returns +BADGUID+ if the account guid has not been registered.",
+                  + "Must be signed by the account guid. The created guids can only be accessed "
+                  + "using the account guid because they have no private key info stored on the client. "
+                  + "Returns +BADGUID+ if the account guid has not been registered.",
           new String[]{GNSProtocol.NAMES.toString(),
-            GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.GUID.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
    */
-  AddMultipleGuidsFastRandom(414, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFastRandom.class,
+  AddMultipleGuidsFastRandom(414, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFastRandom",
           CommandResultType.NULL, false, false,
           "Creates multiple guids for the account associated with the account guid. "
-          + "Must be signed by the account guid. The created guids can only be accessed using the "
-          + "account guid because the have no private key info stored on the client."
-          + "Returns +BADGUID+ if the account guid has not been registered.",
+                  + "Must be signed by the account guid. The created guids can only be accessed using the "
+                  + "account guid because the have no private key info stored on the client."
+                  + "Returns +BADGUID+ if the account guid has not been registered.",
           new String[]{GNSProtocol.GUIDCNT.toString(),
-            GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.GUID.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
    */
-  LookupAccountRecord(420, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class,
+  LookupAccountRecord(420, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord",
           CommandResultType.MAP, true, false,
           "Returns the account info associated with the given GUID. "
-          + "Returns +BADGUID+ if the guid has not been registered.",
+                  + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString()},
           new String[]{}),
   /**
    *
    */
-  LookupRandomGuids(421, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class,
+  LookupRandomGuids(421, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids",
           CommandResultType.LIST, true, false,
           "Returns some number of random subguids from and account guid. Only for testing purposes. "
-          + "Returns +BADGUID+ if the guid has not been registered.",
+                  + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.GUIDCNT.toString()},
+                  GNSProtocol.GUIDCNT.toString()},
           new String[]{}),
   /**
    *
    */
-  LookupGuid(422, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class,
+  LookupGuid(422, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid",
           CommandResultType.STRING, true, false,
           "Returns the guid associated with the name which is the human readable name (alias). "
-          + "Returns +BADACCOUNT+ if the name has not been registered.",
+                  + "Returns +BADACCOUNT+ if the name has not been registered.",
           new String[]{GNSProtocol.NAME.toString()},
           new String[]{}),
   /**
    *
    */
-  LookupPrimaryGuid(423, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class,
+  LookupPrimaryGuid(423, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid",
           CommandResultType.STRING, true, false,
           "Returns the account guid associated the guid. Returns +BADGUID+ if the guid does not exist.",
           new String[]{GNSProtocol.GUID.toString()},
@@ -920,113 +920,113 @@ public enum CommandType {
   /**
    *
    */
-  LookupGuidRecord(424, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class,
+  LookupGuidRecord(424, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord",
           CommandResultType.MAP, true, false,
           "Returns human readable name and public key associated with the given GUID. "
-          + "Returns +BADGUID+ if the guid has not been registered.",
+                  + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString()},
           new String[]{}),
   /**
    *
    */
   RegisterAccount(430, CommandCategory.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount",
           CommandResultType.NULL, false, false,
           "Creates an account guid associated with the human readable name and the supplied public key. "
-          + "Must be signed with the public key. Returns a guid.",
+                  + "Must be signed with the public key. Returns a guid.",
           new String[]{GNSProtocol.NAME.toString(),
-            GNSProtocol.PUBLIC_KEY.toString(),
-            GNSProtocol.PASSWORD.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.PUBLIC_KEY.toString(),
+                  GNSProtocol.PASSWORD.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
    */
   RegisterAccountSecured(431, CommandCategory.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RegisterAccountSecured.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RegisterAccountSecured",
           CommandResultType.NULL, false, false,
           "Creates an account guid associated with the human readable name and the supplied public key. "
-          + "Returns a guid. "
-          + "Sent on the mutual auth channel. "
-          + "Can only be sent from a client that has the correct ssl keys.",
+                  + "Returns a guid. "
+                  + "Sent on the mutual auth channel. "
+                  + "Can only be sent from a client that has the correct ssl keys.",
           new String[]{GNSProtocol.NAME.toString(),
-            GNSProtocol.PUBLIC_KEY.toString(),
-            GNSProtocol.PASSWORD.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.PUBLIC_KEY.toString(),
+                  GNSProtocol.PASSWORD.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{},
           CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
   ),
   /**
    *
    */
-  RemoveAccount(440, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccount.class,
+  RemoveAccount(440, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccount",
           CommandResultType.NULL, false, false,
           "Removes the account guid associated with the human readable name. "
-          + "Must be signed by the guid.",
+                  + "Must be signed by the guid.",
           new String[]{GNSProtocol.NAME.toString(),
-            GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.GUID.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  RemoveAlias(441, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAlias.class,
+  RemoveAlias(441, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAlias",
           CommandResultType.NULL, false, false,
           "Removes the alias from the account associated with the GUID. "
-          + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
+                  + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.NAME.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.NAME.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  RemoveGuid(442, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuid.class,
+  RemoveGuid(442, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuid",
           CommandResultType.NULL, false, false,
           "Removes the guid from the account associated with the ACCOUNT_GUID. "
-          + "Must be signed by the account guid or the guid if account guid is not provided. "
-          + "Returns +BADGUID+ if the guid has not been registered.",
+                  + "Must be signed by the account guid or the guid if account guid is not provided. "
+                  + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{
-            GNSProtocol.ACCOUNT_GUID.toString(),
-            GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.ACCOUNT_GUID.toString(),
+                  GNSProtocol.GUID.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  RemoveGuidNoAccount(443, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuidNoAccount.class,
+  RemoveGuidNoAccount(443, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuidNoAccount",
           CommandResultType.NULL, false, false,
           "Removes the GUID. Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  RetrieveAliases(444, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases.class,
+  RetrieveAliases(444, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases",
           CommandResultType.LIST, true, false,
           "Retrieves all aliases for the account associated with the GUID. "
-          + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
+                  + "Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  RemoveAccountWithPassword(445, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RemoveAccountWithPassword.class,
+  RemoveAccountWithPassword(445, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RemoveAccountWithPassword",
           CommandResultType.NULL, false, false,
           "Removes the account guid associated with the human readable name authorized by the account password.",
           new String[]{GNSProtocol.NAME.toString(), GNSProtocol.PASSWORD.toString()}, new String[]{}),
   /**
    *
    */
-  RemoveAccountSecured(446, CommandCategory.CREATE_DELETE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RemoveAccountSecured.class,
+  RemoveAccountSecured(446, CommandCategory.CREATE_DELETE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.RemoveAccountSecured",
           CommandResultType.NULL, false, false,
           "Removes the account guid associated with the human readable name."
-          + "Sent on the mutual auth channel. "
-          + "Can only be sent from a client that has the correct ssl keys.",
+                  + "Sent on the mutual auth channel. "
+                  + "Can only be sent from a client that has the correct ssl keys.",
           new String[]{GNSProtocol.NAME.toString()},
           new String[]{},
           CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
@@ -1034,39 +1034,39 @@ public enum CommandType {
   /**
    *
    */
-  SetPassword(450, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.SetPassword.class,
+  SetPassword(450, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.SetPassword",
           CommandResultType.NULL, true, false,
           "Sets the password. Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.PASSWORD.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.PASSWORD.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  VerifyAccount(451, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.VerifyAccount.class,
+  VerifyAccount(451, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.VerifyAccount",
           CommandResultType.STRING, true, false,
           "Handles the completion of the verification process for a guid by supplying the correct code.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.CODE.toString()}, new String[]{}),
+                  GNSProtocol.CODE.toString()}, new String[]{}),
   /**
    *
    */
-  ResendAuthenticationEmail(452, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResendAuthenticationEmail.class,
+  ResendAuthenticationEmail(452, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResendAuthenticationEmail",
           CommandResultType.NULL, true, false,
           "Resends the verification code email to the user. Must be signed by the guid. Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  ResetKey(460, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResetKey.class,
+  ResetKey(460, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResetKey",
           CommandResultType.NULL, true, false,
           "Resets the publickey for the account guid.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.PUBLIC_KEY.toString(),
-            GNSProtocol.PASSWORD.toString()}, new String[]{}),
+                  GNSProtocol.PUBLIC_KEY.toString(),
+                  GNSProtocol.PASSWORD.toString()}, new String[]{}),
   //
   // ACL Commands
   //
@@ -1074,34 +1074,34 @@ public enum CommandType {
   /**
    *
    */
-  AclAdd(510, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAdd.class,
+  AclAdd(510, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAdd",
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to include the accesser guid. Accessor guid can "
-          + "be guid or group guid or +ALL+ which means anyone. "
-          + "Field can be also be +ALL+ which means all fields can be read by the accessor. ",
+                  + "be guid or group guid or +ALL+ which means anyone. "
+                  + "Field can be also be +ALL+ which means all fields can be read by the accessor. ",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACCESSER.toString(),
-            GNSProtocol.ACL_TYPE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACCESSER.toString(),
+                  GNSProtocol.ACL_TYPE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
   AclAddSecured(520, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.AclAddSecured.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.AclAddSecured",
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to include the accesser guid. Accessor guid can "
-          + "be guid or group guid or +ALL+ which means anyone. "
-          + "Field can be also be +ALL+ which means all fields can be read by the accessor. "
-          + "Sent on the mutual auth channel. "
-          + "Can only be sent from a client that has the correct ssl keys.",
+                  + "be guid or group guid or +ALL+ which means anyone. "
+                  + "Field can be also be +ALL+ which means all fields can be read by the accessor. "
+                  + "Sent on the mutual auth channel. "
+                  + "Can only be sent from a client that has the correct ssl keys.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACCESSER.toString(),
-            GNSProtocol.ACL_TYPE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACCESSER.toString(),
+                  GNSProtocol.ACL_TYPE.toString()},
           new String[]{},
           CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
   ),
@@ -1109,47 +1109,47 @@ public enum CommandType {
    *
    */
   AclAddSelf(511, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAddSelf.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAddSelf",
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to include the accesser guid. "
-          + "Accessor should a guid or group guid or +ALL+ which means anyone. "
-          + "Field can be also be +ALL+ which means all fields can be read by the accessor. ",
+                  + "Accessor should a guid or group guid or +ALL+ which means anyone. "
+                  + "Field can be also be +ALL+ which means all fields can be read by the accessor. ",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACCESSER.toString(),
-            GNSProtocol.ACL_TYPE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACCESSER.toString(),
+                  GNSProtocol.ACL_TYPE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
   AclRemove(512, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemove.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemove",
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to remove the accesser guid. "
-          + "Accessor should be the guid or group guid to be removed.",
+                  + "Accessor should be the guid or group guid to be removed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACCESSER.toString(),
-            GNSProtocol.ACL_TYPE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACCESSER.toString(),
+                  GNSProtocol.ACL_TYPE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
   AclRemoveSecured(522, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.AclRemoveSecured.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.AclRemoveSecured",
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to remove the accesser guid. "
-          + "Accessor should be the guid or group guid to be removed. "
-          + "Sent on the mutual auth channel. "
-          + "Can only be sent from a client that has the correct ssl keys.",
+                  + "Accessor should be the guid or group guid to be removed. "
+                  + "Sent on the mutual auth channel. "
+                  + "Can only be sent from a client that has the correct ssl keys.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACCESSER.toString(),
-            GNSProtocol.ACL_TYPE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACCESSER.toString(),
+                  GNSProtocol.ACL_TYPE.toString()},
           new String[]{},
           CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
   ),
@@ -1157,43 +1157,43 @@ public enum CommandType {
    *
    */
   AclRemoveSelf(513, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemoveSelf.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemoveSelf",
           CommandResultType.NULL, true, false,
           "Updates the access control list of the given GUID's field to remove the accesser guid. "
-          + "Accessor should be the guid or group guid to be removed.",
+                  + "Accessor should be the guid or group guid to be removed.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACCESSER.toString(),
-            GNSProtocol.ACL_TYPE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACCESSER.toString(),
+                  GNSProtocol.ACL_TYPE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{}),
   /**
    *
    */
   AclRetrieve(514, CommandCategory.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve",
           CommandResultType.LIST, true, false,
           "Returns the access control list for a guids's field.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACL_TYPE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACL_TYPE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.READER.toString()}),
   /**
    *
    */
   AclRetrieveSecured(524, CommandCategory.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.AclRetrieveSecured.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.AclRetrieveSecured",
           CommandResultType.LIST, true, false,
           "Returns the access control list for a guids's field. "
-          + "Sent on the mutual auth channel. "
-          + "Can only be sent from a client that has the correct ssl keys.",
+                  + "Sent on the mutual auth channel. "
+                  + "Can only be sent from a client that has the correct ssl keys.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACL_TYPE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACL_TYPE.toString()},
           new String[]{},
           CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
   ),
@@ -1201,54 +1201,54 @@ public enum CommandType {
    *
    */
   AclRetrieveSelf(515, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieveSelf.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieveSelf",
           CommandResultType.LIST, true, false,
           "Returns the access control list for a guids's field.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACL_TYPE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACL_TYPE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
   FieldCreateAcl(516, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.FieldCreateAcl.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.FieldCreateAcl",
           CommandResultType.NULL, true, false,
           "Creates an empty ACL.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACL_TYPE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACL_TYPE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
   FieldDeleteAcl(517, CommandCategory.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.FieldDeleteAcl.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.FieldDeleteAcl",
           CommandResultType.NULL, true, false,
           "Deletes an ACL.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACL_TYPE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACL_TYPE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
   /**
    *
    */
   FieldAclExists(518, CommandCategory.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.FieldAclExists.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.FieldAclExists",
           CommandResultType.BOOLEAN, true, false,
           "Returns \"true\" if the ACL exists \"false\" otherwise.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.FIELD.toString(),
-            GNSProtocol.ACL_TYPE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.FIELD.toString(),
+                  GNSProtocol.ACL_TYPE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // Optional paramaters
           new String[]{GNSProtocol.READER.toString()}),
   //
@@ -1259,21 +1259,21 @@ public enum CommandType {
    *
    */
   AddMembersToGroup(610, CommandCategory.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup",
           CommandResultType.NULL, false, false,
           "Adds the member guids to the group specified by guid. "
-          + "Writer guid needs to have write access and sign the command.",
+                  + "Writer guid needs to have write access and sign the command.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.MEMBERS.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.MEMBERS.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
   //  /**
   //   *
   //   */
   //  AddMembersToGroupSelf(611, CommandCategory.OTHER,
-  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class,
+  //          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf",
   //          CommandResultType.NULL, false, false,
   //          "Adds the member guids to the group specified by guid. "
   //          + "Writer guid needs to have write access and sign the command.",
@@ -1285,21 +1285,21 @@ public enum CommandType {
    *
    */
   AddToGroup(612, CommandCategory.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup",
           CommandResultType.NULL, false, false,
           "Adds the member guid to the group specified by guid. "
-          + "Writer guid needs to have write access and sign the command.",
+                  + "Writer guid needs to have write access and sign the command.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.MEMBER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.MEMBER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
   //  /**
   //   *
   //   */
   //  AddToGroupSelf(613, CommandCategory.UPDATE,
-  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
+  //          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf",
   //          CommandResultType.NULL, false, false,
   //          "Adds the member guid to the group specified by guid.",
   //          new String[]{GNSProtocol.GUID.toString(),
@@ -1309,19 +1309,19 @@ public enum CommandType {
   /**
    *
    */
-  GetGroupMembers(614, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers.class,
+  GetGroupMembers(614, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers",
           CommandResultType.LIST, true, false,
           "Returns the members of the group formatted as a JSON Array. "
-          + "Reader guid needs to have read access and sign the command.",
+                  + "Reader guid needs to have read access and sign the command.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.READER.toString()}),
   //  /**
   //   *
   //   */
-  //  GetGroupMembersSelf(615, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
+  //  GetGroupMembersSelf(615, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf",
   //          CommandResultType.LIST, true, false,
   //          "Returns the members of the group formatted as a JSON Array.",
   //          new String[]{GNSProtocol.GUID.toString(),
@@ -1330,19 +1330,19 @@ public enum CommandType {
   /**
    *
    */
-  GetGroups(616, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups.class,
+  GetGroups(616, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups",
           CommandResultType.LIST, true, false,
           "Returns the groups that a guid is a member of formatted as a JSON Array. "
-          + "Reader guid needs to have read access and sign the command.",
+                  + "Reader guid needs to have read access and sign the command.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.READER.toString()}),
   //  /**
   //   *
   //   */
-  //  GetGroupsSelf(617, CommandCategory.READ, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
+  //  GetGroupsSelf(617, CommandCategory.READ, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf",
   //          CommandResultType.LIST, true, false,
   //          "Returns the groups that a guid is a member of formatted as a JSON Array.",
   //          new String[]{GNSProtocol.GUID.toString(),
@@ -1351,20 +1351,20 @@ public enum CommandType {
   /**
    *
    */
-  RemoveFromGroup(620, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup.class,
+  RemoveFromGroup(620, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup",
           CommandResultType.NULL, false, false,
           "Removes the member guid from the group specified by guid. "
-          + "Writer guid needs to have write access and sign the command.",
+                  + "Writer guid needs to have write access and sign the command.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.MEMBER.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.MEMBER.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
   //  /**
   //   *
   //   */
-  //  RemoveFromGroupSelf(621, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class,
+  //  RemoveFromGroupSelf(621, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf",
   //          CommandResultType.NULL, false, false,
   //          "Removes the member guid from the group specified by guid.",
   //          new String[]{GNSProtocol.GUID.toString(),
@@ -1374,20 +1374,20 @@ public enum CommandType {
   /**
    *
    */
-  RemoveMembersFromGroup(622, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup.class,
+  RemoveMembersFromGroup(622, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup",
           CommandResultType.NULL, false, false,
           "Removes the member guids from the group specified by guid. "
-          + "Writer guid needs to have write access and sign the command.",
+                  + "Writer guid needs to have write access and sign the command.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.MEMBERS.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+                  GNSProtocol.MEMBERS.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.WRITER.toString()}),
   //  /**
   //   *
   //   */
-  //  RemoveMembersFromGroupSelf(623, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class,
+  //  RemoveMembersFromGroupSelf(623, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf",
   //          CommandResultType.NULL, false, false,
   //          "Removes the member guids from the group specified by guid.",
   //          new String[]{GNSProtocol.GUID.toString(),
@@ -1397,7 +1397,7 @@ public enum CommandType {
   /**
    *
    */
-  Help(710, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Help.class,
+  Help(710, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Help",
           CommandResultType.STRING, true, false,
           "Returns this help message.",
           new String[]{},
@@ -1406,7 +1406,7 @@ public enum CommandType {
   /**
    *
    */
-  HelpTcp(711, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcp.class,
+  HelpTcp(711, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcp",
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands.",
           new String[]{"tcp"},
@@ -1415,7 +1415,7 @@ public enum CommandType {
   /**
    *
    */
-  HelpTcpWiki(712, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcpWiki.class,
+  HelpTcpWiki(712, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcpWiki",
           CommandResultType.STRING, true, false,
           "Returns the help message for TCP commands in wiki format.",
           new String[]{"tcpwiki"},
@@ -1424,7 +1424,7 @@ public enum CommandType {
   /**
    *
    */
-  Dump(716, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
+  Dump(716, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump",
           CommandResultType.STRING, true, true,
           "Returns the contents of the GNS.",
           new String[]{},
@@ -1433,7 +1433,7 @@ public enum CommandType {
   /**
    *
    */
-  ConnectionCheck(737, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck.class,
+  ConnectionCheck(737, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck",
           CommandResultType.STRING, true, false,
           "Checks connectivity.",
           new String[]{},
@@ -1441,42 +1441,42 @@ public enum CommandType {
   /**
    *
    */
-  SetCode(810, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode.class,
+  SetCode(810, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode",
           CommandResultType.NULL, true, false,
           "Sets the given active code for the specified guid and action, ensuring the writer has permission.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.AC_ACTION.toString(),
-            GNSProtocol.AC_CODE.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.AC_ACTION.toString(),
+                  GNSProtocol.AC_CODE.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  ClearCode(811, CommandCategory.UPDATE, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode.class,
+  ClearCode(811, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode",
           CommandResultType.NULL, true, false,
           "Clears the active code for the specified guid and action, ensuring the writer has permission.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.WRITER.toString(),
-            GNSProtocol.AC_ACTION.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.WRITER.toString(),
+                  GNSProtocol.AC_ACTION.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
   GetCode(812, CommandCategory.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode",
           CommandResultType.STRING, true, false,
           "Returns the active code for the specified action, ensuring the reader has permission.",
           new String[]{GNSProtocol.GUID.toString(),
-            GNSProtocol.READER.toString(),
-            GNSProtocol.AC_ACTION.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+                  GNSProtocol.READER.toString(),
+                  GNSProtocol.AC_ACTION.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
-  Unknown(999, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Unknown.class,
+  Unknown(999, CommandCategory.OTHER, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Unknown",
           CommandResultType.NULL, true, true,
           "A null command.",
           new String[]{},
@@ -1562,14 +1562,23 @@ public enum CommandType {
     LOCAL
   }
 
-  private CommandType(int number, CommandCategory category, Class<?> commandClass,
-          CommandResultType returnType, boolean canBeSafelyCoordinated,
-          boolean notForRogueClients, String description,
-          String[] requiredParameters, String[] optionalParameters,
-          CommandFlag... flags) {
+  private CommandType(int number, CommandCategory category, String commandClass,
+                      CommandResultType returnType, boolean canBeSafelyCoordinated,
+                      boolean notForRogueClients, String description,
+                      String[] requiredParameters, String[] optionalParameters,
+                      CommandFlag... flags) {
     this.number = number;
     this.category = category;
-    this.commandClass = commandClass;
+
+    Class<?> commandClazz = null;
+    try {
+      commandClazz = Class.forName(commandClass);
+    } catch (ClassNotFoundException e) {
+      GNSConfig.getLogger().log(Level.WARNING,
+              "Command class not found: {0}", commandClass);
+    }
+
+    this.commandClass = commandClazz;
     this.returnType = returnType;
 
     this.canBeSafelyCoordinated = canBeSafelyCoordinated;
@@ -1597,7 +1606,7 @@ public enum CommandType {
       if (map.containsKey(type.getInt())) {
         GNSConfig.getLogger().warning(
                 "**** Duplicate number for command type " + type + ": "
-                + type.getInt());
+                        + type.getInt());
       }
       map.put(type.getInt(), type);
       lowerCaseCommandNameMapForHttp.put(type.name().toLowerCase(), type);
