@@ -17,7 +17,7 @@ script_dir=`pwd`
 
 # Run ant test 10 times
 # A single failure will flag a Travis build failure
-test_repeat=10
+test_repeat=7 # Temporary change, replace with 10 ASAP
 
 # The warning_counts file keeps track of previous warning counts
 wcount_file="warning_counts"
