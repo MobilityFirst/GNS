@@ -1,6 +1,7 @@
 Under construction
     Access-Control.html Access Control
     Select-Queries.html Select Queries
+    Getting-Started.html Getting Started
 Section title
     Building-from-source.html Building from source
     Command-Line-Interface.html Command Line Interface
@@ -11,3 +12,4 @@ Another section
     Home.html Home
     Shibboleth-SP-Location-Demo.html Shibboleth SP Location Demo
     Troubleshooting.html Troubleshooting
+  
