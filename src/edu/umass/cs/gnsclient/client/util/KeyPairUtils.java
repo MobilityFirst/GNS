@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -38,12 +39,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.util.keystorage.AbstractKeyStorage;
 import edu.umass.cs.gnsclient.client.util.keystorage.JavaPreferencesKeyStore;
 import edu.umass.cs.gnsclient.client.util.keystorage.SimpleKeyStore;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.utils.Config;
 import javax.xml.bind.DatatypeConverter;
 
@@ -129,6 +132,24 @@ public class KeyPairUtils {
     keyStorageObj.remove(generateKey(gnsName, username, PUBLIC));
     keyStorageObj.remove(generateKey(gnsName, username, PRIVATE));
     keyStorageObj.remove(generateKey(gnsName, username, GUID));
+  }
+
+  /**
+   * Saves the public/private key pair to preferences for the given user.
+   *
+   * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
+   * @param username the user name or human readable name
+   */
+  public static GuidEntry generateAndSaveKeyPair(String gnsName, String username)
+          throws NoSuchAlgorithmException, EncryptionException {
+
+    KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
+            .generateKeyPair();
+    String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
+            .getPublic().getEncoded());
+    GuidEntry guidEntry = new GuidEntry(gnsName, guid, keyPair.getPublic(), keyPair.getPrivate());
+    saveKeyPair(gnsName, username, guid, keyPair);
+    return guidEntry;
   }
 
   /**
@@ -323,6 +344,10 @@ public class KeyPairUtils {
     return true;
   }
 
+  public static String publicKeyToBase64ForGuid(GuidEntry guid) {
+    byte[] publicKeyBytes = guid.getPublicKey().getEncoded();
+    return Base64.encodeToString(publicKeyBytes, false);
+  }
   /**
    * Return the list of all GUIDs stored locally that belong to a particular GNS
    * instance.
