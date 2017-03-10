@@ -15,6 +15,8 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -25,6 +27,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -77,6 +80,9 @@ import org.json.JSONObject;
  */
 public class AccountAccess {
 
+  private static final Cache<String, GuidInfo> GUID_INFO_CACHE
+          = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
+
   /**
    * This method is currently not used because roll backs when invoked seem as
    * /** Defines the field name in an account guid where account information
@@ -108,7 +114,7 @@ public class AccountAccess {
    */
   public static final String GUID_INFO = InternalField
           .makeInternalFieldString("guid_info");
-  
+
   /**
    * Defines the field name in the guid where the HRN is stored.
    */
@@ -394,18 +400,25 @@ public class AccountAccess {
    */
   private static GuidInfo lookupGuidInfo(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
+    GuidInfo result;
+    if ((result = GUID_INFO_CACHE.getIfPresent(guid)) != null) {
+      GNSConfig.getLogger().log(Level.FINE, "GuidInfo found in cache {0}", guid);
+      return result;
+    }
     GNSConfig.getLogger().log(Level.FINE, "allowRemoteLookup is {0}",
             allowRemoteLookup);
     try {
-      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null,
+      ValuesMap valuesMapResult = NSFieldAccess.lookupJSONFieldLocalNoAuth(null,
               guid, GUID_INFO, handler.getApp(), false);
       GNSConfig.getLogger().log(
               Level.FINE,
               "ValuesMap for {0} / {1} {2}",
               new Object[]{guid, GUID_INFO,
-                result != null ? result.getSummary() : result});
-      if (result != null) {
-        return new GuidInfo(new JSONObject(result.getString(GUID_INFO)));
+                valuesMapResult != null ? valuesMapResult.getSummary() : valuesMapResult});
+      if (valuesMapResult != null) {
+        result = new GuidInfo(new JSONObject(valuesMapResult.getString(GUID_INFO)));
+        GUID_INFO_CACHE.put(guid, result);
+        return result;
       }
     } catch (FailedDBOperationException | JSONException | ParseException e) {
       GNSConfig.getLogger().log(Level.SEVERE,
@@ -436,7 +449,9 @@ public class AccountAccess {
       }
       if (value != null) {
         try {
-          return new GuidInfo(new JSONObject(value));
+          result = new GuidInfo(new JSONObject(value));
+          GUID_INFO_CACHE.put(guid, result);
+          return result;
         } catch (JSONException | ParseException e) {
           GNSConfig
                   .getLogger()
@@ -1050,7 +1065,9 @@ public class AccountAccess {
               + (deleteNameResponseCode.isOKResult() ? "" : "failed to delete " + accountInfo.getName())
       );
     } else {
-      // Step 4 - If all the above stuff worked we delete the account guid record
+      // Step 4.5 - delete the cache guid info cache entry
+      GUID_INFO_CACHE.invalidate(accountInfo.getGuid());
+      // Step 5 - If all the above stuff worked we delete the account guid record
       ResponseCode deleteGuidResponseCode;
       try {
         deleteGuidResponseCode = handler.getInternalClient()
@@ -1410,15 +1427,15 @@ public class AccountAccess {
    * @param header
    * @param commandPacket
    * @param accountInfo
-   * @param guid
+   * @param guidInfo
    * @param handler
    * @return a command response
    */
   public static CommandResponse removeGuid(InternalRequestHeader header,
           CommandPacket commandPacket,
-          GuidInfo guid, AccountInfo accountInfo,
+          GuidInfo guidInfo, AccountInfo accountInfo,
           ClientRequestHandlerInterface handler) {
-    return removeGuidInternal(header, commandPacket, guid, accountInfo, false, handler);
+    return removeGuidInternal(header, commandPacket, guidInfo, accountInfo, false, handler);
   }
 
   /**
@@ -1521,6 +1538,9 @@ public class AccountAccess {
               + (deleteNameResponseCode.isOKResult() ? "" : "; failed to delete " + guidInfo.getName())
       );
     } else {
+      // Step 3.5 - delete the cache entry
+      GUID_INFO_CACHE.invalidate(guidInfo.getGuid());
+
       // Step 4 - If all the above stuff worked we delete the guid record
       ResponseCode deleteGuidResponseCode;
       try {
@@ -1850,4 +1870,5 @@ public class AccountAccess {
             Config.getGlobalString(GNSConfig.GNSC.SUPPORT_EMAIL), adminBody);
 
   }
+
 }

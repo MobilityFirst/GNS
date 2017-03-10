@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.standalone;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
@@ -29,7 +29,6 @@ import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -48,13 +47,18 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SecureCommandTest extends DefaultGNSTest {
+public class SecureCommandTestStandalone {
+
+  private static GNSClient client;
+  protected static final String globalAccountName = "Frank" + RandomString.randomString(12);
 
   /**
    *
    */
   @Test
   public void test_01_SecureCreateClient() {
+    System.out.println(System.getProperty("gigapaxosConfig"));
+    System.out.println(System.getProperty("javax.net.ssl.keyStore"));
     try {
       client = new GNSClient();
       client.setForceCoordinatedReads(true);
@@ -212,7 +216,7 @@ public class SecureCommandTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception while retrieving account record acl: ", e);
     }
   }
-  
+
   /**
    * Remove the account.
    */
@@ -223,7 +227,7 @@ public class SecureCommandTest extends DefaultGNSTest {
       client.execute(GNSCommand.createGUID(masterGuid, "whatever"));
       GuidEntry testGuid = GuidUtils.lookupGuidEntryFromDatabase(client, "whatever");
       client.execute(GNSCommand.fieldUpdate(testGuid, "fred", "value"));
-      JSONObject actual = client.execute(GNSCommand.readSecure(testGuid.getGuid())).getResultJSONObject(); 
+      JSONObject actual = client.execute(GNSCommand.readSecure(testGuid.getGuid())).getResultJSONObject();
       JSONAssert.assertEquals(new JSONObject().put("fred", "value"),
               actual, JSONCompareMode.STRICT);
       client.execute(GNSCommand.removeGUID(masterGuid, testGuid.getGuid()));
@@ -231,8 +235,7 @@ public class SecureCommandTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception while removing account record: ", e);
     }
   }
-  
-  
+
   /**
    * Remove the account.
    */

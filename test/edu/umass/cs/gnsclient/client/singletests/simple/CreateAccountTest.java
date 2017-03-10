@@ -17,19 +17,20 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.simple;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
-
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+
+import org.json.JSONObject;
 
 import org.junit.Assert;
 
@@ -38,22 +39,22 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
+ * Basic test for the GNS using the UniversalTcpClient.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateMultipleGuidsTest extends DefaultGNSTest {
+public class CreateAccountTest extends DefaultGNSTest {
 
   private static GNSClientCommands clientCommands;
-  private static GuidEntry masterGuid;
-
-  private static final String FIELD_NAME = "_MultipleGuidsTestField_";
-  private List<GuidEntry> members = new ArrayList<>();
+  private static final String TEST_ACCOUNT_ALIAS = "support-"
+          + RandomString.randomString(24) + "@gns.name";
+  private static final String TEST_ACCOUNT_PASSWORD = "password";
+  private static GuidEntry testGuid;
 
   /**
    *
    */
-  public CreateMultipleGuidsTest() {
+  public CreateAccountTest() {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
@@ -61,46 +62,6 @@ public class CreateMultipleGuidsTest extends DefaultGNSTest {
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
-      try {
-        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
-      } catch (Exception e) {
-        Utils.failWithStackTrace("Exception while creating account guid: " + e);
-      }
-    }
-  }
-
-  /**
-   * Create the guids.
-   */
-  @Test
-  public void test_01_SetupGuids() {
-    try {
-      for (int cnt = 0; cnt < 50; cnt++) {
-        GuidEntry testEntry = clientCommands.guidCreate(
-                masterGuid, "guid" + RandomString.randomString(12));
-        members.add(testEntry);
-        // make unique name based on the guid
-        clientCommands.fieldUpdate(testEntry, FIELD_NAME,
-                "value for " + testEntry.getEntityName());
-      }
-    } catch (ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
-    }
-  }
-
-  /**
-   * Read back the values.
-   */
-  @Test
-  public void test_02_TestGuids() {
-    try {
-      for (GuidEntry guidEntry : members) {
-        String actual = clientCommands.fieldRead(guidEntry, FIELD_NAME);
-        String expected = "value for " + guidEntry.getEntityName();
-        Assert.assertEquals(expected, actual);
-      }
-    } catch (ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception while trying to read values: " + e);
     }
   }
 
@@ -108,13 +69,53 @@ public class CreateMultipleGuidsTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_03_Cleanup() {
+  public void test_01_CreateAccount() {
     try {
-      for (GuidEntry guidEntry : members) {
-        clientCommands.guidRemove(masterGuid, guidEntry.getGuid());
+      testGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+              TEST_ACCOUNT_ALIAS, TEST_ACCOUNT_PASSWORD, true);
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_02_CheckAccount() {
+    String guidString = null;
+    try {
+      guidString = clientCommands.lookupGuid(TEST_ACCOUNT_ALIAS);
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception while looking up guid: " + e);
+    }
+    JSONObject json = null;
+    if (guidString != null) {
+      try {
+        json = clientCommands.lookupAccountRecord(guidString);
+      } catch (Exception e) {
+        Utils.failWithStackTrace("Exception while looking up account record: " + e);
       }
+    }
+    if (json != null) {
+      try {
+        Assert.assertTrue(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
+      } catch (Exception e) {
+        Utils.failWithStackTrace("Exception while getting field from account record: " + e);
+      }
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_03_CheckAccountCleanup() {
+    try {
+      clientCommands.accountGuidRemove(testGuid);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while removing test account guid: " + e);
     }
   }
+
 }

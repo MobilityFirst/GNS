@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.simple;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -133,6 +133,7 @@ public class SelectSingleTest extends DefaultGNSTest {
       actual = JSONUtils.JSONArrayToHashSet(clientCommands.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
       Assert.assertEquals(expected, actual);
+      waitSettle(100);
     } catch (IOException | ClientException | JSONException e) {
       Utils.failWithStackTrace("Exception when we were not expecting testing DB: " + e);
     }
@@ -144,7 +145,7 @@ public class SelectSingleTest extends DefaultGNSTest {
   @Test
   public void test_03_BasicSelect() {
     try {
-      JSONArray result = clientCommands.select("cats", "fred");
+      JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
     } catch (ClientException | IOException e) {
@@ -164,4 +165,15 @@ public class SelectSingleTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception during cleanup: " + e);
     }
   }
+  
+  private static void waitSettle(long wait) {
+    try {
+      if (wait > 0) {
+        Thread.sleep(wait);
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
 }

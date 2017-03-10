@@ -69,13 +69,9 @@ import edu.umass.cs.gnsserver.localnameserver.LocalNameServer;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.nio.MessageExtractor;
-import edu.umass.cs.nio.interfaces.Byteable;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
-import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.examples.AbstractReconfigurablePaxosApp;
@@ -89,7 +85,6 @@ import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.BindException;
@@ -97,7 +92,6 @@ import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -492,64 +486,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   }
 
   /**
-   * This method avoids an unnecessary restringification (as is the case with
-   * {@link #getRequest(String)} above) by decoding the JSON, stamping it with
-   * the sender information, and then creating a packet out of it.
-   *
-   * @param msgBytes
-   * @param header
-   * @param unstringer
-   * @return Request constructed from msgBytes.
-   * @throws RequestParseException
-   */
-  public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
-          Stringifiable<String> unstringer) throws RequestParseException {
-    Request request = null;
-    try {
-      long t = System.nanoTime();
-      if (JSONPacket.couldBeJSON(msgBytes)) {
-        JSONObject json = new JSONObject(new String(msgBytes,
-                NIOHeader.CHARSET));
-        MessageExtractor.stampAddressIntoJSONObject(header.sndr,
-                header.rcvr, json);
-        request = (Request) Packet.createInstance(json, unstringer);
-      } else {
-        // parse non-JSON byteified form
-        return fromBytes(msgBytes);
-      }
-      if (Util.oneIn(100)) {
-        DelayProfiler.updateDelayNano(
-                "getRequest." + request.getRequestType(), t);
-      }
-    } catch (JSONException | UnsupportedEncodingException e) {
-      throw new RequestParseException(e);
-    }
-    return request;
-  }
-
-  /**
-   * This method should invert the implementation of the
-   * {@link Byteable#toBytes()} method for GNSApp packets.
-   *
-   * @param msgBytes
-   * @return a request
-   * @throws RequestParseException
-   */
-  private static Request fromBytes(byte[] msgBytes)
-          throws RequestParseException {
-    switch (Packet.PacketType.getPacketType(ByteBuffer.wrap(msgBytes)
-            .getInt())) {
-      case COMMAND:
-        return new CommandPacket(msgBytes);
-      /* Currently only CommandPacket is Byteable, so we shouldn't come
-			 * here for anything else. */
-      default:
-        throw new RequestParseException(new RuntimeException(
-                "Unrecognizable request type"));
-    }
-  }
-
-  /**
    *
    * @param msgBytes
    * @param header
@@ -559,7 +495,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   @Override
   public Request getRequest(byte[] msgBytes, NIOHeader header)
           throws RequestParseException {
-    return getRequestStatic(msgBytes, header, nodeConfig);
+    return GNSAppUtil.getRequestStatic(msgBytes, header, nodeConfig);
   }
 
   /**

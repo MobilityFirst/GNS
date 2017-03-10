@@ -70,9 +70,9 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
     }
     if (acccountInfo != null) {
       try {
-        // the true below omits the list of guids which might be too big to send back to the client
+        // The true below omits things we don't want to send back to the client.
+        // Like the verification code or the list of guids which might be too big to send back to the client
         return new CommandResponse(ResponseCode.NO_ERROR, acccountInfo.toJSONObject(true).toString());
-        //return new CommandResponse(acccountInfo.toJSONObject().toString());
       } catch (JSONException e) {
         return new CommandResponse(ResponseCode.JSON_PARSE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.JSON_PARSE_ERROR.toString());
       }

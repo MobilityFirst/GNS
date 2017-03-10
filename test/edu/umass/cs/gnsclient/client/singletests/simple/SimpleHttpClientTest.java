@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.simple;
 
 import edu.umass.cs.gnsclient.client.http.HttpClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -34,7 +34,6 @@ public class SimpleHttpClientTest extends DefaultGNSTest {
   private static GuidEntry masterGuid;
   private static GuidEntry httpOneEntry;
   private static GuidEntry httpTwoEntry;
-
 
   /**
    *
@@ -96,8 +95,8 @@ public class SimpleHttpClientTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception in Http_UpdateFields: ", e);
     }
   }
-  
-   /*
+
+  /**
    *
    */
   @Test

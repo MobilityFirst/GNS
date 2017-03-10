@@ -30,6 +30,7 @@ import java.io.IOException;
  * 
  * @author westy
  */
+@Deprecated
 public class Amazontool {
 
   /**

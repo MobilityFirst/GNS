@@ -20,33 +20,36 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Repeat;
 import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-
+import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Test removes.
+ * Basic test for the GNS using the UniversalTcpClient.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SingleRemoveGuidTest extends DefaultGNSTest {
+public class CreateRemoveTest extends DefaultGNSTest {
 
-  private static GNSClientCommands clientCommands;
+  private static final int REPEAT = 100;
+
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
 
   /**
    *
    */
-  public SingleRemoveGuidTest() {
+  public CreateRemoveTest() {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
@@ -54,41 +57,33 @@ public class SingleRemoveGuidTest extends DefaultGNSTest {
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
-      try {
-        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
-      } catch (Exception e) {
-        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
-      }
+    }
+    try {
+      masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
   /**
-   *
+   * @throws Exception
    */
   @Test
-  public void test_01_RemoveGuidUsingAccount() {
-    String testGuidName = "testGUID" + RandomString.randomString(12);
-    GuidEntry testGuid = null;
-    try {
-      testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
-    } catch (ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception while creating testGuid: " + e);
-    }
-    if (testGuid != null) {
-      try {
-        clientCommands.guidRemove(masterGuid, testGuid.getGuid());
-      } catch (ClientException | IOException e) {
-        Utils.failWithStackTrace("Exception while removing testGuid: " + e);
-      }
-      try {
-        clientCommands.lookupGuidRecord(testGuid.getGuid());
-        Utils.failWithStackTrace("Lookup testGuid should have throw an exception.");
-      } catch (ClientException e) {
-
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception while doing Lookup testGuid: " + e);
-      }
-    }
+  @Repeat(times = REPEAT)
+  public void test_001_CreateAndUpdate() throws Exception {
+    // CHECKED FOR VALIDITY
+    String alias = "testGUID" + RandomString.randomString(12);
+    String createdGUID = client.execute(
+            GNSCommand.createGUID(masterGuid, alias)).getResultString();
+    GuidEntry createdGUIDEntry = GuidUtils.getGUIDKeys(alias);
+    Assert.assertEquals(alias, createdGUIDEntry.entityName);
+    Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
+    String key = "key1", value = "value1";
+    client.execute(GNSCommand.update(createdGUID,
+            new JSONObject().put(key, value), createdGUIDEntry));
+    Assert.assertEquals(value,
+            client.execute(GNSCommand.fieldRead(createdGUIDEntry, key)).getResultMap().get(key));
+    client.execute(GNSCommand.removeGUID(masterGuid, createdGUID));
   }
 
 }

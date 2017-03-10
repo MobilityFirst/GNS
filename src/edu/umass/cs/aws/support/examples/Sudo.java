@@ -40,6 +40,7 @@ import javax.swing.JTextField;
  * 
  * @author westy
  */
+@Deprecated
 public class Sudo {
 
   /**

@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.performance;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -43,7 +43,7 @@ public class RemoveGuidStressTest extends DefaultGNSTest {
   private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
 
-  private static final int NUMBER_TO_CREATE = 100;
+  private static final int NUMBER_TO_CREATE = 10;
   private static final GuidEntry[] GUIDS = new GuidEntry[NUMBER_TO_CREATE];
   private static final String PASSWORD = "removalPassword";
 

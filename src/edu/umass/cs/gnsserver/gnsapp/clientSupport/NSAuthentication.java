@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 
 /**
  *
@@ -111,7 +112,7 @@ public class NSAuthentication {
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
           FailedDBOperationException, UnsupportedEncodingException {
     // Do a check for unsigned reads if there is no signature
-    if (signature == null) {
+    if ((!skipSigCheck && signature == null) || accessorGuid == null) {
       if (NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp)) {
         return ResponseCode.NO_ERROR;
       } else {
@@ -120,9 +121,9 @@ public class NSAuthentication {
         return ResponseCode.ACCESS_ERROR;
       }
     }
-    // If the signature isn't null a null accessorGuid is also an access failure because
+    // If the signature is being checking and isn't null a null accessorGuid is also an access failure because
     // only unsigned reads (handled above) can have a null accessorGuid
-    if (accessorGuid == null) {
+    if (!skipSigCheck && accessorGuid == null) {
       ClientSupportConfig.getLogger().log(Level.WARNING, "Name {0} key={1} : NULL accessorGuid",
               new Object[]{guid, field});
       return ResponseCode.ACCESS_ERROR;
@@ -207,7 +208,7 @@ public class NSAuthentication {
       // First thing to do is to lookup the accessorGuid... possibly remotely.
       GuidInfo accessorGuidInfo;
       //TODO: Add a cache here
-      if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfoAnywhere(header, accessorGuid, gnsApp)) != null) {
+      if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accessorGuid, gnsApp.getRequestHandler())) != null) {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "================> Catchall lookup returned: {0}",
                 accessorGuidInfo);
@@ -259,7 +260,7 @@ public class NSAuthentication {
     // explicitly because it's not going to have an entry in the ACL
     if (publicKey == null && publicKeys.contains(GNSProtocol.EVERYONE.toString())) {
       GuidInfo accessorGuidInfo;
-      if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfoAnywhere(header, accessorGuid, gnsApp)) != null) {
+      if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accessorGuid, gnsApp.getRequestHandler())) != null) {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "================> {0} lookup for EVERYONE returned {1}",
                 new Object[]{access.toString(), accessorGuidInfo});
@@ -289,7 +290,7 @@ public class NSAuthentication {
       return result;
     }
     GuidInfo guidInfo;
-    if ((guidInfo = NSAccountAccess.lookupGuidInfoLocally(guid, gnsApp)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(null, guid, gnsApp.getRequestHandler())) == null) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Name {0} : BAD_GUID_ERROR", new Object[]{guid});
       return null;
     } else {

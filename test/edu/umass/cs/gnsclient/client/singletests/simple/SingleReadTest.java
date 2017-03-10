@@ -17,45 +17,39 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.simple;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.RandomString;
+
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-import java.util.Arrays;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.hamcrest.Matchers;
-import org.json.JSONArray;
-
-import org.json.JSONException;
 import org.junit.Assert;
+
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
+ * Test reads.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SelectClientTest extends DefaultGNSTest {
+public class SingleReadTest extends DefaultGNSTest {
 
-  private static GNSClientCommands clientCommands;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
-  private static final Set<GuidEntry> createdGuids = new HashSet<>();
+  private static GuidEntry subGuidEntry;
 
   /**
    *
    */
-  public SelectClientTest() {
+  public SingleReadTest() {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
@@ -75,29 +69,16 @@ public class SelectClientTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_01_testQuerySelect() {
-    String fieldName = "testQuery";
+  public void test_01_CreateEntity() {
     try {
-      for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
-        createdGuids.add(testEntry); // save them so we can delete them later
-        JSONArray array = new JSONArray(Arrays.asList(25));
-        clientCommands.fieldReplaceOrCreateList(testEntry, fieldName, array);
+      GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "testGUID" + RandomString.randomString(12));
+      try {
+        clientCommands.guidRemove(masterGuid, testEntry.getGuid());
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Exception during cleanup: " + e);
       }
     } catch (ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
-    }
-
-    try {
-      String query = "~" + fieldName + " : ($gt: 0)";
-      JSONArray result = clientCommands.selectQuery(query);
-      for (int i = 0; i < result.length(); i++) {
-        System.out.println(result.get(i).toString());
-      }
-      // best we can do should be at least 5, but possibly more objects in results
-      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (ClientException | IOException | JSONException e) {
-      Utils.failWithStackTrace("Exception executing selectNear: " + e);
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -105,15 +86,49 @@ public class SelectClientTest extends DefaultGNSTest {
    *
    */
   @Test
-  public void test_02_SelectCleanup() {
+  public void test_02_CreateSubGuid() {
     try {
-      for (GuidEntry guid : createdGuids) {
-        clientCommands.guidRemove(masterGuid, guid.getGuid());
-      }
-      createdGuids.clear();
+      subGuidEntry = clientCommands.guidCreate(masterGuid, "subGuid" + RandomString.randomString(12));
+      System.out.println("Created: " + subGuidEntry);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_03_CreateField() {
+    try {
+      clientCommands.fieldUpdate(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
+    } catch (IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception during create field: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_04_ReadField() {
+    try {
+      // read my own field
+      Assert.assertEquals("work", clientCommands.fieldRead(subGuidEntry.getGuid(), "environment", subGuidEntry));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception reading field: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_05_Cleanup() {
+    try {
+      clientCommands.guidRemove(masterGuid, subGuidEntry.getGuid());
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception during cleanup: " + e);
     }
   }
-
 }

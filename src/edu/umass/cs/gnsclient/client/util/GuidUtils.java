@@ -24,16 +24,12 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.http.HttpClient;
-import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import java.io.IOException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
-import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * Utilities designed to make it easier to work with guids.
@@ -100,14 +96,7 @@ public class GuidUtils {
    */
   private static GuidEntry generateAndSaveKeyPairForGuidAlias(String gnsInstance,
           String alias) throws NoSuchAlgorithmException, EncryptionException {
-    KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
-            .generateKeyPair();
-    String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-            .getPublic().getEncoded());
-    // Squirrel this away now just in case the call below times out.
-    KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
-    return new GuidEntry(alias, guid, keyPair.getPublic(),
-            keyPair.getPrivate());
+    return KeyPairUtils.generateAndSaveKeyPair(gnsInstance, alias);
   }
 
   /**

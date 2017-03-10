@@ -16,23 +16,28 @@
  *
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.failingtests;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.nio.SSLDataProcessingWorker;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-
+import java.util.Set;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Expects ClientExceptions for each admin command since this test is intended to be used by a client that does not have the correct MUTUAL_AUTH keys.
+ * Expects ClientExceptions for each admin command since this test is intended 
+ * to be used by a client that does not have the correct MUTUAL_AUTH keys.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -48,19 +53,41 @@ public class AdminBadAuthTest extends DefaultGNSTest {
    */
   private static class BadClient extends GNSClientCommands {
 
+    private BadClient(Set<InetSocketAddress> reconfigurators)
+            throws IOException {
+      this.asyncClient = new AsyncClientBad(reconfigurators,
+              ReconfigurationConfig.getClientSSLMode(),
+              ReconfigurationConfig.getClientPortOffset(), true);
+    }
+
     /**
-     * @throws IOException
+     * Straightforward async client implementation that expects only one packet
+     * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
      */
-    public BadClient() throws IOException {
-      super((InetSocketAddress) null);
+    class AsyncClientBad extends AsyncClient {
+
+      public AsyncClientBad(Set<InetSocketAddress> reconfigurators,
+              SSLDataProcessingWorker.SSL_MODES sslMode, int clientPortOffset,
+              boolean checkConnectivity) throws IOException {
+        super(reconfigurators, sslMode, clientPortOffset,
+                checkConnectivity);
+      }
+
+      /**
+       * This returns null since this client always sends commands to the client port.
+       */
+      @SuppressWarnings("javadoc")
+      @Override
+      public Set<IntegerPacketType> getMutualAuthRequestTypes() {
+        return null;
+      }
+
     }
   }
 
   private static GNSClientCommands clientCommands;
   private static BadClient badClient;
 
-
-  
   /**
    *
    * @throws IOException
@@ -78,8 +105,8 @@ public class AdminBadAuthTest extends DefaultGNSTest {
     if (connected) {
       System.out.println("Client created and connected to server.");
     }
- 
-    badClient = new BadClient();
+
+    badClient = new BadClient(ReconfigurationConfig.getReconfiguratorAddresses());
     badClient.setForceCoordinatedReads(true);
     connected = badClient instanceof GNSClient;
     if (connected) {
@@ -93,7 +120,20 @@ public class AdminBadAuthTest extends DefaultGNSTest {
    */
   @Test
   public void test_04_Dump() throws Exception {
-    clientCommands.dump();
+    System.out.println(clientCommands.dump());
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_14_Dump_BadClient() {
+    try {
+      System.out.println(badClient.dump());
+      Assert.fail("Should throw an exception.");
+    } catch (Exception e) {
+      System.out.println("Dump_BadClient throws an exception (expected):" + e.getMessage());
+    }
   }
 
 }
