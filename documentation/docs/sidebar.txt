@@ -11,4 +11,3 @@ Another section
     Home.html Home
     Shibboleth-SP-Location-Demo.html Shibboleth SP Location Demo
     Troubleshooting.html Troubleshooting
-  
