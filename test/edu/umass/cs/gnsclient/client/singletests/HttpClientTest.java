@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gnsclient.client.singletests.failingtests;
+package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.http.HttpClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;

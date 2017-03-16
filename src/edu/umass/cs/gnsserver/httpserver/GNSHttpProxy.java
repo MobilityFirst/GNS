@@ -95,6 +95,8 @@ public class GNSHttpProxy {
 	protected GNSClient client = null;
 	protected DefaultHttpHandler httpHandler;
 	protected EchoHttpProxyHandler echoHandler;
+	//Does this proxy allow commands to be executed locally? (Should be false in this class, and true in GNSHttpServer.)
+	protected boolean localExecution;
 
 	/**
 	 *
@@ -109,6 +111,7 @@ public class GNSHttpProxy {
 	 * @param requestHandler
 	 */
 	public GNSHttpProxy() {
+		this.localExecution = false;
 		this.commandModule = new CommandModule();
 		this.httpHandler = new DefaultHttpHandler();
 		this.echoHandler = new EchoHttpProxyHandler();
@@ -335,7 +338,7 @@ public class GNSHttpProxy {
 			// and the rest by invoking the GNS client and sending them out.
 			// Client will be null if GNSC.DISABLE_MULTI_SERVER_HTTP (see above)
 			// is true (or there was a problem).
-			if (client == null || commandType.isLocallyHandled()) {
+			if (client == null || (localExecution && commandType.isLocallyHandled())) {
 				// EXECUTE IT LOCALLY
 				return handleCommandLocally(jsonCommand, commandType, commandName, queryString);
 			} else {

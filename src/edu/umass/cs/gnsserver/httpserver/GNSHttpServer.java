@@ -73,6 +73,7 @@ public class GNSHttpServer extends GNSHttpProxy{
 		super();
 		echoHandler = new EchoHttpServerHandler();
 		this.requestHandler = requestHandler;
+		localExecution = true;
 		if (Config.getGlobalBoolean(GNSC.DISABLE_MULTI_SERVER_HTTP)) {
 			client.close();
 			client = null;
