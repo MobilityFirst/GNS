@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.contextservice.client.callback.implementations.NoopCallBack;
 import edu.umass.cs.contextservice.client.callback.implementations.NoopUpdateReply;
+import edu.umass.cs.contextservice.config.ContextServiceConfig.PrivacySchemes;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
@@ -21,7 +22,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
  */
 public class ContextServiceGNSClient implements ContextServiceGNSInterface {
 
-  private ContextServiceClient<Integer> csClient;
+  private ContextServiceClient csClient;
   private final NoopCallBack csNoopCallBack;
   private final NoopUpdateReply csNoopUpdateReply;
 
@@ -35,7 +36,7 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
     // catching everything here, otherwise exception doesn't get printed in executor service.
     try 
     {
-      csClient = new ContextServiceClient<>(hostName, portNum);
+      csClient = new ContextServiceClient (hostName, portNum, false, PrivacySchemes.NO_PRIVACY);
     } catch (Error | Exception er) {
       er.printStackTrace();
     }

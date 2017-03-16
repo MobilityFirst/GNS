@@ -494,8 +494,7 @@ public class ThroughputAsynchMultiClientTest {
               GNSProtocol.READER.toString(), null);
     } else {
       command = createAndSignCommand(CommandType.Read,
-              reader.getPrivateKey(),
-              reader.getPublicKey(),
+              reader,
               GNSProtocol.GUID.toString(), targetGuid, GNSProtocol.FIELD.toString(), field,
               GNSProtocol.READER.toString(), reader.getGuid());
     }
@@ -506,8 +505,7 @@ public class ThroughputAsynchMultiClientTest {
   private static CommandPacket createUpdateCommandPacket(GNSClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
     command = createAndSignCommand(CommandType.ReplaceUserJSON,
-            writer.getPrivateKey(),
-            writer.getPublicKey(),
+            writer,
             GNSProtocol.GUID.toString(), targetGuid, json.toString(),
             GNSProtocol.WRITER.toString(), writer.getGuid());
     return new CommandPacket(-1, command);
