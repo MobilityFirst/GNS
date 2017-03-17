@@ -345,9 +345,10 @@ public class GNSClient {
 				response = defaultHandleResponse(this.sendSyncInternal(packet,
 						timeout));
 			} catch (ClientException ce) {
-				if (ce.getCode() == ResponseCode.TIMEOUT)
+				// iOS client doesn't support empty body "if" statements
+				//if (ce.getCode() == ResponseCode.TIMEOUT)
 					// do nothing
-					;
+				//	;
 			}
 		} while ((count++ < this.numRetriesUponTimeout && (response == null || response
 				.getErrorCode() == ResponseCode.TIMEOUT)));
