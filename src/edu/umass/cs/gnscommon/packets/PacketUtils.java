@@ -1,5 +1,6 @@
 package edu.umass.cs.gnscommon.packets;
 
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -179,7 +180,7 @@ public class PacketUtils {
 		try {
 			if (command instanceof JSONObject) {
 				JSONObject o = ((JSONObject) command);
-				for (String key : JSONObject.getNames(o))
+				for (String key : CanonicalJSON.getNames(o))
 					length += key.length() + getLengthEstimate(o.get(key));
 			} else if (command instanceof JSONArray) {
 				JSONArray a = ((JSONArray) command);
