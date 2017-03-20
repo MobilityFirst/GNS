@@ -494,11 +494,13 @@ public class GroupAccess {
         for (RequestFuture<CommandPacket> future : futures) {
           try {
             LOGGER.log(Level.INFO, "CHECKING RESULT: {0}", future.toString());
-            LOGGER.log(Level.INFO, "RESULT IS : {0}", future.get().getResultString());
-            if (!GNSProtocol.OK_RESPONSE.toString().equals(future.get().getResultString())) {
+            String result = future.get().getResultString();
+            LOGGER.log(Level.INFO, "RESULT IS : {0}", result);
+            if (!GNSProtocol.OK_RESPONSE.toString().equals(result)) {
               allUpdatesOK = false;
             }
-          } catch (InterruptedException | ExecutionException | ClientException e) {
+          } catch (InterruptedException | ExecutionException e) {
+            LOGGER.log(Level.INFO, "EXCEPTION : {0}", e.getMessage());
             allUpdatesOK = false;
           }
         }
