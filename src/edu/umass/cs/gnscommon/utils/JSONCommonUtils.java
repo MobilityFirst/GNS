@@ -74,7 +74,7 @@ public class JSONCommonUtils {
       if (length == 0) {
         return null;
       }
-      Iterator iterator = jo.keys();
+      Iterator<?> iterator = jo.keys();
       String[] names = new String[length];
       int i = 0;
       while (iterator.hasNext()) {
