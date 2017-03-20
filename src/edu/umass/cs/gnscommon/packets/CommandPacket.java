@@ -27,8 +27,8 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
+import edu.umass.cs.gnscommon.utils.JSONCommonUtils;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.JSONPacket;
@@ -763,7 +763,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
   private static Object getResultValueFromString(String str)
           throws ClientException {
-    return CanonicalJSON.stringToValue(str);
+    return JSONCommonUtils.stringToValue(str);
   }
 
   /**

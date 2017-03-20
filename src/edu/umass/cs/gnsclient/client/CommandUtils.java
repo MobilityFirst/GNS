@@ -32,6 +32,7 @@ import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
+import edu.umass.cs.gnscommon.utils.JSONCommonUtils;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
@@ -100,8 +101,8 @@ public class CommandUtils {
     if (JSONPacket.couldBeJSON(response) && response.startsWith("{")) {
       try {
         JSONObject json = new JSONObject(response);
-        String[] keys = CanonicalJSON.getNames(json);
-        return (keys.length == 1) ? json.getString(CanonicalJSON
+        String[] keys = JSONCommonUtils.getNames(json);
+        return (keys.length == 1) ? json.getString(JSONCommonUtils
                 .getNames(json)[0]) : response;
       } catch (JSONException e) {
         e.printStackTrace();
