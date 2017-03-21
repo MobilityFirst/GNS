@@ -1267,8 +1267,7 @@ public class GNSCommand extends CommandPacket {
     return getCommand(commandType,
             guidEntry, GNSProtocol.NAME.toString(), alias,
             GNSProtocol.PUBLIC_KEY.toString(),
-            Base64.encodeToString(
-                    guidEntry.publicKey.getEncoded(), false),
+            KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
             GNSProtocol.PASSWORD.toString(),
             password != null ? Password.encryptAndEncodePassword(password, alias) : "");
   }
