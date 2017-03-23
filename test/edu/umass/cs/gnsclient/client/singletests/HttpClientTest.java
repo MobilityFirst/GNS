@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gnsclient.client.singletests.failingtests;
+package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.http.HttpClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -43,7 +43,7 @@ import org.junit.Assert;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class HttpClientTest extends DefaultGNSTest {
 
-  private HttpClient httpClient;
+  protected HttpClient httpClient;
   private static GuidEntry masterGuid;
   private static GuidEntry httpOneEntry;
   private static GuidEntry httpTwoEntry;

@@ -87,7 +87,20 @@ public class GNSClientConfig {
     /**
      * The port used by the local name server.
      */
-    LOCAL_NAME_SERVER_PORT(24398);
+    LOCAL_NAME_SERVER_PORT(24398),
+	  
+	//HTTP Proxy Settings
+    /**
+     * The port that GNSHttpProxy listens for incoming commands on.
+     */
+	HTTP_PROXY_PORT(8090),
+	  
+	/**
+	 * The hostname that GNSHttpProxy will allow incoming commands from.
+	 * By default this is localhost so it will only allow commands from the local machine.
+	 * If set to 0.0.0.0 it will allow commands from any source host.
+	 */
+	HTTP_PROXY_INCOMING_HOSTNAME("localhost");
     
     final Object defaultValue;
     
