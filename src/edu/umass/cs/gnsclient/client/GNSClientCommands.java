@@ -2247,7 +2247,8 @@ public class GNSClientCommands extends GNSClient {
   }
 
   /**
-   *
+   * An admin command that returns the contents of the GNS.
+   * 
    * @return The contents of the GNS.
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * if a protocol error occurs or the list cannot be parsed
@@ -2262,6 +2263,22 @@ public class GNSClientCommands extends GNSClient {
       //Do nothing if it already exists.
     }
     return execute(GNSCommand.dump()).getResultString();
+  }
+  
+  /**
+   * An admin command that deletes a single HRN or GUID record.
+   * This is not to be used to remove the entire GUID (which consist
+   * of a HRN record AND a GUID record. This is just for database
+   * maintenence and removes individual database records.
+   * 
+   * @param name
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public void deleteRecord(String name) throws ClientException, IOException {
+    execute(GNSCommand.deleteRecord(name));
   }
 
   @Override

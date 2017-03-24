@@ -77,7 +77,7 @@ public class DeleteRecordTest extends DefaultGNSTest {
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
-    
+
   }
 
   /**
@@ -114,7 +114,7 @@ public class DeleteRecordTest extends DefaultGNSTest {
   @Test
   public void test_04_DeleteHRN() {
     try {
-      client.execute(GNSCommand.deleteRecord(TEST_ACCOUNT_ALIAS));
+      clientCommands.deleteRecord(TEST_ACCOUNT_ALIAS);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while removing test account guid: " + e);
     }
@@ -126,14 +126,14 @@ public class DeleteRecordTest extends DefaultGNSTest {
       clientCommands.lookupGuid(TEST_ACCOUNT_ALIAS);
       Utils.failWithStackTrace("Should not have found the alias " + TEST_ACCOUNT_ALIAS);
     } catch (Exception e) {
-      System.out.println("Caught " + e.getMessage());
+      System.out.println("This is expected: Caught " + e.getMessage());
     }
   }
 
   @Test
   public void test_06_DeleteGuid() {
     try {
-      client.execute(GNSCommand.deleteRecord(testGuid.getGuid()));
+      clientCommands.deleteRecord(testGuid.getGuid());
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while removing test account guid: " + e);
     }
@@ -145,9 +145,9 @@ public class DeleteRecordTest extends DefaultGNSTest {
       clientCommands.lookupAccountRecord(testGuid.getGuid());
       Utils.failWithStackTrace("Should not have found the guid " + testGuid.getGuid());
     } catch (Exception e) {
-     System.out.println("Caught " + e.getMessage());
+      System.out.println("This is expected: Caught " + e.getMessage());
     }
   }
-  
+
   // no need for additional cleanup because we deleted the record we created
 }
