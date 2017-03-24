@@ -1433,6 +1433,16 @@ public enum CommandType {
   /**
    *
    */
+  DeleteRecord(720, CommandCategory.OTHER, 
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DeleteRecord.class,
+          CommandResultType.STRING, true, true,
+          "Returns the contents of the GNS.",
+          new String[]{GNSProtocol.GUID.toString()},
+          new String[]{},
+          CommandFlag.MUTUAL_AUTH, CommandFlag.LOCAL),
+  /**
+   *
+   */
   ConnectionCheck(737, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck.class,
           CommandResultType.STRING, true, false,
           "Checks connectivity.",
@@ -1894,6 +1904,7 @@ public enum CommandType {
     HelpTcp.setChain();
     HelpTcpWiki.setChain();
     Dump.setChain();
+    DeleteRecord.setChain();
     ConnectionCheck.setChain();
     Unknown.setChain();
 

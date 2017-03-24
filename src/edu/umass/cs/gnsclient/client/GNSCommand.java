@@ -2485,7 +2485,7 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * Executes the {@code dump} command.
+   * Executes the {@code Dump} command.
    *
    * @return CommandPacket
    * @throws ClientException
@@ -2494,6 +2494,19 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket dump()
           throws ClientException, IOException {
     return getCommand(CommandType.Dump, GNSProtocol.NAME.toString(), "Admin");
+  }
+  
+  /**
+   * Executes the {@code DeleteRecord} command.
+   *
+   * @param guid
+   * @return CommandPacket
+   * @throws ClientException
+   * @throws IOException
+   */
+  public static final CommandPacket deleteRecord(String guid)
+          throws ClientException, IOException {
+    return getCommand(CommandType.DeleteRecord, GNSProtocol.GUID.toString(), guid);
   }
 
   /**
