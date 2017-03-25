@@ -42,6 +42,7 @@ public class NodeInfo<NodeIDType> {
   /**
    * The id of the reconfigurator part of the name server.
    */
+  @Deprecated
   private final NodeIDType reconfiguratorID;
 
   /**
@@ -66,7 +67,7 @@ public class NodeInfo<NodeIDType> {
   /**
    * Starting port number
    */
-  private final int startingPortNumber;
+  private final int activePort;
 
   /**
    * RTT latency between the this node and node with nodeID = id. This field in updated
@@ -91,14 +92,14 @@ public class NodeInfo<NodeIDType> {
    * @param reconfiguratorID id of the reconfigurator part of the name server
    * @param ipAddressString ip address as a string
    * @param externalIP
-   * @param startingPortNumber first port number of block of ports used for TCP and UDP comms
+   * @param activePort first port number of block of ports used for TCP and UDP comms
    * @param pingLatency RTT latency between the local nameserver and this nameserver in milleseconds
    * @param latitude Latitude of the nameserver
    * @param longitude Longitude of the nameserver
    ***********************************************************
    */
   public NodeInfo(NodeIDType id, NodeIDType activeReplicaID, NodeIDType reconfiguratorID,
-          String ipAddressString, String externalIP, int startingPortNumber,
+          String ipAddressString, String externalIP, int activePort,
           long pingLatency, double latitude, double longitude) {
 
     this.id = id;
@@ -106,7 +107,7 @@ public class NodeInfo<NodeIDType> {
     this.reconfiguratorID = reconfiguratorID;
     this.ipAddressString = ipAddressString;
     this.externalIPString = externalIP;
-    this.startingPortNumber = startingPortNumber;
+    this.activePort = activePort;
     this.pingLatency = pingLatency;
     this.latitude = latitude;
     this.longitude = longitude;
@@ -135,19 +136,20 @@ public class NodeInfo<NodeIDType> {
    *
    * @return a node id
    */
+  @Deprecated
   public NodeIDType getReconfiguratorID() {
     return reconfiguratorID;
   }
 
   /**
    * Return the ip address.
-   * 
+   *
    * @return the ip address
    */
   public synchronized InetAddress getIpAddress() {
     if (ipAddress == null) {
       try {
-    	  // arun: coz InetAddress produces a String it can't recognize 
+        // arun: coz InetAddress produces a String it can't recognize 
         ipAddress = Util.getInetAddressFromString(ipAddressString);//InetAddress.getByName(ipAddressString);
       } catch (UnknownHostException e) {
         e.printStackTrace();
@@ -158,14 +160,14 @@ public class NodeInfo<NodeIDType> {
 
   /**
    * Return the external ip address.
-   * 
+   *
    * @return the external ip address
    */
   public synchronized InetAddress getExternalIPAddress() {
     if (externalIPAddress == null) {
       try {
         if (externalIPString != null) {
-        	// arun
+          // arun
           externalIPAddress = Util.getInetAddressFromString(externalIPString);//InetAddress.getByName(externalIPString);
         } else {
           externalIPAddress = getIpAddress();
@@ -178,12 +180,12 @@ public class NodeInfo<NodeIDType> {
   }
 
   /**
-   * Return the starting port number.
-   * 
-   * @return the starting port number
+   * Return the active port.
+   *
+   * @return the active port number
    */
-  public int getStartingPortNumber() {
-    return startingPortNumber;
+  public int getActivePort() {
+    return activePort;
   }
 
   /**
@@ -197,7 +199,7 @@ public class NodeInfo<NodeIDType> {
 
   /**
    * Set the ping latency
-   * 
+   *
    * @param pingLatency in milleseconds
    */
   public synchronized void setPingLatency(long pingLatency) {
@@ -206,7 +208,7 @@ public class NodeInfo<NodeIDType> {
 
   /**
    * Return the latitude.
-   * 
+   *
    * @return the latitude
    */
   public double getLatitude() {
@@ -215,7 +217,7 @@ public class NodeInfo<NodeIDType> {
 
   /**
    * Return the longitude.
-   * 
+   *
    * @return the longitude
    */
   public double getLongitude() {
@@ -224,7 +226,10 @@ public class NodeInfo<NodeIDType> {
 
   @Override
   public String toString() {
-    return "NodeInfo{" + "id=" + id + ", activeReplicaID=" + activeReplicaID + ", reconfiguratorID=" + reconfiguratorID + ", ipAddress=" + ipAddress + ", ipAddressString=" + ipAddressString + ", externalIP=" + externalIPString + ", startingPortNumber=" + startingPortNumber + ", pingLatency=" + pingLatency + '}';
+    return "NodeInfo{" + "id=" + id + ", activeReplicaID=" + activeReplicaID
+            + ", reconfiguratorID=" + reconfiguratorID + ", ipAddress=" + ipAddress
+            + ", ipAddressString=" + ipAddressString + ", externalIP=" + externalIPString
+            + ", activePort=" + activePort + ", pingLatency=" + pingLatency + '}';
   }
 
 }

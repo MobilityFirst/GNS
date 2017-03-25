@@ -30,71 +30,60 @@ import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
  * Command that saves GUID/alias/Keypair information to a file
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
-public class GuidExport extends ConsoleCommand
-{
+public class GuidExport extends ConsoleCommand {
 
   /**
    * Creates a new <code>GuidExport</code> object
-   * 
+   *
    * @param module
    */
-  public GuidExport(ConsoleModule module)
-  {
+  public GuidExport(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Saves alias/GUID and keypair information into a file on disk (careful, the file is not encrypted)";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "guid_export";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "alias path_and_filename";
   }
 
   /**
    * Override execute to not check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
+  public void execute(String commandText) throws Exception {
     parse(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if (st.countTokens() != 2)
-      {
-        console.printString("Wrong number of arguments for this command.\n");
+      if (st.countTokens() != 2) {
+        wrongArguments();
         return;
       }
       String aliasName = st.nextToken();
       String filename = st.nextToken();
 
-      if (!module.isSilent())
+      if (!module.isSilent()) {
         console.printString("Looking up alias " + aliasName + " GUID and certificates...\n");
+      }
       GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
 
-      if (myGuid == null)
-      {
+      if (myGuid == null) {
         console.printString("You do not have the private key for alias " + aliasName);
         console.printNewline();
         return;
@@ -102,16 +91,14 @@ public class GuidExport extends ConsoleCommand
 
       File f = new File(filename);
       f.createNewFile();
-      ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
-      myGuid.writeObject(oos);
-      oos.flush();
-      oos.close();
+      try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
+        myGuid.writeObject(oos);
+        oos.flush();
+        oos.close();
+      }
       console.printString("Keys for " + aliasName + " stored in " + filename);
       console.printNewline();
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
+    } catch (Exception e) {
       console.printString("Failed to save keys ( " + e + ")\n");
     }
   }

@@ -136,4 +136,9 @@ public abstract class ConsoleCommand implements Comparable<ConsoleCommand>
     String usage = "Usage: " + getCommandName() + getCommandParameters() + "\n   " + getCommandDescription();
     return usage;
   }
+  
+  public void wrongArguments() throws IOException {
+    console.printString("Wrong number of arguments; expected " + getCommandParameters());
+    console.printNewline();
+  }
 }

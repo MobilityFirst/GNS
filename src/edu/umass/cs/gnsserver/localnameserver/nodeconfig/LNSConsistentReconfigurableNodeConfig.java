@@ -232,17 +232,12 @@ public class LNSConsistentReconfigurableNodeConfig extends
   }
 
   @Override
-  public int getAdminPort(InetSocketAddress id) {
-    return this.nodeConfig.getAdminPort(id);
+  public int getServerAdminPort(InetSocketAddress id) {
+    return this.nodeConfig.getServerAdminPort(id);
   }
 
   @Override
-  public int getCcpPort(InetSocketAddress id) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public int getCcpAdminPort(InetSocketAddress id) {
+  public int getCollatingAdminPort(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 

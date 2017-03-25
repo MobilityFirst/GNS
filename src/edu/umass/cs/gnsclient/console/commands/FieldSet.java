@@ -23,99 +23,83 @@ import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.StringUtil;
+import java.io.IOException;
 
 /**
  * Command to update a field in the GNS
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
-public class FieldSet extends ConsoleCommand
-{
+public class FieldSet extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldAppend</code> object
-   * 
+   * Creates a new <code>FieldSet</code> object
+   *
    * @param module
    */
-  public FieldSet(ConsoleModule module)
-  {
+  public FieldSet(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Write a value at the given index in a field of the target GUID (using the credential of the current GUID/alias), "
             + "any previous value is overwritten."
             + " Assumes the field is a list. Use in conjunction with field_write_list.";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "field_set";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "[target_guid_or_alias] index field value";
   }
 
   /**
    * Override execute to check for a selected guid
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
-    if (!module.isCurrentGuidSetAndVerified())
-    {
+  public void execute(String commandText) throws Exception {
+    if (!module.isCurrentGuidSetAndVerified()) {
       return;
     }
     super.execute(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
+  public void parse(String commandText) throws Exception {
     GNSClientCommands gnsClient = module.getGnsClient();
-    try
-    {
+    try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;
-      if (st.countTokens() == 3)
-      {
-        guid = module.getCurrentGuid().getGuid();
-      }
-      else if (st.countTokens() == 4)
-      {
-        guid = st.nextToken();
-        if (!StringUtil.isValidGuidString(guid))
-        {
-          // We probably have an alias, lookup the GUID
-          guid = gnsClient.lookupGuid(guid);
-        }
-      }
-      else
-      {
-        console.printString("Wrong number of arguments for this command.\n");
-        return;
+      switch (st.countTokens()) {
+        case 3:
+          guid = module.getCurrentGuid().getGuid();
+          break;
+        case 4:
+          guid = st.nextToken();
+          if (!StringUtil.isValidGuidString(guid)) {
+            // We probably have an alias, lookup the GUID
+            guid = gnsClient.lookupGuid(guid);
+          }
+          break;
+        default:
+          wrongArguments();
+          return;
       }
       String indexStr = st.nextToken();
-      int index = -1;
-      try
-      {
+      int index;
+      try {
         index = Integer.valueOf(indexStr);
-      }
-      catch (Exception e)
-      {
+      } catch (Exception e) {
         index = -1;
       }
-      if (index < 0)
-      {
+      if (index < 0) {
         console.printString("Invalid index value.\n");
         return;
       }
@@ -124,11 +108,9 @@ public class FieldSet extends ConsoleCommand
 
       gnsClient.fieldSetElement(guid, field, value, index, module.getCurrentGuid());
       console.printString("Value '" + value + "' written at index " + index + " of field " + field + " for GUID "
-          + guid);
+              + guid);
       console.printNewline();
-    }
-    catch (Exception e)
-    {
+    } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

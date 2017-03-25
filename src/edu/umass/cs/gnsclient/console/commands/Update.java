@@ -30,10 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Command to update the entire records using JSON in the GNS
- *
- * @author Westy
- * @version 1.0
+ * Command to update the entire records using JSON
  */
 public class Update extends ConsoleCommand {
 
@@ -80,28 +77,28 @@ public class Update extends ConsoleCommand {
     try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;
-      if (st.countTokens() == 1) {
-        guid = module.getCurrentGuid().getGuid();
-      } else if (st.countTokens() == 2) {
-        guid = st.nextToken();
-        if (!StringUtil.isValidGuidString(guid)) {
-          // We probably have an alias, lookup the GUID
-          guid = gnsClient.lookupGuid(guid);
-        }
-      } else {
-        console.printString("Wrong number of arguments for this command.\n");
-        return;
+      switch (st.countTokens()) {
+        case 1:
+          guid = module.getCurrentGuid().getGuid();
+          break;
+        case 2:
+          guid = st.nextToken();
+          if (!StringUtil.isValidGuidString(guid)) {
+            // We probably have an alias, lookup the GUID
+            guid = gnsClient.lookupGuid(guid);
+          }
+          break;
+        default:
+          wrongArguments();
+          return;
       }
       String value = st.nextToken();
       JSONObject json = new JSONObject(value);
-      
 
       gnsClient.update(guid, json, module.getCurrentGuid());
       console.printString("GUID " + guid + " has been updated using '" + json.toString());
       console.printNewline();
-    } catch (IOException e) {
-      console.printString("Failed to access GNS ( " + e + ")\n");
-    } catch (ClientException e) {
+    } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     } catch (JSONException e) {
       console.printString("Unable to parse JSON string: " + e + "\n");

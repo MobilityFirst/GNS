@@ -24,12 +24,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Provides packet with an and a NameServerID and LNS address. Address can be null. 
+ * Provides packet with an NameServerID.
  * NameServerID can't be null but can be -1 meaning an invalid name server.
  *
  * @author westy
  * @param <NodeIDType>
  */
+@Deprecated
 public abstract class BasicPacketWithNs<NodeIDType> extends BasicPacketWithClientAddress {
 
   /** ns_ID */

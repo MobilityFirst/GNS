@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
 /**
  * @author arun, westy
@@ -159,7 +158,6 @@ public class GNSConfig {
     /* FIXME: arun: need to determine this timeout systematically, not an ad
 		 * hoc constant. */
     SELECT_REQUEST_TIMEOUT(5000),
-
     /**
      *
      */
@@ -264,9 +262,14 @@ public class GNSConfig {
     //
     /**
      * For the DNS service set to "all" or a node id if you want to start
-     * the DNS server when the app starts.
+     * the DNS server on the respective nodes when the app starts.
      */
     DNS_SERVER_NODES(NONE),
+    /**
+     * Specifies the IP address to send DNS queries to. Does not apply if
+     * {@link GNSC#DNS_GNS_ONLY} is set to true.
+     */
+    DNS_UPSTREAM_SERVER_IP("8.8.8.8"),
     /**
      * For the DNS service set to true if you want the DNS server to not
      * lookup records using DNS (will only lookup records in the GNS).
@@ -299,13 +302,6 @@ public class GNSConfig {
      */
     PRIVATE_KEY_ALIAS("node100"),
     /**
-     * Set this to true to use the older ACL paradigm. Default is false.
-     * Under the old model empty ACLs did not prevent us from going further
-     * up the tree toward the root to check for access.
-     * Temporary - The use of this will go away at some point.
-     */
-    USE_OLD_ACL_MODEL(false),
-    /**
      * Set this to true to use the old HTTP query handling. Default is false.
      * Older HTTP server didn't support multiple server installations.
      * Temporary - The use of this will go away at some point.
@@ -315,7 +311,17 @@ public class GNSConfig {
      * Turn off active code handling. Default is true.
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_ACTIVE_CODE(true);
+    DISABLE_ACTIVE_CODE(true),
+    /**
+     * Server Admin port offset relative to reconfigurator port.
+     */
+    // Make sure this is different than all the other offsets.
+    SERVER_ADMIN_PORT_OFFSET(197),
+    /**
+     * Collating Admin port offset relative to reconfigurator port.
+     */
+    // Make sure this is different than all the other offsets.
+    COLLATING_ADMIN_PORT_OFFSET(297);
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;

@@ -55,9 +55,6 @@ import org.json.JSONException;
  */
 public class GroupAccess {
 
-  // DONT FORGET TO CHECK THE CommandCategorys of the group commands
-  // before you enable the new update methods.
-  //private static final boolean USE_OLD_UPDATE = false;
   /**
    * Hidden field that stores group members
    */
@@ -214,7 +211,6 @@ public class GroupAccess {
                     GroupAccess.GROUP, members, header)).getResultString());
     boolean allGroupsUpdatesOK = true;
     for (String memberGuid : members.toStringSet()) {
-      //handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
       if (!GNSProtocol.OK_RESPONSE.toString().equals(handler.getInternalClient().execute(GNSCommandInternal.fieldRemove(memberGuid,
               GroupAccess.GROUPS, guid, header)).getResultString())) {
         allGroupsUpdatesOK = false;

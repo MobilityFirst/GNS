@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
 
+import java.net.InetSocketAddress;
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -32,11 +33,10 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * This class represents a data structure to store information
  * about Select operations performed on the GNS.
- * @param <NodeIDType>
  */
-public class NSSelectInfo<NodeIDType> {
-  private final int id;
-  private final Set<NodeIDType> serversToBeProcessed; // the list of servers that have yet to be processed
+public class NSSelectInfo {
+  private final int queryId;
+  private final Set<InetSocketAddress> serversToBeProcessed; // the list of servers that have yet to be processed
   private final ConcurrentHashMap<String, JSONObject> responses;
   private final SelectOperation selectOperation;
   private final SelectGroupBehavior groupBehavior;
@@ -53,9 +53,9 @@ public class NSSelectInfo<NodeIDType> {
    * @param minRefreshInterval 
    * @param guid 
    */
-  public NSSelectInfo(int id, Set<NodeIDType> serverIds, SelectOperation selectOperation, SelectGroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
-    this.id = id;
-    this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<NodeIDType, Boolean>());
+  public NSSelectInfo(int id, Set<InetSocketAddress> serverIds, SelectOperation selectOperation, SelectGroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
+    this.queryId = id;
+    this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<InetSocketAddress, Boolean>());
     this.serversToBeProcessed.addAll(serverIds);
     this.responses = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectOperation = selectOperation;
@@ -67,24 +67,24 @@ public class NSSelectInfo<NodeIDType> {
 
   /**
    * 
-   * @return the id
+   * @return the queryId
    */
   public int getId() {
-    return id;
+    return queryId;
   }
 
   /**
    * Removes the server if from the list of servers that have yet to be processed.
-   * @param id 
+   * @param address 
    */
-  public void removeServerID(NodeIDType id) {
-    serversToBeProcessed.remove(id);
+  public void removeServerAddress(InetSocketAddress address) {
+    serversToBeProcessed.remove(address);
   }
   /**
    * 
    * @return the set of servers
    */
-  public Set<NodeIDType> serversYetToRespond() {
+  public Set<InetSocketAddress> serversYetToRespond() {
     return serversToBeProcessed;
   }
   /**

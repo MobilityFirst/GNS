@@ -35,6 +35,7 @@ import java.util.HashMap;
  * keyPrefix as a prefix. 'keyPrefix' must have a toString()
  * method but doesn't have to be a String. 'key' must be a
  * String and is computed as keyPrefix.toString()+version.
+ *
  * @param <KeyType>
  * @param <ValueType>
  */
@@ -52,7 +53,7 @@ public class StringVersionedMap<KeyType, ValueType> {
     keyVersions = new HashMap<>();
   }
 
-	// Inserts [key = keyPrefix.toString()+version, value]
+  // Inserts [key = keyPrefix.toString()+version, value]
   /**
    *
    * @param keyPrefix
@@ -70,6 +71,7 @@ public class StringVersionedMap<KeyType, ValueType> {
     }
     this.keyVersions.put(keyPrefix, versions);
   }
+
   /* Returns value corresponding to the highest version such 
    * that [keyprefix.toString()+version, value] is in the map.
    * If none is found, it will try to find an exact match for 
@@ -136,6 +138,7 @@ public class StringVersionedMap<KeyType, ValueType> {
     assert (pieces != null && pieces.length == 2);
     return Integer.parseInt(pieces[1]);
   }
+
   /* Usual get with a String key. Called must know key or must
    * use the combineIDVersion method above.
    */
@@ -152,9 +155,9 @@ public class StringVersionedMap<KeyType, ValueType> {
   //
   //Standard map methods below
   //
-  /*
+  /**
    *
-   * @return  a string collection
+   * @return a string collection
    */
   public synchronized Collection<String> keySet() {
     return this.map.keySet();
@@ -258,12 +261,12 @@ public class StringVersionedMap<KeyType, ValueType> {
     /* Space testing */
     int million = 1000000;
     int size = 22 * million;
-		//StringVersionedMap<String,String>[] svmarray = new StringVersionedMap[size];
+    //StringVersionedMap<String,String>[] svmarray = new StringVersionedMap[size];
     //HashMap<String,String>[] hmaparray = new HashMap[size];
     byte[][] bytearray = new byte[size][20];
     int j = 1;
     for (int i = 0; i < size; i++) {
-			//svmarray[i] = new StringVersionedMap<String,String>();
+      //svmarray[i] = new StringVersionedMap<String,String>();
       //svmarray[i].put("paxos"+i, 0, (""+i));
       //hmaparray[i] = new HashMap<String, String>();
       //hmaparray[i].put("key"+i, "value"+i);

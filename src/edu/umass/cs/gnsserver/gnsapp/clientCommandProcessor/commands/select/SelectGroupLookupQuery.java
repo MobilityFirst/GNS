@@ -59,9 +59,11 @@ public class SelectGroupLookupQuery extends AbstractCommand {
   @Override
   public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException, InternalRequestException {
     JSONObject json = commandPacket.getCommand();
-    String guid = json.getString(GNSProtocol.GUID.toString());
-    return FieldAccess.selectGroupLookupQuery(header, guid, handler);
+    String reader = json.optString(GNSProtocol.GUID.toString(), null);
+    String accountGuid = json.getString(GNSProtocol.ACCOUNT_GUID.toString());
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
+    return FieldAccess.selectGroupLookupQuery(header, commandPacket, reader, accountGuid, signature, message, handler);
   }
 
-  
 }

@@ -28,7 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.main.OldHackyConstants;
+import edu.umass.cs.gnsserver.nodeconfig.PortOffsets;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
@@ -145,7 +145,8 @@ public class Packet {
         if (type.className != null) {
           try {
             Class<?> klass = Class.forName(type.className, false, Packet.class.getClassLoader());
-            //GNS.getLogger().info(type.name() + "->" + klass.getName());
+            GNSConfig.getLogger().log(Level.FINER, "{0}->{1}", 
+                    new Object[]{type.name(), klass.getName()});
           } catch (ClassNotFoundException e) {
             GNSConfig.getLogger().log(Level.WARNING,
                     "Unknown class for {0}:{1}", new Object[]{type.name(), type.className});
@@ -238,9 +239,6 @@ public class Packet {
     json.put(PACKET_TYPE, type.getInt());
   }
 
-  private static final String JSON_OBJECT_CLASS = "org.json.JSONObject";
-  private static final String STRINGIFIABLE_OBJECT_CLASS = "edu.umass.cs.gnsserver.utils.Stringifiable";
-
   /**
    * Create an packet instance from a JSON Object that contains a packet plus
    * a Stringifiable instance (same as a packet constructor).
@@ -288,9 +286,9 @@ public class Packet {
           }
         // select
         case SELECT_REQUEST:
-          return new edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket<>(json, unstringer);
+          return new edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket(json);
         case SELECT_RESPONSE:
-          return new edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket<>(json, unstringer);
+          return new edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket(json);
         // paxos
         case PAXOS_PACKET:
           return null;
@@ -370,6 +368,7 @@ public class Packet {
    * @throws java.io.IOException
    * @throws org.json.JSONException *
    */
+  @SuppressWarnings("javadoc")
   private static JSONObject getJSONObjectFrame(InputStream input, int sizeOfFrame)
           throws IOException, JSONException {
     byte[] jsonByte = new byte[sizeOfFrame];
@@ -424,9 +423,8 @@ public class Packet {
    * @return Returns the Socket over which the packet was sent, or null if the port type is incorrect.
    * @throws java.io.IOException *
    */
-  @SuppressWarnings("unchecked")
   public static Socket sendTCPPacket(GNSNodeConfig<String> gnsNodeConfig, JSONObject json,
-          String nameserverId, OldHackyConstants.PortType portType) throws IOException {
+          String nameserverId, PortOffsets portType) throws IOException {
     int port = gnsNodeConfig.getPortForTopLevelNode(nameserverId, portType);
     if (port == -1) {
       GNSConfig.getLogger().log(Level.WARNING,
@@ -495,10 +493,9 @@ public class Packet {
    * @param portType Type of port to connect
    * @param excludeNameServers *
    */
-  @SuppressWarnings("unchecked")
   public static void multicastTCP(GNSNodeConfig<String> gnsNodeConfig,
           Set<String> nameServerIds, JSONObject json, int numRetry,
-          OldHackyConstants.PortType portType, Set<Object> excludeNameServers) {
+          PortOffsets portType, Set<Object> excludeNameServers) {
     int tries;
     for (String id : nameServerIds) {
       if (excludeNameServers != null && excludeNameServers.contains(id)) {

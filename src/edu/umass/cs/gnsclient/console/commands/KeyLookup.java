@@ -30,9 +30,6 @@ import javax.xml.bind.DatatypeConverter;
 
 /**
  * Lookup a Public Key for an alias or GUID
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class KeyLookup extends ConsoleCommand {
 
@@ -67,13 +64,17 @@ public class KeyLookup extends ConsoleCommand {
       String alias;
       switch (st.countTokens()) {
         case 0:
-          alias = module.getCurrentGuid().getEntityName();
+          if (!module.isCurrentGuidSetAndVerified()) {
+            return;
+          } else {
+            alias = module.getCurrentGuid().getEntityName();
+          }
           break;
         case 1:
           alias = st.nextToken();
           break;
         default:
-          console.printString("Wrong number of arguments for this command.\n");
+          wrongArguments();
           return;
       }
       GNSClientCommands gnsClient = module.getGnsClient();

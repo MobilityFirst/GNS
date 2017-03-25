@@ -20,14 +20,11 @@
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import com.google.common.collect.Sets;
-
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import edu.umass.cs.gnscommon.utils.Base64;
-
 import java.nio.ByteBuffer;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -38,9 +35,8 @@ import java.util.logging.Level;
 
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
-import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.SessionKeys;
@@ -224,7 +220,7 @@ public class NSAccessSupport {
     SecretKey secretKey = SessionKeys.getSecretKeyFromCertificate(skCertEncoded, publicKey);
 
     MessageDigest md = getMessageDigestInstance();
-    byte[] digest = null;
+    byte[] digest;
     synchronized (md) {
       digest = md.digest(bytes);
     }
@@ -301,140 +297,6 @@ public class NSAccessSupport {
   }
 
   /**
-   * Checks to see if the accessorGuid can access the field of the guid.
-   * Access type is some combo of read, and write, and blacklist or whitelist.
-   * Note: Blacklists are currently not supported.
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accessorGuid
-   * @param activeReplica
-   * @return true if the the reader has access
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  // FIXME: This is only used for checking the case where an accessorGuid is in a group guid
-  // that is in the acl. For this purpose it is overkill and should be fixed.
-  @Deprecated
-  public static boolean verifyAccess(InternalRequestHeader header, MetaDataTypeName accessType, String guid, String field,
-          String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    ClientSupportConfig.getLogger().log(Level.FINE,
-            "User: {0} Reader: {1} Field: {2}",
-            new Object[]{guid, accessorGuid, field});
-    if (guid.equals(accessorGuid)) {
-      return true; // can always read your own stuff
-    } else if (hierarchicalAccessCheck(header, accessType, guid, field, accessorGuid, activeReplica)) {
-      return true; // accessor can see this field
-    } else if (checkForAccess(header, accessType, guid, GNSProtocol.ENTIRE_RECORD.toString(), accessorGuid, activeReplica)) {
-      return true; // accessor can see all fields
-    } else {
-      ClientSupportConfig.getLogger().log(Level.FINE,
-              // Message template wasn't working here... odd.
-              "User " + accessorGuid + " NOT allowed to access user " + guid + "'s field " + field);
-      return false;
-    }
-  }
-
-  /**
-   * Handles checking of fields with dot notation.
-   * Checks deepest field first then backs up.
-   *
-   * @param accessType
-   * @param guidInfo
-   * @param field
-   * @param accessorInfo
-   * @param accessorPublicKey
-   * @return true if the accessor has access
-   * @throws FailedDBOperationException
-   */
-  @Deprecated
-  private static boolean hierarchicalAccessCheck(InternalRequestHeader header, MetaDataTypeName accessType, String guid,
-          String field, String accessorGuid,
-          GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", field);
-    if (checkForAccess(header, accessType, guid, field, accessorGuid, activeReplica)) {
-      return true;
-    }
-    // otherwise go up the hierarchy and check
-    if (field.contains(".")) {
-      return hierarchicalAccessCheck(header, accessType, guid, field.substring(0, field.lastIndexOf(".")),
-              accessorGuid, activeReplica);
-    } else {
-      // check all the way up and there is no access
-      return false;
-    }
-  }
-
-  /**
-   * Does the access check for the given access type on field for the guid and accessorGuid.
-   * Field can be dotted and at any level.
-   *
-   * @param accessType
-   * @param guid
-   * @param field
-   * @param accessorGuid
-   * @param activeReplica
-   * @return true if access is allowed
-   * @throws FailedDBOperationException
-   */
-  @Deprecated
-  private static boolean checkForAccess(InternalRequestHeader header, MetaDataTypeName accessType, String guid, String field, String accessorGuid,
-          GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    try {
-      // FIXME: Tidy this mess up.
-      @SuppressWarnings("unchecked")
-      Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(accessType,
-              guid, field, activeReplica.getDB());
-      ClientSupportConfig.getLogger().log(Level.FINE, "{0} allowed users of {1} : {2}", new Object[]{guid, field, allowedusers});
-      if (checkAllowedUsers(header, accessorGuid, allowedusers, activeReplica)) {
-        ClientSupportConfig.getLogger().log(Level.FINE, "User {0} allowed to access {1}",
-                new Object[]{accessorGuid,
-                  field != GNSProtocol.ENTIRE_RECORD.toString() ? ("user " + guid + "'s " + field + " field")
-                          : ("all of user " + guid + "'s fields")});
-        return true;
-      }
-      return false;
-    } catch (FieldNotFoundException e) {
-      // This is actually a normal result.. so no warning here.
-      return false;
-    } catch (RecordNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.WARNING,
-              "User {0} access problem for {1}'s {2} field: {3}",
-              new Object[]{accessorGuid, guid, field, e});
-      return false;
-    }
-  }
-
-  /**
-   * Performs the ultimate check to see if guid is in the list of allowed users (which is a list of public keys).
-   * Also handles the case where one of the groups that accessorguid is in is a member of allowed users.
-   * Finally handles the case where the allowed users contains the GNSProtocol.EVERYONE.toString() symbol.
-   *
-   * @param accessorGuid - the guid that we are checking for access
-   * @param allowedUsers - the list of publickeys that are in the acl
-   * @param activeReplica
-   * @return true if the guid is in the allowed users
-   * @throws FailedDBOperationException
-   */
-  @Deprecated
-  private static boolean checkAllowedUsers(InternalRequestHeader header, String accessorGuid,
-          Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    if (SharedGuidUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
-      return true;
-    } else if (allowedUsers.contains(GNSProtocol.EVERYONE.toString())) {
-      return true;
-    } else {
-      // see if allowed users (the public keys for the guids and group guids that is in the ACL) 
-      // intersects with the groups that this guid is a member of (which is stored with this guid)
-      ClientSupportConfig.getLogger().log(Level.FINE,
-              "Looking up groups for {0} and check against {1}",
-              new Object[]{accessorGuid, SharedGuidUtils.convertPublicKeysToGuids(allowedUsers)});
-      return !Sets.intersection(SharedGuidUtils.convertPublicKeysToGuids(allowedUsers),
-              NSGroupAccess.lookupGroups(header, accessorGuid, activeReplica.getRequestHandler())).isEmpty();
-    }
-  }
-
-  /**
    * Returns true if the field has access setting that allow it to be read globally.
    *
    * @param access
@@ -465,8 +327,8 @@ public class NSAccessSupport {
       }
     } catch (RecordNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.WARNING,
-              // Message template wasn't working here... odd.
-              "User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
+              "User {0} access problem for {1}''s {2} field: {3}", 
+              new Object[]{guid, field, access.toString(), e.getMessage()});
       return false;
     }
   }
@@ -486,16 +348,6 @@ public class NSAccessSupport {
   @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
-    if (Config.getGlobalBoolean(GNSConfig.GNSC.USE_OLD_ACL_MODEL)) {
-      return oldLookupPublicKeysFromAcl(access, guid, field, database);
-    } else {
-      return newLookupPublicKeysFromAcl(access, guid, field, database);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  public static Set<String> newLookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
-          BasicRecordMap database) throws FailedDBOperationException {
     ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", new Object[]{field});
     try {
       // If the field is found this will return a list of the public keys in the ACL,
@@ -510,35 +362,10 @@ public class NSAccessSupport {
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
-      return newLookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
+      return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
       // One last check at the root (GNSProtocol.ENTIRE_RECORD.toString()) field.
     } else if (!GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-      return newLookupPublicKeysFromAcl(access, guid, GNSProtocol.ENTIRE_RECORD.toString(), database);
-    } else {
-      return new HashSet<>();
-    }
-  }
-
-  @Deprecated
-  @SuppressWarnings("unchecked")
-  public static Set<String> oldLookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
-          BasicRecordMap database) throws FailedDBOperationException {
-    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}",
-            new Object[]{field});
-    try {
-      //FIXME: Clean this mess up.
-      return (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(access, guid, field, database);
-    } catch (FieldNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
-    } catch (RecordNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.WARNING,
-              // The message template wasn't working here... odd.
-              "User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
-      return new HashSet<>();
-    }
-    // otherwise go up the hierarchy and check
-    if (field.contains(".")) {
-      return oldLookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
+      return lookupPublicKeysFromAcl(access, guid, GNSProtocol.ENTIRE_RECORD.toString(), database);
     } else {
       return new HashSet<>();
     }
@@ -553,7 +380,8 @@ public class NSAccessSupport {
    */
   public static String removeSignature(String messageStringWithSignatureParts, String signatureParts) {
     ClientSupportConfig.getLogger().log(Level.FINER,
-            "fullstring = {0} fullSignatureField = {1}", new Object[]{messageStringWithSignatureParts, signatureParts});
+            "fullstring = {0} fullSignatureField = {1}", 
+            new Object[]{messageStringWithSignatureParts, signatureParts});
     String result = messageStringWithSignatureParts.substring(0,
             messageStringWithSignatureParts.lastIndexOf(signatureParts));
     ClientSupportConfig.getLogger().log(Level.FINER, "result = {0}", result);

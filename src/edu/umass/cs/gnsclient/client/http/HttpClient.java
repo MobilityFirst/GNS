@@ -69,15 +69,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 
 /**
  * This class defines a HttpClient to communicate with a GNS instance
- * over HTTP. This class works on both Android and Desktop platforms.
- * This class contains a subset of all available server operations.
- * For a more complete set see UniversalGnsClientExtended.
- *
- * MANY USER ACCESIBLE METHODS IN HERE ARE EXACT DUPLICATES OF THE
- * ONES IN GNS CLIENT. THERE COULD REALLY BE A GNSClientInterface class.
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
- * @version 1.0
+ * over HTTP.
  */
 public class HttpClient {
 
@@ -115,7 +107,7 @@ public class HttpClient {
   private static final boolean includeTimestamp = false;
 
   /**
-   * Creates a new <code>AbstractGnrsClient</code> object
+   * Creates a new <code>HttpClient</code> object
    *
    * @param host Hostname of the GNS instance
    * @param port Port number of the GNS instance
@@ -1133,9 +1125,7 @@ public class HttpClient {
   //
   /**
    * Returns all GUIDs that have a field that contains the given value as a
-   * JSONArray containing guids. Also note that the GNS currently does not enforce any
-   * ACL checking for this operation - everything is accessible and no
-   * signatures are required. This might change.
+   * JSONArray containing guids. Field must be world readable.
    *
    * @param field
    * @param value
@@ -1147,11 +1137,31 @@ public class HttpClient {
   public JSONArray select(String field, String value) throws IOException, ClientException, JSONException {
     return new JSONArray(getResponse(CommandType.Select, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value));
   }
+  
+  /**
+   * Returns all GUIDs that have a field that contains the given value as a
+   * JSONArray containing guids. 
+   *
+   * @param reader
+   * @param field
+   * @param value
+   * @return a JSONArray containing all the matched records as JSONObjects
+   * @throws java.io.IOException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws org.json.JSONException
+   */
+  public JSONArray select(GuidEntry reader, String field, String value) throws IOException, ClientException, JSONException {
+    return new JSONArray(getResponse(CommandType.Select, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.FIELD.toString(), field, 
+            GNSProtocol.VALUE.toString(), value));
+  }
 
   /**
    * If field is a GeoSpatial field returns all guids that have fields that are within value
    * which is a bounding box specified as a nested
    * JSONArrays of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
+   * Field must be world readable.
    *
    * @param field
    * @param value - [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
@@ -1165,11 +1175,34 @@ public class HttpClient {
     return new JSONArray(getResponse(CommandType.SelectWithin, GNSProtocol.FIELD.toString(), field,
             GNSProtocol.WITHIN.toString(), value));
   }
+  
+  /**
+   * If field is a GeoSpatial field returns all guids that have fields that are within value
+   * which is a bounding box specified as a nested
+   * JSONArrays of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
+   * Field must be world readable.
+   *
+   * @param reader
+   * @param field
+   * @param value - [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
+   * @return a JSONArray containing the guids of all the matched records
+   * @throws java.io.IOException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws org.json.JSONException
+   */
+  public JSONArray selectWithin(GuidEntry reader, String field, JSONArray value)
+          throws IOException, ClientException, JSONException {
+    return new JSONArray(getResponse(CommandType.SelectWithin, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.WITHIN.toString(), value));
+  }
 
   /**
    * If field is a GeoSpatial field returns all guids that have fields that are near value
    * which is a point specified as a two element
    * JSONArray: [LONG, LAT]. Max Distance is in meters.
+   * Field must be world readable.
    *
    * @param field
    * @param value - [LONG, LAT]
@@ -1185,9 +1218,33 @@ public class HttpClient {
             GNSProtocol.NEAR.toString(), value,
             GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance)));
   }
+  
+  /**
+   * If field is a GeoSpatial field returns all guids that have fields that are near value
+   * which is a point specified as a two element
+   * JSONArray: [LONG, LAT]. Max Distance is in meters.
+   *
+   * @param reader
+   * @param field
+   * @param value - [LONG, LAT]
+   * @param maxDistance - distance in meters
+   * @return a JSONArray containing the guids of all the matched records
+   * @throws java.io.IOException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws org.json.JSONException
+   */
+  public JSONArray selectNear(GuidEntry reader, String field, JSONArray value, Double maxDistance)
+          throws IOException, ClientException, JSONException {
+    return new JSONArray(getResponse(CommandType.SelectNear, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.NEAR.toString(), value,
+            GNSProtocol.MAX_DISTANCE.toString(), Double.toString(maxDistance)));
+  }
 
   /**
    * Selects all records that match query.
+   * All fields accessed must be world readable.
    *
    * @param query
    * @return a JSONArray containing all the guids
@@ -1196,11 +1253,29 @@ public class HttpClient {
    * @throws org.json.JSONException
    */
   public JSONArray selectQuery(String query) throws IOException, ClientException, JSONException {
-    return new JSONArray(getResponse(CommandType.SelectQuery, GNSProtocol.QUERY.toString(), query));
+    return new JSONArray(getResponse(CommandType.SelectQuery, 
+            GNSProtocol.QUERY.toString(), query));
+  }
+  
+  /**
+   * Selects all records that match query.
+   *
+   * @param reader
+   * @param query
+   * @return a JSONArray containing all the guids
+   * @throws java.io.IOException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws org.json.JSONException
+   */
+  public JSONArray selectQuery(GuidEntry reader, String query) throws IOException, ClientException, JSONException {
+    return new JSONArray(getResponse(CommandType.SelectQuery, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.QUERY.toString(), query));
   }
 
   /**
    * Set up a context aware group guid using a query.
+   * All fields accessed must be world readable.
    *
    * @param guid
    * @param query
@@ -1211,12 +1286,33 @@ public class HttpClient {
    */
   public JSONArray selectSetupGroupQuery(String guid, String query)
           throws IOException, ClientException, JSONException {
-    return new JSONArray(getResponse(CommandType.SelectGroupSetupQuery, GNSProtocol.GUID.toString(), guid,
+    return new JSONArray(getResponse(CommandType.SelectGroupSetupQuery, 
+            GNSProtocol.ACCOUNT_GUID.toString(), guid,
+            GNSProtocol.QUERY.toString(), query));
+  }
+  
+  /**
+   * Set up a context aware group guid using a query.
+   *
+   * @param reader
+   * @param groupGuid
+   * @param query
+   * @return a JSONArray containing all the guids
+   * @throws java.io.IOException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws org.json.JSONException
+   */
+  public JSONArray selectSetupGroupQuery(GuidEntry reader, String groupGuid, String query)
+          throws IOException, ClientException, JSONException {
+    return new JSONArray(getResponse(CommandType.SelectGroupSetupQuery, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.ACCOUNT_GUID.toString(), groupGuid,
             GNSProtocol.QUERY.toString(), query));
   }
 
   /**
    * Look up the value of a context aware group guid using a query.
+   * All fields accessed must be world readable.
    *
    * @param guid
    * @return a JSONArray containing all the guids
@@ -1225,7 +1321,25 @@ public class HttpClient {
    * @throws org.json.JSONException
    */
   public JSONArray selectLookupGroupQuery(String guid) throws IOException, ClientException, JSONException {
-    return new JSONArray(getResponse(CommandType.SelectGroupLookupQuery, GNSProtocol.GUID.toString(), guid));
+    return new JSONArray(getResponse(CommandType.SelectGroupLookupQuery, 
+            GNSProtocol.ACCOUNT_GUID.toString(), guid));
+  }
+  
+  /**
+   * Look up the value of a context aware group guid created using a query.
+   *
+   * @param reader
+   * @param groupGuid
+   * @return a JSONArray containing all the guids
+   * @throws java.io.IOException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws org.json.JSONException
+   */
+  public JSONArray selectLookupGroupQuery(GuidEntry reader, String groupGuid) 
+          throws IOException, ClientException, JSONException {
+    return new JSONArray(getResponse(CommandType.SelectGroupLookupQuery, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.ACCOUNT_GUID.toString(), groupGuid));
   }
 
   /**
@@ -1313,6 +1427,7 @@ public class HttpClient {
    * @return the guid
    * @throws java.io.IOException
    */
+  @SuppressWarnings("javadoc")
   private String guidCreate(GuidEntry accountGuid, String name, PublicKey publicKey) throws IOException, ClientException {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
@@ -1334,6 +1449,7 @@ public class HttpClient {
    * @throws ClientException
    * @throws InvalidGuidException if the user already exists
    */
+  @SuppressWarnings("javadoc")
   private String accountGuidCreate(String alias, GuidEntry guidEntry, String password) throws UnsupportedEncodingException, IOException,
           ClientException, InvalidGuidException, NoSuchAlgorithmException {
     byte[] publicKeyBytes = guidEntry.getPublicKey().getEncoded();
@@ -1355,6 +1471,7 @@ public class HttpClient {
    * @param accesserGuid
    * @throws java.io.IOException
    */
+  @SuppressWarnings("javadoc")
   private void aclAdd(String accessType, GuidEntry guid, String field, String accesserGuid) throws IOException, ClientException {
     getResponse(accesserGuid == null ? CommandType.AclAdd : CommandType.AclAddSelf, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType, GNSProtocol.GUID.toString(),
@@ -1371,6 +1488,7 @@ public class HttpClient {
    * @param accesserGuid
    * @throws java.io.IOException
    */
+  @SuppressWarnings("javadoc")
   private void aclRemove(String accessType, GuidEntry guid, String field, String accesserGuid) throws IOException, ClientException {
     getResponse(accesserGuid == null ? CommandType.AclRemove : CommandType.AclRemoveSelf, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType,
@@ -1389,6 +1507,7 @@ public class HttpClient {
    * @return the acl as a JSON array
    * @throws java.io.IOException
    */
+  @SuppressWarnings("javadoc")
   private JSONArray aclGet(String accessType, GuidEntry guid, String field, String accesserGuid) throws IOException, ClientException {
     try {
       return new JSONArray(getResponse(accesserGuid == null ? CommandType.AclRetrieve : CommandType.AclRetrieveSelf, guid,
@@ -1671,6 +1790,7 @@ public class HttpClient {
   // more hair because of need for URLs and also JSON. Maybe just send JSON?
   // The big difference is that it creates a URI String to send to the server, but it also
   // creates a canonical JSON form that it needs for the signature.
+  @SuppressWarnings("javadoc")
   private String createAndSignQuery(CommandType commandType, GuidEntry guid, Object... keysAndValues)
           throws ClientException {
     // First we create the URI string

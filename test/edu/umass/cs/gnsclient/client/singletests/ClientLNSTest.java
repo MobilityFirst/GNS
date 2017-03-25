@@ -21,17 +21,12 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-
-import org.junit.Assert;
-
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -40,6 +35,7 @@ import org.junit.runners.MethodSorters;
  * Tests the LNS using the GNS Proxy feature.
  *
  */
+// This requires that the LOCAL_NAME_SERVER_NODES config option be set.
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ClientLNSTest extends DefaultGNSTest {
 

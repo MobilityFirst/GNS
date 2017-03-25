@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableSet;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.main.OldHackyConstants;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.nio.nioutils.InterfaceDelayEmulator;
 
@@ -34,12 +33,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
@@ -92,81 +87,27 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Contains information about each name server. <Key = HostID, Value = NodeInfo>
    *
    */
-  private ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> hostInfoMapping;
+  private final ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> hostInfoMapping;
 
   // arun: to correct legacy hack
   private boolean addSuffix = false;
 
   /**
-   * arun: For use with gigapaxos createApp.
+   * For use with gigapaxos createApp.
    *
    * @throws IOException
    */
   public GNSNodeConfig() throws IOException {
     Map<String, InetSocketAddress> activeMap = PaxosConfig.getActives();
-    hostInfoMapping = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>();
+    hostInfoMapping = new ConcurrentHashMap<>();
     for (String active : activeMap.keySet()) {
       addHostInfo(hostInfoMapping, valueOf(active),
-              activeMap.get(active).getAddress().toString(), activeMap
-              .get(active).getAddress().toString(), activeMap
-              .get(active).getPort() > 0 ? activeMap.get(active)
-              .getPort() : OldHackyConstants.DEFAULT_STARTING_PORT);
+              activeMap.get(active).getAddress().toString(),
+              activeMap.get(active).getAddress().toString(),
+              activeMap.get(active).getPort());
     }
-    //hostsFile = null;
   }
 
-  /**
-   * Creates a GNSNodeConfig for the given nameServerID and initializes it from a name server host file.
-   * This supports the new hosts.txt style format.
-   *
-   * @param hostsFile
-   * @param nameServerID - specify null to mean the CPP
-   * @throws java.io.IOException
-   */
-  public GNSNodeConfig(String hostsFile, NodeIDType nameServerID) throws IOException {
-    if (nameServerID == null) {
-      this.isCPP = true;
-    }
-    this.nodeID = nameServerID;
-
-    //this.hostsFile = hostsFile;
-    if (isOldStyleFile(hostsFile)) {
-      throw new UnsupportedOperationException("THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: " + hostsFile);
-      //initFromOldStyleFile(hostsFile, nameServerID);
-    }
-    //readHostsFile(hostsFile);
-    // Informational purposes
-    for (Entry<NodeIDType, NodeInfo<NodeIDType>> hostInfoEntry : hostInfoMapping.entrySet()) {
-      GNSConfig.getLogger().log(Level.INFO,
-              "For {0} Id: {1} Host Name:{2} IP:{3} Start Port:{4}",
-              new Object[]{nameServerID == null ? "CPP" : nameServerID.toString(),
-                hostInfoEntry.getValue().getId().toString(),
-                hostInfoEntry.getValue().getIpAddress(),
-                hostInfoEntry.getValue().getExternalIPAddress(),
-                hostInfoEntry.getValue().getStartingPortNumber()});
-    }
-    //startCheckingForUpdates();
-  }
-
-//  /**
-//   * Creates a GNSNodeConfig for the LocalNameServer and initializes it from a name server host file.
-//   *
-//   * @param hostsFile
-//   * @param isCCP
-//   * @throws IOException
-//   */
-//  public GNSNodeConfig(String hostsFile, boolean isCCP) throws IOException {
-//    this(hostsFile, null);
-//  }
-
-  // Currently only used by GNSINstaller
-  /**
-   * Creates an empty GNSNodeConfig
-   */
-//  public GNSNodeConfig() {
-//    this.nodeID = null;
-//    hostsFile = null;
-//  }
   /**
    * Returns the complete set of "top-level" IDs for all name servers (not local name servers).
    * *** ONLY FOR USE IN INSTRUMENTATION ***
@@ -303,8 +244,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   /**
    * Returns the TCP port of a Node.
+   * Works for InetSocketAddresses and active replicas.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
-   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
    * @param id
    * @return an int
@@ -315,16 +256,9 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     if (id instanceof InetSocketAddress) {
       return ((InetSocketAddress) id).getPort();
     }
-    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id), copy = nodeInfo;
+    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
     if ((nodeInfo = getActiveReplicaInfo(id)) != null) {
-      return nodeInfo.getStartingPortNumber() + OldHackyConstants.PortType.ACTIVE_REPLICA_PORT.getOffset();
-      // Special case for Reconfigurator
-    } else if ((nodeInfo = getReconfiguratorInfo(id)) != null) {
-      return nodeInfo.getStartingPortNumber() + OldHackyConstants.PortType.RECONFIGURATOR_PORT.getOffset();
-    } // arun: the above takes precedence
-    else if ((nodeInfo = copy) != null) {
-      return nodeInfo.getStartingPortNumber() + OldHackyConstants.PortType.NS_TCP_PORT.getOffset();
-      // Special case for ActiveReplica
+      return nodeInfo.getActivePort();
     } else {
       GNSConfig.getLogger().log(Level.WARNING, "NodeId {0} not a valid Id!", id.toString());
       return INVALID_PORT;
@@ -340,27 +274,19 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * @return the active nameserver information port of a nameserver. *
    */
   @Override
-  public int getAdminPort(NodeIDType id) {
+  public int getServerAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
-    return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber()
-            + OldHackyConstants.PortType.NS_ADMIN_PORT.getOffset();
+    return (nodeInfo == null) ? INVALID_PORT
+            : nodeInfo.getActivePort()
+            + PortOffsets.SERVER_ADMIN_PORT.getOffset();
   }
 
   @Override
-  public int getCcpPort(NodeIDType id) {
+  public int getCollatingAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
-      return nodeInfo.getStartingPortNumber() + OldHackyConstants.PortType.CCP_PORT.getOffset();
-    } else {
-      return INVALID_PORT;
-    }
-  }
-
-  @Override
-  public int getCcpAdminPort(NodeIDType id) {
-    NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
-    if (nodeInfo != null) {
-      return nodeInfo.getStartingPortNumber() + OldHackyConstants.PortType.CCP_ADMIN_PORT.getOffset();
+      return nodeInfo.getActivePort()
+              + PortOffsets.COLLATING_ADMIN_PORT.getOffset();
     } else {
       return INVALID_PORT;
     }
@@ -472,38 +398,14 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    *
    * @return the port
    */
-  public int getPortForTopLevelNode(NodeIDType nameServerId, OldHackyConstants.PortType portType) {
+  public int getPortForTopLevelNode(NodeIDType nameServerId, PortOffsets portType) {
     switch (portType) {
-      case NS_TCP_PORT:
-        return getNodePort(nameServerId);
-      case NS_ADMIN_PORT:
-        return getAdminPort(nameServerId);
-      case CCP_PORT:
-        return getCcpPort(nameServerId);
-      case CCP_ADMIN_PORT:
-        return getCcpAdminPort(nameServerId);
+      case SERVER_ADMIN_PORT:
+        return getServerAdminPort(nameServerId);
+      case COLLATING_ADMIN_PORT:
+        return getCollatingAdminPort(nameServerId);
     }
     return -1;
-  }
-
-  /**
-   * Returns the Name Server (not including Local Name Servers) with lowest latency.
-   *
-   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
-   */
-  @Deprecated
-  public NodeIDType getClosestServer() {
-    return GNSNodeConfig.this.getClosestServer(getNodeIDs());
-  }
-
-  /**
-   * Selects the closest Name Server from a set of Name Servers.
-   *
-   * @param servers
-   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
-   */
-  public NodeIDType getClosestServer(Set<NodeIDType> servers) {
-    return getClosestServer(servers, null);
   }
 
   /**
@@ -630,59 +532,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return version;
   }
 
-//  ///
-//  /// READING AND RECHECKING OF HOSTS FILE
-//  ///
-//  /**
-//   *
-//   * Read a host file to create a mapping of node information for name servers.
-//   *
-//   * @param hostsFile
-//   * @param nameServerID
-//   * @throws NumberFormatException
-//   */
-//  @SuppressWarnings("unchecked")
-//  private void readHostsFile(String hostsFile) throws IOException {
-//    List<HostSpec> hosts = null;
-//    try {
-//      hosts = HostFileLoader.loadHostFile(hostsFile);
-//      version = HostFileLoader.getFileVersion();
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//      throw new IOException("Problem loading hosts file: " + e);
-//    }
-//    // save the old one... maybe we'll need it again?
-//    ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> previousHostInfoMapping = hostInfoMapping;
-//    // Create a new one so we don't hose the old one if the new file is bogus
-//    ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> newHostInfoMapping
-//            = new ConcurrentHashMap<>(16, 0.75f, 8);
-//    for (HostSpec spec : hosts) {
-//      addSuffix = true;
-//      addHostInfo(newHostInfoMapping, (NodeIDType) spec.getId(), spec.getName(), spec.getExternalIP(),
-//              spec.getStartPort() != null ? spec.getStartPort() : OldHackyConstants.DEFAULT_STARTING_PORT);
-//    }
-//    // some idiot checking of the given Id
-//    if (!isCPP) {
-//      NodeInfo<NodeIDType> nodeInfo = newHostInfoMapping.get(this.nodeID);
-//      if (nodeInfo == null) {
-//        throw new IOException("NodeId not found in hosts file:" + this.nodeID.toString());
-//      }
-//    }
-//    // ok.. things are cool... actually update
-//    hostInfoMapping = newHostInfoMapping;
-//    //ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, getNodeIDs());
-//  }
-
-  /**
-   * Adds a NodeInfo object to the list maintained by this config instance.
-   *
-   * @param id
-   * @param ipAddress
-   * @param startingPort
-   * @param pingLatency
-   * @param latitude
-   * @param longitude
-   */
+  /* Adds a NodeInfo object to the list maintained by this config instance. */
   private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
           String externalIP, int startingPort, long pingLatency, double latitude, double longitude) {
     // FIXME: THIS IS GOING TO BLOW UP FOR NON-STRING IDS!
@@ -695,106 +545,20 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     mapping.put(id, nodeInfo);
   }
 
-  /**
-   * Adds a NodeInfo object to the list maintained by this config instance.
-   *
-   * @param id
-   * @param ipAddress
-   */
+  /* Adds a NodeInfo object to the list maintained by this config instance. */
   private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
           String externalIP, Integer startingPort) {
-    addHostInfo(mapping, id, ipAddress, externalIP, startingPort != null ? startingPort 
-            : OldHackyConstants.DEFAULT_STARTING_PORT, 0, 0, 0);
-  }
-
-  //private static final long updateCheckPeriod = 60000; // 60 seconds
-
-//  private TimerTask timerTask = null;
-//
-//  private void startCheckingForUpdates() {
-//    Timer t = new Timer();
-//    t.scheduleAtFixedRate(
-//            timerTask = new TimerTask() {
-//      @Override
-//      public void run() {
-//        checkForUpdates();
-//      }
-//    },
-//            updateCheckPeriod, // run first occurrence later
-//            updateCheckPeriod);
-//    GNSConfig.getLogger().log(Level.INFO,
-//            "Checking for hosts updates every {0} seconds", updateCheckPeriod / 1000);
-//  }
-
-//  private void checkForUpdates() {
-//    try {
-//      GNSConfig.getLogger().fine("Checking for hosts update");
-//      if (HostFileLoader.isChangedFileVersion(hostsFile)) {
-//        GNSConfig.getLogger().info("Reading updated hosts file");
-//        readHostsFile(hostsFile);
-//      }
-//    } catch (IOException e) {
-//      GNSConfig.getLogger().log(Level.SEVERE, "Problem reading hosts file:{0}", e);
-//    }
-//
-//  }
-
-  /**
-   * Returns true if the file is the old style (has lots of fields).
-   *
-   * @param file
-   * @return true if the file is the old style
-   */
-  private boolean isOldStyleFile(String file) throws IOException {
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader(file));
-      if (!reader.ready()) {
-        throw new IOException("Problem reading host config file " + file);
-      }
-      String line = reader.readLine();
-      if (line == null) {
-        throw new IOException("Hosts file is empty" + file);
-      }
-      return line.split("\\s+").length > 4;
-    } catch (IOException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "Problem reading hosts file:{0}", e);
-      return false;
-    }
+    addHostInfo(mapping, id, ipAddress, externalIP, startingPort, 0, 0, 0);
   }
 
   @Override
   public void shutdown() {
-//    if (timerTask != null) {
-//      timerTask.cancel();
-//    }
   }
 
   @Override
   public String toString() {
     return "GNSNodeConfig{" + "nodeID=" + nodeID + ", isLocalNameServer=" + isCPP + '}';
   }
-
-  /**
-   * Tests
-   *
-   * @param args
-   * @throws java.lang.Exception
-   */
-//  @SuppressWarnings("unchecked")
-//  public static void main(String[] args) throws Exception {
-//    String filename = "conf/single-server-info.txt";
-//    GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<>(filename, "frank");
-//    System.out.println(gnsNodeConfig.hostInfoMapping.toString());
-//    System.out.println(gnsNodeConfig.getNumberOfNodes());
-//    System.out.println(gnsNodeConfig.getNodePort("smith"));
-//    System.out.println(gnsNodeConfig.getNodeAddress("frank"));
-//    System.out.println(gnsNodeConfig.getNodePort("frank"));
-//    System.out.println(gnsNodeConfig.getActiveReplicas());
-//    System.out.println(gnsNodeConfig.getReconfigurators());
-//    System.out.println(gnsNodeConfig.getNodePort("frank_Repl"));
-//    System.out.println(gnsNodeConfig.getNodeAddress("billy_Recon"));
-//    System.exit(0);
-//  }
 
   /**
    *

@@ -418,7 +418,7 @@ public class HttpClientTest extends DefaultGNSTest {
   @Test
   public void test_960_Http_BasicSelect() {
     try {
-      JSONArray result = httpClient.select("cats", "fred");
+      JSONArray result = httpClient.select(masterGuid, "cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
     } catch (IOException | ClientException | JSONException e) {
@@ -446,7 +446,7 @@ public class HttpClientTest extends DefaultGNSTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = httpClient.selectNear(GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
+      JSONArray result = httpClient.selectNear(masterGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (JSONException | IOException | ClientException e) {
@@ -464,7 +464,7 @@ public class HttpClientTest extends DefaultGNSTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = httpClient.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
+      JSONArray result = httpClient.selectWithin(masterGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (JSONException | IOException | ClientException e) {
@@ -491,7 +491,7 @@ public class HttpClientTest extends DefaultGNSTest {
 
     try {
       String query = "~" + fieldName + " : ($gt: 0)";
-      JSONArray result = httpClient.selectQuery(query);
+      JSONArray result = httpClient.selectQuery(masterGuid, query);
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
@@ -512,7 +512,7 @@ public class HttpClientTest extends DefaultGNSTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = httpClient.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
+      JSONArray result = httpClient.selectWithin(masterGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (JSONException | IOException | ClientException e) {
@@ -553,7 +553,7 @@ public class HttpClientTest extends DefaultGNSTest {
   @Test
   public void test_972_Http_SelectPass() {
     try {
-      JSONArray result = httpClient.selectQuery(buildQuery(createIndexTestField, AREA_EXTENT));
+      JSONArray result = httpClient.selectQuery(masterGuid, buildQuery(createIndexTestField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
@@ -675,7 +675,7 @@ public class HttpClientTest extends DefaultGNSTest {
     }
   }
 
-  /*
+  /**
    *
    */
   @Test

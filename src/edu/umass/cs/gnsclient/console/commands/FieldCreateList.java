@@ -25,82 +25,71 @@ import java.util.StringTokenizer;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.io.IOException;
 
 /**
  * Command to create a new field in the GNS
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
-public class FieldCreateList extends ConsoleCommand
-{
+public class FieldCreateList extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldCreate</code> object
-   * 
+   * Creates a new <code>FieldCreateList</code> object
+   *
    * @param module
    */
-  public FieldCreateList(ConsoleModule module)
-  {
+  public FieldCreateList(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Create a new field with an initial value for the current GUID/alias)";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "field_create_list";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "field_to_create [initial_value]";
   }
 
   /**
    * Override execute to check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
-    if (!module.isCurrentGuidSetAndVerified())
-    {
+  public void execute(String commandText) throws Exception {
+    if (!module.isCurrentGuidSetAndVerified()) {
       return;
     }
     super.execute(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if ((st.countTokens() != 1) && (st.countTokens() != 2))
-      {
-        console.printString("Wrong number of arguments for this command.\n");
+      if ((st.countTokens() != 1) && (st.countTokens() != 2)) {
+        wrongArguments();
         return;
       }
       String field = st.nextToken();
       String value = "";
-      if (st.hasMoreTokens())
+      if (st.hasMoreTokens()) {
         value = st.nextToken();
+      }
 
       GNSClientCommands gnsClient = module.getGnsClient();
       gnsClient.fieldCreateList(module.getCurrentGuid().getGuid(), field, new JSONArray().put(value),
-          module.getCurrentGuid());
+              module.getCurrentGuid());
       console.printString("New field " + field + " created with value '" + value + "'");
       console.printNewline();
-    }
-    catch (Exception e)
-    {
+    } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

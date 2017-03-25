@@ -109,8 +109,6 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
           throws FailedDBOperationException {
     noSqlRecords.updateIndividualFields(collectionName, name,
             NameRecord.VALUES_MAP, valuesMapKeys, valuesMapValues);
-//    noSqlRecords.updateFields(collectionName, name, NameRecord.NAME, null, null, 
-//            NameRecord.VALUES_MAP, valuesMapKeys, valuesMapValues);
   }
 
   @Override

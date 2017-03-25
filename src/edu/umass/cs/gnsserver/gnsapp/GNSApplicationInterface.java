@@ -17,9 +17,11 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.deprecated;
+package edu.umass.cs.gnsserver.gnsapp;
 
+import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
 import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
@@ -27,13 +29,11 @@ import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 import java.io.IOException;
 
+import java.net.InetSocketAddress;
 import org.json.JSONObject;
 
-// Not really sure why this is in a deprecated package. Some parts of it are obsolete and
-// need to be updated and removed, but the overall interface is necessary.
 /**
- * This pulls out some methods from GnsReconfigurableInterface that were needed for
- * transition to new app framework.
+ * This encapsulates the core functionality needed by the GNS Application.
  *
  * @author westy
  * @param <NodeIDType>
@@ -46,6 +46,13 @@ public interface GNSApplicationInterface<NodeIDType> {
    * @return the node id
    */
   NodeIDType getNodeID();
+  
+  /**
+   * Returns the node address.
+   * 
+   * @return 
+   */
+  InetSocketAddress getNodeAddress();
 
   /**
    * Returns the record map.
@@ -55,13 +62,6 @@ public interface GNSApplicationInterface<NodeIDType> {
   BasicRecordMap getDB();
 
   /**
-   * Returns the node config.
-   *
-   * @return the node config
-   */
-  ReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig();
-
-  /**
    * Sends a JSON packet to a client.
    *
    * @param response
@@ -69,16 +69,30 @@ public interface GNSApplicationInterface<NodeIDType> {
    * @throws IOException
    */
   void sendToClient(Request response, JSONObject msg) throws IOException;
-
-  /**
+  
+   /**
    * Sends a JSON packet to a node.
    *
-   * @param id
+   * @param address
    * @param msg
    * @throws IOException
    */
-  void sendToID(NodeIDType id, JSONObject msg) throws IOException;
+  void sendToAddress(InetSocketAddress address, JSONObject msg) throws IOException;
 
+  /**
+   * @param originalRequest
+   * @param response
+   * @param responseJSON
+   * @throws IOException
+   */
+  public void sendToClient(CommandPacket originalRequest, Request response, JSONObject responseJSON)
+		  throws IOException;
+  
+  /**
+   * @return ContextServiceGNSInterface
+   */
+  public ContextServiceGNSInterface getContextServiceGNSClient();
+  
   /**
    * Returns the request handler.
    *

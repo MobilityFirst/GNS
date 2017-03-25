@@ -42,6 +42,7 @@
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${build.classes.dir}"/>
     <mkdir dir="${build.test.classes.dir}"/>
+    <mkdir dir="logs"/>
   </target>
 
   <!-- pretty much everything depends on this -->
@@ -72,7 +73,7 @@
   
   <target name="compile_eclipse" depends="init, buildnumber" description="compile java files using eclipse java compiler">
     <javac compiler="org.eclipse.jdt.core.JDTCompilerAdapter" source="1.8"
-         target="1.8" srcdir="${src.dir}:${test.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+           target="1.8" srcdir="${src.dir}:${test.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source" includeantruntime="false">
       <classpath refid="classpath.base"/>
       <compilerarg value="-warn:+allJavadoc" />
     </javac>
@@ -303,37 +304,10 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </javac>
   </target>
   
-  <target name="runSingleTests" description="Runs all of the singletests" 
-          depends="compiletest">
-    <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
-    <property name="alias" value=""/>
-    <property name="password" value=""/>
-    <property name="count" value=""/>
-    <property name="gigapaxosConfig" value="conf/gnsclient.3local.properties"/>
-    <property name="java.util.logging.config.file" value="conf/logging.gns.junit.properties"/>
-    <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
-      <jvmarg value="-ea"/>
-      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
-      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-Dalias=${alias}"/>
-      <jvmarg value="-Dpassword=${password}"/>
-      <jvmarg value="-Dcount=${count}"/>
-      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
-      <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
-      <!-- add this if you want SSL debugging enabled -->
-      <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
-      <classpath>
-        <pathelement location="${build.test.classes.dir}"/>
-      </classpath>
-      <!-- Make sure these libraries are included -->
-      <classpath refid="classpath.test" />
-      <formatter type="plain" usefile="false"/>
-      <batchtest>
-        <fileset dir="${test.dir}">
-          <include name="**/singletests/*Test.java"/>
-        </fileset>
-      </batchtest>
-    </junit>
+  <target name="runSingleTests" description="Runs all of the singletests">
+    <antcall target="runtest">
+      <param name="test" value="singletests"/>
+    </antcall>
   </target>
 
   <target name="pkgtest" description="Starts servers specified in properties file"
@@ -389,7 +363,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
           depends="compiletest, ensure-test-name, pkgtest">
   </target>
   
-  <target name="runsingletest" description="Runs the test you specify on the command line with -Dtest=" 
+  <target name="testnoserver" description="Runs the test you specify on the command line with -Dtest=" 
           depends="compiletest, ensure-test-name">
     <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
     <property name="alias" value=""/>
@@ -422,7 +396,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
-  <target name="runsingletestwithkeystore" 
+  <target name="testnoserverwithkeystore" 
           description="Runs with the correct keystore the test you specify on the command line -Dtest=" 
           depends="compiletest, ensure-test-name">
     <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
@@ -575,7 +549,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
- <target name="testMethod" description="Runs the default integration test against a 3 node server." 
+  <target name="testMethod" description="Runs the default integration test against a 3 node server." 
           depends="compile, compiletest">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
@@ -584,8 +558,8 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     <property name="test" value="test_010_CreateEntity"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test
-name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"
-methods="${test}"/>
+        name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"
+        methods="${test}"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-Dtest=${test}"/>
       <jvmarg value="-ea"/>
@@ -597,32 +571,6 @@ methods="${test}"/>
       <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
       <jvmarg value="-DwaitTillAllServersReady=${waitTillAllServersReady}"/>
       <jvmarg value="-Dreps=${reps}"/>
-      <jvmarg value="-Dserver.command=bin/gpServer.sh"/>
-      <classpath>
-        <pathelement location="${build.test.classes.dir}"/>
-      </classpath>
-      <!-- Make sure these libraries are included -->
-      <classpath refid="classpath.test" />
-    </junit>
-  </target>
-
-  
-  <target name="testV2" description="Runs the default integration test against a 3 node server." 
-          depends="compile, compiletest">
-    <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
-    <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
-    <property name="waitTillAllServersReady" value="5000"/>
-    <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
-      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTestV2"/>
-      <formatter type="plain" usefile="false"/>
-      <jvmarg value="-ea"/>
-      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
-      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-DstartServer=true"/>
-      <jvmarg value="-DinheritIO=true"/>
-      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
-      <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
-      <jvmarg value="-DwaitTillAllServersReady=${waitTillAllServersReady}"/>
       <jvmarg value="-Dserver.command=bin/gpServer.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -725,7 +673,7 @@ methods="${test}"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg
-value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
+        value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
