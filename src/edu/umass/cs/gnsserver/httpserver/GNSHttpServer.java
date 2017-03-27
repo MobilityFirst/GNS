@@ -107,18 +107,16 @@ public class GNSHttpServer {
   public GNSHttpServer(int port, ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
-    if (!Config.getGlobalBoolean(GNSC.DISABLE_MULTI_SERVER_HTTP)) {
-      try {
-        this.client = new GNSClient() {
-          @Override
-          public String getLabel() {
-            return GNSHttpServer.class.getSimpleName();
-          }
-        };
-      } catch (IOException e) {
-        LOGGER.log(Level.SEVERE, "Unable to start GNS client:{0}", 
-                e.getMessage());
-      }
+    try {
+      this.client = new GNSClient() {
+        @Override
+        public String getLabel() {
+          return GNSHttpServer.class.getSimpleName();
+        }
+      };
+    } catch (IOException e) {
+      LOGGER.log(Level.SEVERE, "Unable to start GNS client:{0}",
+              e.getMessage());
     }
     runServer(port);
   }
@@ -181,6 +179,7 @@ public class GNSHttpServer {
    * The default handler.
    */
   protected class DefaultHttpHandler implements HttpHandler {
+
     /**
      *
      * @param exchange
@@ -203,9 +202,9 @@ public class GNSHttpServer {
                     new Object[]{exchange.getRemoteAddress().getHostName(), uri.toString()});
             String path = uri.getPath();
             String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
-            
+
             String commandName = path.replaceFirst("/" + GNS_PATH + "/", "");
-            
+
             CommandResponse response;
             if (!commandName.isEmpty()) {
               LOGGER.log(Level.FINE, "Action: {0} Query:{1}", new Object[]{commandName, query});
@@ -339,10 +338,10 @@ public class GNSHttpServer {
       jsonCommand.remove("originalMessageBase64");
       String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
       if (!originalMessage.equals(commandSansSignature)) {
-        LOGGER.log(Level.SEVERE, "signature message mismatch! original: {0} computed for signature: {1}", 
+        LOGGER.log(Level.SEVERE, "signature message mismatch! original: {0} computed for signature: {1}",
                 new Object[]{originalMessage, commandSansSignature});
       } else {
-        LOGGER.log(Level.FINE, "######## original: {0}", 
+        LOGGER.log(Level.FINE, "######## original: {0}",
                 originalMessage);
       }
     }
@@ -424,7 +423,7 @@ public class GNSHttpServer {
           Headers requestHeaders = exchange.getRequestHeaders();
           Set<String> keySet = requestHeaders.keySet();
           Iterator<String> iter = keySet.iterator();
-          
+
           String buildVersion = GNSConfig.readBuildVersion();
           String buildVersionInfo = "Build Version: Unable to lookup!";
           if (buildVersion != null) {
@@ -458,7 +457,7 @@ public class GNSHttpServer {
           responseBody.write("<br>".getBytes());
           responseBody.write(secureString.getBytes());
           responseBody.write("<br>".getBytes());
-          
+
           responseBody.write(recordsClass.getBytes());
           responseBody.write("<br>".getBytes());
           responseBody.write("<br>".getBytes());
