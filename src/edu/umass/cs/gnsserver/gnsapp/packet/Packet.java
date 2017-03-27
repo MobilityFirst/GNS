@@ -282,7 +282,7 @@ public class Packet {
           try {
             return new edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket(json);
           } catch (ParseException e) {
-            throw new JSONException(e);
+            throw new JSONException(e.getMessage());
           }
         // select
         case SELECT_REQUEST:

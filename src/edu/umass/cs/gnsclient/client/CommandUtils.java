@@ -32,34 +32,18 @@ import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
-import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnscommon.utils.JSONCommonUtils;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.SessionKeys;
-import edu.umass.cs.utils.SessionKeys.SecretKeyCertificate;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
+
 import java.util.Date;
 import java.util.Random;
-import java.util.logging.Level;
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  *
@@ -67,28 +51,16 @@ import javax.xml.bind.DatatypeConverter;
  */
 public class CommandUtils {
 
-  /* arun: at least as many instances as cores for parallelism. */
-  private static Signature[] signatureInstances = new Signature[2 * Runtime
-          .getRuntime().availableProcessors()];
+
   private static Random random;
-
   static {
-    try {
-      for (int i = 0; i < signatureInstances.length; i++) {
-        signatureInstances[i] = Signature
-                .getInstance(GNSProtocol.SIGNATURE_ALGORITHM.toString());
-      }
-      random = new Random();
-    } catch (NoSuchAlgorithmException e) {
-      GNSConfig.getLogger().log(Level.SEVERE,
-              "Unable to initialize for authentication:{0}", e);
-    }
+    random = new Random();
   }
-
-  private static int sigIndex = 0;
-
-  private static synchronized Signature getSignatureInstance() {
-    return signatureInstances[sigIndex++ % signatureInstances.length];
+  /**
+   * @return Random long.
+   */
+  public static String getRandomRequestNonce() {
+    return (random.nextLong() + "");
   }
 
   /**
@@ -129,8 +101,8 @@ public class CommandUtils {
     if (JSONPacket.couldBeJSON(response) && response.startsWith("{")) {
       try {
         JSONObject json = new JSONObject(response);
-        String[] keys = JSONObject.getNames(json);
-        return (keys.length == 1) ? json.getString(JSONObject
+        String[] keys = JSONCommonUtils.getNames(json);
+        return (keys.length == 1) ? json.getString(JSONCommonUtils
                 .getNames(json)[0]) : response;
       } catch (JSONException e) {
         e.printStackTrace();
@@ -155,138 +127,7 @@ public class CommandUtils {
     }
   }
 
-  /**
-   * Signs a digest of a message using private key of the given guid.
-   *
-   * @param privateKey
-   * @param message
-   * @return a signed digest of the message string encoded as a hex string
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   * @throws java.io.UnsupportedEncodingException
-   *
-   * arun: This method need to be synchronized over the signature
-   * instance, otherwise it will result in corrupted signatures.
-   */
-  public static String signDigestOfMessage(PrivateKey privateKey,
-          String message) throws NoSuchAlgorithmException,
-          InvalidKeyException, SignatureException,
-          UnsupportedEncodingException {
-    Signature signatureInstance = getSignatureInstance();
-    synchronized (signatureInstance) {
-      signatureInstance.initSign(privateKey);
-      // iOS client uses UTF-8 - should switch to ISO-8859-1 to be consistent with
-      // secret key version
-      signatureInstance.update(message.getBytes("UTF-8"));
-      byte[] signedString = signatureInstance.sign();
-      // We used to encode this as a hex so we could send it with the html without
-      // encoding. Not really necessary anymore for the socket based client,
-      // but the iOS client does as well so we need to keep it like this.
-      // Also note that the secret based method doesn't do this - it just returns a string
-      // using the ISO-8859-1 charset.
-      String result = DatatypeConverter.printHexBinary(signedString);
-      //String result = ByteUtils.toHex(signedString);
-      return result;
-    }
-  }
 
-  private static final MessageDigest[] mds = new MessageDigest[Runtime
-          .getRuntime().availableProcessors()];
-
-  static {
-    for (int i = 0; i < mds.length; i++) {
-      try {
-        mds[i] = MessageDigest
-                .getInstance(GNSProtocol.DIGEST_ALGORITHM.toString());
-      } catch (NoSuchAlgorithmException e) {
-        e.printStackTrace();
-        System.exit(1);
-      }
-    }
-  }
-  private static int mdIndex = 0;
-
-  private static MessageDigest getMessageDigestInstance() {
-    return mds[mdIndex++ % mds.length];
-  }
-
-  private static final Cipher[] ciphers = new Cipher[2 * Runtime.getRuntime()
-          .availableProcessors()];
-
-  static {
-    for (int i = 0; i < ciphers.length; i++) {
-      try {
-        ciphers[i] = Cipher
-                .getInstance(GNSProtocol.SECRET_KEY_ALGORITHM.toString());
-      } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-        e.printStackTrace();
-        System.exit(1);
-      }
-    }
-  }
-
-  private static int cipherIndex = 0;
-
-  private static Cipher getCipherInstance() {
-    return ciphers[cipherIndex++ % ciphers.length];
-  }
-
-  /**
-   * @param privateKey
-   * @param publicKey
-   * @param message
-   * @return Signature encoded as a hex string
-   * @throws NoSuchAlgorithmException
-   * @throws InvalidKeyException
-   * @throws SignatureException
-   * @throws UnsupportedEncodingException
-   * @throws IllegalBlockSizeException
-   * @throws BadPaddingException
-   * @throws NoSuchPaddingException
-   */
-  public static String signDigestOfMessage(PrivateKey privateKey,
-          PublicKey publicKey, String message)
-          throws NoSuchAlgorithmException, InvalidKeyException,
-          SignatureException, UnsupportedEncodingException,
-          IllegalBlockSizeException, BadPaddingException,
-          NoSuchPaddingException {
-    SecretKey secretKey = SessionKeys.getOrGenerateSecretKey(publicKey,
-            privateKey);
-    MessageDigest md = getMessageDigestInstance();
-    byte[] digest;
-    // FIXME: The reason why we use CHARSET should be more throughly documented here.
-    // This might be important for folks writing clients in other languages.
-    byte[] body = message.getBytes(GNSProtocol.CHARSET.toString());
-    synchronized (md) {
-      digest = md.digest(body);
-    }
-    assert (digest != null);
-    Cipher cipher = getCipherInstance();
-    byte[] signature;
-    synchronized (cipher) {
-      cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-      signature = cipher.doFinal(digest);
-    }
-
-    SecretKeyCertificate skCert = SessionKeys
-            .getSecretKeyCertificate(publicKey);
-    byte[] encodedSKCert = skCert.getEncoded(false);
-
-    // arun: Combining them like this because the rest of the GNS code seems
-    // poorly organized to add more signature related fields in a systematic
-    // manner.
-    byte[] combined = new byte[Short.BYTES + signature.length + Short.BYTES
-            + encodedSKCert.length];
-    ByteBuffer.wrap(combined)
-            // signature
-            .putShort((short) signature.length).put(signature)
-            // certificate
-            .putShort((short) encodedSKCert.length).put(encodedSKCert);
-
-    // FIXME: The reason why we use CHARSET should be more throughly documented here.
-    return new String(combined, GNSProtocol.CHARSET.toString());
-  }
 
   /**
    * This little dance is because we need to remove the signature to get the
@@ -480,13 +321,6 @@ public class CommandUtils {
   }
 
   /**
-   * @return Random long.
-   */
-  public static String getRandomRequestNonce() {
-    return (random.nextLong() + "");
-  }
-
-  /**
    * Creates a JSON Object from the given command, keypair and a variable
    * number of key and value pairs. Includes a NONCE and TIMESTAMP field.
    * 
@@ -514,14 +348,13 @@ public class CommandUtils {
    * number of key and value pairs.
    * 
    * @param commandType
-   * @param privateKey
-   * @param publicKey
+   * @param guidEntry
    * @param keysAndValues
    * @return Signed command.
    * @throws ClientException
    */
-  public static JSONObject createAndSignCommand(CommandType commandType,
-          PrivateKey privateKey, PublicKey publicKey, Object... keysAndValues)
+  public static JSONObject createAndSignCommandInternal(CommandType commandType,
+          GuidEntry guidEntry, Object... keysAndValues)
           throws ClientException {
     try {
       JSONObject result = createCommandWithTimestampAndNonce(commandType, true, keysAndValues);
@@ -529,16 +362,16 @@ public class CommandUtils {
       String signatureString = null;
       long t = System.nanoTime();
       if (Config.getGlobalBoolean(GNSCC.ENABLE_SECRET_KEY)) {
-        signatureString = signDigestOfMessage(privateKey, publicKey, canonicalJSON);
+        signatureString = CryptoUtils.signDigestOfMessageSecretKey(guidEntry, canonicalJSON);
       } else {
-        signatureString = signDigestOfMessage(privateKey, canonicalJSON);
+        signatureString = CryptoUtils.signDigestOfMessage(guidEntry, canonicalJSON);
       }
       result.put(GNSProtocol.SIGNATURE.toString(), signatureString);
       if (edu.umass.cs.utils.Util.oneIn(10)) {
         DelayProfiler.updateDelayNano("signature", t);
       }
       return result;
-    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException | NoSuchPaddingException e) {
+    } catch (JSONException e) {
       throw new ClientException("Error encoding message", e);
     }
   }
@@ -553,8 +386,8 @@ public class CommandUtils {
   public static JSONObject createAndSignCommand(CommandType commandType,
           GuidEntry querier, Object... keysAndValues) throws ClientException {
     try {
-      return querier != null ? createAndSignCommand(commandType,
-              querier.getPrivateKey(), querier.getPublicKey(), keysAndValues)
+      return querier != null ? createAndSignCommandInternal(commandType,
+              querier, keysAndValues)
               : createCommand(commandType, keysAndValues);
     } catch (JSONException e) {
       throw new ClientException("Error encoding message", e);

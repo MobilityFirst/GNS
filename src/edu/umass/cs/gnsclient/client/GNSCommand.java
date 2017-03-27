@@ -16,10 +16,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -495,22 +492,6 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * Get the public key for {@code alias}.
-   *
-   * @param alias
-   * @return CommandPacket
-   * @throws edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException
-   * @throws ClientException
-   * @throws java.io.IOException
-   */
-  public PublicKey publicKeyLookupFromAlias(String alias)
-          throws InvalidGuidException, ClientException, IOException {
-    throw new RuntimeException("Unimplementable");
-    // String guid = lookupGuid(alias);
-    // return publicKeyLookupFromGuid(guid);
-  }
-
-  /**
    * Get the public key for a given guid.
    *
    * @param targetGUID
@@ -682,7 +663,7 @@ public class GNSCommand extends CommandPacket {
    *
    * The name of the GNS service instance.
    *
-   * @param accountGUID
+   * @param accountGuid
    * The account guid under which the guid is being created.
    * @param alias
    * The alias assigned to the guid being created.
@@ -693,10 +674,16 @@ public class GNSCommand extends CommandPacket {
 //FIXME: The name this of these violates the NOUNVERB naming convention adopted
 // almost everywhere else in here.
   public static final CommandPacket createGUID(
-          GuidEntry accountGUID, String alias) throws ClientException {
+          GuidEntry accountGuid, String alias) throws ClientException {
     try {
-      return guidCreateHelper(accountGUID, alias, GuidUtils
-              .createAndSaveGuidEntry(alias, GNSClient.getGNSProvider()).getPublicKey());
+      GuidEntry guidEntry = GuidUtils
+              .createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
+
+      return getCommand(CommandType.AddGuid, accountGuid,
+              GNSProtocol.GUID.toString(), accountGuid.getGuid(),
+              GNSProtocol.NAME.toString(), alias,
+              GNSProtocol.PUBLIC_KEY.toString(), KeyPairUtils.publicKeyToBase64ForGuid(guidEntry));
+
     } catch (NoSuchAlgorithmException e) {
       throw new ClientException(e);
     }
@@ -1269,14 +1256,7 @@ public class GNSCommand extends CommandPacket {
      * incurring an GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString() for a new (non-existent) guid.
      */
     if (guidEntry == null) {
-      KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
-              .generateKeyPair();
-      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-              .getPublic().getEncoded());
-      // Squirrel this away now just in case the call below times out.
-      KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
-      guidEntry = new GuidEntry(alias, guid, keyPair.getPublic(),
-              keyPair.getPrivate());
+      guidEntry = GuidUtils.createAndSaveGuidEntry(alias, gnsInstance);
     }
     return guidEntry;
   }
@@ -1287,20 +1267,9 @@ public class GNSCommand extends CommandPacket {
     return getCommand(commandType,
             guidEntry, GNSProtocol.NAME.toString(), alias,
             GNSProtocol.PUBLIC_KEY.toString(),
-            Base64.encodeToString(
-                    guidEntry.publicKey.getEncoded(), false),
+            KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
             GNSProtocol.PASSWORD.toString(),
             password != null ? Password.encryptAndEncodePassword(password, alias) : "");
-  }
-
-  private static CommandPacket guidCreateHelper(GuidEntry accountGuid,
-          String name, PublicKey publicKey) throws ClientException {
-    byte[] publicKeyBytes = publicKey.getEncoded();
-    String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
-    return getCommand(CommandType.AddGuid, accountGuid,
-            GNSProtocol.GUID.toString(), accountGuid.getGuid(),
-            GNSProtocol.NAME.toString(), name,
-            GNSProtocol.PUBLIC_KEY.toString(), publicKeyString);
   }
 
   private static CommandPacket aclAdd(String accessType,
