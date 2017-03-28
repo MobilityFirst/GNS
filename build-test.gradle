@@ -37,12 +37,18 @@ repositories {
 }
 
 configurations {
-    // configuration that holds just the jars to include in the client jar
-    clientLib
+  // configuration that holds just the jars to include in the client jar
+  clientLib
 }
 
+//artifacts {
+//   jars serverFatJar
+//   jars clientFatJar
+//   jars clientConsoleFatJar
+//}
+
 dependencies {
-   // Says that the compile config also uses clientLib dependencies
+  // Says that the compile config also uses clientLib dependencies
   configurations.compile.extendsFrom(configurations.clientLib)
   
   clientLib files('lib/gigapaxos-1.0.05.jar')
@@ -98,10 +104,10 @@ dependencies {
 }
 
 // Builds a fat jar for the server with all jars included.
-task serverfatjar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
+task serverFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   baseName = 'gnsserver'
   from files(sourceSets.main.output.classesDir) {
-     exclude 'edu/umass/cs/gnsclient/**'
+    exclude 'edu/umass/cs/gnsclient/**'
   }
   // all the libs
   from configurations.runtime.asFileTree.files.collect {  
@@ -115,25 +121,30 @@ task serverfatjar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   def buildNumber = properties3.getProperty('build.number')
   version = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
   def fullVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}_${buildNumber}"
-  System.out.println("Build version: ${fullVersion}")
+  //System.out.println("Build version: ${fullVersion}")
 
   manifest {
     // Todo: Add more of these back from the ant build file
     attributes 'Built-By': System.getProperty('user.name'),
                'Built-Date': new Date(),
                'Main-Class': 'edu.umass.cs.gns.httpserver.GNSHttpServer',
-               //'Build-Version': System.getProperty('version.code'),
+               'Build-Version': "${fullVersion}",
                'Implementation-Vendor': 'University of Massachusetts',
                'Implementation-Title': 'GNS',
                'Implementation-Version': "$version"
   }
 }
 
+task copyServerFatJar(type: Copy) {
+  from serverFatJar
+  into 'jars'
+} 
+
 // Builds a fat jar for the client with all jars included.
-task clientfatjar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
+task clientFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   // all the class files
   baseName = 'gnsclient'
-   // all the class files
+  // all the class files
   from files(sourceSets.main.output.classesDir) {
   }
   // all the test classes
@@ -153,38 +164,102 @@ task clientfatjar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   def buildNumber = properties3.getProperty('build.number')
   version = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
   def fullVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}_${buildNumber}"
-  System.out.println("Build version: ${fullVersion}")
+  //System.out.println("Build version: ${fullVersion}")
 
   manifest {
     // Todo: Add more of these back from the ant build file
     attributes 'Built-By': System.getProperty('user.name'),
                'Built-Date': new Date(),
                'Class-Path': '.',
+               'Build-Version': "${fullVersion}",
                'Implementation-Vendor': 'University of Massachusetts',
-               'Implementation-Title': 'GNS',
+               'Implementation-Title': 'GNS Client',
                'Implementation-Version': "$version"
   }
 }
 
-task copyJars(type: Copy) {
-    from 'build/libs'
-    into 'jars'
+task copyClientFatJar(type: Copy) {
+  from clientFatJar
+  into 'jars'
+} 
+
+// Builds a fat jar for the CLI with all jars included.
+task clientConsoleFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
+  // all the class files
+  baseName = 'gns-cli'
+  // all the class files
+  from files(sourceSets.main.output.classesDir) {
+  }
+  // the needed libs for the client
+  from configurations.clientLib.asFileTree.files.collect {  
+    zipTree(it) 
+  }
+  // key and trust files
+  from('conf') {
+    include 'trustStore/**'
+    include 'keyStore/**'
+  }
+  from ('src') {
+    include 'edu/umass/cs/gnsclient/console/console.properties'
+  }
+  // Handle the version info
+  Properties properties3 = new Properties()
+  properties3.load(project.file('build.number').newDataInputStream())
+  def buildNumber = properties3.getProperty('build.number')
+  version = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
+  def fullVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}_${buildNumber}"
+  //System.out.println("Build version: ${fullVersion}")
+
+  manifest {
+    // Todo: Add more of these back from the ant build file
+    attributes 'Built-By': System.getProperty('user.name'),
+               'Built-Date': new Date(),
+               'Build-Version': "${fullVersion}",
+               'Main-Class': 'edu.umass.cs.gnsclient.console.CommandLineInterface',
+               'Implementation-Vendor': 'University of Massachusetts',
+               'Implementation-Title': 'GNS CLI',
+               'Implementation-Version': "$version"
+  }
+}
+
+task copyClientConsoleFatJar(type: Copy) {
+  from clientConsoleFatJar
+  into 'jars'
+}  
+
+task createSymlinks {
+  Properties properties3 = new Properties()
+  properties3.load(project.file('build.number').newDataInputStream())
+  def buildNumber = properties3.getProperty('build.number')
+  def resourceVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
+  doLast {
+    ant.symlink (link: 'jars/GNS.jar', overwrite: 'yes', 
+      resource: "gnsserver-${resourceVersion}.jar") 
+    ant.symlink (link: 'jars/GNSClient.jar', overwrite: 'yes', 
+      resource: "gnsclient-${resourceVersion}.jar") 
+    ant.symlink (link: 'jars/GNS-CLI.jar', overwrite: 'yes', 
+      resource: "gns-cli-${resourceVersion}.jar") 
+  }
+}
+
+task jar(type: Jar, overwrite: true, 
+  dependsOn: ['copyServerFatJar', 'copyClientFatJar', 'copyClientConsoleFatJar']) {
 }
 
 // Along with the one below this updates the build.number whenever a jar is created.
 task('increaseBuildNumber') << {
-    Properties properties2 = new Properties()
-    properties2.load(project.file('build.number').newDataInputStream())
-    def buildNumber = Integer.parseInt(properties2.getProperty('build.number')) + 1
-    System.out.println("buildNumber: ${buildNumber}")
-    properties2.setProperty('build.number', Integer.toString(buildNumber))
-    properties2.store(project.file('build.number').newWriter(), null) 
+  Properties properties2 = new Properties()
+  properties2.load(project.file('build.number').newDataInputStream())
+  def buildNumber = Integer.parseInt(properties2.getProperty('build.number')) + 1
+  System.out.println("buildNumber: ${buildNumber}")
+  properties2.setProperty('build.number', Integer.toString(buildNumber))
+  properties2.store(project.file('build.number').newWriter(), null) 
 }
 
 tasks.whenTaskAdded { task ->
-    if (task.name == 'serverfatjar') {
-        task.dependsOn 'increaseBuildNumber'
-    }
+  if (task.name == 'jar') {
+    task.dependsOn 'increaseBuildNumber'
+  }
 }
 
 
