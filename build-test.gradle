@@ -41,12 +41,6 @@ configurations {
   clientLib
 }
 
-//artifacts {
-//   jars serverFatJar
-//   jars clientFatJar
-//   jars clientConsoleFatJar
-//}
-
 dependencies {
   // Says that the compile config also uses clientLib dependencies
   configurations.compile.extendsFrom(configurations.clientLib)
@@ -100,12 +94,25 @@ dependencies {
   testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
   testCompile group: 'org.hamcrest', name: 'hamcrest-core', version: '1.3'
   testCompile group: 'junit', name: 'junit', version: '4.12'
- 
+}
+
+
+// redefine the overall jar task to produce our 3 jars
+task jar(type: Jar, overwrite: true, 
+  // Note that we enforce an explicit ordering later in this file with
+  // "createSymLinks.mustRunAfter createJars"
+  // and a "createJars.mustRunAfter increaseBuildNumber"
+  dependsOn: ['increaseBuildNumber', 'createJars', 'createSymLinks', 'fetchGPServer']) {
+}
+
+task createJars(type: Jar, overwrite: true, 
+  dependsOn: ['copyServerFatJar', 'copyClientFatJar', 'copyClientConsoleFatJar']) {
 }
 
 // Builds a fat jar for the server with all jars included.
 task serverFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   baseName = 'gnsserver'
+  // all the source classes except client
   from files(sourceSets.main.output.classesDir) {
     exclude 'edu/umass/cs/gnsclient/**'
   }
@@ -142,9 +149,8 @@ task copyServerFatJar(type: Copy) {
 
 // Builds a fat jar for the client with all jars included.
 task clientFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
-  // all the class files
   baseName = 'gnsclient'
-  // all the class files
+  // all the source class files
   from files(sourceSets.main.output.classesDir) {
   }
   // all the test classes
@@ -185,7 +191,6 @@ task copyClientFatJar(type: Copy) {
 
 // Builds a fat jar for the CLI with all jars included.
 task clientConsoleFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
-  // all the class files
   baseName = 'gns-cli'
   // all the class files
   from files(sourceSets.main.output.classesDir) {
@@ -227,7 +232,7 @@ task copyClientConsoleFatJar(type: Copy) {
   into 'jars'
 }  
 
-task createSymlinks {
+task createSymLinks {
   Properties properties3 = new Properties()
   properties3.load(project.file('build.number').newDataInputStream())
   def buildNumber = properties3.getProperty('build.number')
@@ -242,12 +247,20 @@ task createSymlinks {
   }
 }
 
-task jar(type: Jar, overwrite: true, 
-  dependsOn: ['copyServerFatJar', 'copyClientFatJar', 'copyClientConsoleFatJar']) {
+createSymLinks.mustRunAfter createJars
+
+task fetchGPServer {
+  doLast {
+    ant.mkdir (dir: 'bin')
+    ant.get (src: 'https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpServer.sh', dest:'bin')
+    ant.get (src: 'https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpClient.sh', dest:'bin')
+    // make scripts executable
+    ant.chmod (perm:'ug+x', dir:'bin', includes: '**/*.sh')
+  }
 }
 
 // Along with the one below this updates the build.number whenever a jar is created.
-task('increaseBuildNumber') << {
+task increaseBuildNumber {
   Properties properties2 = new Properties()
   properties2.load(project.file('build.number').newDataInputStream())
   def buildNumber = Integer.parseInt(properties2.getProperty('build.number')) + 1
@@ -256,12 +269,4 @@ task('increaseBuildNumber') << {
   properties2.store(project.file('build.number').newWriter(), null) 
 }
 
-tasks.whenTaskAdded { task ->
-  if (task.name == 'jar') {
-    task.dependsOn 'increaseBuildNumber'
-  }
-}
-
-
-
-
+createJars.mustRunAfter increaseBuildNumber

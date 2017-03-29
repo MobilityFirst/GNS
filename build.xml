@@ -73,7 +73,8 @@
   
   <target name="compile_eclipse" depends="init, buildnumber" description="compile java files using eclipse java compiler">
     <javac compiler="org.eclipse.jdt.core.JDTCompilerAdapter" source="1.8"
-           target="1.8" srcdir="${src.dir}:${test.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+           target="1.8" srcdir="${src.dir}:${test.dir}" destdir="${build.classes.dir}" 
+           debug="true" debuglevel="lines,vars,source" includeantruntime="false">
       <classpath refid="classpath.base"/>
       <compilerarg value="-warn:+allJavadoc" />
     </javac>
@@ -274,7 +275,10 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <arg line="bin/gpServer.sh  -DgigapaxosConfig=${gigapaxosConfig} forceclear all"/>
     </exec>
     <exec executable="/bin/bash">
-      <arg line="bin/gpServer.sh -Djavax.net.ssl.trustStorePassword=${javax.net.ssl.trustStorePassword} -Djavax.net.ssl.trustStore=${javax.net.ssl.trustStore} -Djavax.net.ssl.keyStorePassword=${javax.net.ssl.keyStorePassword} -Djavax.net.ssl.keyStore=${javax.net.ssl.keyStore} -Djava.util.logging.config.file=${java.util.logging.config.file} -DgigapaxosConfig=${gigapaxosConfig} restart all"/>
+      <arg line="bin/gpServer.sh 
+-Djavax.net.ssl.trustStorePassword=${javax.net.ssl.trustStorePassword} -Djavax.net.ssl.trustStore=${javax.net.ssl.trustStore} 
+-Djavax.net.ssl.keyStorePassword=${javax.net.ssl.keyStorePassword} -Djavax.net.ssl.keyStore=${javax.net.ssl.keyStore} 
+-Djava.util.logging.config.file=${java.util.logging.config.file} -DgigapaxosConfig=${gigapaxosConfig} restart all"/>
     </exec>
     <sleep seconds="10"/>
   </target>
@@ -300,7 +304,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </javac>
   </target>
   
-  <target name="test" description="Runs all the singles tests against a 3 node server." 
+  <target name="test" description="Runs all the single tests against a 3 node server." 
           depends="compile, compiletest, runSingleTests">
   </target>
   
@@ -550,7 +554,9 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <!--<formatter type="brief" usefile="false"/> -->
     </junit>
   </target> 
-  <target name="connectTest" description="Performs a few tests after starting the server.  This is being used to find out what waitTillAllServersReady value is needed for Date to have a 99% success rate." 
+  
+  <target name="connectTest" description="Performs a few tests after starting the server.  
+This is being used to find out what waitTillAllServersReady value is needed for Date to have a 99% success rate." 
           depends="compile, compiletest">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
@@ -686,7 +692,8 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
   
-  <target name="testAll" description="Runs the default integration test against a 3 node server (by default), the parallel test, and all the single tests." 
+  <target name="testAll" description="Runs the default integration test against a 3 node server (by default), 
+the parallel test, and all the single tests." 
           depends="compile, compiletest">
     <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
     <antcall target="startServer"/> 
@@ -738,7 +745,8 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     </junit>
   </target>
 
-  <target name="bugSequential" description="Runs the test that is intended to reveal a timeout bug in the ServerIntegrationTest suite." 
+  <target name="bugSequential" description="Runs the test that is intended to reveal a timeout bug in the ServerIntegrationTest 
+suite." 
           depends="jar, compiletest">
     <property name="integrationTestRuns" value="500"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
@@ -837,7 +845,8 @@ integration tests sequentially"
     <buildnumber file="build.number" />
 
     <!--<property name="version.code" value="${VERSION}_${RELEASE}_build${build.number}" />-->
-    <property name="version.code" value="${build.major.number}.${build.minor.number}.${build.revision.number}_build${build.number}" />
+    <property name="version.code" value="${build.major.number}.${build.minor.number}.
+${build.revision.number}_build${build.number}" />
 
     <echo>Version: ${version.code}</echo>
 
