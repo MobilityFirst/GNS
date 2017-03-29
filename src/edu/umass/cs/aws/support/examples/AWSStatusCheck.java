@@ -68,6 +68,7 @@ import java.util.Set;
  *
  * @author westy
  */
+@Deprecated
 public class AWSStatusCheck {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
@@ -81,9 +82,6 @@ public class AWSStatusCheck {
   private static AmazonS3 s3;
   private static AmazonSimpleDB sdb;
 
-  /**
-   *
-   */
   private static void init() throws Exception {
     AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
 

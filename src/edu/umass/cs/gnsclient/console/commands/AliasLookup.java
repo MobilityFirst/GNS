@@ -26,53 +26,45 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.io.IOException;
+import org.json.JSONException;
 
 /**
- * Lookup a GNSProtocol.GUID.toString() corresponding to an alias in the GNS
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
+ * Lookup a guid corresponding to an alias in the GNS
  */
-public class AliasLookup extends ConsoleCommand
-{
+public class AliasLookup extends ConsoleCommand {
 
   /**
    * Creates a new <code>AliasLookup</code> object
-   * 
+   *
    * @param module
    */
-  public AliasLookup(ConsoleModule module)
-  {
+  public AliasLookup(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Lookup the alias corresponding to an GUID";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "alias_lookup";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "GUID";
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if (st.countTokens() != 1)
-      {
-        console.printString("Wrong number of arguments for this command.\n");
+      if (st.countTokens() != 1) {
+        wrongArguments();
         return;
       }
       String guid = st.nextToken();
@@ -82,9 +74,7 @@ public class AliasLookup extends ConsoleCommand
       String alias = entityInfo.getString(GNSProtocol.GUID_RECORD_NAME.toString());
       console.printString(guid + " has alias " + alias);
       console.printNewline();
-    }
-    catch (Exception e)
-    {
+    } catch (IOException | ClientException | JSONException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

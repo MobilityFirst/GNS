@@ -23,12 +23,12 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.ResponseCode;
-import java.io.IOException;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -37,7 +37,10 @@ import java.security.spec.InvalidKeySpecException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 
 /**
  *
@@ -64,26 +67,24 @@ public class RemoveAccountSecured extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException,
+          InternalRequestException {
+    JSONObject json = commandPacket.getCommand();
     // The name of the account we are removing.
     String name = json.getString(GNSProtocol.NAME.toString());
     // The guid of this account.
-    String guid = AccountAccess.lookupGuidAnywhere(name, handler);
+    String guid = AccountAccess.lookupGuidAnywhere(header, name, handler);
     if (guid == null) {
-      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + name);
+      // Removing a non-existant guid is not longer an error.
+      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     }
-    try {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(name, handler);
-      if (accountInfo == null) {
-        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
-      }
-      // And... we're done.
-      return AccountAccess.removeAccount(accountInfo, handler);
-    } catch (ClientException | IOException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
-              + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
+    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
+    if (accountInfo == null) {
+      return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
     }
+    // And... we're done.
+    return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
   }
 
 }

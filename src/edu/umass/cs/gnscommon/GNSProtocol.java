@@ -114,7 +114,7 @@ public enum GNSProtocol {
   FIELD_NOT_FOUND("+FIELDNOTFOUND+"),
   /**
    * Indicates that a command is trying to add a guid that already exists.
-   *  * See {@link edu.umass.cs.gnscommon.ResponseCode#DUPLICATE_GUID_EXCEPTION}.
+   *  * See {@link edu.umass.cs.gnscommon.ResponseCode#CONFLICTING_GUID_EXCEPTION}.
    */
   DUPLICATE_GUID("+DUPLICATEGUID+"),
   /**
@@ -124,7 +124,7 @@ public enum GNSProtocol {
   DUPLICATE_FIELD("+DUPLICATEFIELD+"),
   /**
    * Indicates that a command is trying to add a HRN that already exists.
-   * See {@link edu.umass.cs.gnscommon.ResponseCode#DUPLICATE_NAME_EXCEPTION}.
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#CONFLICTING_HRN_EXCEPTION}.
    */
   DUPLICATE_NAME("+DUPLICATENAME+"),
   /**
@@ -481,6 +481,27 @@ public enum GNSProtocol {
    * expires.
    */
   REQUEST_TTL("QTTL"),
+  
+  /**
+   * The GUID inducing this query. For active request chains, this is the
+   * most recently queried GUID that becomes the querying GUID for the
+   * next request in the chain.
+   */
+  QUERIER_GUID ("QGUID"),
+
+  
+  /**
+   * Proof that this request is internal. 
+   */
+  INTERNAL_PROOF ("IPROOF"),
+  
+  /**
+   * Special reader or writer to indicate that the querier is internal.
+   * The proof that this request is internal is *NOT* in the secrecy of
+   * this string.
+   */
+  INTERNAL_QUERIER("IQUERIER"),
+
   /**
    * Long client request ID in every {@link edu.umass.cs.gnscommon.packets.CommandPacket}.
    */

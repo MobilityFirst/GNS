@@ -39,6 +39,7 @@ import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  *
@@ -64,9 +65,13 @@ public class Read extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader internalHeader, CommandPacket commandPacket,
+          ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
+
+    assert (internalHeader != null);
 
     // the opt hair below is for the subclasses... cute, huh?
     String field = json.optString(GNSProtocol.FIELD.toString(), null);
@@ -76,7 +81,7 @@ public class Read extends AbstractCommand {
     // Reader can be one of three things:
     // 1) a guid - the guid attempting access
     // 2) the value GNSConfig.GNSC.INTERNAL_OP_SECRET - which means this is a request from another server
-    // 3) null (or missing from the JSON) - this is an unsigned read 
+    // 3) null (or missing from the JSON) - this is an unsigned read or a mutual auth command
     String reader = json.optString(GNSProtocol.READER.toString(), null);
     // signature and message can be empty for unsigned cases (reader should be null as well)
     String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
@@ -90,15 +95,15 @@ public class Read extends AbstractCommand {
     }
 
     if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-      return FieldAccess.lookupMultipleValues(internalHeader, guid, reader,
+      return FieldAccess.lookupMultipleValues(internalHeader, commandPacket, guid, reader,
               signature, message, timestamp, handler);
     } else if (field != null) {
-      return FieldAccess.lookupSingleField(internalHeader, guid, field, reader, signature,
+      return FieldAccess.lookupSingleField(internalHeader, commandPacket, guid, field, reader, signature,
               message, timestamp, handler);
     } else { // multi-field lookup
-      return FieldAccess.lookupMultipleFields(internalHeader, guid, fields, reader, signature,
+      return FieldAccess.lookupMultipleFields(internalHeader, commandPacket, guid, fields, reader, signature,
               message, timestamp, handler);
     }
   }
- 
+
 }

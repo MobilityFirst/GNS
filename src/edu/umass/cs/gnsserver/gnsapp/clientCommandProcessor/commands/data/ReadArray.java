@@ -38,6 +38,7 @@ import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  * This is the main class for a whole set of commands that support reading of the old style data formatted as
@@ -66,8 +67,9 @@ import edu.umass.cs.gnscommon.GNSProtocol;
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.getString(GNSProtocol.FIELD.toString());
 
@@ -89,14 +91,18 @@ import edu.umass.cs.gnscommon.GNSProtocol;
     if (getCommandType().equals(CommandType.ReadArrayOne)
             || getCommandType().equals(CommandType.ReadArrayOneUnsigned)) {
       if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-        return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, timestamp, handler);
+        return FieldAccess.lookupOneMultipleValues(header, commandPacket, guid, reader, 
+                signature, message, timestamp, handler);
       } else {
-        return FieldAccess.lookupOne(guid, field, reader, signature, message, timestamp, handler);
+        return FieldAccess.lookupOne(header, commandPacket, guid, field, reader, 
+                signature, message, timestamp, handler);
       }
     } else if (GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-      return FieldAccess.lookupMultipleValues(header, guid, reader, signature, message, timestamp, handler);
+      return FieldAccess.lookupMultipleValues(header, commandPacket, guid, reader, 
+              signature, message, timestamp, handler);
     } else {
-      return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, timestamp, handler);
+      return FieldAccess.lookupJSONArray(header, commandPacket, guid, field, reader, 
+              signature, message, timestamp, handler);
     }
   }
 }

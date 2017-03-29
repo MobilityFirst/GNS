@@ -24,9 +24,12 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnscommon.CommandType;
-
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,14 +58,18 @@ public class SelectGroupSetupQuery extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    String accountGuid = json.getString(GNSProtocol.GUID.toString());
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException, InternalRequestException {
+    JSONObject json = commandPacket.getCommand();
+    String reader = json.optString(GNSProtocol.GUID.toString(), null);
+    String accountGuid = json.getString(GNSProtocol.ACCOUNT_GUID.toString());
     String query = json.getString(GNSProtocol.QUERY.toString());
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
     int interval = json.optInt(GNSProtocol.INTERVAL.toString(), -1);
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
 
-    return FieldAccess.selectGroupSetupQuery(accountGuid, query, publicKey, interval, handler);
+    return FieldAccess.selectGroupSetupQuery(header, commandPacket, reader, accountGuid, query, publicKey, interval, 
+            signature, message, handler);
   }
 
-  
 }

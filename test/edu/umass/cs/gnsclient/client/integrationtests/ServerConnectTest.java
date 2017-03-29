@@ -15,8 +15,8 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsclient.client.integrationtests;
 
+import edu.umass.cs.gnsserver.utils.RunCommand;
 import edu.umass.cs.gigapaxos.PaxosConfig;
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -58,12 +58,6 @@ public class ServerConnectTest extends DefaultTest {
   private static final String PASSWORD = "password";
   private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
-  private static GuidEntry subGuidEntry;
-  private static GuidEntry westyEntry;
-  private static GuidEntry samEntry;
-  private static GuidEntry barneyEntry;
-  private static GuidEntry mygroupEntry;
-  private static GuidEntry guidToDeleteEntry;
 
   /**
    *
@@ -161,18 +155,6 @@ public class ServerConnectTest extends DefaultTest {
     org.junit.Assert.fail(message);
   }
 
-  /* We need this below even though a majority being up suffices and account GUID 
-	 * creation success (with retransmission) auto-detects whether a majority is up,
-	 * it can happen that one server is not yet ready, which sometimes leads to 
-	 * some tests like lookupPrimaryGuid failing because the request goes to a 
-	 * still-not-up server and simply times out.
-	 * 
-	 * The clean way to obviate this wait is to build fault-tolerance into the 
-	 * tests, i.e., every request should be retransmitted until success
-	 * assuming that any server can fail at any time.
-   */
-  private static long WAIT_TILL_ALL_SERVERS_READY = 5000;
-
   /**
    *
    * @throws Exception
@@ -180,17 +162,13 @@ public class ServerConnectTest extends DefaultTest {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Run the server.
-    String waitString = System.getProperty("waitTillAllServersReady");
-    if (waitString != null) {
-      WAIT_TILL_ALL_SERVERS_READY = Integer.parseInt(waitString);
-    }
 
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
 
       // clear explicitly if gigapaxos
       if (useGPScript()) {
-        RunServer
+        RunCommand
                 .command(
                         "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | "
                         + "grep -v ServerConnectTest  | grep -v \"context\" | awk '{print $2}'`",
@@ -200,7 +178,7 @@ public class ServerConnectTest extends DefaultTest {
                 + " "
                 + getGigaPaxosOptions() + " forceclear all");
 
-        RunServer.command(
+        RunCommand.command(
                 System.getProperty(DefaultProps.SERVER_COMMAND.key)
                 + " " + getGigaPaxosOptions()
                 + " forceclear all", ".");
@@ -220,7 +198,7 @@ public class ServerConnectTest extends DefaultTest {
               .getProperty(DefaultProps.SERVER_COMMAND.key)
               + " "
               + options);
-      ArrayList<String> output = RunServer.command(
+      ArrayList<String> output = RunCommand.command(
               System.getProperty(DefaultProps.SERVER_COMMAND.key) + " "
               + options, ".");
       if (output != null) {
@@ -234,20 +212,20 @@ public class ServerConnectTest extends DefaultTest {
 	String gpConfFile = System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key);
 	String logFile = System.getProperty(DefaultProps.LOGGING_PROPERTIES.key);
 
-	ArrayList<String> output = RunServer.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
+	ArrayList<String> output = RunCommand.command("cat " + logFile + " | grep \"java.util.logging.FileHandler.pattern\" | sed 's/java.util.logging.FileHandler.pattern = //g'", ".", false);
 	String logFiles = output.get(0) + "*";
 
 	System.out.println("Waiting for servers to be ready...");
-	output = RunServer.command("cat " + gpConfFile + " | grep \"reconfigurator\\.\" | wc -l ", ".", false);
+	output = RunCommand.command("cat " + gpConfFile + " | grep \"reconfigurator\\.\" | wc -l ", ".", false);
 	int numRC = Integer.parseInt(output.get(0));
-	output = RunServer.command("cat " + gpConfFile + " | grep \"active\\.\" | wc -l ", ".", false);
+	output = RunCommand.command("cat " + gpConfFile + " | grep \"active\\.\" | wc -l ", ".", false);
 	int numAR = Integer.parseInt(output.get(0));
 	int numServers = numRC + numAR;
-	output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+	output = RunCommand.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
 	int numServersUp = Integer.parseInt(output.get(0));
 	while (numServersUp < numServers){
     		Thread.sleep(5000);
-		output = RunServer.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
+		output = RunCommand.command("cat " + logFiles + " | grep \"server ready\" | wc -l ", ".", false);
 		numServersUp = Integer.parseInt(output.get(0));
 		System.out.println(Integer.toString(numServersUp) + " out of " + Integer.toString(numServers) + " servers are ready.");
 
@@ -265,8 +243,6 @@ public class ServerConnectTest extends DefaultTest {
     //
     int tries = 5;
     boolean accountCreated = false;
-
-    long t = System.currentTimeMillis();
 
     do {
       try {
@@ -309,7 +285,7 @@ public class ServerConnectTest extends DefaultTest {
                         + System.getProperty(DefaultProps.GIGAPAXOS_CONFIG.key) + "...");
 
         try {
-          RunServer.command(command, ".");
+          RunCommand.command(command, ".");
         } catch (Exception e) {
           System.out.println(" failed to stop all servers with [" + command + "]");
           e.printStackTrace();
@@ -317,7 +293,7 @@ public class ServerConnectTest extends DefaultTest {
         }
         System.out.println(" stopped all servers.");
       } else {
-        ArrayList<String> output = RunServer.command(
+        ArrayList<String> output = RunCommand.command(
                 new File(System
                         .getProperty(DefaultProps.SERVER_COMMAND.key))
                 .getParent()
@@ -336,12 +312,6 @@ public class ServerConnectTest extends DefaultTest {
 
     if (client != null) {
       client.close();
-    }
-    System.out.println("\nPrinting reverse-engineered return types:");
-    for (CommandType type : GNSClientCommands.REVERSE_ENGINEER.keySet()) {
-      System.out.println(type + " returns "
-              + GNSClientCommands.REVERSE_ENGINEER.get(type) + "; e.g., "
-              + Util.truncate(GNSClientCommands.RETURN_VALUE_EXAMPLE.get(type), 64, 64));
     }
   }
 

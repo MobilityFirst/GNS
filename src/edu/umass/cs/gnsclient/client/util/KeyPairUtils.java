@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -38,14 +39,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.util.keystorage.AbstractKeyStorage;
 import edu.umass.cs.gnsclient.client.util.keystorage.JavaPreferencesKeyStore;
 import edu.umass.cs.gnsclient.client.util.keystorage.SimpleKeyStore;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.utils.Config;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * @author westy
@@ -93,8 +96,10 @@ public class KeyPairUtils {
     String privateString = keyStorageObj.get(generateKey(gnsName, username, PRIVATE), "");
     if (!guid.isEmpty() && !publicString.isEmpty() && !privateString.isEmpty()) {
       try {
-        byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
-        byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
+        byte[] encodedPublicKey = DatatypeConverter.parseHexBinary(publicString);
+        //byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
+        byte[] encodedPrivateKey = DatatypeConverter.parseHexBinary(privateString);
+        //byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
         KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
         PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
@@ -134,6 +139,24 @@ public class KeyPairUtils {
    *
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
    * @param username the user name or human readable name
+   */
+  public static GuidEntry generateAndSaveKeyPair(String gnsName, String username)
+          throws NoSuchAlgorithmException, EncryptionException {
+
+    KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
+            .generateKeyPair();
+    String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
+            .getPublic().getEncoded());
+    GuidEntry guidEntry = new GuidEntry(gnsName, guid, keyPair.getPublic(), keyPair.getPrivate());
+    saveKeyPair(gnsName, username, guid, keyPair);
+    return guidEntry;
+  }
+
+  /**
+   * Saves the public/private key pair to preferences for the given user.
+   *
+   * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
+   * @param username the user name or human readable name
    * @param guid the GNSProtocol.GUID.toString() value
    * @param keyPair public and private keys for that GNSProtocol.GUID.toString()
    */
@@ -145,8 +168,10 @@ public class KeyPairUtils {
 
     createSingleton();
 
-    String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
-    String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
+    String publicString =  DatatypeConverter.printHexBinary(keyPair.getPublic().getEncoded());
+    String privateString =  DatatypeConverter.printHexBinary(keyPair.getPrivate().getEncoded());
+    //String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
+    //String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
     keyStorageObj.put(generateKey(gnsName, username, PUBLIC), publicString);
     keyStorageObj.put(generateKey(gnsName, username, PRIVATE), privateString);
     keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
@@ -319,6 +344,10 @@ public class KeyPairUtils {
     return true;
   }
 
+  public static String publicKeyToBase64ForGuid(GuidEntry guid) {
+    byte[] publicKeyBytes = guid.getPublicKey().getEncoded();
+    return Base64.encodeToString(publicKeyBytes, false);
+  }
   /**
    * Return the list of all GUIDs stored locally that belong to a particular GNS
    * instance.

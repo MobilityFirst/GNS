@@ -7,10 +7,10 @@ import org.junit.Test;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
@@ -61,6 +61,10 @@ public class InternalCommandPacket extends CommandPacket implements
 	 */
 	private boolean hasBeenCoordinatedOnce = false;
 
+	private String queryingGUID = null;
+
+	private String proof = null;
+
 	// not sure whether to store inside or outside, maybe doesn't matter
 	private static final boolean STORE_INSIDE = true;
 
@@ -87,8 +91,8 @@ public class InternalCommandPacket extends CommandPacket implements
 	 * @param command
 	 * @throws JSONException
 	 */
-	InternalCommandPacket(Integer ttl, String oGUID, long oqid,
-			JSONObject command) throws JSONException {
+	InternalCommandPacket(Integer ttl, String oGUID, long oqid, String qguid,
+			boolean internal, JSONObject command) throws JSONException {
 		super(
 		// this' requestID, different from originatingRequestID
 				(long) (Math.random() * Long.MAX_VALUE),
@@ -104,6 +108,12 @@ public class InternalCommandPacket extends CommandPacket implements
 
 						.put(GNSProtocol.ORIGINATING_QID.toString(), oqid)
 
+						.putOpt(GNSProtocol.QUERIER_GUID.toString(), qguid)
+
+						.putOpt(GNSProtocol.INTERNAL_PROOF.toString(),
+								internal ? GNSConfig.getInternalOpSecret()
+										: null)
+
 				: command);
 		this.setType(SEPARATE_INTERNAL_TYPE ? Packet.PacketType.INTERNAL_COMMAND
 				: Packet.PacketType.COMMAND);
@@ -113,16 +123,17 @@ public class InternalCommandPacket extends CommandPacket implements
 		// hasBeenCoordinatedOnce already initialized
 	}
 
-  /**
-   *
-   * @param header
-   * @param command
-   * @throws JSONException
-   */
-  protected InternalCommandPacket(InternalRequestHeader header,
+	/**
+	 *
+	 * @param header
+	 * @param command
+	 * @throws JSONException
+	 */
+	protected InternalCommandPacket(InternalRequestHeader header,
 			JSONObject command) throws JSONException {
 		this(header.getTTL(), header.getOriginatingGUID(), header
-				.getOriginatingRequestID(), command);
+				.getOriginatingRequestID(), header.getQueryingGUID(), header
+				.verifyInternal(), command);
 	}
 
 	public JSONObject toJSONObject() throws JSONException {
@@ -132,7 +143,8 @@ public class InternalCommandPacket extends CommandPacket implements
 				// decrement TTL, rest is all set
 				json.getJSONObject(GNSProtocol.COMMAND_QUERY.toString())
 						.put(GNSProtocol.REQUEST_TTL.toString(),
-								json.getJSONObject(GNSProtocol.COMMAND_QUERY.toString())
+								json.getJSONObject(
+										GNSProtocol.COMMAND_QUERY.toString())
 										.getInt(GNSProtocol.REQUEST_TTL
 												.toString()) - 1) != null ? json
 
@@ -146,7 +158,10 @@ public class InternalCommandPacket extends CommandPacket implements
 						.put(GNSProtocol.ORIGINATING_QID.toString(),
 								this.originatingRequestID)
 						.put(GNSProtocol.COORD1.toString(),
-								this.hasBeenCoordinatedOnce);
+								this.hasBeenCoordinatedOnce)
+						.put(GNSProtocol.QUERIER_GUID.toString(),
+								this.queryingGUID)
+						.put(GNSProtocol.INTERNAL_PROOF.toString(), this.proof);
 	}
 
 	/**
@@ -167,12 +182,24 @@ public class InternalCommandPacket extends CommandPacket implements
 				.longValue() : ((Long) id).longValue();
 		this.hasBeenCoordinatedOnce = (Boolean) getInOrOutside(
 				GNSProtocol.COORD1.toString(), json);
+		/* Proof that this request is internal. Both internal and active request
+		 * chain requests are internal requests. */
+		this.proof = (String) getInOrOutside(
+				GNSProtocol.INTERNAL_PROOF.toString(), json);
+		this.queryingGUID = (String) getInOrOutside(
+				GNSProtocol.QUERIER_GUID.toString(), json);
+
 	}
 
 	private static final Object getInOrOutside(String key, JSONObject outerJSON)
 			throws JSONException {
-		return STORE_INSIDE ? outerJSON.getJSONObject(
-				GNSProtocol.COMMAND_QUERY.toString()).get(key) : outerJSON.get(key);
+		return STORE_INSIDE ?
+
+		outerJSON.getJSONObject(GNSProtocol.COMMAND_QUERY.toString()).opt(key)
+
+		:
+
+		outerJSON.opt(key);
 	}
 
 	@Override
@@ -193,6 +220,51 @@ public class InternalCommandPacket extends CommandPacket implements
 	@Override
 	public boolean hasBeenCoordinatedOnce() {
 		return false;
+	}
+
+	@Override
+	public boolean verifyInternal() {
+		return this.proof != null
+				&& GNSConfig.getInternalOpSecret().equals(proof);
+	}
+
+	public String getQueryingGUID() {
+		return this.queryingGUID;
+	}
+
+	/**
+	 * Set the querier to {@link GNSProtocol#INTERNAL_QUERIER} if {@code active}
+	 * is false, and to {@link InternalRequestHeader#getQueryingGUID()}
+	 * otherwise. Provided that such queries carry verifiable proof of being
+	 * internal, the querier information helps distinguish between internal
+	 * queries that need no checks whatsoever and internal active request chain
+	 * queries that do need ACL checks (but no signature checks).
+	 * 
+	 * @param active
+	 * 
+	 * @return {@code this}
+	 * @throws JSONException
+	 */
+	public InternalCommandPacket makeInternal(boolean active)
+			throws JSONException {
+		JSONObject command = this.getCommand();
+		String querier = active ? this.getQueryingGUID()
+				: GNSProtocol.INTERNAL_QUERIER.toString();
+		if (command.has(GNSProtocol.READER.toString()))
+			command.put(GNSProtocol.READER.toString(), querier);
+		else if (command.has(GNSProtocol.WRITER.toString()))
+			command.put(GNSProtocol.WRITER.toString(), querier);
+		return this;
+	}
+
+	/**
+	 * Same as {@link #makeInternal(boolean)} invoked with {@code false}.
+	 * 
+	 * @return {@code this}
+	 * @throws JSONException
+	 */
+	public InternalCommandPacket makeActive() throws JSONException {
+		return this.makeInternal(false);
 	}
 
 	private static InternalRequestHeader getTestHeader(int ttl, String GUID,
@@ -229,10 +301,11 @@ public class InternalCommandPacket extends CommandPacket implements
 
 		/**
 		 * @throws JSONException
-		 * @throws InternalRequestException 
+		 * @throws InternalRequestException
 		 */
 		@Test
-		public void test_01_serialization() throws JSONException, InternalRequestException {
+		public void test_01_serialization() throws JSONException,
+				InternalRequestException {
 			Util.assertAssertionsEnabled();
 			decrementTTL = false;
 			InternalCommandPacket icmd = GNSCommandInternal.fieldRead("hello",

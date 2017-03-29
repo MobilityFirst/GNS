@@ -748,7 +748,7 @@ public class Format {
           = new ThreadLocal<SimpleDateFormat>() {
     @Override
     protected SimpleDateFormat initialValue() {
-      SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+      SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
       return result;
     }
   };
@@ -780,7 +780,7 @@ public class Format {
           = new ThreadLocal<SimpleDateFormat>() {
     @Override
     protected SimpleDateFormat initialValue() {
-      SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+      SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
       result.setTimeZone(TimeZone.getTimeZone("UTC"));
       return result;
     }

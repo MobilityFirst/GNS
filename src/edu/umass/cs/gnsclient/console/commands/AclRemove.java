@@ -29,86 +29,78 @@ import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
  * Remove a GUID from the ACL of a field of the current GUID in the GNS
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
-public class AclRemove extends ConsoleCommand
-{
+public class AclRemove extends ConsoleCommand {
 
   /**
-   * Creates a new <code>AclAdd</code> object
-   * 
+   * Creates a new <code>AclRemove</code> object
+   *
    * @param module
    */
-  public AclRemove(ConsoleModule module)
-  {
+  public AclRemove(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Remove a GUID from the read or write ACL for the given field in the current GUID (using the credential of the current GUID/alias). "
-        + "Use +ALL+ as the field name to set the ACL on all fields. "
-        + "Use +ALL+ in the GUID field to make the field private and inaccessible to everyone.";
+            + "Use +ALL+ as the field name to set the ACL on all fields. "
+            + "Use +ALL+ in the GUID field to make the field private and inaccessible to everyone.";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "acl_remove";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "field read|write guid";
   }
 
   /**
    * Override execute to check for existing connectivity
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
-    if (!module.isCurrentGuidSetAndVerified())
-    {
+  public void execute(String commandText) throws Exception {
+    if (!module.isCurrentGuidSetAndVerified()) {
       return;
     }
     super.execute(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    try {
       GNSClientCommands gnsClient = module.getGnsClient();
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if (st.countTokens() != 3)
-      {
-        console.printString("Wrong number of arguments");
-        console.printNewline();
+      if (st.countTokens() != 3) {
+        wrongArguments();
         return;
       }
       String field = st.nextToken();
       boolean isWrite = "write".equalsIgnoreCase(st.nextToken());
       String guid = st.nextToken();
 
-      // Set ACL
-      gnsClient.aclRemove(isWrite ? AclAccessType.WRITE_WHITELIST : AclAccessType.READ_WHITELIST, module.getCurrentGuid(),
-          field, "+ALL+".equals(guid) ? null : guid);
+      if (gnsClient.fieldAclExists(isWrite ? AclAccessType.WRITE_WHITELIST
+              : AclAccessType.READ_WHITELIST, module.getCurrentGuid(),
+              field)) {
+        // Update ACL
+        gnsClient.aclRemove(isWrite ? AclAccessType.WRITE_WHITELIST : AclAccessType.READ_WHITELIST, module.getCurrentGuid(),
+                field, "+ALL+".equals(guid) ? null : guid);
 
-      // Then read ACLs
-      JSONArray write = gnsClient.aclGet(isWrite ? AclAccessType.WRITE_WHITELIST : AclAccessType.READ_WHITELIST,
-          module.getCurrentGuid(), field, module.getCurrentGuid().getGuid());
-      console.printString("New ACL is: " + write.toString());
-      console.printNewline();
-    }
-    catch (Exception e)
-    {
+        // Then read ACLs
+        JSONArray write = gnsClient.aclGet(isWrite ? AclAccessType.WRITE_WHITELIST : AclAccessType.READ_WHITELIST,
+                module.getCurrentGuid(), field, module.getCurrentGuid().getGuid());
+        console.printString("New ACL is: " + write.toString());
+        console.printNewline();
+      } else {
+        console.printString((isWrite ? "Write" : "Read") + " ACL for field " + field + " does not exist");
+        console.printNewline();
+      }
+    } catch (Exception e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

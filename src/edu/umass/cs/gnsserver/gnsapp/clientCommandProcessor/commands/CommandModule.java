@@ -26,6 +26,7 @@ import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.TreeSet;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.lang.reflect.InvocationTargetException;
@@ -204,10 +205,10 @@ public class CommandModule {
                   new Object[]{commandName, command.getCommandType().toString()});
           command = null;
         }
-        if (command != null && !JSONContains(json, command.getCommandParameters())) {
+        if (command != null && !JSONContains(json, command.getCommandRequiredParameters())) {
           ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
-                  "For command {0} missing parameter {1}",
-                  new Object[]{command.getCommandType(), JSONMissing(json, command.getCommandParameters())});
+                  "For command {0} missing required parameter {1}",
+                  new Object[]{command.getCommandType(), JSONMissing(json, command.getCommandRequiredParameters())});
           command = null;
         }
       } catch (JSONException e) {
@@ -218,7 +219,7 @@ public class CommandModule {
               + json.optString(GNSProtocol.COMMANDNAME.toString(), "also missing command name!"));
     }
     if (command != null) {
-      ClientCommandProcessorConfig.getLogger().log(Level.FINE,
+      ClientCommandProcessorConfig.getLogger().log(Level.FINEST,
               "Found {0} using table lookup", command);
       return command;
     }
@@ -259,7 +260,8 @@ public class CommandModule {
   public static final String WIKI_PREAMBLE = "{| class=\"wikitable\"\n"
           + "|+ Commands in %s\n"
           + "! scope=\"col\" | Command Name\n"
-          + "! scope=\"col\" | Parameters\n"
+          + "! scope=\"col\" | Required Parameters\n"
+          + "! scope=\"col\" | Optional Parameters\n"
           + "! scope=\"col\" | Description";
 
   /**

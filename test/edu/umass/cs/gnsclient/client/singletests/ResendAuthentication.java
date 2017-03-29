@@ -24,12 +24,13 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
 import org.json.JSONObject;
-
-import static org.junit.Assert.*;
-
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -39,23 +40,21 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ResendAuthentication {
+public class ResendAuthentication extends DefaultGNSTest {
 
-  private static String ACCOUNT_ALIAS = "david@westy.org"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
 
   /**
    *
    */
   public ResendAuthentication() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
     }
   }
@@ -66,9 +65,9 @@ public class ResendAuthentication {
   @Test
   public void test_01_CreateAccount() {
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+      masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -79,23 +78,23 @@ public class ResendAuthentication {
   public void test_02_CheckAccount() {
     String guidString = null;
     try {
-      guidString = client.lookupGuid(ACCOUNT_ALIAS);
-    } catch (Exception e) {
-      fail("Exception while looking up guid: " + e);
+      guidString = clientCommands.lookupGuid(globalAccountName);
+    } catch (IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception while looking up guid: " + e);
     }
     JSONObject json = null;
     if (guidString != null) {
       try {
-        json = client.lookupAccountRecord(guidString);
-      } catch (Exception e) {
-        fail("Exception while looking up account record: " + e);
+        json = clientCommands.lookupAccountRecord(guidString);
+      } catch (IOException | ClientException e) {
+        Utils.failWithStackTrace("Exception while looking up account record: " + e);
       }
     }
-    if (json == null) {
+    if (json != null) {
       try {
-        assertFalse(json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
+        System.out.println("Account verified is " + json.getBoolean(GNSProtocol.ACCOUNT_RECORD_VERIFIED.toString()));
       } catch (Exception e) {
-        fail("Exception while getting field from account record: " + e);
+        Utils.failWithStackTrace("Exception while getting field from account record: " + e);
       }
     }
   }
@@ -106,10 +105,11 @@ public class ResendAuthentication {
   @Test
   public void test_03_SendAuthenticationEmail() {
     try {
-      client.accountResendAuthenticationEmail(masterGuid);
-    } catch (Exception e) {
-      fail("Exception while resending email: " + e);
-      e.printStackTrace();
+      clientCommands.accountResendAuthenticationEmail(masterGuid);
+    } catch (VerificationException e) {
+      System.out.println(e.getMessage());
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while resending email: " + e);
     }
   }
 

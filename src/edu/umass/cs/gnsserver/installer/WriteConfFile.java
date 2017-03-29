@@ -46,6 +46,7 @@ import org.w3c.dom.Element;
  *
  * @author westy
  */
+@Deprecated
 public class WriteConfFile {
 
   /**
@@ -207,7 +208,6 @@ public class WriteConfFile {
    * 
    * @param argv
    */
-  @SuppressWarnings("unchecked")
   public static void main(String argv[]) {
     ConcurrentHashMap<String, HostInfo> idTable = new ConcurrentHashMap<>();
     idTable.put("0", new HostInfo("0", "host1", null));

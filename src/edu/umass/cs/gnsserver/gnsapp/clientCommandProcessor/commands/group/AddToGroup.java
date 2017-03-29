@@ -20,15 +20,19 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -36,6 +40,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,8 +68,9 @@ public class AddToGroup extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String member = json.getString(GNSProtocol.MEMBER.toString());
     // writer might be same as guid
@@ -76,14 +82,14 @@ public class AddToGroup extends AbstractCommand {
             ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
     ResponseCode responseCode;
     try {
-      if (!(responseCode = GroupAccess.addToGroup(guid, member, writer,
+      if (!(responseCode = GroupAccess.addToGroup(header, guid, member, writer,
               signature, message, timestamp, handler)).isExceptionOrError()) {
         return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       } else {
         return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() 
                 + " " + responseCode.getProtocolCode());
       }
-    } catch (ClientException | IOException e) {
+    } catch (ClientException | IOException | InternalRequestException e) {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, 
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
     }

@@ -25,12 +25,14 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.Base64;
 
+import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.json.JSONException;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -41,34 +43,32 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class WriteReadBytesTest {
+public class WriteReadBytesTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client = null;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
 
   /**
    *
    */
   public WriteReadBytesTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception while trying to create the client: " + e);
+        Utils.failWithStackTrace("Exception while trying to create the client: " + e);
       }
 
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception while trying to create account guid: " + e);
+        Utils.failWithStackTrace("Exception while trying to create account guid: " + e);
       }
     }
   }
 
-  private static final String TEST_FIELD = "testBytes";
+  private static final String TEST_FIELD = "testBytes" + RandomString.randomString(12);
   private static byte[] testValue;
 
   /**
@@ -80,9 +80,9 @@ public class WriteReadBytesTest {
       testValue = RandomUtils.nextBytes(16000);
       String encodedValue = Base64.encodeToString(testValue, true);
       //System.out.println("Encoded string: " + encodedValue);
-      client.fieldUpdate(masterGuid, TEST_FIELD, encodedValue);
+      clientCommands.fieldUpdate(masterGuid, TEST_FIELD, encodedValue);
     } catch (IOException | ClientException e) {
-      fail("Exception during create field: " + e);
+      Utils.failWithStackTrace("Exception during create field: " + e);
     }
   }
 
@@ -92,11 +92,11 @@ public class WriteReadBytesTest {
   @Test
   public void test_02_ReadBytesField() {
     try {
-      String string = client.fieldRead(masterGuid, TEST_FIELD);
+      String string = clientCommands.fieldRead(masterGuid, TEST_FIELD);
       //System.out.println("Read string: " + string);
-      assertArrayEquals(testValue, Base64.decode(string));
-    } catch (Exception e) {
-      fail("Exception while reading field: " + e);
+      Assert.assertArrayEquals(testValue, Base64.decode(string));
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while reading field: " + e);
     }
   }
 }

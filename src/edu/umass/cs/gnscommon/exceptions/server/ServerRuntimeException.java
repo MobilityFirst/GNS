@@ -27,7 +27,7 @@ public class ServerRuntimeException extends RuntimeException
   private static final long serialVersionUID = 6627620787610127842L;
 
   /**
-   * Creates a new <code>GnrsException</code> object
+   * Creates a new <code>ServerRuntimeException</code> object
    */
   public ServerRuntimeException()
   {
@@ -35,7 +35,7 @@ public class ServerRuntimeException extends RuntimeException
   }
 
   /**
-   * Creates a new <code>GnrsException</code> object
+   * Creates a new <code>ServerRuntimeException</code> object
    * 
    * @param message
    * @param cause
@@ -46,7 +46,7 @@ public class ServerRuntimeException extends RuntimeException
   }
 
   /**
-   * Creates a new <code>GnrsException</code> object
+   * Creates a new <code>ServerRuntimeException</code> object
    * 
    * @param message
    */
@@ -56,7 +56,7 @@ public class ServerRuntimeException extends RuntimeException
   }
 
   /**
-   * Creates a new <code>GnrsException</code> object
+   * Creates a new <code>ServerRuntimeException</code> object
    * 
    * @param throwable
    */

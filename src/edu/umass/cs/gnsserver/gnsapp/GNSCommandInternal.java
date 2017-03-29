@@ -15,6 +15,7 @@ import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.ResultValue;
 
 /**
  * @author arun
@@ -42,23 +43,35 @@ public class GNSCommandInternal extends InternalCommandPacket {
    * @return a JSON Object
    * @throws JSONException
    */
-  private static JSONObject makeInternal(CommandType type, JSONObject command)
+  private static JSONObject makeInternal(CommandType type,
+          InternalRequestHeader header, JSONObject command)
           throws JSONException {
     // internal commands can not and need not be signed
     assert (!command.has(GNSProtocol.SIGNATURE.toString()));
     // currently only read/write requests can be internal
     assert (type.isRead() || type.isUpdate());
     // only unsigned commands can be modified this way
-    return command.put(type.isRead() ? GNSProtocol.READER.toString()
-            : GNSProtocol.WRITER.toString(), 
-            //Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)
-            GNSConfig.getInternalOpSecret()
-    		);
+    return command.put(
+            type.isRead() ? GNSProtocol.READER.toString()
+                    : GNSProtocol.WRITER.toString(),
+            DEFAULT_INTERNAL ? GNSProtocol.INTERNAL_QUERIER.toString()
+                    : header.getQueryingGUID())
+            // secure because this only works at servers
+            .put(GNSProtocol.INTERNAL_PROOF.toString(),
+                    GNSConfig.getInternalOpSecret());
   }
 
   /**
-   * The querier is always null in internal commands as it is implicitly
-   * a trusted server or client.
+   * If this is true, the querier is internal by default. Active requests must
+   * explicitly set the querier to
+   * {@link InternalRequestHeader#getQueryingGUID()} so that ACL (but no
+   * signature) checks can be performed on the querier.
+   */
+  private static boolean DEFAULT_INTERNAL = true;
+
+  /**
+   * The querier is always null in internal commands as it is implicitly a
+   * trusted server or client.
    *
    * @param type
    * @param header
@@ -70,16 +83,20 @@ public class GNSCommandInternal extends InternalCommandPacket {
   private static GNSCommandInternal getCommand(CommandType type,
           InternalRequestHeader header, Object... keysAndValues)
           throws JSONException, InternalRequestException {
-    return enforceChecks(new GNSCommandInternal(header, makeInternal(
-            type,
-            CommandUtils
-            .createCommand(type, keysAndValues)
-            .put(GNSProtocol.ORIGINATING_GUID.toString(),
-                    header.getOriginatingGUID())
-            .put(GNSProtocol.ORIGINATING_QID.toString(),
-                    header.getOriginatingRequestID())
-            .put(GNSProtocol.REQUEST_TTL.toString(),
-                    header.getTTL()))), header);
+    return enforceChecks(
+            new GNSCommandInternal(header, makeInternal(
+                    type,
+                    header,
+                    CommandUtils
+                    .createCommand(type, keysAndValues)
+                    .put(GNSProtocol.ORIGINATING_GUID.toString(),
+                            header.getOriginatingGUID())
+                    .put(GNSProtocol.ORIGINATING_QID.toString(),
+                            header.getOriginatingRequestID())
+                    .put(GNSProtocol.REQUEST_TTL.toString(),
+                            header.getTTL())
+                    .put(GNSProtocol.QUERIER_GUID.toString(),
+                            header.getQueryingGUID()))), header);
   }
 
   private static GNSCommandInternal enforceChecks(
@@ -118,10 +135,11 @@ public class GNSCommandInternal extends InternalCommandPacket {
    * @throws InternalRequestException
    */
   public static final InternalCommandPacket fieldRead(String targetGUID,
-          String field, InternalRequestHeader header) throws JSONException, InternalRequestException {
+          String field, InternalRequestHeader header) throws JSONException,
+          InternalRequestException {
     return getCommand(CommandType.ReadUnsigned, header,
-            GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.FIELD.toString(),
-            field);
+            GNSProtocol.GUID.toString(), targetGUID,
+            GNSProtocol.FIELD.toString(), field);
   }
 
   /**
@@ -138,17 +156,17 @@ public class GNSCommandInternal extends InternalCommandPacket {
           ArrayList<String> fields, InternalRequestHeader header)
           throws JSONException, InternalRequestException {
     return getCommand(CommandType.ReadUnsigned, header,
-            GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.FIELDS.toString(),
-            fields);
+            GNSProtocol.GUID.toString(), targetGUID,
+            GNSProtocol.FIELDS.toString(), fields);
   }
 
   /**
    * Identical to
    * {@link GNSCommand#fieldUpdate(String, String, Object, GuidEntry)} except
-   * that the last {@code querierGUID} argument is an InternalRequestHeader. For internal
-   * operations, we need the identity of {@code querierGUID} to perform ACL
-   * checks or to "charge" it an operation for accounting purposes, but we
-   * don't need to generate or verify its signatures.
+   * that the last {@code querierGUID} argument is an InternalRequestHeader.
+   * For internal operations, we need the identity of {@code querierGUID} to
+   * perform ACL checks or to "charge" it an operation for accounting
+   * purposes, but we don't need to generate or verify its signatures.
    *
    * @param header
    *
@@ -160,11 +178,62 @@ public class GNSCommandInternal extends InternalCommandPacket {
    * @throws JSONException
    * @throws InternalRequestException
    */
-  public static InternalCommandPacket fieldUpdate(String targetGUID, String field,
-          JSONObject value, InternalRequestHeader header)
+  public static InternalCommandPacket fieldUpdate(String targetGUID,
+          String field, Object value, InternalRequestHeader header)
           throws JSONException, InternalRequestException {
     return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
-            GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.USER_JSON.toString(),
-            value);
+            GNSProtocol.GUID.toString(), targetGUID,
+            GNSProtocol.USER_JSON.toString(), new JSONObject().put(field, value));
+  }
+
+  /**
+   * Generalized update with configurable {@code CommandType} argument.
+   *
+   * @param type
+   * @param header
+   * @param keysAndValues
+   * @return InternalCommandPacket
+   * @throws JSONException
+   * @throws InternalRequestException
+   */
+  public static InternalCommandPacket fieldUpdate(InternalRequestHeader header, CommandType type,
+          Object... keysAndValues) throws JSONException,
+          InternalRequestException {
+    return getCommand(type, header, keysAndValues);
+  }
+
+  /**
+   * @param guid
+   * @param field
+   * @param value
+   * @param header
+   * @return InternalCommandPacket
+   * @throws JSONException
+   * @throws InternalRequestException
+   */
+  public static InternalCommandPacket fieldRemove(String guid,
+          String field, String value, InternalRequestHeader header)
+          throws InternalRequestException, JSONException {
+    return getCommand(CommandType.RemoveUnsigned, header,
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.VALUE.toString(), value);
+  }
+  
+  /**
+ * @param guid
+ * @param field
+ * @param value
+ * @param header
+ * @return InternalCommandPacket
+ * @throws InternalRequestException
+ * @throws JSONException
+ */
+public static InternalCommandPacket fieldRemoveList(String guid, String field, ResultValue value, 
+          InternalRequestHeader header) throws InternalRequestException, JSONException {
+    return getCommand(CommandType.RemoveListUnsigned, header,
+            GNSProtocol.GUID.toString(), guid,
+            GNSProtocol.FIELD.toString(), field, 
+            GNSProtocol.VALUE.toString(), value);   
   }
 }

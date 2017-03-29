@@ -24,6 +24,7 @@ package edu.umass.cs.aws.support;
  * 
  * @author westy
  */
+@Deprecated
 public enum AMIRecordType {
   
   /**

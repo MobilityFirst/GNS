@@ -19,47 +19,33 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-
-import static org.junit.Assert.*;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Comprehensive functionality test for the GNS.
- *
+ * Test remove guid with read coordination off.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RemoveGuidTestNoReadCoordination {
+public class RemoveGuidTestNoReadCoordination extends DefaultGNSTest {
 
-  private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  protected static GNSClient client;
   private static GuidEntry masterGuid;
   private static GuidEntry guidToDeleteEntry;
 
-  /**
-   *
-   */
   public RemoveGuidTestNoReadCoordination() {
-    if (client == null) {
-      try {
-        client = new GNSClient();
-      } catch (IOException e) {
-        fail("Exception while creating client: " + e);
-      }
-    }
+    client.setForceCoordinatedReads(false);
   }
+
   
   /**
    *
@@ -67,9 +53,9 @@ public class RemoveGuidTestNoReadCoordination {
   @Test
   public void test_209_testCreateAccountGuid() {
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+      masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
     } catch (Exception e) {
-      fail("Exception while creating account guid: " + e);
+      Utils.failWithStackTrace("Exception while creating account guid: " + e);
     }
   }
 
@@ -78,28 +64,31 @@ public class RemoveGuidTestNoReadCoordination {
    */
   @Test
   public void test_210_GuidCreate() {
-    String deleteName = "deleteMe" + RandomString.randomString(6);
+    String deleteName = "deleteMe" + RandomString.randomString(12);
     try {
       try {
         client.execute(GNSCommand.lookupGUID(deleteName));
-        fail(deleteName + " entity should not exist");
+        Utils.failWithStackTrace(deleteName + " entity should not exist");
       } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, deleteName);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
+    } catch (IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception while creating guids: " + e);
     }
   }
 
-   @Test
+  /**
+   *
+   */
+  @Test
   public void test_212_GuidCreateCheck() {
     try {
       client.execute(GNSCommand.lookupGUIDRecord(guidToDeleteEntry.getGuid()));
     } catch (ClientException | IOException e) {
-      fail("Exception while doing Lookup testGuid: " + e);
+      Utils.failWithStackTrace("Exception while doing Lookup testGuid: " + e);
     }
   }
-  
+
   /**
    *
    */
@@ -107,20 +96,23 @@ public class RemoveGuidTestNoReadCoordination {
   public void test_214_GroupRemoveGuid() {
     try {
       client.execute(GNSCommand.removeGUID(masterGuid, guidToDeleteEntry.getGuid()));
-    } catch (Exception e) {
-      fail("Exception while removing testGuid: " + e);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing testGuid: " + e);
     }
   }
-  
+
+  /**
+   *
+   */
   @Test
   public void test_216_GroupRemoveGuidCheck() {
     try {
       client.execute(GNSCommand.lookupGUIDRecord(guidToDeleteEntry.getGuid()));
-      fail("Lookup testGuid should have throw an exception.");
+      Utils.failWithStackTrace("Lookup testGuid should have throw an exception.");
     } catch (ClientException e) {
 
     } catch (IOException e) {
-      fail("Exception while doing Lookup testGuid: " + e);
+      Utils.failWithStackTrace("Exception while doing Lookup testGuid: " + e);
     }
   }
 }

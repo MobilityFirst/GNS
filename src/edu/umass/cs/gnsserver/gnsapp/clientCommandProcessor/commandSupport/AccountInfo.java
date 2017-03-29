@@ -14,8 +14,6 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
- *
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
@@ -28,20 +26,20 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Stores the Human Readable Name (HRN), GUID for an account plus
  * other stuff we need to keep like a password, aliases and additional guids.
  *
- * This class handles the conversion to and from JSON objects as well as
- * conversion to the format which can be store in the database.
+ * This class handles the conversion to and from JSON objects.
  *
  * The account can have multiple aliases which are extra HRNs. The account can
  * also have additional associated GUIDs. For certain things we also keep an encrypted
  * password.
  *
- * @author westy
+ * @author westy, arun
  */
 public class AccountInfo {
 
@@ -85,8 +83,8 @@ public class AccountInfo {
     this.name = name;
     this.guid = guid;
     this.type = "DEFAULT"; // huh? :-)
-    this.aliases = new HashSet<String>();
-    this.guids = new HashSet<String>();
+    this.aliases = new HashSet<>();
+    this.guids = new HashSet<>();
     this.created = new Date();
     this.updated = new Date();
     this.password = password;
@@ -147,8 +145,8 @@ public class AccountInfo {
    *
    * @return a list of strings
    */
-  public ArrayList<String> getAliases() {
-    return new ArrayList<String>(aliases);
+  public List<String> getAliases() {
+    return new ArrayList<>(aliases);
   }
 
   /**
@@ -185,17 +183,19 @@ public class AccountInfo {
    *
    * @return a list of strings
    */
-  public ArrayList<String> getGuids() {
-    return new ArrayList<String>(guids);
+  public List<String> getGuids() {
+    return new ArrayList<>(guids);
   }
 
   /**
    * Adds a guid to this account.
    *
    * @param guid
+   * @return {@code this}
    */
-  public void addGuid(String guid) {
+  public AccountInfo addGuid(String guid) {
     guids.add(guid);
+    return this;
   }
 
   /**
@@ -229,9 +229,12 @@ public class AccountInfo {
   /**
    * Updates the update date of the guid.
    *
+   * @return {@code this}
+   *
    */
-  public void noteUpdate() {
+  public AccountInfo noteUpdate() {
     this.updated = new Date();
+    return this;
   }
 
   /**
@@ -270,17 +273,16 @@ public class AccountInfo {
   public String getVerificationCode() {
     return verificationCode;
   }
-  
+
   /**
-   * Returns the time the verification code was created.
-   * Can be null.
-   * 
+   * Returns the time the verification code was created. Can be null.
+   *
    * @return the time the verification code was created
    */
   public Date getCodeTime() {
     return codeTime;
   }
-  
+
   // JSON Conversion
   // Todo: this should be using string in GNSCommandProtocol
   private static final String USERNAME = "username";
@@ -313,7 +315,8 @@ public class AccountInfo {
     this.password = json.optString(PASSWORD, null);
     this.verified = json.getBoolean(VERIFIED);
     this.verificationCode = json.optString(CODE, null);
-    this.codeTime = json.has(CODE_TIME) ? Format.parseDateUTC(json.getString(CODE_TIME)) : null;
+    this.codeTime = json.has(CODE_TIME) ? Format.parseDateUTC(json
+            .getString(CODE_TIME)) : null;
   }
 
   /**
@@ -326,11 +329,14 @@ public class AccountInfo {
     return toJSONObject(false);
   }
 
+  // If the number of subguids exceeds this we don't return them
+  // to the client.
   private static final int TOO_MANY_GUIDS = 50000;
+
   /**
-   * Converts this instance into a JSONObject.
-   * If forClient is true, we don't include information that
-   * is to large to be sent to the client.
+   * Converts this instance into a JSONObject. If forClient is true, we don't
+   * include some information like the verification code and the actual
+   * guids if there are too many.
    *
    * @param forClient
    * @return the JSON Object
@@ -354,11 +360,13 @@ public class AccountInfo {
       json.put(PASSWORD, password);
     }
     json.put(VERIFIED, verified);
-    if (verificationCode != null) {
-      json.put(CODE, verificationCode);
-    }
-    if (codeTime != null) {
-      json.put(CODE_TIME, Format.formatDateUTC(codeTime));
+    if (!forClient) {
+      if (verificationCode != null) {
+        json.put(CODE, verificationCode);
+      }
+      if (codeTime != null) {
+        json.put(CODE_TIME, Format.formatDateUTC(codeTime));
+      }
     }
     return json;
   }

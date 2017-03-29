@@ -21,12 +21,14 @@ import java.nio.ByteBuffer;
 
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
+import edu.umass.cs.gnscommon.utils.JSONCommonUtils;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.JSONPacket;
@@ -114,7 +116,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     }
   }
 
-  
   /**
    * Creates a CommandPacket instance from a JSONObject.
    *
@@ -225,10 +226,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
           throw new RuntimeException("Should never come here");
         case HOMEBREW:
           return JSONByteConverter.fromBytesHardcoded(bbuf);
-        case JACKSON:
-          return JSONByteConverter.fromBytesJackson(bbuf);
-        case MSGPACK:
-          return JSONByteConverter.fromBytesMsgpack(bbuf);
         case STRING_WING:
           return fromBytesStringerHack(bbuf);
         default:
@@ -240,7 +237,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   }
 
   private static enum ByteMode {
-    ORG_JSON(0), HOMEBREW(1), JACKSON(2), MSGPACK(3), STRING_WING(4);
+    ORG_JSON(0), HOMEBREW(1), STRING_WING(2);
 
     private final int val;
 
@@ -267,12 +264,12 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    *
    * @return Refer {@link Byteable#toBytes()}
    */
+  @Override
   public final byte[] toBytes() {
     try {
       switch (byteMode) {
         /* There is little point in using JSON just for this.command instead
->>>>>>> 1a70f0e3c9f5685a37f51cdc7c44879293ead6aa
-			 * of the default toJSONObject() method, so we just do that. */
+	 * of the default toJSONObject() method, so we just do that. */
         case ORG_JSON:
           return this.toJSONObject().toString()
                   .getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
@@ -280,14 +277,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
           return this.appendByteifiedInnerJSONCommand(
                   this.toByteBufferWithOuterFields(),
                   JSONByteConverter.toBytesHardcoded(this.command));
-        case JACKSON:
-          return this.appendByteifiedInnerJSONCommand(
-                  this.toByteBufferWithOuterFields(),
-                  JSONByteConverter.toBytesJackson(this.command));
-        case MSGPACK:
-          return this.appendByteifiedInnerJSONCommand(
-                  this.toByteBufferWithOuterFields(),
-                  JSONByteConverter.toBytesMsgpack(this.command));
         case STRING_WING:
           // different from above three
           return this.toBytesWingItAsString(
@@ -574,10 +563,16 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   }
 
   // internal utility method
-  private String getRespStr() {
+  private String getRespStr() throws ClientException {
     this.finish();
     if (this.result != null) {
-      return ((ResponsePacket) this.result).getReturnValue();
+      ResponsePacket responsePacket = CommandUtils.checkResponse((ResponsePacket) this.result, this);
+      // checkResponse explicitly returns null!
+      if (responsePacket == null) {
+        return null;
+      } else {
+        return responsePacket.getReturnValue();
+      }
     } else {
       return null;
     }
@@ -589,7 +584,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    * Used to set the response obtained by executing this request.
    *
    *
-   * @param responseStr
+   * @param responsePacket
    * @return this
    */
   CommandPacket setResult(ResponsePacket responsePacket) {
@@ -617,8 +612,12 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    * caller expecting the wrong result type, e.g., invoking getResultList when
    * the response is a Map, should not change any state and still allow the
    * caller to still call other getResult methods until one is successful.
-   * This invariant implies that this.result should be reset to null only for
-   * successful calls.
+   * This invariant implies that @code{this.result} should be reset to null
+   * only for successful calls.
+   *
+   * The above invariants are not implemented here. JDBC implementations discourage
+   * repeat calls for performance reasons, but we don't currently have this concern
+   * because we fetch and store the entire result.
    */
   /**
    * @return The result of executing this command.
@@ -657,7 +656,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public JSONObject getResultJSONObject() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      JSONObject json = new JSONObject(responseStr);
+      JSONObject json = responseStr != null ? new JSONObject(responseStr) : new JSONObject();
       return json;
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
@@ -673,7 +672,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public Map<String, ?> getResultMap() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      Map<String, ?> map = Util.JSONObjectToMap(new JSONObject(responseStr));
+      Map<String, ?> map = Util.JSONObjectToMap(responseStr != null ? new JSONObject(responseStr) : new JSONObject());
       return map;
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
@@ -688,7 +687,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public List<?> getResultList() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      List<?> list = Util.JSONArrayToList(new JSONArray(responseStr));
+      List<?> list = Util.JSONArrayToList(responseStr != null ? new JSONArray(responseStr) : new JSONArray());
       return list;
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
@@ -703,7 +702,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
   public JSONArray getResultJSONArray() throws ClientException {
     String responseStr = this.getRespStr();
     try {
-      return new JSONArray(responseStr);
+      return responseStr != null ? new JSONArray(responseStr) : new JSONArray();
     } catch (JSONException e) {
       throw new ClientException(ResponseCode.JSON_PARSE_ERROR,
               e.getMessage());
@@ -764,7 +763,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
   private static Object getResultValueFromString(String str)
           throws ClientException {
-    return JSONObject.stringToValue(str);
+    return JSONCommonUtils.stringToValue(str);
   }
 
   /**

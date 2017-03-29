@@ -27,11 +27,13 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -68,8 +70,10 @@ public class AclRetrieveSecured extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, 
+          ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.getString(GNSProtocol.FIELD.toString());
     String accessType = json.getString(GNSProtocol.ACL_TYPE.toString());
@@ -82,8 +86,13 @@ public class AclRetrieveSecured extends AbstractCommand {
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
-    JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(access,
-            guid, field, GNSConfig.getInternalOpSecret(), null, null,
+    JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(
+            new JSONArray(FieldMetaData.lookup(header, commandPacket,
+            access,
+            guid, field, 
+            GNSProtocol.INTERNAL_QUERIER.toString(),
+            //GNSConfig.getInternalOpSecret(), 
+            null, null,
             timestamp, handler)));
     return new CommandResponse(ResponseCode.NO_ERROR, guids.toString());
   }

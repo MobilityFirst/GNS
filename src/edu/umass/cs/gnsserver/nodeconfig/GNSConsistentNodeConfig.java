@@ -134,18 +134,13 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
   }
 
   @Override
-  public int getAdminPort(NodeIDType id) {
-    return this.nodeConfig.getAdminPort(id);
+  public int getServerAdminPort(NodeIDType id) {
+    return this.nodeConfig.getServerAdminPort(id);
   }
 
   @Override
-  public int getCcpPort(NodeIDType id) {
-    return this.nodeConfig.getCcpPort(id);
-  }
-
-  @Override
-  public int getCcpAdminPort(NodeIDType id) {
-    return this.nodeConfig.getCcpAdminPort(id);
+  public int getCollatingAdminPort(NodeIDType id) {
+    return this.nodeConfig.getCollatingAdminPort(id);
   }
 
   @Override

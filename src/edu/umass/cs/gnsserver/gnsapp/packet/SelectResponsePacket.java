@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;
 
@@ -33,20 +32,19 @@ import org.json.JSONObject;
  * to a select statement.
  *
  * @author Westy
- * @param <NodeIDType>
  */
-public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddressAndNs<NodeIDType> implements ClientRequest {
+@SuppressWarnings("deprecation")
+public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddress
+        implements ClientRequest {
 
   //
   private final static String ID = "id";
   private final static String RECORDS = "records";
   private final static String GUIDS = "guids";
-  private final static String LNSQUERYID = "lnsQueryId";
   private final static String NSQUERYID = "nsQueryId";
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";
   
-
   /**
    * The possible response codes for select packets.
    */
@@ -69,16 +67,16 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
   private ResponseCode responseCode;
   private String errorMessage;
 
-  /**
+  /*
    * Constructs a new SelectResponsePacket
    *
    * @param id
    * @param jsonObject
    */
-  private SelectResponsePacket(long id, InetSocketAddress lnsAddress, int nsQueryId,
-          NodeIDType nameServerID, JSONArray records, JSONArray guids, ResponseCode responseCode,
+  private SelectResponsePacket(long id, InetSocketAddress clientAddress, int nsQueryId,
+          InetSocketAddress nsAddress, JSONArray records, JSONArray guids, ResponseCode responseCode,
           String errorMessage) {
-    super(nameServerID, lnsAddress);
+    super(nsAddress, clientAddress);
     this.type = Packet.PacketType.SELECT_RESPONSE;
     this.requestId = id;
     this.nsQueryId = nsQueryId;
@@ -95,14 +93,15 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    * @param lnsAddress
    * @param lnsQueryId
    * @param nsQueryId
-   * @param nameServerID
+   * @param nsAddress
    * @param records
    * @return a SelectResponsePacket
    */
-  public static SelectResponsePacket<String> makeSuccessPacketForRecordsOnly(long id, InetSocketAddress lnsAddress,
+  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(
+          long id, InetSocketAddress lnsAddress,
           long lnsQueryId,
-          int nsQueryId, String nameServerID, JSONArray records) {
-    return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServerID, records, null,
+          int nsQueryId, InetSocketAddress nsAddress, JSONArray records) {
+    return new SelectResponsePacket(id, lnsAddress, nsQueryId, nsAddress, records, null,
             ResponseCode.NOERROR, null);
   }
 
@@ -112,14 +111,14 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    * @param id
    * @param lnsAddress
    * @param nsQueryId
-   * @param nameServerID
+   * @param nsAddress
    * @param guids
    * @return a SelectResponsePacket
    */
-  public static SelectResponsePacket<String> makeSuccessPacketForGuidsOnly(long id,
+  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(long id,
           InetSocketAddress lnsAddress,
-          int nsQueryId, String nameServerID, JSONArray guids) {
-    return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServerID,
+          int nsQueryId, InetSocketAddress nsAddress, JSONArray guids) {
+    return new SelectResponsePacket(id, lnsAddress, nsQueryId, nsAddress,
             null, guids, ResponseCode.NOERROR, null);
   }
 
@@ -129,13 +128,13 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    * @param id
    * @param lnsAddress
    * @param nsQueryId
-   * @param nameServer
+   * @param nsAddress
    * @param errorMessage
    * @return a SelectResponsePacket
    */
-  public static SelectResponsePacket<String> makeFailPacket(long id, InetSocketAddress lnsAddress,
-           int nsQueryId, String nameServer, String errorMessage) {
-    return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServer,
+  public static SelectResponsePacket makeFailPacket(long id, InetSocketAddress lnsAddress,
+           int nsQueryId, InetSocketAddress nsAddress, String errorMessage) {
+    return new SelectResponsePacket(id, lnsAddress, nsQueryId, nsAddress,
             null, null, ResponseCode.ERROR, errorMessage);
   }
 
@@ -143,11 +142,10 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    * Constructs new SelectResponsePacket from a JSONObject
    *
    * @param json JSONObject representing this packet
-   * @param unstringer
    * @throws org.json.JSONException
    */
-  public SelectResponsePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json, unstringer);
+  public SelectResponsePacket(JSONObject json) throws JSONException {
+    super(json);
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));
     }

@@ -37,6 +37,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -114,7 +115,7 @@ public class MongoRecords implements NoSQLRecords {
     boolean fatalException = false;
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
-      dbName = DBROOTNAME + nodeID.toString().replace('.', '_');
+      dbName = DBROOTNAME + sanitizeDBName(nodeID);
       //MongoClient mongoClient;
       //MongoCredential credential = MongoCredential.createMongoCRCredential("admin", dbName, "changeit".toCharArray());
       if (mongoPort > 0) {
@@ -175,7 +176,8 @@ public class MongoRecords implements NoSQLRecords {
       } catch (DuplicateKeyException e) {
         throw new RecordExistsException(collectionName, guid);
       } catch (MongoException e) {
-        throw new FailedDBOperationException(collectionName, dbObject.toString());
+        throw new FailedDBOperationException(collectionName, dbObject.toString(),
+                "Original mongo exception:" + e.getMessage());
       }
     } finally {
       db.requestDone();
@@ -222,7 +224,8 @@ public class MongoRecords implements NoSQLRecords {
               "Unable to parse JSON: {0}", e);
       return null;
     } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, guid);
+      throw new FailedDBOperationException(collectionName, guid,
+              "Original mongo exception:" + e.getMessage());
     } finally {
       db.requestDone();
     }
@@ -300,7 +303,8 @@ public class MongoRecords implements NoSQLRecords {
       }
       return hashMap;
     } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, guid);
+      throw new FailedDBOperationException(collectionName, guid,
+              "Original mongo exception:" + e.getMessage());
     } finally {
       db.requestDone();
     }
@@ -341,17 +345,11 @@ public class MongoRecords implements NoSQLRecords {
       db.requestEnsureConnection();
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
-      DBCursor cursor = null;
-
-      cursor = collection.find(query);
-
-      if (cursor.hasNext()) {
-        return true;
-      } else {
-        return false;
-      }
+      DBCursor cursor = collection.find(query);
+      return cursor.hasNext();
     } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, guid);
+      throw new FailedDBOperationException(collectionName, guid,
+              "Original mongo exception:" + e.getMessage());
     } finally {
       db.requestDone();
     }
@@ -365,7 +363,8 @@ public class MongoRecords implements NoSQLRecords {
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       collection.remove(query);
     } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, guid);
+      throw new FailedDBOperationException(collectionName, guid,
+              "Original mongo exception:" + e.getMessage());
     }
   }
 
@@ -443,7 +442,8 @@ public class MongoRecords implements NoSQLRecords {
         collection.update(query, new BasicDBObject("$set", updates));
       } catch (MongoException e) {
         DatabaseConfig.getLogger().severe("Update failed: " + e);
-        throw new FailedDBOperationException(collectionName, updates.toString());
+        throw new FailedDBOperationException(collectionName, updates.toString(),
+                "Original mongo exception:" + e.getMessage());
       }
       DelayProfiler.updateDelay("mongoSetUpdate", startTime);
       long finishTime = System.currentTimeMillis();
@@ -483,7 +483,8 @@ public class MongoRecords implements NoSQLRecords {
         DatabaseConfig.getLogger().fine("<============>unset" + updates.toString() + "<============>");
         collection.update(query, new BasicDBObject("$unset", updates));
       } catch (MongoException e) {
-        throw new FailedDBOperationException(collectionName, updates.toString());
+        throw new FailedDBOperationException(collectionName, updates.toString(),
+                "Original mongo exception:" + e.getMessage());
       }
     }
   }
@@ -527,7 +528,8 @@ public class MongoRecords implements NoSQLRecords {
     try {
       cursor = collection.find(query);
     } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, fieldName);
+      throw new FailedDBOperationException(collectionName, fieldName,
+              "Original mongo exception:" + e.getMessage());
     }
     if (explain) {
       System.out.println(cursor.explain().toString());
@@ -555,7 +557,8 @@ public class MongoRecords implements NoSQLRecords {
     try {
       cursor = collection.find(query);
     } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, fieldName);
+      throw new FailedDBOperationException(collectionName, fieldName,
+              "Original mongo exception:" + e.getMessage());
     }
     if (explain) {
       System.out.println(cursor.explain().toString());
@@ -610,7 +613,8 @@ public class MongoRecords implements NoSQLRecords {
     try {
       cursor = collection.find(query);
     } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, fieldName);
+      throw new FailedDBOperationException(collectionName, fieldName,
+              "Original mongo exception:" + e.getMessage());
     }
     if (explain) {
       System.out.println(cursor.explain().toString());
@@ -629,8 +633,9 @@ public class MongoRecords implements NoSQLRecords {
     DBCursor cursor = null;
     try {
       cursor = collection.find(parseMongoQuery(query, valuesMapField));
-    } catch (Exception e) {
-      throw new FailedDBOperationException(collectionName, query);
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(collectionName, query,
+              "Original mongo exception:" + e.getMessage());
     }
     if (explain) {
       System.out.println(cursor.explain().toString());
@@ -641,12 +646,30 @@ public class MongoRecords implements NoSQLRecords {
   private DBObject parseMongoQuery(String query, ColumnField valuesMapField) {
     // convert something like this: ~fred : ($gt: 0) into the queryable 
     // format, namely this: {~nr_valuesMap.fred : ($gt: 0)}
-    query = "{" + query + "}";
-    query = query.replace("(", "{");
-    query = query.replace(")", "}");
-    query = query.replace("~", valuesMapField.getName() + ".");
-    DBObject parse = (DBObject) JSON.parse(query);
+    String edittedQuery = query;
+    edittedQuery = "{" + edittedQuery + "}";
+    edittedQuery = edittedQuery.replace("(", "{");
+    edittedQuery = edittedQuery.replace(")", "}");
+    edittedQuery = edittedQuery.replace("~", valuesMapField.getName() + ".");
+    // Filter out HRN records
+    String guidFilter = "{" + NameRecord.VALUES_MAP.getName() + "." + AccountAccess.GUID_INFO + ": { $exists: true}}";
+    edittedQuery = buildAndQuery(guidFilter, edittedQuery);
+    DatabaseConfig.getLogger().log(Level.FINE, "Edited query = {0}", edittedQuery);
+    DBObject parse = (DBObject) JSON.parse(edittedQuery);
     return parse;
+  }
+  
+  public static String buildAndQuery(String... querys) {
+    StringBuilder result = new StringBuilder();
+    result.append("{$and: [");
+    String prefix = "";
+    for (String query : querys) {
+      result.append(prefix);
+      result.append(query);
+      prefix = ",";
+    }
+    result.append("]}");
+    return result.toString();
   }
 
   @Override
@@ -677,24 +700,6 @@ public class MongoRecords implements NoSQLRecords {
     mongoClient.close();
   }
 
-  //THIS ISN'T JUST TEST GNSProtocol.CODE.toString() - DO NOT REMOVE
-  // the -clear option is currently used by the all the starup scripts so keep it working
-  /**
-   * Does a few things.
-   *
-   * @param args
-   * @throws Exception
-   * @throws RecordNotFoundException
-   */
-  public static void main(String[] args) throws Exception, RecordNotFoundException {
-    if (args.length > 0 && args[0].startsWith("-clear")) {
-      dropAllDatabases();
-    } else {
-    }
-    // important to include this!!
-    System.exit(0);
-  }
-
   /**
    * @param nodeID
    */
@@ -720,29 +725,8 @@ public class MongoRecords implements NoSQLRecords {
     System.out.println("Dropped DB " + dbName);
   }
 
-  private static final String sanitizeDBName(String nodeID) {
-    return nodeID.toString().replace('.', '_');
+  private static String sanitizeDBName(String nodeID) {
+    return nodeID.replace('.', '_');
   }
 
-  /**
-   * A utility to drop all the databases.
-   *
-   */
-  @Deprecated
-  public static void dropAllDatabases() {
-    MongoClient mongoClient;
-    try {
-      mongoClient = new MongoClient("localhost");
-    } catch (UnknownHostException e) {
-      DatabaseConfig.getLogger().log(Level.SEVERE, "Unable to open Mongo DB: {0}", e);
-      return;
-    }
-    List<String> names = mongoClient.getDatabaseNames();
-    for (String name : names) {
-      if (name.startsWith(DBROOTNAME)) {
-        mongoClient.dropDatabase(name);
-        System.out.println("Dropped DB: " + name);
-      }
-    }
-  }
 }

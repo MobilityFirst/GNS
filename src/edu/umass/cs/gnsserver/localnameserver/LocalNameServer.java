@@ -136,9 +136,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
     AsyncLNSClient asyncClient;
     this.demultiplexer = new LNSPacketDemultiplexer<>(this, asyncClient = new AsyncLNSClient(
-            ReconfigurationConfig.getReconfiguratorAddresses(),
-            ReconfigurationConfig.getClientSSLMode(),
-            ReconfigurationConfig.getClientPortSSLOffset()));
+            ReconfigurationConfig.getReconfiguratorAddresses()));
     // FIXME: Eventually need separate servers for ssl and clear
     //LNSPacketDemultiplexer<String> sslDemultiplexer = new LNSPacketDemultiplexer<>(this, asyncClient);
 
@@ -314,9 +312,8 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     static final Set<IntegerPacketType> clientPacketTypes = new HashSet<IntegerPacketType>(
             Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
 
-    public AsyncLNSClient(Set<InetSocketAddress> reconfigurators,
-            SSL_MODES sslMode, int clientPortOffset) throws IOException {
-      super(reconfigurators, sslMode, clientPortOffset);
+    public AsyncLNSClient(Set<InetSocketAddress> reconfigurators) throws IOException {
+      super(reconfigurators);
     }
 
     @Override

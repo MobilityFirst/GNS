@@ -19,12 +19,14 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,7 +39,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -48,11 +50,9 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateIndexTest {
+public class CreateIndexTest extends DefaultGNSTest {
 
-  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client = null;
+  private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
   private static String testField;
 
@@ -60,19 +60,19 @@ public class CreateIndexTest {
    *
    */
   public CreateIndexTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
-      testField = "testField" + RandomString.randomString(6);
+      testField = "testFieldCreateIndexTest" + RandomString.randomString(12);
     }
   }
 
@@ -81,12 +81,11 @@ public class CreateIndexTest {
    */
   @Test
   public void test_01_CreateField() {
-    
+
     try {
-      client.fieldUpdate(masterGuid, testField, createGeoJSONPolygon(AREA_EXTENT));
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception during create field: " + e);
+      clientCommands.fieldUpdate(masterGuid, testField, createGeoJSONPolygon(AREA_EXTENT));
+    } catch (JSONException | IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception during create field: " + e);
     }
   }
 
@@ -96,9 +95,9 @@ public class CreateIndexTest {
   @Test
   public void test_02_CreateIndex() {
     try {
-      client.fieldCreateIndex(masterGuid, testField, "2dsphere");
-    } catch (Exception e) {
-      fail("Exception while creating index: " + e);
+      clientCommands.fieldCreateIndex(masterGuid, testField, "2dsphere");
+    } catch (IOException | ClientException e) {
+      Utils.failWithStackTrace("Exception while creating index: " + e);
     }
   }
 
@@ -108,14 +107,13 @@ public class CreateIndexTest {
   @Test
   public void test_03_SelectPass() {
     try {
-      JSONArray result = client.selectQuery(buildQuery(testField, AREA_EXTENT));
+      JSONArray result = clientCommands.selectQuery(masterGuid, buildQuery(testField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
-      // best we can do should be at least 5, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(1));
-    } catch (Exception e) {
-      fail("Exception executing second selectNear: " + e);
+      Assert.assertThat(result.length(), greaterThanOrEqualTo(1));
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception executing second selectNear: " + e);
     }
   }
 
@@ -147,7 +145,7 @@ public class CreateIndexTest {
   //private static final GlobalCoordinate UPPER_LEFT = new GlobalCoordinate(33.45, -98.08);
   private static final Point2D UPPER_RIGHT = new Point2D.Double(RIGHT, TOP);
   //private static final GlobalCoordinate UPPER_RIGHT = new GlobalCoordinate(33.45, -96.01);
-  private static final Point2D LOWER_RIGHT = new Point2D.Double( RIGHT, BOTTOM);
+  private static final Point2D LOWER_RIGHT = new Point2D.Double(RIGHT, BOTTOM);
   //private static final GlobalCoordinate LOWER_RIGHT = new GlobalCoordinate(32.23, -96.01);
   private static final Point2D LOWER_LEFT = new Point2D.Double(LEFT, BOTTOM);
   //private static final GlobalCoordinate LOWER_LEFT = new GlobalCoordinate(32.23, -98.08);

@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsclient.console.commands;
@@ -23,91 +23,79 @@ import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.StringUtil;
+import java.io.IOException;
 
 /**
- *
- * @author westy
+ * Clear the active code field
  */
-public class ActiveCodeClear extends ConsoleCommand
-{
+public class ActiveCodeClear extends ConsoleCommand {
+
   /**
-   * Creates a new <code>ActiveCodeGet</code> object
-   * 
+   * Creates a new <code>ActiveCodeClear</code> object
+   *
    * @param module
    */
-  public ActiveCodeClear(ConsoleModule module)
-  {
+  public ActiveCodeClear(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Clear the current active code for the target GUID and action (using the credential of the current GUID/alias)";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "activecode_clear";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "[target_guid_or_alias] action";
   }
 
   /**
    * Override execute to check for a selected guid
+   *
    * @throws java.lang.Exception
    */
   @Override
-  public void execute(String commandText) throws Exception
-  {
-    if (!module.isCurrentGuidSetAndVerified())
-    {
+  public void execute(String commandText) throws Exception {
+    if (!module.isCurrentGuidSetAndVerified()) {
       return;
     }
     super.execute(commandText);
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
+  public void parse(String commandText) throws Exception {
     GNSClientCommands gnsClient = module.getGnsClient();
-    try
-    {
+    try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;
-      if (st.countTokens() == 1)
-      {
-        guid = module.getCurrentGuid().getGuid();
+      switch (st.countTokens()) {
+        case 1:
+          guid = module.getCurrentGuid().getGuid();
+          break;
+        case 2:
+          guid = st.nextToken();
+          if (!StringUtil.isValidGuidString(guid)) {
+            // We probably have an alias, lookup the GUID
+            guid = gnsClient.lookupGuid(guid);
+          } break;
+        default:
+          wrongArguments();
+          return;
       }
-      else if (st.countTokens() == 2)
-      {
-        guid = st.nextToken();
-        if (!StringUtil.isValidGuidString(guid))
-        {
-          // We probably have an alias, lookup the GUID
-          guid = gnsClient.lookupGuid(guid);
-        }
-      }
-      else
-      {
-        console.printString("Wrong number of arguments for this command.\n");
-        return;
-      }
-    
+
       String action = st.nextToken();
       gnsClient.activeCodeClear(guid, action, module.getCurrentGuid());
-      
+
       console.printString("Code cleared for GUID " + guid + "for action '" + action + "'");
       console.printNewline();
-    }
-    catch (Exception e)
-    {
+    } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

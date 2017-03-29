@@ -25,9 +25,9 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-
-import static org.junit.Assert.*;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -38,28 +38,26 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RemoveGuidTest {
+public class RemoveGuidTest extends DefaultGNSTest {
 
-  private static String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
+  private static GNSClientCommands clientCommands;
   private static GuidEntry masterGuid;
 
   /**
    *
    */
   public RemoveGuidTest() {
-    if (client == null) {
+    if (clientCommands == null) {
       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
       }
     }
   }
@@ -68,29 +66,59 @@ public class RemoveGuidTest {
    *
    */
   @Test
-  public void test_01_RemoveGuidUsingAccount() {
-    String testGuidName = "testGUID" + RandomString.randomString(6);
-    GuidEntry testGuid = null;
+  public void test_10_RemoveGuidUsingAccount() {
+    String guidName = "testGUID" + RandomString.randomString(12);
+    GuidEntry guid = null;
     try {
-      testGuid = client.guidCreate(masterGuid, testGuidName);
-    } catch (Exception e) {
-      fail("Exception while creating testGuid: " + e);
+      guid = clientCommands.guidCreate(masterGuid, guidName);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while creating testGuid: " + e);
     }
 
-    System.out.println("testGuid is " + testGuid.toString());
+    if (guid != null) {
+      System.out.println("testGuid is " + guid.toString());
 
+      try {
+        clientCommands.guidRemove(masterGuid, guid.getGuid());
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Exception while removing testGuid (" + guid.toString() + "): " + e);
+      }
+      try {
+        clientCommands.lookupGuidRecord(guid.getGuid());
+        Utils.failWithStackTrace("Lookup testGuid should have throw an exception.");
+      } catch (ClientException e) {
+
+      } catch (IOException e) {
+        Utils.failWithStackTrace("Exception while doing Lookup testGuid: " + e);
+      }
+    }
+  }
+
+  private static final String testGuidName = "testGUID" + RandomString.randomString(12);
+  private static GuidEntry testGuid = null;
+
+  /**
+   *
+   */
+  @Test
+  public void test_20_RemoveGuid() {
     try {
-      client.guidRemove(masterGuid, testGuid.getGuid());
-    } catch (Exception e) {
-      fail("Exception while removing testGuid (" + testGuid.toString() + "): " + e);
+      testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while creating testGuid: " + e);
     }
     try {
-      client.lookupGuidRecord(testGuid.getGuid());
-      fail("Lookup testGuid should have throw an exception.");
+      clientCommands.guidRemove(testGuid);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing testGuid: " + e);
+    }
+    try {
+      clientCommands.lookupGuidRecord(testGuid.getGuid());
+      Utils.failWithStackTrace("Lookup testGuid should have throw an exception.");
     } catch (ClientException e) {
 
     } catch (IOException e) {
-      fail("Exception while doing Lookup testGuid: " + e);
+      Utils.failWithStackTrace("Exception while doing Lookup testGuid: " + e);
     }
   }
 
@@ -98,26 +126,28 @@ public class RemoveGuidTest {
    *
    */
   @Test
-  public void test_02_RemoveGuid() {
-    String testGuidName = "testGUID" + RandomString.randomString(6);
-    GuidEntry testGuid = null;
+  public void test_30_RemoveGuidAgain() {
     try {
-      testGuid = client.guidCreate(masterGuid, testGuidName);
-    } catch (Exception e) {
-      fail("Exception while creating testGuid: " + e);
+      clientCommands.guidRemove(testGuid);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing testGuid: " + e);
     }
-    try {
-      client.guidRemove(testGuid);
-    } catch (Exception e) {
-      fail("Exception while removing testGuid: " + e);
-    }
-    try {
-      client.lookupGuidRecord(testGuid.getGuid());
-      fail("Lookup testGuid should have throw an exception.");
-    } catch (ClientException e) {
+  }
 
-    } catch (IOException e) {
-      fail("Exception while doing Lookup testGuid: " + e);
+  private static final String ACCOUNT_TO_REMOVE = "remove" + RandomString.randomString(12) + "@gns.name";
+  private static final String PASSWORD = "removalPassword";
+  private static GuidEntry accountToRemoveGuid;
+
+  /**
+   *
+   */
+  @Test
+  public void test_80_RemoveAccountCreateAccount() {
+    try {
+      accountToRemoveGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+              ACCOUNT_TO_REMOVE, PASSWORD, true);
+    } catch (Exception e) {
+      Utils.failWithStackTrace("Exception creating account in: " + e);
     }
   }
 
@@ -125,11 +155,11 @@ public class RemoveGuidTest {
    *
    */
   @Test
-  public void test_03_RemoveAccount() {
+  public void test_82_RemoveAccount() {
     try {
-      client.accountGuidRemove(masterGuid);
-    } catch (Exception e) {
-      fail("Exception while removing testGuid: " + e);
+      clientCommands.accountGuidRemove(accountToRemoveGuid);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing account: " + e);
     }
   }
 
@@ -137,14 +167,26 @@ public class RemoveGuidTest {
    *
    */
   @Test
-  public void test_04_CheckForRemoval() {
+  public void test_84_CheckForRemoval() {
     try {
-      client.lookupGuid(ACCOUNT_ALIAS);
-      fail("lookupGuid for " + ACCOUNT_ALIAS + " should have throw an exception.");
+      clientCommands.lookupGuid(ACCOUNT_TO_REMOVE);
+      Utils.failWithStackTrace("lookupGuid for " + ACCOUNT_TO_REMOVE + " should have throw an exception.");
     } catch (ClientException e) {
-
+      // normal result
     } catch (IOException e) {
-      fail("Exception while lookupAccountRecord for " + ACCOUNT_ALIAS + " :" + e);
+      Utils.failWithStackTrace("Exception while lookupAccountRecord for " + ACCOUNT_TO_REMOVE + " :" + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_86_RemoveAccountAgain() {
+    try {
+      clientCommands.accountGuidRemove(accountToRemoveGuid);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing account again: " + e);
     }
   }
 }

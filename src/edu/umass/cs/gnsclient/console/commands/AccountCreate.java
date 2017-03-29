@@ -30,10 +30,7 @@ import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import java.util.StringTokenizer;
 
 /**
- * Command that creates a new proxy group
- * 
- * @author Westy
- * @version 1.0
+ * Create a new account
  */
 public class AccountCreate extends ConsoleCommand
 {
@@ -72,7 +69,7 @@ public class AccountCreate extends ConsoleCommand
       StringTokenizer st = new StringTokenizer(commandText.trim());
       if ((st.countTokens() != 2))
       {
-        console.printString("Wrong number of arguments for this command. Requires alias and password\n");
+        wrongArguments();
         return;
       }
       String aliasName = st.nextToken();

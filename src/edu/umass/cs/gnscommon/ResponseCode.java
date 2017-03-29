@@ -19,6 +19,7 @@ package edu.umass.cs.gnscommon;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -116,6 +117,7 @@ public enum ResponseCode implements Serializable {
   DUPLICATE_ID_EXCEPTION(14,
           ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
           .toString(), ResponseCodeType.EXCEPTION),
+          
   /**
    * Duplicate field in a record.
    */
@@ -165,11 +167,11 @@ public enum ResponseCode implements Serializable {
   /**
    * The guid is a duplicate of an already existing guid.
    */
-  DUPLICATE_GUID_EXCEPTION(21, GNSProtocol.DUPLICATE_GUID.toString(), ResponseCodeType.EXCEPTION),
+//  DUPLICATE_GUID_EXCEPTION(21, GNSProtocol.DUPLICATE_GUID.toString(), ResponseCodeType.EXCEPTION),
   /**
    * The HRN already exists.
    */
-  DUPLICATE_NAME_EXCEPTION(22, GNSProtocol.DUPLICATE_NAME.toString(), ResponseCodeType.EXCEPTION),
+//  DUPLICATE_NAME_EXCEPTION(22, GNSProtocol.DUPLICATE_NAME.toString(), ResponseCodeType.EXCEPTION),
   /**
    * A JSON parsing error occurred.
    */
@@ -190,6 +192,22 @@ public enum ResponseCode implements Serializable {
    * Something went wrong while we were reading from or writing to the database.
    */
   DATABASE_OPERATION_ERROR(27, GNSProtocol.DATABASE_OPERATION_ERROR.toString(), ResponseCodeType.ERROR),
+  
+  /**
+   * The GUID attempted to be created exists and is associated with a different HRN.
+   */
+  CONFLICTING_GUID_EXCEPTION(28, "Conflicting GUID", ResponseCodeType.ERROR),
+
+  /**
+   * The HRN attempted to be created exists and is associated with a different GUID.
+   */
+  CONFLICTING_HRN_EXCEPTION(29, "Conflicting HRN", ResponseCodeType.ERROR),
+
+  /**
+   * Generic reconfiguration exception.
+   */
+  RECONFIGURATION_EXCEPTION(30, "Reconfiguration exeption", ResponseCodeType.EXCEPTION),
+
   /**
    * An error occurred during the processing of a command query.
    */
@@ -207,7 +225,15 @@ public enum ResponseCode implements Serializable {
    * or it was attempting to cause a cycle.
    */
   INTERNAL_REQUEST_EXCEPTION(411, GNSProtocol.INTERNAL_REQUEST_EXCEPTION
-          .toString(), ResponseCodeType.EXCEPTION),;
+          .toString(), ResponseCodeType.EXCEPTION),
+
+          /**
+           * IO exception incurred either by the client or by an induced remote query.
+           */
+          IO_EXCEPTION(412, IOException.class.getSimpleName(),
+        		  ResponseCodeType.EXCEPTION)
+
+        ;
 
   // stash the codes in a lookup table
   private static final Map<Integer, ResponseCode> responseCodes = new HashMap<>();
@@ -349,7 +375,10 @@ public enum ResponseCode implements Serializable {
     return result.toString();
   }
 
-  public static void main(String args[]) {
+  /**
+ * @param args
+ */
+public static void main(String args[]) {
     System.out.println(generateSwiftConstants());
   }
 }

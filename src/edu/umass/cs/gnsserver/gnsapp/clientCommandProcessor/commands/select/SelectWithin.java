@@ -24,9 +24,12 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,7 +51,7 @@ public class SelectWithin extends AbstractCommand {
   /**
    *
    * @return the command type
-   * 
+   *
    */
   @Override
   public CommandType getCommandType() {
@@ -56,11 +59,14 @@ public class SelectWithin extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException, InternalRequestException {
+    JSONObject json = commandPacket.getCommand();
+    String reader = json.optString(GNSProtocol.GUID.toString(), null);
     String field = json.getString(GNSProtocol.FIELD.toString());
     String within = json.getString(GNSProtocol.WITHIN.toString());
-    return FieldAccess.selectWithin(field, within, handler);
+    String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
+    String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
+    return FieldAccess.selectWithin(header, commandPacket, reader, field, within, signature, message, handler);
   }
 
-  
 }

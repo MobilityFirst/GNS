@@ -29,14 +29,11 @@ import java.io.IOException;
 
 /**
  * Command to update a field in the GNS
- *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
 public class FieldUpdate extends ConsoleCommand {
 
   /**
-   * Creates a new <code>FieldAppend</code> object
+   * Creates a new <code>FieldUpdate</code> object
    *
    * @param module
    */
@@ -79,17 +76,20 @@ public class FieldUpdate extends ConsoleCommand {
     try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;
-      if (st.countTokens() == 2) {
-        guid = module.getCurrentGuid().getGuid();
-      } else if (st.countTokens() == 3) {
-        guid = st.nextToken();
-        if (!StringUtil.isValidGuidString(guid)) {
-          // We probably have an alias, lookup the GUID
-          guid = gnsClient.lookupGuid(guid);
-        }
-      } else {
-        console.printString("Wrong number of arguments for this command.\n");
-        return;
+      switch (st.countTokens()) {
+        case 2:
+          guid = module.getCurrentGuid().getGuid();
+          break;
+        case 3:
+          guid = st.nextToken();
+          if (!StringUtil.isValidGuidString(guid)) {
+            // We probably have an alias, lookup the GUID
+            guid = gnsClient.lookupGuid(guid);
+          }
+          break;
+        default:
+          wrongArguments();
+          return;
       }
       String field = st.nextToken();
       String value = st.nextToken();
@@ -97,9 +97,7 @@ public class FieldUpdate extends ConsoleCommand {
       gnsClient.fieldUpdate(guid, field, value, module.getCurrentGuid());
       console.printString("Value '" + value + "' written to field " + field + " for GUID " + guid);
       console.printNewline();
-    } catch (IOException e) {
-      console.printString("Failed to access GNS ( " + e + ")\n");
-    } catch (ClientException e) {
+    } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

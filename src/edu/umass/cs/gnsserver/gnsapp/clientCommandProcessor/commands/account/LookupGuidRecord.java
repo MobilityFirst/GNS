@@ -25,12 +25,15 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnscommon.CommandType;
-
 import edu.umass.cs.gnscommon.ResponseCode;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  *
@@ -57,10 +60,11 @@ public class LookupGuidRecord extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws JSONException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     if (guidInfo != null) {

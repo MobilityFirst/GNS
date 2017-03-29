@@ -32,8 +32,9 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
-
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.utils.Config;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -42,7 +43,9 @@ import java.security.spec.InvalidKeySpecException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  * Command to add a guid.
@@ -70,8 +73,9 @@ public class AddGuid extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
+    JSONObject json = commandPacket.getCommand();
     String name = json.getString(GNSProtocol.NAME.toString());
     String accountGuid = json.getString(GNSProtocol.GUID.toString());
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
@@ -82,11 +86,11 @@ public class AddGuid extends AbstractCommand {
 //    byte[] publicKeyBytes = Base64.decode(publicKey);
 //    String newGuid = SharedGuidUtils.createGuidStringFromPublicKey(publicKeyBytes);
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accountGuid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + accountGuid);
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(accountGuid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(header, accountGuid, handler);
       if (accountInfo == null) {
         return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + accountGuid);
       }
@@ -95,7 +99,8 @@ public class AddGuid extends AbstractCommand {
       } else if (accountInfo.getGuids().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_SUBGUIDS)) {
         return new CommandResponse(ResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_GUIDS.toString());
       } else {
-        CommandResponse result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
+        CommandResponse result = AccountAccess.addGuid(header, commandPacket,
+                accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
         if (result.getExceptionOrErrorCode().isOKResult()) {
           // Everything is hunkey dorey so return the new guid
           return new CommandResponse(ResponseCode.NO_ERROR, newGuid);

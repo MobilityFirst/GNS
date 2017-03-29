@@ -8,17 +8,20 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
+
 import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -36,7 +39,13 @@ public interface CommandInterface {
    *
    * @return the command parameters
    */
-  public String[] getCommandParameters();
+  public String[] getCommandRequiredParameters();
+  
+  /**
+   *
+   * @return the command parameters
+   */
+  public String[] getCommandOptionalParameters();
 
   /**
    *
@@ -45,32 +54,13 @@ public interface CommandInterface {
   public String getCommandDescription();
 
   /**
-   * Executes the command. Arguments are passed in the JSONObject.
    *
-   * @param json
-   * @param handler
-   * @return the command response of the commands
-   * @throws InvalidKeyException
-   * @throws InvalidKeySpecException
-   * @throws JSONException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   * @throws java.io.UnsupportedEncodingException
-   * @throws java.text.ParseException
-   */
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException,
-          UnsupportedEncodingException, ParseException;
-
-  /**
-   *
-   * Executes the command. Arguments are passed in the JSONObject.
-   * This is used by Read and Update queries to drag {@link edu.umass.cs.gnscommon.packets.CommandPacket} for longer to use
-   * {@link InternalRequestHeader} information inside them.
+   * Executes the command. Arguments are passed in the CommandPacket.
+   * This is used by Read and Update queries to drag {@link edu.umass.cs.gnscommon.packets.CommandPacket} 
+   * for longer to use {@link InternalRequestHeader} information inside them.
    *
    * @param internalHeader
-   * @param command
-   *
+   * @param commandPacket
    * @param handler
    * @return Result of executing {@code commandPacket}
    * @throws InvalidKeyException
@@ -80,10 +70,11 @@ public interface CommandInterface {
    * @throws SignatureException
    * @throws UnsupportedEncodingException
    * @throws ParseException
+ * @throws InternalRequestException 
    */
-  public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
+  public CommandResponse execute(InternalRequestHeader internalHeader, CommandPacket commandPacket,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-          SignatureException, UnsupportedEncodingException, ParseException;
+          SignatureException, UnsupportedEncodingException, ParseException, InternalRequestException;
 
 }

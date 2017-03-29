@@ -20,7 +20,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
@@ -28,6 +27,7 @@ import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
@@ -71,7 +71,7 @@ public class CommandHandler {
    * @throws UnknownHostException
    */
   public static void handleCommandPacket(CommandPacket packet,
-          boolean doNotReplyToClient, GNSApp app) throws JSONException,
+          boolean doNotReplyToClient, GNSApplicationInterface<String> app) throws JSONException,
           UnknownHostException {
     runCommand(addMessageWithoutSignatureToCommand(packet),
             commandModule.lookupCommand(PacketUtils.getCommand(packet)),
@@ -82,7 +82,7 @@ public class CommandHandler {
 
   private static void runCommand(CommandPacket commandPacket,
           AbstractCommand command, ClientRequestHandlerInterface handler,
-          boolean doNotReplyToClient, GNSApp app) {
+          boolean doNotReplyToClient, GNSApplicationInterface<String> app) {
     JSONObject jsonFormattedCommand = PacketUtils.getCommand(commandPacket);
     try {
       long receiptTime = System.currentTimeMillis(); // instrumentation
@@ -126,7 +126,7 @@ public class CommandHandler {
                 "{0} handling command reply: {1}",
                 new Object[]{handler.getApp(), returnPacket});
         // Possibly send the return value back to the client
-        handleCommandReturnValuePacketForApp(returnPacket,
+        handleCommandReturnValuePacketForApp(commandPacket, returnPacket,
                 doNotReplyToClient, app);
       } catch (IOException e) {
         ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
@@ -170,11 +170,7 @@ public class CommandHandler {
   }
 
   /**
-   *
-   * Same as
-   * {@link #executeCommand(AbstractCommand, JSONObject, ClientRequestHandlerInterface)}
-   * that is needed by the HTTP server, but we need this for pulling {@link CommandPacket}
-   * all the way through for {@link InternalRequestHeader} to work correctly.
+   * Execute the commandPacket.
    *
    * @param commandHandler
    * @param commandPacket
@@ -186,7 +182,7 @@ public class CommandHandler {
     try {
       if (commandHandler != null) {
         return commandHandler.execute(getInternalHeaderAfterEnforcingChecks(commandPacket,
-                handler), PacketUtils.getCommand(commandPacket), handler);
+                handler), commandPacket, handler);
       } else {
         return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
                 GNSProtocol.BAD_RESPONSE.toString() + " "
@@ -225,73 +221,29 @@ public class CommandHandler {
               ResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
     }
 
-    /* Note: It is pointless to try to check whether a previous request in this
-		 * chain was already coordinated and this request is also coordinated
-		 * because if we are here, it is too late. This check must be done at
-		 * the sender side. Indeed most any reasonable check we can do to restrict
-		 * the capabilities of active code at the receiver might as well be
-		 * done at the sender. We can not detect node cycles at the sender
-		 * but it is unclear that we even care to prevent node cycles. 
-		 * 
-		 * It is unclear how to disallow targetGUID cycles unless we carry the
-		 * entire chain information, which seems like too much work given that
-		 * we already have TTLs to limit cycles. */
-    CommandPacket originRequest = handler.getOriginRequest(header);
-    // same origin GNSProtocol.GUID.toString() and origin request ID => node cycle
-    if (originRequest != commandPacket
-            && header
-            .getOriginatingGUID()
-            .equals(PacketUtils
-                    .getOriginatingGUID(originRequest))) {
-      GNSConfig
-              .getLogger()
-              .log(Level.INFO,
-                      "Node {0} revisited by active request chain {1} at hop {2}",
-                      new Object[]{
-                        handler.getApp(),
-                        header,
-                        InternalRequestHeader.DEFAULT_TTL
-                        - header.getTTL()});
-    }
+    /**
+     * Note: It is pointless to try to check whether a previous request in this
+     * chain was already coordinated and this request is also coordinated
+     * because if we are here, it is too late. This check must be done at
+     * the sender side. Indeed most any reasonable check we can do to restrict
+     * the capabilities of active code at the receiver might as well be
+     * done at the sender. We can not detect node cycles at the sender
+     * but it is unclear that we even care to prevent node cycles.
+     *
+     * It is unclear how to disallow targetGUID cycles unless we carry the
+     * entire chain information, which seems like too much work given that
+     * we already have TTLs to limit cycles.
+     */
+
     // nothing suspicious detected
     return header;
-  }
-
-  /**
-   * Executes the given command with the parameters supplied in the
-   * JSONObject. Same as
-   * {@link #executeCommand(AbstractCommand, JSONObject, ClientRequestHandlerInterface)}
-   * but this is used by the HTTP server that doesn't get {@link CommandPacket}.
-   *
-   * @param command
-   * @param json
-   * @param handler
-   * @return a command response
-   */
-  public static CommandResponse executeCommand(AbstractCommand command,
-          JSONObject json, ClientRequestHandlerInterface handler) {
-    assert command != null;
-    try {
-      ClientCommandProcessorConfig.getLogger().log(Level.FINE,
-              "{0} Executing command {1} in packet {2}",
-              new Object[]{handler.getApp(), command, json});
-      return command.execute(json, handler);
-    } catch (JSONException e) {
-      // e.printStackTrace();
-      return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              GNSProtocol.BAD_RESPONSE.toString() + " "
-              + GNSProtocol.JSON_PARSE_ERROR.toString() + " " + e
-              + " while executing command.");
-    } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
-      return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
-              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString() + " " + e);
-    }
   }
 
   private static long lastStatsTime = 0;
 
   /**
    * Called when a command return value packet is received by the app.
+ * @param command 
    *
    * @param returnPacket
    * @param doNotReplyToClient
@@ -300,11 +252,11 @@ public class CommandHandler {
    * @throws JSONException
    * @throws IOException
    */
-  public static void handleCommandReturnValuePacketForApp(
+  public static void handleCommandReturnValuePacketForApp(CommandPacket command, 
           ResponsePacket returnPacket, boolean doNotReplyToClient,
-          GNSApp app) throws JSONException, IOException {
+          GNSApplicationInterface<String> app) throws JSONException, IOException {
     if (!doNotReplyToClient) {
-      app.sendToClient(returnPacket, returnPacket.toJSONObject());
+      app.sendToClient(command, returnPacket, returnPacket.toJSONObject());
     }
 
     // shows us stats every 100 commands, but not more than once every 5

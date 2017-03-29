@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCom
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -39,7 +40,10 @@ import java.security.spec.InvalidKeySpecException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 
 /**
  * The same as RegisterAccount, but doesn't use email verification.
@@ -68,8 +72,10 @@ public class RegisterAccountSecured extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException,
+          InternalRequestException {
+    JSONObject json = commandPacket.getCommand();
     String name = json.getString(GNSProtocol.NAME.toString());
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
     String password = json.getString(GNSProtocol.PASSWORD.toString());
@@ -82,7 +88,7 @@ public class RegisterAccountSecured extends AbstractCommand {
     }
     try {
       // Add the account but don't enable email verification
-      CommandResponse result = AccountAccess.addAccount(
+      CommandResponse result = AccountAccess.addAccount(header, commandPacket,
               handler.getHttpServerHostPortString(),
               name, guid, publicKey,
               password, false, handler);

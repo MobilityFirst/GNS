@@ -28,8 +28,6 @@ import com.amazonaws.services.route53.model.ChangeAction;
 import com.amazonaws.services.route53.model.ChangeBatch;
 import com.amazonaws.services.route53.model.ChangeResourceRecordSetsRequest;
 import com.amazonaws.services.route53.model.ChangeResourceRecordSetsResult;
-import com.amazonaws.services.route53.model.CreateHostedZoneRequest;
-import com.amazonaws.services.route53.model.HostedZoneConfig;
 import com.amazonaws.services.route53.model.ListResourceRecordSetsRequest;
 import com.amazonaws.services.route53.model.ListResourceRecordSetsResult;
 import com.amazonaws.services.route53.model.RRType;
@@ -43,6 +41,7 @@ import java.util.List;
  * 
  * @author westy
  */
+@Deprecated
 public class Route53 {
 
   private static AmazonRoute53 route53;
@@ -62,13 +61,13 @@ public class Route53 {
     listRecordSetsForHostedZone();
   }
 
-  private void test() {
-    route53.createHostedZone(new CreateHostedZoneRequest()
-            .withName("myDomainName.com")
-            .withCallerReference(CALLER_REFERENCE)
-            .withHostedZoneConfig(new HostedZoneConfig()
-            .withComment("my first Route 53 hosted zone!")));
-  }
+//  private void test() {
+//    route53.createHostedZone(new CreateHostedZoneRequest()
+//            .withName("myDomainName.com")
+//            .withCallerReference(CALLER_REFERENCE)
+//            .withHostedZoneConfig(new HostedZoneConfig()
+//            .withComment("my first Route 53 hosted zone!")));
+//  }
 
   private static void listRecordSetsForHostedZone() {
 

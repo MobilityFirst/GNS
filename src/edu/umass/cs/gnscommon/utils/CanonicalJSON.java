@@ -29,9 +29,10 @@ import org.json.JSONObject;
 import org.json.JSONString;
 
 /**
- * Generates canonical JSON strings. 
+ * Generates canonical JSON strings.
  * Identical to the standard code to render a JSON object,
  * except it forces the keys for maps to be listed in sorted order.
+ *
  * @author westy
  */
 public class CanonicalJSON {
@@ -81,7 +82,7 @@ public class CanonicalJSON {
             sb.append(',');
           }
           Object o = keys.next();
-          sb.append(JSONObject.quote(o.toString()));
+          sb.append(canonicalQuote(o.toString()));
           sb.append(':');
           sb.append(renderSimpleCanonicalJSON(theObject.get(o.toString())));
         }
@@ -109,7 +110,7 @@ public class CanonicalJSON {
           try {
             object = ((JSONString) x).toJSONString();
           } catch (Exception e) {
-            throw new JSONException(e);
+            throw new JSONException(e.getMessage());
           }
           if (object instanceof String) {
             return (String) object;
@@ -124,18 +125,90 @@ public class CanonicalJSON {
           return x.toString();
         }
         if (x instanceof Map) {
-          return renderSimpleCanonicalJSON(new JSONObject((Map<?, ?>) x)).toString();
+          return renderSimpleCanonicalJSON(new JSONObject((Map<?, ?>) x));
         }
         if (x instanceof Collection) {
-          return renderSimpleCanonicalJSON(new JSONArray((Collection<?>) x)).toString();
+          return renderSimpleCanonicalJSON(new JSONArray((Collection<?>) x));
         }
         if (x.getClass().isArray()) {
-          return renderSimpleCanonicalJSON(new JSONArray(x)).toString();
+          return renderSimpleCanonicalJSON(new JSONArray(x));
         }
-        return JSONObject.quote(x.toString());
+        return canonicalQuote(x.toString());
       }
     } catch (Exception e) {
       return null;
     }
+  }
+
+  /**
+   * Produce a string in double quotes with backslash sequences in all the
+   * right places. A backslash will be inserted within &lt;/, allowing JSON
+   * text to be delivered in HTML. In JSON text, a string cannot contain a
+   * control character or an unescaped quote or backslash.
+   * @param string A String
+   * @return A String correctly formatted for insertion in a JSON text.
+   */
+//   This is an exact copy of JSONObject.quote() method from the org.json package.
+//   This method was added to fix the Android behavior of escaping forward slashes
+//   always in contrast with the open source org.json that escapes forward slashes
+//   only if the preceding character is an angular bracket ('<'). 
+//     
+//   Also see MOB-886.
+  private static String canonicalQuote(String string) {
+    if (string == null || string.length() == 0) {
+      return "\"\"";
+    }
+
+    char b;
+    char c = 0;
+    String hhhh;
+    int i;
+    int len = string.length();
+    StringBuilder sb = new StringBuilder(len + 4);
+
+    sb.append('"');
+    for (i = 0; i < len; i += 1) {
+      b = c;
+      c = string.charAt(i);
+      switch (c) {
+        case '\\':
+        case '"':
+          sb.append('\\');
+          sb.append(c);
+          break;
+        // This implements the more conserative behavior 
+        case '/':
+          if (b == '<') {
+            sb.append('\\');
+          }
+          sb.append(c);
+          break;
+        case '\b':
+          sb.append("\\b");
+          break;
+        case '\t':
+          sb.append("\\t");
+          break;
+        case '\n':
+          sb.append("\\n");
+          break;
+        case '\f':
+          sb.append("\\f");
+          break;
+        case '\r':
+          sb.append("\\r");
+          break;
+        default:
+          if (c < ' ' || (c >= '\u0080' && c < '\u00a0')
+                  || (c >= '\u2000' && c < '\u2100')) {
+            hhhh = "000" + Integer.toHexString(c);
+            sb.append("\\u" + hhhh.substring(hhhh.length() - 4));
+          } else {
+            sb.append(c);
+          }
+      }
+    }
+    sb.append('"');
+    return sb.toString();
   }
 }

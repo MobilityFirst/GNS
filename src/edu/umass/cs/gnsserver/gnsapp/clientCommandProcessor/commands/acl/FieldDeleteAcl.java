@@ -26,10 +26,12 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -65,8 +67,9 @@ public class FieldDeleteAcl extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.getString(GNSProtocol.FIELD.toString());
     String accessType = json.getString(GNSProtocol.ACL_TYPE.toString());
@@ -79,13 +82,14 @@ public class FieldDeleteAcl extends AbstractCommand {
 
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, GNSProtocol.BAD_RESPONSE.toString() 
+      return new CommandResponse(ResponseCode.BAD_ACL_TYPE_ERROR, GNSProtocol.BAD_RESPONSE.toString()
               + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
     ResponseCode responseCode;
     if (!(responseCode
-            = FieldMetaData.deleteField(access, guid, field, writer,
+            = FieldMetaData.deleteField(header, commandPacket,
+                    access, guid, field, writer,
                     signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {

@@ -42,6 +42,10 @@ public class ActiveGNSClient extends GNSClient implements ActiveDBInterface {
 	public ActiveGNSClient() throws IOException {
 		super();
 	}
+	
+	public String getLabel() {
+		return ActiveGNSClient.class.getSimpleName();
+	}
 
 	@Override
 	public void write(InternalRequestHeader header, String targetGUID,
@@ -98,6 +102,6 @@ public class ActiveGNSClient extends GNSClient implements ActiveDBInterface {
 					ResponseCode.INTERNAL_REQUEST_EXCEPTION,
 					"Attempting a second coordinated request in a chain with "
 							+ commandPacket.getSummary()));
-		return super.sendSync(commandPacket); //(commandPacket);
+		return super.execute(commandPacket); //(commandPacket);
 	}
 }

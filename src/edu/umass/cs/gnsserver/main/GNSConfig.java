@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
 
 /**
  * @author arun, westy
@@ -72,63 +71,10 @@ public class GNSConfig {
      */
     EXECUTE_NOOP_ENABLED(false),
     /**
-     * A secret shared between the server and a trusted client in order to
-     * circumvent account verification for trusted clients. Must be changed
-     * using properties file to a non-default value if email verification is
-     * disabled.
-     *
-     * Exists only for cases when email verification is normally desired but
-     * admins also need to be able to programmatically create some accounts.
-     * A cleaner way to handle such cases is to use an ADMIN_COMMAND for
-     * account creation that is sent via MUTUAL_AUTH SSL.
-     */
-    //@Deprecated
-    //ACCOUNT_VERIFICATION_SECRET(EXPOSED_SECRET),
-    /**
-     * Deprecated and replaced by getInternalOpSecret()
-     *
-     * Secret inserted into commands that normally need authentication but
-     * are being issued by a trusted internal server. We need this because a
-     * server can not generate a signature on behalf of a client because
-     * only the client has the private key, so if a client issues a
-     * multi-step transactional operation that needs to be conducted by an
-     * active replica server, the server needs to use this mechanism.
-     *
-     * Security requirements:
-     *
-     * (1) The security of most everything in the GNS depends on the secrecy
-     * of this secret, so the default value must be changed via the
-     * properties file in a production setting.
-     *
-     * (2) MUTUAL_AUTH SSL must be enabled between the servers.
-     *
-     * TODO: We might as well set this at bootstrap time to a hash of the
-     * contents of keyStore.jks as the contents of that file are meant to be
-     * secret anyway and the two have the exact same trust relationship.
-     *
-     * INTERNAL_OP_SECRET(EXPOSED_SECRET),
-     */
-    /**
      * True means testing mode, which allows some unsafe operations. Default
      * is false for production mode.
      */
     TESTING_MODE(false),
-    /**
-     * This file contains secrets for authenticating admin commands issued
-     * by a trusted client.
-     *
-     * Security requirements:
-     *
-     * (1) The contents of this file or the
-     *
-     * (2) The security of administrative settings (e.g., quote limits)
-     * depends on the secrecy of this secret, so the default values of
-     * secrets must be changed via the properties file in a production
-     * setting.
-     *
-     * (3) SERVER_AUTH SSL must be enabled between clients and servers.
-     */
-    ADMIN_FILE("conf/admin.file"),
     /**
      * Commands older than this value (send by a client more than this
      * interval ago) will be rejected by the server.
@@ -159,7 +105,6 @@ public class GNSConfig {
     /* FIXME: arun: need to determine this timeout systematically, not an ad
 		 * hoc constant. */
     SELECT_REQUEST_TIMEOUT(5000),
-
     /**
      *
      */
@@ -195,17 +140,6 @@ public class GNSConfig {
      */
     EMAIL_VERIFICATION_TIMEOUT_IN_HOURS(24),
     /**
-     * Arun: Changing this option is unsafe.
-     *
-     * If enabled, email salt will be added to the EMAIL_VERIFICATION code.
-     * This is needed so we can disable salting in the case where we're
-     * using email verification and shared secret verification
-     * simultaneously.
-     */
-    //FIXME:  - currently only used by the ACS; will be disabled soon
-    //@Deprecated // DO NOT USE; will be going away shortly
-    //ENABLE_EMAIL_VERIFICATION_SALT(true),
-    /**
      * The name of the application that is used when sending a verification
      * email.
      */
@@ -240,14 +174,6 @@ public class GNSConfig {
     // HTTP Service
     //
     /**
-     * Starting port for the non-secure server.
-     */
-    HTTP_SERVER_CLEAR_PORT(8080),
-    /**
-     * Starting port for the secure server.
-     */
-    HTTP_SERVER_SECURE_PORT(9080),
-    /**
      * The URL path used by the HTTP server.
      */
     HTTP_SERVER_GNS_URL_PATH("GNS"),
@@ -264,9 +190,14 @@ public class GNSConfig {
     //
     /**
      * For the DNS service set to "all" or a node id if you want to start
-     * the DNS server when the app starts.
+     * the DNS server on the respective nodes when the app starts.
      */
     DNS_SERVER_NODES(NONE),
+    /**
+     * Specifies the IP address to send DNS queries to. Does not apply if
+     * {@link GNSC#DNS_GNS_ONLY} is set to true.
+     */
+    DNS_UPSTREAM_SERVER_IP("8.8.8.8"),
     /**
      * For the DNS service set to true if you want the DNS server to not
      * lookup records using DNS (will only lookup records in the GNS).
@@ -299,23 +230,20 @@ public class GNSConfig {
      */
     PRIVATE_KEY_ALIAS("node100"),
     /**
-     * Set this to true to use the older ACL paradigm. Default is false.
-     * Under the old model empty ACLs did not prevent us from going further
-     * up the tree toward the root to check for access.
-     * Temporary - The use of this will go away at some point.
+     * Server Admin port offset relative to reconfigurator port.
      */
-    USE_OLD_ACL_MODEL(false),
+    // Make sure this is different than all the other offsets.
+    SERVER_ADMIN_PORT_OFFSET(197),
     /**
-     * Set this to true to use the old HTTP query handling. Default is false.
-     * Older HTTP server didn't support multiple server installations.
-     * Temporary - The use of this will go away at some point.
+     * Collating Admin port offset relative to reconfigurator port.
      */
-    DISABLE_MULTI_SERVER_HTTP(false),
+    // Make sure this is different than all the other offsets.
+    COLLATING_ADMIN_PORT_OFFSET(297),
     /**
-     * Turn off active code handling. Default is false.
+     * Turn off active code handling. Default is true.
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_ACTIVE_CODE(false);
+    DISABLE_ACTIVE_CODE(true);
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;
@@ -479,10 +407,10 @@ public class GNSConfig {
     return null;
   }
 
-  private static final String getPrivateKeyAsString() {
+  private static String getPrivateKeyAsString() {
     try {
-      return Util.truncate(String.format("%040x", new BigInteger(1, getPrivateKey()
-              .getEncoded())), 32).toString();
+      return String.format("%040x", new BigInteger(1, getPrivateKey()
+              .getEncoded())).substring(0, 32);
     } catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
       e.printStackTrace();
     }

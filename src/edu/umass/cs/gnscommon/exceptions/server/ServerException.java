@@ -25,7 +25,7 @@ public class ServerException extends GNSException {
 	private static final long serialVersionUID = 6627620787610127842L;
 
 	/**
-	 * Creates a new <code>GnsException</code> object
+	 * Creates a new <code>ServerException</code> object
 	 */
 	public ServerException() {
 		super();
@@ -40,7 +40,7 @@ public class ServerException extends GNSException {
 	}
 
 	/**
-	 * Creates a new <code>GnsException</code> object
+	 * Creates a new <code>ServerException</code> object
 	 * 
 	 * @param message
 	 * @param cause
@@ -50,7 +50,7 @@ public class ServerException extends GNSException {
 	}
 
 	/**
-	 * Creates a new <code>GnsException</code> object
+	 * Creates a new <code>ServerException</code> object
 	 * 
 	 * @param message
 	 */
@@ -59,7 +59,7 @@ public class ServerException extends GNSException {
 	}
 
 	/**
-	 * Creates a new <code>GnsException</code> object
+	 * Creates a new <code>ServerException</code> object
 	 * 
 	 * @param throwable
 	 */

@@ -19,23 +19,22 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Utils;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -46,30 +45,26 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateGuidBatchTestWithPublicKeys {
+public class CreateGuidBatchTestWithPublicKeys extends DefaultGNSTest {
 
-  private static GNSClientCommands client;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address = null;
+  private static GNSClientCommands clientCommands;
 
   /**
    *
    */
   public CreateGuidBatchTestWithPublicKeys() {
 
-    if (client == null) {
-       try {
-        client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+    if (clientCommands == null) {
+      try {
+        clientCommands = new GNSClientCommands();
+        clientCommands.setForceCoordinatedReads(true);
       } catch (IOException e) {
-        fail("Exception creating client: " + e);
+        Utils.failWithStackTrace("Exception creating client: " + e);
       }
     }
   }
 
-  private static GuidEntry masterGuid = null;
+  private static GuidEntry batchAccountGuid = null;
   private static int numberTocreate = 100;
 
   /**
@@ -78,10 +73,11 @@ public class CreateGuidBatchTestWithPublicKeys {
   @Test
   public void test_01_CreateBatchAccountGuid() {
     try {
-      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+      String batchAccountAlias = "batchTest-" + RandomString.randomString(24) + "@gns.name";
+      batchAccountGuid = GuidUtils.lookupOrCreateAccountGuid(clientCommands,
+              batchAccountAlias, "password", true);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -97,18 +93,13 @@ public class CreateGuidBatchTestWithPublicKeys {
     }
     Set<String> aliases = new HashSet<>();
     for (int i = 0; i < numberTocreate; i++) {
-      aliases.add("testGUID" + RandomString.randomString(6));
+      aliases.add("testGUID" + RandomString.randomString(12));
     }
-    String result = null;
-    long oldTimeout = client.getReadTimeout();
     try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(masterGuid, aliases);
-      client.setReadTimeout(oldTimeout);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
+      clientCommands.guidBatchCreate(batchAccountGuid, aliases, 15 * 1000);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while creating guids: " + e);
     }
-    assertEquals(GNSProtocol.OK_RESPONSE.toString(), result);
   }
 
   /**
@@ -117,10 +108,22 @@ public class CreateGuidBatchTestWithPublicKeys {
   @Test
   public void test_03_CheckBatch() {
     try {
-      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+      JSONObject accountRecord = clientCommands.lookupAccountRecord(batchAccountGuid.getGuid());
+      Assert.assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
     } catch (JSONException | ClientException | IOException e) {
-      fail("Exception while fetching account record: " + e);
+      Utils.failWithStackTrace("Exception while fetching account record: " + e);
+    }
+  }
+
+  /**
+   *
+   */
+  @Test
+  public void test_04_BatchAccountCleanup() {
+    try {
+      clientCommands.accountGuidRemove(batchAccountGuid);
+    } catch (ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception while removing test account guid: " + e);
     }
   }
 }

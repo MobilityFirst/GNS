@@ -19,8 +19,6 @@
  */
 package edu.umass.cs.gnsserver.utils;
 
-import com.google.common.collect.ImmutableSet;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -129,28 +127,6 @@ public class JSONUtils {
   }
 
   /**
-   * Converts a JSONArray to an immutable set of Integers.
-   *
-   * @param json JSONArray
-   * @return ArrayList set of Integers
-   * @throws JSONException
-   */
-  public static ImmutableSet<Integer> JSONArrayToImmutableSetInteger(JSONArray json) throws JSONException {
-    Set<Integer> set = new HashSet<>();
-
-    if (json == null) {
-      return ImmutableSet.copyOf(set);
-    }
-
-    for (int i = 0; i < json.length(); i++) {
-      final Integer integer = new Integer(json.getString(i));
-      set.add(integer);
-    }
-
-    return ImmutableSet.copyOf(set);
-  }
-
-  /**
    * Converts a JSONArray to Set of Integers.
    *
    * @param json JSONArray
@@ -207,5 +183,25 @@ public class JSONUtils {
       result.put(key, new ResultValue(JSONUtils.JSONArrayToResultValue(json.getJSONArray(key))));
     }
     return result;
+  }
+
+  /**
+   * Returns true if the JSON Array contains the object.
+   * Returns false if the object is null or the array is empty.
+   *
+   * @param object
+   * @param jsonArray
+   * @return an ArrayList of Objects
+   * @throws JSONException
+   */
+  public static boolean JSONArrayContains(Object object, JSONArray jsonArray) throws JSONException {
+    if (object != null) {
+      for (int i = 0; i < jsonArray.length(); i++) {
+        if (object.equals(jsonArray.get(i))) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

@@ -250,7 +250,6 @@ public class ActiveMessage implements Message{
 			length = 5*Integer.BYTES // type, ttl, guid length, accessor length, targetGuid length
 			+ Long.BYTES // id
 			+ guid.length()
-			//+ accessor.length()
 			+ targetGuid.length();
 			break;
 			

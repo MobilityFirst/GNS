@@ -24,16 +24,13 @@ import java.io.IOException;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
- * This class defines a Quit
- * 
- * @author <a href="mailto:Nicolas.Modrzyk@inria.fr">Nicolas Modrzyk </a>
- * @version 1.0
+ * Quit the CLI
  */
 public class Quit extends ConsoleCommand
 {
 
   /**
-   * Creates a new <code>Quit.java</code> object
+   * Creates a new <code>Quit</code> object
    * 
    * @param module the command is attached to
    */

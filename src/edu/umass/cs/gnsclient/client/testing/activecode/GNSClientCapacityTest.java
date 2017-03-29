@@ -213,7 +213,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 			codeFile = "scripts/activeCode/noop.js";
 		
 		
-		String code = new String(Files.readAllBytes(Paths.get(codeFile)));
+		byte[] code = Files.readAllBytes(Paths.get(codeFile));
 
 		try {
 			clients[0].fieldUpdate(guid, someField, someValue);
@@ -232,7 +232,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 			Assert.assertEquals(
 					clients[numClients > 1 ? 1 : 0].fieldRead(guid, someField),
 					(someValue));
-		} catch (IOException | ClientException | JSONException e) {
+		} catch (IOException | ClientException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {

@@ -1,12 +1,16 @@
 # Before a release one needs to
 # 1) Run whatever test Travis runs (I think it loops ant test at least 50 times with sequential and parallel clients).
-# 2) Check every single command in every single wiki page on gihub works as documented.
+# 2) Check every single command in every single wiki page on github (https://mobilityfirst.github.io/documentation/)
+# works as documented.
+#
 # Then you'll want to run
 # > ant revision
 # to update the revision number (other targets are minor and major)
 # Then run
 # > ant dist
 # to make a binary distribution
+# The run this file with
+# > ./release.sh "some text for a description"
 #
 # You'll also need a github auth token: https://help.github.com/articles/creating-an-access-token-for-command-line-use/
 # This script requires curl be installed in order to send the release to github.

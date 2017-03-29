@@ -23,53 +23,44 @@ import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.io.IOException;
 
 /**
  * Lookup a GUID corresponding to an alias in the GNS
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
- * @version 1.0
  */
-public class GuidLookup extends ConsoleCommand
-{
+public class GuidLookup extends ConsoleCommand {
 
   /**
    * Creates a new <code>GuidLookup</code> object
-   * 
+   *
    * @param module
    */
-  public GuidLookup(ConsoleModule module)
-  {
+  public GuidLookup(ConsoleModule module) {
     super(module);
   }
 
   @Override
-  public String getCommandDescription()
-  {
+  public String getCommandDescription() {
     return "Lookup the GUID corresponding to an alias";
   }
 
   @Override
-  public String getCommandName()
-  {
+  public String getCommandName() {
     return "guid_lookup";
   }
 
   @Override
-  public String getCommandParameters()
-  {
+  public String getCommandParameters() {
     return "alias";
   }
 
   @Override
-  public void parse(String commandText) throws Exception
-  {
-    try
-    {
+  public void parse(String commandText) throws Exception {
+    try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
-      if (st.countTokens() != 1)
-      {
-        console.printString("Wrong number of arguments for this command.\n");
+      if (st.countTokens() != 1) {
+        wrongArguments();
         return;
       }
       String alias = st.nextToken();
@@ -78,9 +69,7 @@ public class GuidLookup extends ConsoleCommand
       String value = gnsClient.lookupGuid(alias);
       console.printString(alias + " has GUID " + value);
       console.printNewline();
-    }
-    catch (Exception e)
-    {
+    } catch (IOException | ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }
