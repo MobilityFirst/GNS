@@ -250,7 +250,7 @@ public class ActiveMessage implements Message{
 			length = 5*Integer.BYTES // type, ttl, guid length, accessor length, targetGuid length
 			+ Long.BYTES // id
 			+ guid.length()
-			+ accessor.length()
+			//+ accessor.length()
 			+ targetGuid.length();
 			break;
 			
@@ -359,11 +359,11 @@ public class ActiveMessage implements Message{
 			exactLength += (Integer.BYTES + guidBytes.length);
 			
 			// put field, can't be null, ~100ns
-			assert(accessor != null):"field can't be null for read query";
-			accessorBytes = accessor.getBytes(CHARSET);
-			bbuf.putInt(accessorBytes.length);
-			bbuf.put(accessorBytes);
-			exactLength += (Integer.BYTES + accessorBytes.length);
+//			assert(accessor != null):"field can't be null for read query";
+//			accessorBytes = accessor.getBytes(CHARSET);
+//			bbuf.putInt(accessorBytes.length);
+//			bbuf.put(accessorBytes);
+//			exactLength += (Integer.BYTES + accessorBytes.length);
 			
 			// put targetGuid, can't be null, ~100ns
 			assert(targetGuid != null):"targetGuid can't be null for read query";
@@ -487,10 +487,10 @@ public class ActiveMessage implements Message{
 			guid = new String(guidBytes, CHARSET);
 			
 			// get field
-			length = bbuf.getInt();
-			accessorBytes = new byte[length];
-			bbuf.get(accessorBytes);
-			accessor = new String(accessorBytes, CHARSET);
+//			length = bbuf.getInt();
+//			accessorBytes = new byte[length];
+//			bbuf.get(accessorBytes);
+//			accessor = new String(accessorBytes, CHARSET);
 			
 			// get targetGuid
 			length = bbuf.getInt();

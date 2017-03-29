@@ -52,19 +52,21 @@ import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
- * This class is the entry of activecode, it provides
- * the interface for GNS to run active code. It's creates
- * a threadpool to connect the real isolated active worker
- * to run active code. It also handles the misbehaviours.
+ * This class is the entry of active code, it provides
+ * the interface for GNS to run active code. 
  *
  * @author Zhaoyu Gao, Westy
  */
 public class ActiveCodeHandler {
 
-  private final String nodeId;
 
   private static final Logger LOGGER = Logger.getLogger(ActiveCodeHandler.class.getName());
-
+  
+  /**
+   *  This is used for DNS query to append source IP address to the value
+   */
+  public static final String SOURCE_IP_FIELD = "client_ip";
+  
   /**
    * Debug level
    */
@@ -80,7 +82,7 @@ public class ActiveCodeHandler {
    * @param nodeId
    */
   public ActiveCodeHandler(String nodeId) {
-    this.nodeId = nodeId;
+    
     String configFile = System.getProperty(gigapaxoConfig);
     if (configFile != null && new File(configFile).exists()) {
       try {
@@ -93,26 +95,6 @@ public class ActiveCodeHandler {
     handler = new ActiveHandler(nodeId, new ActiveCodeDB(), ActiveCodeConfig.activeCodeWorkerCount, ActiveCodeConfig.activeWorkerThreads, ActiveCodeConfig.acitveCodeBlockingEnabled);
   }
 
-  /**
-   * Checks to see if this guid has active code for the specified action.
-   * This function is only used for test, not used in system any more.
-   *
-   * @param valuesMap
-   * @param action can be 'read' or 'write'
-   * @return whether or not there is active code
-   */
-  private static boolean hasCode(ValuesMap valuesMap, String action) {
-
-    try {
-      if (valuesMap.get(ActiveCode.getCodeField(action)) != null) {
-        return true;
-      }
-    } catch (JSONException | IllegalArgumentException e) {
-      return false;
-    }
-
-    return false;
-  }
 
   /**
    * Check if the value contains an internal field
@@ -172,10 +154,21 @@ public class ActiveCodeHandler {
    * @throws InternalRequestException
    */
   public static JSONObject handleActiveCode(InternalRequestHeader header,
-          String guid, String field, String action, JSONObject value, BasicRecordMap db) throws InternalRequestException {
+          String guid, String field, String action, JSONObject value, BasicRecordMap db) 
+          throws InternalRequestException {
 
-    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE) ) {
       return value;
+    } 
+    
+    if(header != null){
+    	// this is a depth query, and we do not call the code again, as it will form a infinite loop if not.
+    	if(guid.equals(header.getOriginatingGUID()) && header.getTTL() < InternalRequestHeader.DEFAULT_TTL){    
+    		return value;
+    	}
+    }else{
+    	// without a header, the code can misbehave without any regulation, therefore we return the value immediately if no header presents
+    	return value;
     }
 
     long t = System.nanoTime();
@@ -188,17 +181,25 @@ public class ActiveCodeHandler {
      * <p>
      * Read can be a single-field read or multi-field read.
      * If it's a single-field read, then the field can not be a internal field.
-     * If it's a multi-feild read, then there may be some field is internal.
+     * If it's a multi-field read, then there may be some field is internal.
      * <p>
      * Write has no field value, but if there should not be an internal
      * field in the JSONObject value.
      */
-    if (action.equals(ActiveCode.READ_ACTION) && field != null && InternalField.isInternalField(field)
-            || (action.equals(ActiveCode.WRITE_ACTION) && value != null && containInternalField(value))) {
+    if (
+    		(action.equals(ActiveCode.READ_ACTION) && field != null && InternalField.isInternalField(field))
+            || (action.equals(ActiveCode.WRITE_ACTION) && 
+            		((value != null && containInternalField(value)) || (field !=null && InternalField.isInternalField(field))
+            				))) {
+    	ActiveCodeHandler.getLogger().log(DEBUG_LEVEL,
+                "OOOOOOOOOOOOO no need to handle:[guid:{0},field:{1},action:{2},value:{3},header:{4}]",
+                new Object[]{guid, field, action, value, header});
       return value;
     }
     JSONObject newResult = value;
     if (field == null || !InternalField.isInternalField(field)) {
+      //FIXME: Seems like this field lookup all could be replaced by something 
+      // like NSFieldAccess.lookupJSONFieldLocalNoAuth
       NameRecord activeCodeNameRecord = null;
       try {
         activeCodeNameRecord = NameRecord.getNameRecordMultiUserFields(db, guid,
@@ -223,8 +224,26 @@ public class ActiveCodeHandler {
         } catch (JSONException | IllegalArgumentException e) {
           return value;
         }
+        // Prepare values for query
         String accessorGuid = header == null ? guid : header.getOriginatingGUID();
+        if(header.getSourceAddress() != null){
+			try {
+				value.put(SOURCE_IP_FIELD, header.getSourceAddress());
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+        }
+        // Run code
         newResult = runCode(header, code, guid, accessorGuid, action, value, 5);
+        
+        // Strip the appended fields
+        if(newResult.has(SOURCE_IP_FIELD)){
+        	newResult.remove(SOURCE_IP_FIELD);
+        }
+      }else if(codeMap == null){
+    	  ActiveCodeHandler.getLogger().log(DEBUG_LEVEL,
+                  "OOOOOOOOOOOOO no code to run:[guid:{0},field:{1},action:{2},value:{3},header:{4}]",
+                  new Object[]{guid, field, action, value, header});
       }
     }
     ActiveCodeHandler.getLogger().log(DEBUG_LEVEL,
@@ -253,7 +272,7 @@ public class ActiveCodeHandler {
    * @throws InternalRequestException
    */
   public static void main(String[] args) throws InterruptedException, ExecutionException, IOException, JSONException, InternalRequestException {
-    ActiveCodeHandler handler = new ActiveCodeHandler("Test");
+    new ActiveCodeHandler("Test");
 
     // initialize the parameters used in the test 
     JSONObject obj = new JSONObject();

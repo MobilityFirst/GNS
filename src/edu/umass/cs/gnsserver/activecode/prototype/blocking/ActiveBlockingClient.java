@@ -30,7 +30,6 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This is a Client implementation with unix named pipe as the way
@@ -50,7 +49,7 @@ import edu.umass.cs.utils.DelayProfiler;
 public class ActiveBlockingClient implements Client {
 	
 	private final static int DEFAULT_HEAP_SIZE = ActiveCodeConfig.activeWorkerHeapSize;
-	private final static String actionOnOutOfMemory = "kill -9 %p";
+	private final static String ACTION_ON_OUT_OF_MEMORY = "kill -9 %p";
 	
 	private ActiveQueryHandler queryHandler;
 	
@@ -63,7 +62,7 @@ public class ActiveBlockingClient implements Client {
 	private Process workerProc;
 	private final int id;
 	private final boolean pipeEnable;
-	private final static boolean crashEnabled = ActiveCodeConfig.activeCrashEnabled;
+	private final static boolean CRASH_ENABLED = ActiveCodeConfig.activeCrashEnabled;
 	
 	private final int heapSize;
 	
@@ -170,6 +169,7 @@ public class ActiveBlockingClient implements Client {
 	}
 	
 	/**
+   * @param nodeId
 	 * @param app 
 	 * @param ifile
 	 * @param ofile
@@ -204,22 +204,19 @@ public class ActiveBlockingClient implements Client {
 	 * @param ofile
 	 * @param id
 	 * @param workerNumThread
-<<<<<<< HEAD
-	 * @return
-=======
 	 * @return a Process
->>>>>>> upstream/master
 	 * @throws IOException
 	 */
 	private Process startWorker(String ifile, String ofile, int id) throws IOException{
-		List<String> command = new ArrayList<String>();
+		List<String> command = new ArrayList<>();
 		String classpath = System.getProperty("java.class.path");
 	    command.add("java");
 	    command.add("-Xms"+heapSize+"m");
 	    command.add("-Xmx"+heapSize+"m");
 	    // kill the worker on OutOfMemoryError
-	    if(crashEnabled)
-	    	command.add("-XX:OnOutOfMemoryError="+actionOnOutOfMemory);
+	    if(CRASH_ENABLED) {
+              command.add("-XX:OnOutOfMemoryError="+ACTION_ON_OUT_OF_MEMORY);
+            }
 	    command.add("-cp");
 	    command.add(classpath);
 	    command.add("edu.umass.cs.gnsserver.activecode.prototype.blocking.ActiveBlockingWorker");
@@ -227,6 +224,7 @@ public class ActiveBlockingClient implements Client {
 	    command.add(ofile);
 	    command.add(""+id);
 	    command.add(""+workerNumThread);
+	    command.add(ActiveCodeConfig.activeGeoIPFilePath);
 	    command.add(Boolean.toString(pipeEnable));
 	    command.add("ReconfigurableNode");
 	    command.add(nodeId);
@@ -247,22 +245,19 @@ public class ActiveBlockingClient implements Client {
 	 * 
 	 * @param port1
 	 * @param id
-<<<<<<< HEAD
-	 * @return
-=======
 	 * @return a Process
->>>>>>> upstream/master
 	 * @throws IOException
 	 */
 	private Process startWorker(int port1, int port2, int id) throws IOException{
-		List<String> command = new ArrayList<String>();
+		List<String> command = new ArrayList<>();
 		String classpath = System.getProperty("java.class.path");
 	    command.add("java");
 	    command.add("-Xms"+heapSize+"m");
 	    command.add("-Xmx"+heapSize+"m");
 	    // kill the worker on OutOfMemoryError
-	    if(crashEnabled)
-	    	command.add("-XX:OnOutOfMemoryError="+actionOnOutOfMemory);
+	    if(CRASH_ENABLED) {
+              command.add("-XX:OnOutOfMemoryError="+ACTION_ON_OUT_OF_MEMORY);
+            }
 	    command.add("-cp");
 	    command.add(classpath);
 	    command.add("edu.umass.cs.gnsserver.activecode.prototype.blocking.ActiveBlockingWorker");
@@ -270,6 +265,7 @@ public class ActiveBlockingClient implements Client {
 	    command.add(""+port2);
 	    command.add(""+id);
 	    command.add(""+workerNumThread);
+	    command.add(ActiveCodeConfig.activeGeoIPFilePath);
 		command.add(Boolean.toString(pipeEnable));
 		command.add("ReconfigurableNode");
 	    command.add(nodeId);
@@ -324,15 +320,12 @@ public class ActiveBlockingClient implements Client {
 	 * needs to handle this exception.
 	 * 
 	 * @param guid
-<<<<<<< HEAD
 	 * @param accessor
-=======
-	 * @param field
->>>>>>> upstream/master
 	 * @param code
 	 * @param value
 	 * @param ttl
 	 * @return executed result sent back from worker
+         * @throws edu.umass.cs.gnsserver.activecode.prototype.ActiveException
 	 */
 	@Override
 	public synchronized JSONObject runCode(InternalRequestHeader header, String guid, String accessor, 
@@ -396,6 +389,7 @@ public class ActiveBlockingClient implements Client {
 		}
 	}
 	
+        @Override
 	public String toString(){
 		return this.getClass().getSimpleName()+id;
 	}

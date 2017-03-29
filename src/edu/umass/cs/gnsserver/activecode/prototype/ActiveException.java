@@ -8,12 +8,18 @@ public class ActiveException extends Exception{
 
   private static final long serialVersionUID = 1L;
   
-  public ActiveException(String msg){
-	  super(msg);
-  }
+	/**
+	 * @param msg
+	 */
+	 public ActiveException(String msg){
+		 super(msg);
+	 }
   
-  public ActiveException(){
-	  this("");
-  }
+  	/**
+	 * 
+	 */
+	public ActiveException(){
+		this("");
+	}
 
 }

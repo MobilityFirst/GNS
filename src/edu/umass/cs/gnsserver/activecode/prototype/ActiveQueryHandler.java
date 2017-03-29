@@ -6,8 +6,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +32,7 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 public class ActiveQueryHandler {
 	private static ActiveDBInterface app;
 	private final ThreadPoolExecutor queryExecutor;
-	private final int numThread = 100;
+	private final int numThread = 10;
 	
 	/**
 	 * Initialize a query handler
@@ -46,7 +47,6 @@ public class ActiveQueryHandler {
 	/**
 	 * This method handles the incoming requests from ActiveQuerier,
 	 * the query could be a read or write request.
-	 * 
 	 * @param am the query to handle
 	 * @param header 
 	 * @return an ActiveMessage being sent back to worker as a response to the query
@@ -77,26 +77,42 @@ public class ActiveQueryHandler {
 		public void run() {
 			ActiveCodeHandler.getLogger().log(ActiveCodeHandler.DEBUG_LEVEL, "################ {0} receives:{1} ", new Object[]{this, am} );
 			ActiveMessage response;
+			
 			if(am.type == ActiveMessage.Type.READ_QUERY){
 				try {
-					JSONObject result = app.read(header, am.getTargetGuid(), am.getAccessor());
+					JSONObject result = null;
+					// accessor attribute carries the fields parameter sent from some worker
+					String fieldValue = am.getAccessor();
+					if(fieldValue.endsWith("]") && fieldValue.startsWith("[")){
+						// This is query for multiple field read
+						ArrayList<String> fields = new ArrayList<String>(Arrays.asList(fieldValue.substring(1, fieldValue.length()-1)));
+						result = app.read(header, am.getTargetGuid(), fields);						
+					} else if( fieldValue.length() > 0 ){
+						// This is just a single field read query
+						result = app.read(header, am.getTargetGuid(), fieldValue);
+					}
+					
+					ActiveCodeHandler.getLogger().log(ActiveCodeHandler.DEBUG_LEVEL, "################ QueryHandler response: {0} ", new Object[]{result} );
 					if(result != null)
 						response = new ActiveMessage(am.getId(), result.toString(), null);
 					else
 						response = new ActiveMessage(am.getId(), null, "Read failed");
 				} catch (InternalRequestException | ClientException e) {
+					e.printStackTrace();
 					response = new ActiveMessage(am.getId(), null, "Read failed");
 				} 
 						
 			}else{
 				try {
+					// FIXME: the field parameter is deprecated. It is null for this query.
 					app.write(header, am.getTargetGuid(), am.getAccessor(), new JSONObject(am.getValue()) );
 					response = new ActiveMessage(am.getId(), new JSONObject().toString(), null);
 				} catch (InternalRequestException | ClientException | JSONException e) {
+					e.printStackTrace();
 					response = new ActiveMessage(am.getId(), null, "Write failed");
-				}
-				
+				}				
 			}
+			
 			ActiveCodeHandler.getLogger().log(ActiveCodeHandler.DEBUG_LEVEL, "################ {0} returns response to worker:{1}", new Object[]{this, response} );
 			
 			monitor.setResult(response, false);
@@ -111,45 +127,47 @@ public class ActiveQueryHandler {
 	 * @param monitor
 	 */
 	public void handleQueryAsync(ActiveMessage am, InternalRequestHeader header, Monitor monitor){
-		queryExecutor.execute(new ActiveQuerierTask(am, header, monitor));
-				
+		queryExecutor.execute(new ActiveQuerierTask( am, header, monitor));				
 	}
 	
 	/**
 	 * This method handles read query from the worker. 
-	 * 
 	 * @param am 
 	 * @param header 
 	 * @return the response ActiveMessage
 	 */
 	public ActiveMessage handleReadQuery(ActiveMessage am, InternalRequestHeader header) {		
 		ActiveMessage resp = null;
+		
 		try {
 			JSONObject value = app.read(header, am.getTargetGuid(), am.getAccessor());
 			resp = new ActiveMessage(am.getId(), value.toString(), null);
 		} catch (InternalRequestException | ClientException e) {
 			resp = new ActiveMessage(am.getId(), null, "Read failed");
 		} 
-		
+				
 		return resp;
 	}
 
 	
 	/**
 	 * This method handles write query from the worker. 
-	 * 
 	 * @param am 
 	 * @param header 
 	 * @return the response ActiveMessage
 	 */
 	public ActiveMessage handleWriteQuery(ActiveMessage am, InternalRequestHeader header) {
-		ActiveMessage resp;
+		ActiveMessage resp = null;
+		if(header.hasBeenCoordinatedOnce()){
+			return new ActiveMessage(am.getId(), null, "Write failed");
+		}
 		try {
+			// FIXME: the field parameter is deprecated. It is null for this query.
 			app.write(header, am.getTargetGuid(), am.getAccessor(), new JSONObject(am.getValue()));
 			resp = new ActiveMessage(am.getId(), new JSONObject().toString(), null);
 		} catch (ClientException | InternalRequestException | JSONException e) {
 			resp = new ActiveMessage(am.getId(), null, "Write failed");
-		} 
+		} 		
 				
 		return resp;
 	}
@@ -204,30 +222,9 @@ public class ActiveQueryHandler {
 	 * @throws ActiveException 
 	 */
 	public static void main(String[] args) throws JSONException, ActiveException{
-		
-		String guid = "zhaoyu gao";
-		String field = "nextGuid";
-		String depth_code = "";
-		try {
-			depth_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/chain.js")));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-		JSONObject value = new JSONObject();
-		value.put("nextGuid", "alvin");
-		
-		ActiveHandler handler = new ActiveHandler("", null, 1);
-		
-		int n = 1000000;
-		
-		long t1 = System.currentTimeMillis();
-		
-		for(int i=0; i<n; i++){
-			handler.runCode(null, guid, field, depth_code, value, 0);
-		}
-		
-		
-		long elapsed = System.currentTimeMillis() - t1;
-		System.out.println("It takes "+elapsed+"ms, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");
+		String s = "\"1.1.1.1\", \"2.2.2.2\"";
+		List<String> arr = new ArrayList<String>(Arrays.asList(s));
+		System.out.println(arr.toString());
 	}
+	
 }

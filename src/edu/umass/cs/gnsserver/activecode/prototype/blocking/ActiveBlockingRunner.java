@@ -21,9 +21,10 @@ import javax.script.SimpleScriptContext;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.maxmind.geoip2.DatabaseReader;
+
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Runner;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
@@ -42,14 +43,18 @@ public class ActiveBlockingRunner implements Runner {
 	private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
 	
 	private final Channel channel;
+	private final DatabaseReader dbReader;
 	
+	// This object is used to serialize/deserialize values passing between Java and Javascript
 	private final ScriptObjectMirror JSON;
 		
 	/**
-         * @param channel
+     * @param channel
+	 * @param dbReader 
 	 */
-	public ActiveBlockingRunner(Channel channel){
+	public ActiveBlockingRunner(Channel channel, DatabaseReader dbReader){
 		this.channel = channel; 
+		this.dbReader = dbReader;
 		
 		// Initialize an script engine without extensions and java
 		NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
@@ -103,7 +108,7 @@ public class ActiveBlockingRunner implements Runner {
 	public String runCode(String guid, String accessor, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
-		ActiveBlockingQuerier querier = new ActiveBlockingQuerier(channel, JSON, ttl, guid, id);
+		ActiveBlockingQuerier querier = new ActiveBlockingQuerier(channel, dbReader, JSON, ttl, guid, id);
 		String valuesMap = null;
 		
 		valuesMap = querier.js2String((ScriptObjectMirror) invocable.invokeFunction("run", querier.string2JS(value), accessor, querier));
@@ -140,7 +145,7 @@ public class ActiveBlockingRunner implements Runner {
 		int numThread = 10; 		
 		final ActiveBlockingRunner[] runners = new ActiveBlockingRunner[numThread];
 		for (int i=0; i<numThread; i++){
-			runners[i] = new ActiveBlockingRunner(null);
+			runners[i] = new ActiveBlockingRunner(null, null);
 		}
 		
 		final ThreadPoolExecutor executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
@@ -180,7 +185,7 @@ public class ActiveBlockingRunner implements Runner {
 		/**
 		 * Test runner's protected method
 		 */
-		ActiveBlockingRunner runner = new ActiveBlockingRunner(null);
+		ActiveBlockingRunner runner = new ActiveBlockingRunner(null, null);
 		String chain_code = null;
 		try {
 			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));

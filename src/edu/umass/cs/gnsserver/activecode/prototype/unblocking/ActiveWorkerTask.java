@@ -29,7 +29,7 @@ public class ActiveWorkerTask implements Callable<ActiveMessage>  {
 					runner.runCode(request.getGuid(), request.getAccessor(), request.getCode(), request.getValue(), request.getTtl(), request.getId()),
 					null);
 		} catch (NoSuchMethodException | ScriptException e) {	
-			//e.printStackTrace();
+			e.printStackTrace();
 			ActiveNonBlockingWorker.getLogger().log(Level.FINE, 
 					"get an exception {0} when executing request {1} with code {2}", 
 					new Object[]{e, request, request.getCode()});

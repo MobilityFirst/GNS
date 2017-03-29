@@ -13,12 +13,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
+import javax.script.ScriptException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeConfig;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.activecode.prototype.blocking.ActiveBlockingClient;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Runner;
 import edu.umass.cs.gnsserver.activecode.prototype.unblocking.ActiveNonBlockingClient;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -37,8 +41,10 @@ public class ActiveHandler {
 	private final static String cfilePrefix = "/tmp/client_";
 	private final static String sfilePrefix = "/tmp/server_";
 	private final String suffix;
-	private final static int clientPort = 50000;
-	private final static int workerPort = 60000;
+	private final static int clientStartPort = 50000;
+	private final static int workerStartPort = 60000;
+	
+	private final Runner runner;
 	
 	/**
 	 * Test then initialize this variable
@@ -59,6 +65,7 @@ public class ActiveHandler {
 	 */
 	public ActiveHandler(String nodeID, ActiveDBInterface app, int numProcess, int numThread, boolean blocking){
 		this.suffix = nodeID;
+		this.numProcess = numProcess;
 		
 		final String fileTestForPipe = "/tmp/test";
 		try {
@@ -70,22 +77,25 @@ public class ActiveHandler {
 			new File(fileTestForPipe).delete();
 		}
 		
-		this.numProcess = numProcess;
+		//FIXME: initialize Querier here, instead of initialize a query in each client
+		runner = new ActiveTrustedRunner(null);
 		
 		// initialize single clients and workers
 		clientPool = new Client[numProcess];
 		for (int i=0; i<numProcess; i++){
 			if(blocking){
+				
 				if(pipeEnable){
 					clientPool[i] = new ActiveBlockingClient(nodeID, app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, numThread);
 				}else{
-					clientPool[i] = new ActiveBlockingClient(nodeID, app, clientPort+i, workerPort+i, i, numThread);
+					clientPool[i] = new ActiveBlockingClient(nodeID, app, clientStartPort+i, workerStartPort+i, i, numThread);
 				}
 			}else{
+				
 				if(pipeEnable){
 					clientPool[i] = new ActiveNonBlockingClient(nodeID, app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, numThread);
 				} else {
-					clientPool[i] = new ActiveNonBlockingClient(nodeID, app, clientPort+i, workerPort+i, i, numThread);
+					clientPool[i] = new ActiveNonBlockingClient(nodeID, app, clientStartPort+i, workerStartPort+i, i, numThread);
 				}
 				new Thread((ActiveNonBlockingClient) clientPool[i]).start();
 			}
@@ -127,6 +137,22 @@ public class ActiveHandler {
 	 */
 	public JSONObject runCode(InternalRequestHeader header, String guid, 
 			String accessor, String code, JSONObject value, int ttl) throws ActiveException{
+		if(ActiveCodeConfig.activeCodeTrustedMode){
+			String result = null;
+			try {
+				result = runner.runCode(guid, accessor, code, value.toString(), ttl, 0);
+			} catch (NoSuchMethodException | ScriptException e) {
+				return value;
+			}
+			if(result != null){
+				try {
+					return new JSONObject(result);
+				} catch (JSONException e) {
+					return value;
+				}
+			}
+			return value;
+		}
 		return clientPool[counter.getAndIncrement()%numProcess].runCode(header, guid, accessor, code, value, ttl, 2000);
 	}
 	

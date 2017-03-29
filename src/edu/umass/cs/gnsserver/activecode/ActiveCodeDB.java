@@ -3,7 +3,6 @@ package edu.umass.cs.gnsserver.activecode;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -44,8 +43,8 @@ public class ActiveCodeDB implements ActiveDBInterface {
 	}
 
 	@Override
-	public void write(InternalRequestHeader header, String targetGUID, String field, JSONObject valuesMap) 
+	public void write(InternalRequestHeader header, String targetGUID, String field, JSONObject json) 
 			throws InternalRequestException, ClientException{
-			client.write(header, targetGUID, field, valuesMap);		
+			client.write(header, targetGUID, field, json);		
 	}
 }

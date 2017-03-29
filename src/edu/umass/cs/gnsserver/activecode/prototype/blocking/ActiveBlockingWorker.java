@@ -1,5 +1,6 @@
 package edu.umass.cs.gnsserver.activecode.prototype.blocking;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -12,6 +13,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
+
+import com.maxmind.geoip2.DatabaseReader;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
@@ -30,6 +33,7 @@ public class ActiveBlockingWorker {
 	
 	private final Channel channel;
 	private final int id;
+	private final DatabaseReader dbReader;
 	
 	private final ThreadPoolExecutor executor;
 	private final AtomicInteger counter = new AtomicInteger(0);		
@@ -43,11 +47,24 @@ public class ActiveBlockingWorker {
 	 * @param numThread 
 	 * @param isTest
 	 */
-	protected ActiveBlockingWorker(String ifile, String ofile, int id, int numThread) {
+	protected ActiveBlockingWorker(String ifile, String ofile, int id, int numThread, String geoip_file) {
 		this.id = id;
 		
+		File database = new File(geoip_file);
+		
+		if(database.exists() && !database.isDirectory()) { 
+			try {
+				dbReader = new DatabaseReader.Builder(database).build();
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		}else{
+			dbReader = null;
+		}
+		
 		channel = new ActiveNamedPipe(ifile, ofile);
-		runner = new ActiveBlockingRunner(channel);
+		runner = new ActiveBlockingRunner(channel, dbReader);
 		
 		executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		executor.prestartAllCoreThreads();	
@@ -109,14 +126,15 @@ public class ActiveBlockingWorker {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		boolean pipeEnable = Boolean.parseBoolean(args[4]);
+		boolean pipeEnable = Boolean.parseBoolean(args[5]);
 		if(pipeEnable){
 			String cfile = args[0];
 			String sfile = args[1];
 			int id = Integer.parseInt(args[2]);
 			int numThread = Integer.parseInt(args[3]);
+			String geoip_file = args[4];
 			
-			new ActiveBlockingWorker(cfile, sfile, id, numThread);
+			new ActiveBlockingWorker(cfile, sfile, id, numThread, geoip_file);
 		}
 	}
 }
