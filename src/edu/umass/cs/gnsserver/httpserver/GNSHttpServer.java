@@ -193,6 +193,7 @@ public class GNSHttpServer {
           String host = requestHeaders.getFirst("Host");
           Headers responseHeaders = exchange.getResponseHeaders();
           responseHeaders.set("Content-Type", "text/plain");
+          responseHeaders.set("Content-Type", "text/plain");
           exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
 
           try (OutputStream responseBody = exchange.getResponseBody()) {
