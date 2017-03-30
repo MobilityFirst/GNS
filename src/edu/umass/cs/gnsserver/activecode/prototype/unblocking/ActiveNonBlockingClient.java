@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -449,7 +448,7 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 		
 		if(response == null){
 			/**
-			 * No need to resend the request, as it might be
+			 * No need to resend the request, as it is much likely
 			 * a malicious request. 
 			 */
 			throw new ActiveException("Worker crashes!");
@@ -461,7 +460,14 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 		counter.getAndIncrement();
 		tasks.remove(response.getId());
 		
+		
 		try {
+			// FIXED: it is possible that the returned value is null which causes a NullPointerException when initializing a JSONObject
+			if(response.getValue() == null){
+				// The methods calling ActiveCodeHandler.runCode will check the returned result, if it's null, 
+				// the methods will use the original value. See NSFieldAccess, NSUpdateSupport
+				return null;
+			}
 			return new JSONObject(response.getValue());
 		} catch (JSONException e) {
 			throw new ActiveException("Bad JSON value returned from active code!");
@@ -518,11 +524,8 @@ public class ActiveNonBlockingClient implements Runnable,Client {
 	
 	/**
 	 * @param args
-	 * @throws InterruptedException 
-	 * @throws JSONException 
-	 * @throws ActiveException 
 	 */
-	public static void main(String[] args) throws InterruptedException, JSONException, ActiveException{
+	public static void main(String[] args) {
 		
 	}
 	

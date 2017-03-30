@@ -12,7 +12,6 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
  * @author gaozy
  *
  */
-@SuppressWarnings("restriction")
 public interface Querier {
 	
 	/**
@@ -31,20 +30,19 @@ public interface Querier {
 	 * may apply. But the ttl value should be provided by ActiveQuerier, but not
 	 * user's code.
 	 * 
-	 * @param queriedGuid
-	 * @param field
+	 * @param fields all fields to query
+	 * @param queriedGuid the target guid
 	 * @return the ValuesMap read from the field of the guid
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
-	public ScriptObjectMirror readGuid(String queriedGuid, String field) throws ActiveException;
+	public ScriptObjectMirror readGuid(ScriptObjectMirror fields, String queriedGuid) throws ActiveException;
 	
 	
 	/**
 	 * This method allows customer's active code to update a field of some other guid.
 	 * It allows querierGuid to write value into a field of the queriedGuid.
 	 * 
-	 * 
-	 * <p>Queried guid and field must be provided 
+	 * <p>Queried guid must be provided 
 	 * for ACL check. GNS returns true if the write operation succeeds on the GNS side, 
 	 * otherwise it returns false.
 	 * 
@@ -52,10 +50,9 @@ public interface Querier {
 	 * may apply. But the ttl value should be provided by ActiveQuerier, but not
 	 * user's code.
 	 * 
+	 * @param value a Javascript JSON collection
 	 * @param queriedGuid
-	 * @param field
-	 * @param value
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
-	public void writeGuid(String queriedGuid, String field, ScriptObjectMirror value) throws ActiveException;
+	public void writeGuid(ScriptObjectMirror value, String queriedGuid ) throws ActiveException;
 }
