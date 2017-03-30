@@ -54,6 +54,12 @@ import edu.umass.cs.utils.DelayProfiler;
 /**
  * This class is the entry of active code, it provides
  * the interface for GNS to run active code. 
+ * It also checks whether it's necessary to run active code.
+ * The conditions to run active code are:
+ * 1. There is no internal field
+ * 2. There exists a piece of active code on the corresponding action(e.g., read or wrote)
+ * 3. Active code is enabled
+ * 4. The value being passed into active code is not null
  *
  * @author Zhaoyu Gao, Westy
  */

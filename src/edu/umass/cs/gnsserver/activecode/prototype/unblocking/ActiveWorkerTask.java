@@ -8,6 +8,9 @@ import javax.script.ScriptException;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 
 /**
+ * This task is the task that truly executes the user code by calling ActiveRunner's runCode method.
+ * It catches code execution failure and generate response accordingly.
+ * 
  * @author gaozy
  *
  */

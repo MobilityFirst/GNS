@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
+ * This class contains all config options for active code.
+ * ActiveCodeConfig uses the same config file as GNSConfig. 
+ * 
  * @author gaozy
  *
  */

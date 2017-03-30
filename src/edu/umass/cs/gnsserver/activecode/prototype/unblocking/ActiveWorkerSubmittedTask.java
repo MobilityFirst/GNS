@@ -12,6 +12,10 @@ import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 
 /**
+ * This class submits a task to a thread pool and time out the task.
+ * If the task is timed out, it gets a TimeoutException and returns
+ * a failure message to the client.
+ * 
  * @author gaozy
  *
  */

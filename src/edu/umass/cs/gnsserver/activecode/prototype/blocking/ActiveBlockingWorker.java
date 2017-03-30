@@ -22,6 +22,9 @@ import edu.umass.cs.gnsserver.activecode.prototype.channels.ActiveNamedPipe;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 
 /**
+ * This is a blocking worker.
+ * All requests are served in FIFO manner.
+ * 
  * @author gaozy
  *
  */

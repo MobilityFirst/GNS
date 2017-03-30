@@ -8,6 +8,8 @@ import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
 
 /**
+ * This class include the GeoIP functionalities.
+ * 
  * @author gaozy
  *
  */

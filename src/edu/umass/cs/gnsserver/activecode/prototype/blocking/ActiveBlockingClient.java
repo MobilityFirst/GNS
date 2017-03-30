@@ -79,6 +79,8 @@ public class ActiveBlockingClient implements Client {
 	private AtomicInteger counter = new AtomicInteger(0);
 	
 	/**
+	 * This is the method to return the total number of received responses from its worker.
+	 * This method is only used for test.
 	 * 
 	 * @return the total number of received responses
 	 */
@@ -87,6 +89,8 @@ public class ActiveBlockingClient implements Client {
 	}
 	
 	/**
+	 * Initialize a blocking client
+	 * 
 	 * @param nodeId 
 	 * @param app 
 	 * @param ifile
@@ -111,6 +115,8 @@ public class ActiveBlockingClient implements Client {
 	}
 	
 	/**
+	 * Initialize a blocking client with a worker of default heap size. 
+	 * 
 	 * @param app
 	 * @param ifile
 	 * @param ofile
@@ -140,6 +146,7 @@ public class ActiveBlockingClient implements Client {
 	
 	/**
 	 * Initialize a client with a UDP channel
+	 * 
 	 * @param nodeId 
 	 * @param app
 	 * @param port
@@ -180,7 +187,7 @@ public class ActiveBlockingClient implements Client {
 	
 	/**
 	 * Destroy the worker process if it's still running,
-	 * delete the 
+	 * delete the pipe file if the client uses named pipe.
 	 */
 	@Override
 	public void shutdown(){
@@ -200,6 +207,7 @@ public class ActiveBlockingClient implements Client {
 	
 	/**
 	 * Create a worker with named pipe
+	 * 
 	 * @param ifile
 	 * @param ofile
 	 * @param id
@@ -396,6 +404,8 @@ public class ActiveBlockingClient implements Client {
 	
 	
 	/**
+	 * Unit test
+	 * 
 	 * @param args
 	 * @throws InterruptedException 
 	 * @throws JSONException 

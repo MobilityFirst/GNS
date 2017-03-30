@@ -31,6 +31,10 @@ import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 /**
+ * This class implements Runner interface.
+ * It has a script engine to execute user code and a in-memory map to cache
+ * evaled user code context. 
+ * 
  * @author gaozy
  *
  */

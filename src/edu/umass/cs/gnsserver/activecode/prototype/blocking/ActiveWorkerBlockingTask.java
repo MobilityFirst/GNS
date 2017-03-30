@@ -8,6 +8,8 @@ import javax.script.ScriptException;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 
 /**
+ * The task to execute requests by calling ActiveRunner's runCode method.
+ * 
  * @author gaozy
  *
  */

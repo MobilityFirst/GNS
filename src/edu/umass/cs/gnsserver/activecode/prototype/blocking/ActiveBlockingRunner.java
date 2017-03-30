@@ -31,6 +31,10 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 
 /**
+ * This is an implementation of Runner interface. All interactions
+ * are synchronized. The read or write requests must be blocked
+ * for all tasks running in thread pool.
+ * 
  * @author gaozy
  *
  */
@@ -188,9 +192,9 @@ public class ActiveBlockingRunner implements Runner {
 		ActiveBlockingRunner runner = new ActiveBlockingRunner(null, null);
 		String chain_code = null;
 		try {
-			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));
+			
 			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));
-			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/testLoad.js")));
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

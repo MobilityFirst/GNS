@@ -31,6 +31,10 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
+ * This class handles the requests when ActiveCodeHandler decides
+ * that it is necessary to run active code.
+ * It is responsible for checking whether the code is trusted.
+ * 
  * @author gaozy
  *
  */
@@ -126,6 +130,10 @@ public class ActiveHandler {
 	}
 	
 	/**
+	 * This runCode method is used to check whether we need to send this request to
+	 * a worker. If the code is trusted, we could run the request locally without
+	 * sending it to the worker.
+	 * 
 	 * @param header 
 	 * @param guid
 	 * @param accessor

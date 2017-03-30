@@ -12,7 +12,13 @@ import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 /**
- *
+ * This class implements an ActiveDBInterface, initializes a
+ * GNSClient to send read and write requests to GNS.
+ * The reason that we can only use a GNSClient to do these
+ * operations is: the target GUID may not reside at the same
+ * GNS replica as the queried GUID, and GNSClient is the only
+ * component in GNS to figure out where the target GUID is.
+ * 
  * @author westy
  */
 public class ActiveCodeDB implements ActiveDBInterface {

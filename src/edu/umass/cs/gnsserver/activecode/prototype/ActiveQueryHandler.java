@@ -25,7 +25,8 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 /**
  * This class is used for executing the queries sent from
- * ActiveWorker and sending response back.
+ * ActiveWorker and sending response back to the worker.
+ * 
  * @author gaozy
  *
  */

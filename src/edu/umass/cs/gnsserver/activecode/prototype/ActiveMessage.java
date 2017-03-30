@@ -13,6 +13,9 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 
 /**
+ * This is an implementation of Message interface, i.e., the real
+ * message being sent back and forth between ActiveClient and ActiveWorker.
+ * 
  * @author gaozy
  *
  */

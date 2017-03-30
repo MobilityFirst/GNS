@@ -2,7 +2,7 @@ package edu.umass.cs.gnsserver.activecode.prototype;
 
 /**
  * This class is used to indicate that an exception happens during the code execution.
- * 
+ * TODO: enumerate all possible exceptions for ActiveException
  * 
  * @author gaozy
  */
