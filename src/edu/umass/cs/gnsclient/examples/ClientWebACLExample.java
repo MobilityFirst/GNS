@@ -22,8 +22,8 @@ import java.security.spec.InvalidKeySpecException;
 public class ClientWebACLExample {
     private static final String CONFIG_FILE = "examples/acl/config.js";
     // replace with your account alias
-    private static String ACCOUNT_NAME_USER = "user@name.gns";
-    private static String READER_ALIAS = "reader@name.gns";
+    private static String ACCOUNT_NAME_USER = "user_2@name.gns";
+    private static String READER_ALIAS = "reader_2@name.gns";
     private static GNSClient client;
     private static GuidEntry GUID_USER;
     private static GuidEntry GUID_READER;
@@ -82,9 +82,9 @@ public class ClientWebACLExample {
 
             // Create a JSON Object to initialize our guid record
             JSONObject json = new JSONObject(
-                    "{\"name\":\"User\",\"location\":\"work\",\"type\":\"USER\"," +
-                            "\"status\":\"Employee\"," + "\"contact\":\"0123456789\"," +
-                            "\"ID\":\"USER_123\"}");
+                    "{\"name\":\"John Doe\",\"location\":\"Amherst\",\"type\":\"USER\"," +
+                            "\"status\":\"EMPLOYEE\"," + "\"contact\":\"0123456789\"," +
+                            "\"id\":\"ES_JD_123\"}");
 
             // Write out the JSON Object
             client.execute(GNSCommand.update(GUID_USER, json));

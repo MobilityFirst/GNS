@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="moment.js"></script>
+	<script src="http://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js"></script>
+	<script type="text/javascript" src="config.js"></script>
+	<script type="text/javascript" src="request.js"></script>
+	<style type="text/css">
+		#main {
+			width: 40%;
+			position:fixed;
+    			top: 20%;
+    			left: 30%;
+			background: #f3f3f3;
+			text-align: center;
+
+		}
+		.inside {
+			margin-left: 7%; 
+		}
+		#result, #data {
+			/*text-align: left;*/
+		}
+	</style>
+</head>
+<body>
+<div id ="main">
+<p class="inside">ACL calls</p>
+<input id="input_box_1" type="text" class="inside" placeholder="user@gns.name"></input>
+<button id="request_send_1" class="inside">Fetch GUID from Alias</button>
+<br></br>
+
+<input id="input_box_2" type="text" class="inside"></input>
+<button id="request_send_2" class="inside">Fetch Alias from GUID</button>
+<br></br>
+
+<button id="request_send_3" class="inside">Get record data</button>
+<br></br>
+<!-- 
+<button id="request_send_4">Select query</button>
+ <br></br>
+
+<button id="request_send_5">Send Encrypted call !</button>
+<br></br>
+
+<input id="input_box_true" type="text"></input>
+<button id="request_send_6">XHR call!</button>
+<br></br>
+<p id="box"></p>
+<button id="request_send_7">Send new loaded Encrypted call !</button>
+<br></br>
+
+<button id="request_send_8">ACL exists ?</button>
+<br></br>
+
+<button id="request_send_9">Retreive ACL !</button>
+<br></br>
+
+<button id="request_send_10">Remove ACL !</button>
+<br></br>
+
+<button id="request_send_11">Add ACL !</button>
+<br></br>
+
+<button id="request_send_11">Add ACL !</button>
+<br></br>
+-->
+<input id="input_box_12" type="text" class="inside" placeholder="name/location"></input>
+<button id="request_send_12" class="inside">Read ACL Controlled field value</button>
+<br></br>
+<p id="result" class="inside"></p>
+<p id="data" class="inside"></p>
+
+</div>
+</body>
+</html>
