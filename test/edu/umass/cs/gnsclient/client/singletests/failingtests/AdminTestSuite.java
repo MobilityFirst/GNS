@@ -16,7 +16,7 @@
  *
  *
  */
-package edu.umass.cs.gnsclient.client.singletests;
+package edu.umass.cs.gnsclient.client.singletests.failingtests;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
