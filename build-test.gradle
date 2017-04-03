@@ -2,9 +2,13 @@
 // We want the standard java conventions for everything.
 apply plugin: 'java'
 
+// import the ant tasks from the build.xml
 ant.importBuild('build.xml') { antTargetName ->
     'ant-' + antTargetName
 }
+
+// insure that the build.number file exists
+ant.buildnumber(file: 'build.number')
 
 sourceCompatibility = 1.8
 
@@ -261,9 +265,6 @@ task fetchGPServer {
 
 // Along with the one below this updates the build.number whenever a jar is created.
 task increaseBuildNumber {
-  doFirst {
-    ant.buildnumber (file: 'build.number')
-  }
   Properties properties2 = new Properties()
   properties2.load(project.file('build.number').newDataInputStream())
   def buildNumber = Integer.parseInt(properties2.getProperty('build.number')) + 1
@@ -273,4 +274,3 @@ task increaseBuildNumber {
 }
 
 createJars.mustRunAfter increaseBuildNumber
-
