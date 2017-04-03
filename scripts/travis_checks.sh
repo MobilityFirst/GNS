@@ -51,7 +51,8 @@ cd ..
 project_root=`pwd`
 
 # Always start clean, otherwise some files won't be compiled
-ant clean
+gradle clean
+#ant clean
 
 # Captures:
 # [javac] 1069 problems (1069 warnings) 
