@@ -2,18 +2,10 @@
 // We want the standard java conventions for everything.
 apply plugin: 'java'
 
-//// import the ant tasks from the build.xml
-//ant.importBuild('build.xml') { antTargetName ->
-//    'ant-' + antTargetName
-//}
-
 // insure that the build.number file exists
 ant.buildnumber(file: 'build.number')
 
 sourceCompatibility = 1.8
-
-// Set the name of the gar to something other than GNS.
-archivesBaseName = 'gnsserver'
 
 // Load our numbers from the build.properties files.
 Properties properties = new Properties()
@@ -22,7 +14,7 @@ def buildMajorNumber = properties.getProperty('build.major.number')
 def buildMinorNumber = properties.getProperty('build.minor.number')
 def buildRevisionNumber = properties.getProperty('build.revision.number')
 
-// Change the locations of the srcs - gradle has different standard locations.
+// Change the locations of the srcs - gradle jar plugin has different standard locations.
 sourceSets {
   main{
     java {
@@ -44,7 +36,6 @@ repositories {
 configurations {
   // configuration that holds just the jars to include in the client jar
   clientLib
-  //junitAnt
 }
 
 dependencies {
@@ -101,17 +92,7 @@ dependencies {
   testCompile group: 'org.hamcrest', name: 'hamcrest-core', version: '1.3'
   testCompile group: 'junit', name: 'junit', version: '4.12'
   
-  //  junitAnt 'junit:junit:4.12'
-  //  junitAnt('org.apache.ant:ant-junit:1.10.1') {
-  //    transitive = false
-  //  }
-  //  junitAnt('org.apache.ant:ant-junit4:1.10.1') {
-  //    transitive = false
-  //  }
 }
-
-// ant.taskdef(name: 'junit', classname: 'org.apache.tools.ant.taskdefs.optional.junit.JUnitTask',
-//   classpath: configurations.junitAnt.asPath)
 
 // redefine the overall jar task to produce our 3 jars
 task jar(type: Jar, overwrite: true, 
@@ -147,7 +128,6 @@ task serverFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   //System.out.println("Build version: ${fullVersion}")
 
   manifest {
-    // Todo: Add more of these back from the ant build file
     attributes 'Built-By': System.getProperty('user.name'),
                'Built-Date': new Date(),
                'Main-Class': 'edu.umass.cs.gns.httpserver.GNSHttpServer',
@@ -189,7 +169,6 @@ task clientFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   //System.out.println("Build version: ${fullVersion}")
 
   manifest {
-    // Todo: Add more of these back from the ant build file
     attributes 'Built-By': System.getProperty('user.name'),
                'Built-Date': new Date(),
                'Class-Path': '.',
@@ -232,7 +211,6 @@ task clientConsoleFatJar(type: Jar, dependsOn: [':compileJava', ':processResourc
   //System.out.println("Build version: ${fullVersion}")
 
   manifest {
-    // Todo: Add more of these back from the ant build file
     attributes 'Built-By': System.getProperty('user.name'),
                'Built-Date': new Date(),
                'Build-Version': "${fullVersion}",
@@ -292,7 +270,7 @@ test {
   jvmArgs '-DstopServer=false'
   // always run the tests - otherwise default is only runs when something changes
   outputs.upToDateWhen { false }
-  // Use include and filter here so that ZDefaultGNSTest works
+  // Use include AND filter here (which is non-standard) so that ZDefaultGNSTest works
   include 'edu/umass/cs/gnsclient/client/singletests/*'
   include 'edu/umass/cs/gnsserver/utils/DefaultGNSTest*'
   filter {
