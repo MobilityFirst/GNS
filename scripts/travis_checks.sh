@@ -15,7 +15,7 @@ cd $(dirname $0)
 script_dir=`pwd`
 
 
-# Run ant test 10 times
+# Run tests 10 times
 # A single failure will flag a Travis build failure
 test_repeat=3 # Temporary change, replace with 10 ASAP
 
@@ -51,7 +51,7 @@ cd ..
 project_root=`pwd`
 
 # Always start clean, otherwise some files won't be compiled
-gradle clean
+./gradlew clean
 #ant clean
 
 # Captures:
@@ -59,6 +59,7 @@ gradle clean
 # or 
 # [javac] 1070 problems (1 error, 1069 warnings)
 
+# todo probably should convert this to use gradle
 result_javac=`ant compile_eclipse -lib ./lib | tee /dev/tty | grep -iE "[0-9]+ (errors?|warnings?)"`
 
 if echo "$result_javac"|grep -qiE  "[0-9]+ warnings?"; then
@@ -102,11 +103,11 @@ fi
 
 # Do a complete build and generate jars
 # ant
-gradle jar
+./gradlew jar
 
 # Run ant test multiple times
 
-for ((i=0; i<=$test_repeat; i++)); do
-   gradle test || { echo "Test $i failed, exiting.." ; exit 1; }
-   #ant test || { echo "Test $i failed, exiting.." ; exit 1; }
+#was ant test || { echo "Test $i failed, exiting.." ; exit 1; }
+for ((i=0; i<$test_repeat; i++)); do
+   ./gradlew test || { echo "Test $i failed, exiting.." ; exit 1; }
 done
