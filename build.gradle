@@ -1,9 +1,10 @@
 
 // We want the standard java conventions for everything.
 apply plugin: 'java'
+// This is needed if want to publish artifacts
+apply plugin: 'maven-publish' 
 
-// insure that the build.number file exists
-ant.buildnumber(file: 'build.number')
+// For info on the gradle java plugin see https://docs.gradle.org/current/userguide/tutorial_java_projects.html
 
 sourceCompatibility = 1.8
 
@@ -13,6 +14,7 @@ properties.load(project.file('build.properties').newDataInputStream())
 def buildMajorNumber = properties.getProperty('build.major.number')
 def buildMinorNumber = properties.getProperty('build.minor.number')
 def buildRevisionNumber = properties.getProperty('build.revision.number')
+def buildVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
 
 // Change the locations of the srcs - gradle jar plugin has different standard locations.
 sourceSets {
@@ -29,12 +31,14 @@ sourceSets {
   }
 }
 
+// define where we get our libs from
 repositories {
+  mavenLocal()
   mavenCentral()
 }
 
 configurations {
-  // configuration that holds just the jars to include in the client jar
+  // add a configuration that holds just the jars to include in the client jar
   clientLib
 }
 
@@ -42,6 +46,7 @@ dependencies {
   // Says that the compile config also uses clientLib dependencies
   configurations.compile.extendsFrom(configurations.clientLib)
   
+  // these two are in the lib directory for now, everything else is handled by maven
   clientLib files('lib/gigapaxos-1.0.05.jar')
   compile files('lib/context-client-GNS.jar')
   
@@ -63,15 +68,10 @@ dependencies {
   compile group: 'org.eclipse.jdt.core.compiler', name: 'ecj', version: '4.6.1'
   compile group: 'org.freemarker', name: 'freemarker', version: '2.3.9'
   compile group: 'com.maxmind.geoip2', name: 'geoip2', version: '2.5.0'
-  //compile group: 'com.google.guava', name: 'guava', version: '14.0.1' 
   compile group: 'me.prettyprint', name: 'hector-core', version: '1.0-5'
   compile group: 'me.prettyprint', name: 'hector-test', version: '1.0-5'
   compile group: 'org.apache.httpcomponents', name: 'httpcomponents-client', version: '4.5.2'
   compile group: 'org.apache.httpcomponents', name: 'httpcomponents-core', version: '4.4.4'
-  //compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.0'
-  //compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.6'
-  //compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.6'
-  //compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-cbor', version: '2.6.6'
   compile group: 'com.sun.mail', name: 'javax.mail', version: '1.5.5'
   clientLib group: 'jline', name: 'jline', version: '1.0'
   compile group: 'joda-time', name: 'joda-time', version: '2.8.1'
@@ -94,16 +94,49 @@ dependencies {
   
 }
 
-// redefine the overall jar task to produce our 3 jars
+// Updates the build.number whenever a jar is created.
+task incrementBuildNumber {
+  doLast {
+    ant.buildnumber(file: 'build.number')
+  }
+}
+
+// redefine the default jar task to produce our 3 jars
 task jar(type: Jar, overwrite: true, 
   // Note that we enforce an explicit ordering later in this file with
   // "createSymLinks.mustRunAfter createJars"
-  // and a "createJars.mustRunAfter increaseBuildNumber"
-  dependsOn: ['increaseBuildNumber', 'createJars', 'createSymLinks', 'fetchGPServer']) {
+  // and a "createJars.mustRunAfter incrementBuildNumber"
+  dependsOn: ['incrementBuildNumber', 'createJars', 'createSymLinks', 'fetchGPServer']) {
 }
 
 task createJars(type: Jar, overwrite: true, 
-  dependsOn: ['copyServerFatJar', 'copyClientFatJar', 'copyClientConsoleFatJar']) {
+  dependsOn: ['copyServerFatJar', 'copyClientFatJar', 'copyClientConsoleFatJar',
+  'copyServerThinJar', 'copyClientThinJar', 'copyClientConsoleThinJar']) {
+}
+
+createJars.mustRunAfter incrementBuildNumber
+
+task createSymLinks {
+  doLast {
+    ant.symlink (link: 'jars/GNS.jar', overwrite: 'yes', 
+      resource: "gnsserver-${buildVersion}.jar") 
+    ant.symlink (link: 'jars/GNSClient.jar', overwrite: 'yes', 
+      resource: "gnsclient-${buildVersion}.jar") 
+    ant.symlink (link: 'jars/GNS-CLI.jar', overwrite: 'yes', 
+      resource: "gns-cli-${buildVersion}.jar") 
+  }
+}
+
+createSymLinks.mustRunAfter createJars
+
+task fetchGPServer {
+  doLast {
+    ant.mkdir (dir: 'bin')
+    ant.get (src: 'https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpServer.sh', dest:'bin')
+    ant.get (src: 'https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpClient.sh', dest:'bin')
+    // make scripts executable
+    ant.chmod (perm:'ug+x', dir:'bin', includes: '**/*.sh')
+  }
 }
 
 // Builds a fat jar for the server with all jars included.
@@ -120,12 +153,10 @@ task serverFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
   // config files
   from('conf')
   // Handle the version info
-  Properties properties3 = new Properties()
-  properties3.load(project.file('build.number').newDataInputStream())
-  def buildNumber = properties3.getProperty('build.number')
-  version = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
-  def fullVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}_${buildNumber}"
-  //System.out.println("Build version: ${fullVersion}")
+  Properties props = new Properties()
+  props.load(project.file('build.number').newDataInputStream())
+  def buildNumber = props.getProperty('build.number')
+  def fullVersion = "${buildVersion}_${buildNumber}"
 
   manifest {
     attributes 'Built-By': System.getProperty('user.name'),
@@ -134,12 +165,43 @@ task serverFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
                'Build-Version': "${fullVersion}",
                'Implementation-Vendor': 'University of Massachusetts',
                'Implementation-Title': 'GNS',
-               'Implementation-Version': "$version"
+               'Implementation-Version': "$buildVersion"
   }
 }
 
 task copyServerFatJar(type: Copy) {
   from serverFatJar
+  into 'jars'
+} 
+
+// Builds a this jar for the server
+task serverThinJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
+  baseName = 'gnsserver_thin'
+  // all the source classes except client
+  from files(sourceSets.main.output.classesDir) {
+    exclude 'edu/umass/cs/gnsclient/**'
+  }
+  // config files
+  from('conf')
+  // Handle the version info
+  Properties props = new Properties()
+  props.load(project.file('build.number').newDataInputStream())
+  def buildNumber = props.getProperty('build.number')
+  def fullVersion = "${buildVersion}_${buildNumber}"
+
+  manifest {
+    attributes 'Built-By': System.getProperty('user.name'),
+               'Built-Date': new Date(),
+               'Main-Class': 'edu.umass.cs.gns.httpserver.GNSHttpServer',
+               'Build-Version': "${fullVersion}",
+               'Implementation-Vendor': 'University of Massachusetts',
+               'Implementation-Title': 'GNS',
+               'Implementation-Version': "$buildVersion"
+  }
+}
+
+task copyServerThinJar(type: Copy) {
+  from serverThinJar
   into 'jars'
 } 
 
@@ -161,12 +223,10 @@ task clientFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
     include 'keyStore/**'
   }
   // Handle the version info
-  Properties properties3 = new Properties()
-  properties3.load(project.file('build.number').newDataInputStream())
-  def buildNumber = properties3.getProperty('build.number')
-  version = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
-  def fullVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}_${buildNumber}"
-  //System.out.println("Build version: ${fullVersion}")
+  Properties props = new Properties()
+  props.load(project.file('build.number').newDataInputStream())
+  def buildNumber = props.getProperty('build.number')
+  def fullVersion = "${buildVersion}_${buildNumber}"
 
   manifest {
     attributes 'Built-By': System.getProperty('user.name'),
@@ -175,12 +235,47 @@ task clientFatJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
                'Build-Version': "${fullVersion}",
                'Implementation-Vendor': 'University of Massachusetts',
                'Implementation-Title': 'GNS Client',
-               'Implementation-Version': "$version"
+               'Implementation-Version': "$buildVersion"
   }
 }
 
 task copyClientFatJar(type: Copy) {
   from clientFatJar
+  into 'jars'
+} 
+
+// Builds a thin jar for the client
+task clientThinJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
+  baseName = 'gnsclient_thin'
+  // all the source class files
+  from files(sourceSets.main.output.classesDir) {
+  }
+  // all the test classes
+  from('build/classes/test')
+  // key and trust files
+  from('conf') {
+    include 'trustStore/**'
+    include 'keyStore/**'
+  }
+  // Handle the version info
+  Properties props = new Properties()
+  props.load(project.file('build.number').newDataInputStream())
+  def buildNumber = props.getProperty('build.number')
+  def fullVersion = "${buildVersion}_${buildNumber}"
+
+  manifest {
+    attributes 'Built-By': System.getProperty('user.name'),
+               'Built-Date': new Date(),
+               'Class-Path': '.',
+               'Build-Version': "${fullVersion}",
+               'Implementation-Vendor': 'University of Massachusetts',
+               'Implementation-Title': 'GNS Client',
+               'Implementation-Version': "$buildVersion"
+  }
+}
+
+task copyClientThinJar(type: Copy) {
+  from clientThinJar
   into 'jars'
 } 
 
@@ -203,12 +298,10 @@ task clientConsoleFatJar(type: Jar, dependsOn: [':compileJava', ':processResourc
     include 'edu/umass/cs/gnsclient/console/console.properties'
   }
   // Handle the version info
-  Properties properties3 = new Properties()
-  properties3.load(project.file('build.number').newDataInputStream())
-  def buildNumber = properties3.getProperty('build.number')
-  version = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
-  def fullVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}_${buildNumber}"
-  //System.out.println("Build version: ${fullVersion}")
+  Properties props = new Properties()
+  props.load(project.file('build.number').newDataInputStream())
+  def buildNumber = props.getProperty('build.number')
+  def fullVersion = "${buildVersion}_${buildNumber}"
 
   manifest {
     attributes 'Built-By': System.getProperty('user.name'),
@@ -217,53 +310,80 @@ task clientConsoleFatJar(type: Jar, dependsOn: [':compileJava', ':processResourc
                'Main-Class': 'edu.umass.cs.gnsclient.console.CommandLineInterface',
                'Implementation-Vendor': 'University of Massachusetts',
                'Implementation-Title': 'GNS CLI',
-               'Implementation-Version': "$version"
+               'Implementation-Version': "$buildVersion"
   }
 }
 
 task copyClientConsoleFatJar(type: Copy) {
   from clientConsoleFatJar
   into 'jars'
-}  
+} 
 
-task createSymLinks {
-  Properties properties3 = new Properties()
-  properties3.load(project.file('build.number').newDataInputStream())
-  def buildNumber = properties3.getProperty('build.number')
-  def resourceVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
-  doLast {
-    ant.symlink (link: 'jars/GNS.jar', overwrite: 'yes', 
-      resource: "gnsserver-${resourceVersion}.jar") 
-    ant.symlink (link: 'jars/GNSClient.jar', overwrite: 'yes', 
-      resource: "gnsclient-${resourceVersion}.jar") 
-    ant.symlink (link: 'jars/GNS-CLI.jar', overwrite: 'yes', 
-      resource: "gns-cli-${resourceVersion}.jar") 
+// Builds a fat jar for the CLI with all jars included.
+task clientConsoleThinJar(type: Jar, dependsOn: [':compileJava', ':processResources']) {
+  baseName = 'gns-cli_thin'
+  // all the class files
+  from files(sourceSets.main.output.classesDir) {
+  }
+  // key and trust files
+  from('conf') {
+    include 'trustStore/**'
+    include 'keyStore/**'
+  }
+  from ('src') {
+    include 'edu/umass/cs/gnsclient/console/console.properties'
+  }
+  // Handle the version info
+  Properties props = new Properties()
+  props.load(project.file('build.number').newDataInputStream())
+  def buildNumber = props.getProperty('build.number')
+  def fullVersion = "${buildVersion}_${buildNumber}"
+
+  manifest {
+    attributes 'Built-By': System.getProperty('user.name'),
+               'Built-Date': new Date(),
+               'Build-Version': "${fullVersion}",
+               'Main-Class': 'edu.umass.cs.gnsclient.console.CommandLineInterface',
+               'Implementation-Vendor': 'University of Massachusetts',
+               'Implementation-Title': 'GNS CLI',
+               'Implementation-Version': "$buildVersion"
   }
 }
 
-createSymLinks.mustRunAfter createJars
+task copyClientConsoleThinJar(type: Copy) {
+  from clientConsoleThinJar
+  into 'jars'
+} 
 
-task fetchGPServer {
-  doLast {
-    ant.mkdir (dir: 'bin')
-    ant.get (src: 'https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpServer.sh', dest:'bin')
-    ant.get (src: 'https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpClient.sh', dest:'bin')
-    // make scripts executable
-    ant.chmod (perm:'ug+x', dir:'bin', includes: '**/*.sh')
+artifacts { 
+  archives serverFatJar, clientFatJar, clientConsoleFatJar, serverThinJar, clientThinJar, clientConsoleThinJar 
+} 
+
+publishing {
+  publications {
+    server(MavenPublication) {
+      groupId 'edu.umass.cs'
+      artifactId 'gnsserver'
+      version "$buildVersion"
+      
+      artifact serverFatJar
+    }
+    client(MavenPublication) {
+      groupId 'edu.umass.cs'
+      artifactId 'gnsclient'
+      version "$buildVersion"
+      
+      artifact clientFatJar
+    }
+    cli(MavenPublication) {
+      groupId 'edu.umass.cs'
+      artifactId 'gns-cli'
+      version "$buildVersion"
+      
+      artifact clientConsoleFatJar
+    }
   }
 }
-
-// Along with the one below this updates the build.number whenever a jar is created.
-task increaseBuildNumber {
-  Properties properties2 = new Properties()
-  properties2.load(project.file('build.number').newDataInputStream())
-  def buildNumber = Integer.parseInt(properties2.getProperty('build.number')) + 1
-  System.out.println("buildNumber: ${buildNumber}")
-  properties2.setProperty('build.number', Integer.toString(buildNumber))
-  properties2.store(project.file('build.number').newWriter(), null) 
-}
-
-createJars.mustRunAfter increaseBuildNumber
 
 test {
   // we don't wnat to stop the server after each test

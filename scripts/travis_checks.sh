@@ -5,6 +5,9 @@
 # This script will be run when a pull request is created and when something is committed.
 # If this script fails, the pull request is flagged accordingly and cannot be merged.
 
+# We use ./gradlew (the gradle wrapper) because travis is using an ancient version of gradle.
+# For info on the gradle wrapper see https://docs.gradle.org/current/userguide/gradle_wrapper.html
+
 # Usage travis_checks.sh [--update]
 # --update will update warning counts instead of checking it
 
