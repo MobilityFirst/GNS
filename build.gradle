@@ -4,6 +4,8 @@ apply plugin: 'java'
 // This is needed if want to publish artifacts
 apply plugin: 'maven-publish' 
 
+// TODO: translate more tests, javadoc, revision, major, minor
+
 // For info on the gradle java plugin see https://docs.gradle.org/current/userguide/tutorial_java_projects.html
 
 sourceCompatibility = 1.8
@@ -15,6 +17,8 @@ def buildMajorNumber = properties.getProperty('build.major.number')
 def buildMinorNumber = properties.getProperty('build.minor.number')
 def buildRevisionNumber = properties.getProperty('build.revision.number')
 def buildVersion = "${buildMajorNumber}.${buildMinorNumber}.${buildRevisionNumber}"
+
+version = buildVersion
 
 // Change the locations of the srcs - gradle jar plugin has different standard locations.
 sourceSets {
@@ -46,8 +50,10 @@ dependencies {
   // Says that the compile config also uses clientLib dependencies
   configurations.compile.extendsFrom(configurations.clientLib)
   
-  // these two are in the lib directory for now, everything else is handled by maven
-  clientLib files('lib/gigapaxos-1.0.05.jar')
+  clientLib group: 'edu.umass.cs', name: 'gigapaxos', version: '1.0.05'
+  //clientLib files('lib/gigapaxos-1.0.05.jar')
+  
+  // in the lib directory for now, everything else is handled by maven
   compile files('lib/context-client-GNS.jar')
   
   compile group: 'org.aspectj', name: 'aspectjrt', version: "1.8.2"
@@ -109,7 +115,8 @@ task jar(type: Jar, overwrite: true,
   dependsOn: ['incrementBuildNumber', 'createJars', 'createSymLinks', 'fetchGPServer']) {
 }
 
-task createJars(type: Jar, overwrite: true, 
+// note that copying the jars to the 'jars' folder will probably go away once we're fully integrated
+task createJars(type: Jar,
   dependsOn: ['copyServerFatJar', 'copyClientFatJar', 'copyClientConsoleFatJar',
   'copyServerThinJar', 'copyClientThinJar', 'copyClientConsoleThinJar']) {
 }
@@ -354,6 +361,12 @@ task copyClientConsoleThinJar(type: Copy) {
   from clientConsoleThinJar
   into 'jars'
 } 
+
+// add to the clean task to remove the jars and dist directory
+clean.doLast {
+    file('jars').deleteDir()
+    file('dist').deleteDir()
+}
 
 artifacts { 
   archives serverFatJar, clientFatJar, clientConsoleFatJar, serverThinJar, clientThinJar, clientConsoleThinJar 
