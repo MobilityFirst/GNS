@@ -48,12 +48,22 @@ public class ClientWebACLExample {
         if (args.length >= 1) {
             GUID_USER = GuidUtils.getGUIDKeys(ACCOUNT_NAME_USER);
             reader = GuidUtils.getGUIDKeys(READER_ALIAS);
-            if (args[0].equalsIgnoreCase("disable")) {
-                disableACLForName();
-            } else if (args[0].equalsIgnoreCase("enable")) {
-                enableACLForName();
+            if (args.length >=2) {
+                if (args[1].equalsIgnoreCase("remove")) {
+                    //disableACLForName();
+                    System.out.println("Removing the ACL on the field: '" + args[0] + "'");
+                    removeACL(args[0]);
+                } else if (args[1].equalsIgnoreCase("add")) {
+                    //enableACLForName();
+                    System.out.println("Adding the ACL on the field: '" + args[0] + "'");
+                    addACL(args[0]);
+                }
             } else if (args[0].equalsIgnoreCase("delete")) {
+                System.out.println("Deleting the user and reader GUID entries");
                 deleteGuids();
+            } else {
+                System.out.println("Error. Operation/argument Not supported. Try 'delete', " +
+                        "'<field name> add' or '<field name> remove'");
             }
             client.close();
         } else {
@@ -65,7 +75,6 @@ public class ClientWebACLExample {
 
                 // Create reader
                 // First we create an alias for the reader
-                // String readerAlias = "reader" + RandomString.randomString(12);
                 // Create a sub guid under our guid account
                 client.execute(GNSCommand.createGUID(GUID_USER, READER_ALIAS));
                 // Get the GuidEntry from the local database
@@ -159,12 +168,24 @@ public class ClientWebACLExample {
         }
     }
 
-    private static void deleteGuids() throws ClientException, IOException {
-        client.execute(GNSCommand.accountGuidRemove(GUID_USER));
-        client.execute(GNSCommand.accountGuidRemove(reader));
+    private static void removeACL(String key) throws ClientException, IOException {
+        String keyStr = key.toLowerCase();
+        client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, GUID_USER,
+                keyStr, reader.getGuid()));
     }
 
-    private static void disableACLForName() throws ClientException, IOException {
+    private static void addACL(String key) throws ClientException, IOException {
+        String keyStr = key.toLowerCase();
+        client.execute(GNSCommand.aclAdd(AclAccessType.READ_WHITELIST, GUID_USER,
+                keyStr, reader.getGuid()));
+    }
+
+    private static void deleteGuids() throws ClientException, IOException {
+        client.execute(GNSCommand.accountGuidRemove(GUID_USER));
+//        client.execute(GNSCommand.removeGUID(reader));
+    }
+
+    /*private static void disableACLForName() throws ClientException, IOException {
         client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, GUID_USER,
                 "name", reader.getGuid()));
     }
@@ -172,7 +193,7 @@ public class ClientWebACLExample {
     private static void enableACLForName() throws ClientException, IOException {
         client.execute(GNSCommand.aclAdd(AclAccessType.READ_WHITELIST, GUID_USER,
                 "name", reader.getGuid()));
-    }
+    }*/
 
     private static void writeToConfigFile() {
         org.apache.commons.codec.binary.Base64 base64 = new org.apache.commons.codec.binary.Base64(64);

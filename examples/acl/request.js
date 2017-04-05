@@ -112,6 +112,64 @@ console.log(jsonObject);
     success: function(response) {
       if (response.includes("+ACCESS_DENIED+")) {
         // alert("Access Denied");
+        document.getElementById("result").innerHTML = "Access Denied";
+      } else if (response.includes("+GENERICERROR+")) {
+        document.getElementById("result").innerHTML = "Error ! ";
+      } else {
+        // alert(x + " : " + response);
+        document.getElementById("result").innerHTML = "Field Value: " + response;
+      } 
+        return response;        
+      },
+      error: function(response) {
+        // alert(JSON.stringify(response));
+        // console.log(response);
+      }
+});
+});
+
+
+// Testing functions for acl add/remove
+/*$("#request_send_16").click(function() {
+  //
+  var jsonObject = {};
+jsonObject["COMMANDINT"] = 510;
+// jsonObject["field"] = "+ALL+";
+// jsonObject["field"] = "occupation";
+// jsonObject["field"] = String(x);
+jsonObject["field"] = "+ALL+";
+// jsonObject["field"] = "name";
+
+jsonObject["guid"] = guid; // target guid - user@gns.name 
+jsonObject["aclType"] = "READ_WHITELIST";
+jsonObject["accesser"] = reader; // querier guid -- reader@gns.name
+// jsonObject["seqnum"] = randomString(32); // insert random request nonce
+now = moment().utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"; // require the format: "2017-03-28T14:35:24Z";
+jsonObject["timestamp"] = now;
+var message = JSON.stringify(jsonObject);
+// var sig = new KJUR.crypto.Signature({"alg": "SHA1withRSA"});
+var sig = new KJUR.crypto.Signature({"alg": "sha1"});
+// initialize for signature generation
+sig.init(reader_public_key);   // rsaPrivateKey of RSAKey object
+// update data
+sig.updateString(message);
+// calculate signature
+var sigValueHex = sig.sign();
+sigValueHex = sigValueHex.toUpperCase();
+jsonObject["signature"]=btoa(sigValueHex);
+
+console.log(jsonObject);
+  $.ajax({
+    url: "http://localhost:24703/GNS/acladd",
+    cache:true,
+    jsonp: false,
+    data: jsonObject,
+    type: 'GET',
+    crossDomain: true,
+    dataType: 'text',
+    success: function(response) {
+      if (response.includes("+ACCESS_DENIED+")) {
+        // alert("Access Denied");
         document.getElementById("result").innerHTML = "Error: " + "Access Denied";
       } else {
         // alert(x + " : " + response);
@@ -124,8 +182,11 @@ console.log(jsonObject);
         // console.log(response);
       }
 });
-});
+  //
 
+});*/
+
+// end of testing functions
 var parseData = function(jsonText) {
   parsedTest = JSON.parse(jsonText);
   var data = "";
