@@ -22,8 +22,8 @@ import java.security.spec.InvalidKeySpecException;
 public class ClientWebACLExample {
     private static final String CONFIG_FILE = "examples/acl/config.js";
     // replace with your account alias
-    private static String ACCOUNT_NAME_USER = "user_2@name.gns";
-    private static String READER_ALIAS = "reader_2@name.gns";
+    private static String ACCOUNT_NAME_USER = "user@gns.name";
+    private static String READER_ALIAS = "reader@gns.name";
     private static GNSClient client;
     private static GuidEntry GUID_USER;
     private static GuidEntry GUID_READER;
