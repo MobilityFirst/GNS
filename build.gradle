@@ -50,8 +50,9 @@ dependencies {
   // Says that the compile config also uses clientLib dependencies
   configurations.compile.extendsFrom(configurations.clientLib)
   
-  clientLib group: 'edu.umass.cs', name: 'gigapaxos', version: '1.0.05'
-  //clientLib files('lib/gigapaxos-1.0.05.jar')
+  // Add this back in when we get gigapaxos published remotely
+  //clientLib group: 'edu.umass.cs', name: 'gigapaxos', version: '1.0.05'
+  clientLib files('lib/gigapaxos-1.0.05.jar')
   
   // in the lib directory for now, everything else is handled by maven
   compile files('lib/context-client-GNS.jar')
