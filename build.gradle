@@ -103,9 +103,7 @@ dependencies {
 
 // Updates the build.number whenever a jar is created.
 task incrementBuildNumber {
-  doLast {
-    ant.buildnumber(file: 'build.number')
-  }
+  ant.buildnumber(file: 'build.number')
 }
 
 // redefine the default jar task to produce our 3 jars
@@ -365,8 +363,8 @@ task copyClientConsoleThinJar(type: Copy) {
 
 // add to the clean task to remove the jars and dist directory
 clean.doLast {
-    file('jars').deleteDir()
-    file('dist').deleteDir()
+  file('jars').deleteDir()
+  file('dist').deleteDir()
 }
 
 artifacts { 
