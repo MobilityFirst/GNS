@@ -1,10 +1,10 @@
 
+// See https://github.com/westyUMass/westyUMass.github.io/wiki/Gradle-Transition for current state and todo.
+
 // We want the standard java conventions for everything.
 apply plugin: 'java'
 // This is needed if want to publish artifacts
 apply plugin: 'maven-publish' 
-
-// TODO: translate more tests, javadoc, revision, major, minor
 
 // For info on the gradle java plugin see https://docs.gradle.org/current/userguide/tutorial_java_projects.html
 
@@ -50,7 +50,7 @@ dependencies {
   // Says that the compile config also uses clientLib dependencies
   configurations.compile.extendsFrom(configurations.clientLib)
   
-  // Add this back in when we get gigapaxos published remotely
+  // Switch these two when we get gigapaxos published remotely
   //clientLib group: 'edu.umass.cs', name: 'gigapaxos', version: '1.0.05'
   clientLib files('lib/gigapaxos-1.0.05.jar')
   
@@ -371,6 +371,7 @@ artifacts {
   archives serverFatJar, clientFatJar, clientConsoleFatJar, serverThinJar, clientThinJar, clientConsoleThinJar 
 } 
 
+// Define what we are publishing
 publishing {
   publications {
     server(MavenPublication) {
