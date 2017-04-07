@@ -207,10 +207,11 @@ public class Select {
 
     // store the info for later
     int queryId = addQueryInfo(serverAddresses, packet.getSelectOperation(), packet.getGroupBehavior(),
-            packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
+            packet.getQuery(), packet.getProjection(), packet.getMinRefreshInterval(), packet.getGuid());
     if (packet.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
       packet.setQuery(NSGroupAccess.getQueryString(header, packet.getGuid(), app.getRequestHandler()));
+      packet.setProjection(NSGroupAccess.getProjection(header, packet.getGuid(), app.getRequestHandler()));
     }
     InetSocketAddress returnAddress = new InetSocketAddress(app.getNodeAddress().getAddress(),
             ReconfigurationConfig.getClientFacingPort(app.getNodeAddress().getPort()));
@@ -461,10 +462,12 @@ public class Select {
       LOGGER.log(Level.FINE,
               "NS{0} storing query string and other info", replica.getNodeID());
       // for setup we need to squirrel away the query for later lookups
-      NSGroupAccess.updateQueryString(header, info.getGuid(), info.getQuery(), replica.getRequestHandler());
+      NSGroupAccess.updateQueryString(header, info.getGuid(),
+              info.getQuery(), info.getProjection(), replica.getRequestHandler());
       NSGroupAccess.updateMinRefresh(header, info.getGuid(), info.getMinRefreshInterval(), replica.getRequestHandler());
     }
-    if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP) || info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
+    if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP) 
+            || info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
       String guid = info.getGuid();
       LOGGER.log(Level.FINE, "NS{0} updating group members", replica.getNodeID());
       GroupAccess.addToGroup(header, guid, new ResultValue(guids), null, null, null, null,
@@ -487,13 +490,16 @@ public class Select {
   }
 
   private static int addQueryInfo(Set<InetSocketAddress> serverAddresses, SelectOperation selectOperation,
-          SelectGroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
+          SelectGroupBehavior groupBehavior, String query, List<String> projection,
+          int minRefreshInterval, String guid) {
     int id;
     do {
       id = RANDOM_ID.nextInt();
     } while (QUERIES_IN_PROGRESS.containsKey(id));
     //Add query info
-    NSSelectInfo info = new NSSelectInfo(id, serverAddresses, selectOperation, groupBehavior, query, minRefreshInterval, guid);
+    NSSelectInfo info = new NSSelectInfo(id, serverAddresses, selectOperation, groupBehavior,
+            query, projection,
+            minRefreshInterval, guid);
     QUERIES_IN_PROGRESS.put(id, info);
     return id;
   }
@@ -523,9 +529,9 @@ public class Select {
         }
         break;
       case QUERY:
-        LOGGER.log(Level.FINE, "NS{0} query: {1}",
-                new Object[]{ar.getNodeID(), request.getQuery()});
-        cursor = NameRecord.selectRecordsQuery(ar.getDB(), request.getQuery());
+        LOGGER.log(Level.FINE, "NS{0} query: {1} {2}",
+                new Object[]{ar.getNodeID(), request.getQuery(), request.getProjection()});
+        cursor = NameRecord.selectRecordsQuery(ar.getDB(), request.getQuery(), request.getProjection());
         break;
       default:
         break;

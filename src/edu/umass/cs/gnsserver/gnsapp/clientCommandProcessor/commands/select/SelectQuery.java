@@ -30,6 +30,8 @@ import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
+import edu.umass.cs.gnsserver.utils.JSONUtils;
+import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,9 +64,12 @@ public class SelectQuery extends AbstractCommand {
     JSONObject json = commandPacket.getCommand();
     String reader = json.optString(GNSProtocol.GUID.toString(), null);
     String query = json.getString(GNSProtocol.QUERY.toString());
+    ArrayList<String> fields = json.has(GNSProtocol.FIELDS.toString())
+            ? JSONUtils.JSONArrayToArrayListString(json.getJSONArray(GNSProtocol.FIELDS.toString())) : null;
     String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
     String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
-    return FieldAccess.selectQuery(header, commandPacket, reader, query, signature, message, handler);
+    return FieldAccess.selectQuery(header, commandPacket, reader, query, fields,
+            signature, message, handler);
   }
 
 }

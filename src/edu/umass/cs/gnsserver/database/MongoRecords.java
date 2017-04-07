@@ -623,11 +623,13 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) throws FailedDBOperationException {
-    return selectRecordsQuery(collectionName, valuesMapField, query, false);
+  public MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField,
+          String query, List<String> projection) throws FailedDBOperationException {
+    return selectRecordsQuery(collectionName, valuesMapField, query, projection, false);
   }
 
-  private MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query, boolean explain) throws FailedDBOperationException {
+  private MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField,
+          String query, List<String> projection, boolean explain) throws FailedDBOperationException {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
     DBCursor cursor = null;
@@ -658,7 +660,7 @@ public class MongoRecords implements NoSQLRecords {
     DBObject parse = (DBObject) JSON.parse(edittedQuery);
     return parse;
   }
-  
+
   public static String buildAndQuery(String... querys) {
     StringBuilder result = new StringBuilder();
     result.append("{$and: [");

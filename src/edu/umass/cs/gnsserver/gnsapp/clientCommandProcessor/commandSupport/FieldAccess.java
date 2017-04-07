@@ -728,6 +728,7 @@ public class FieldAccess {
    * @param commandPacket
    * @param reader
    * @param query
+   * @param projection
    * @param signature
    * @param message
    * @param handler
@@ -735,7 +736,7 @@ public class FieldAccess {
    * @throws InternalRequestException
    */
   public static CommandResponse selectQuery(InternalRequestHeader header, CommandPacket commandPacket,
-          String reader, String query,
+          String reader, String query, List<String> projection,
           String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     if (Select.queryContainsEvil(query)) {
@@ -746,7 +747,7 @@ public class FieldAccess {
     }
     JSONArray result;
     try {
-      SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, reader, query);
+      SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, reader, query, projection);
       result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
@@ -817,7 +818,7 @@ public class FieldAccess {
 
     try {
       SelectRequestPacket packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
-              reader, query, guid, interval);
+              reader, query, null, guid, interval);
       result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());

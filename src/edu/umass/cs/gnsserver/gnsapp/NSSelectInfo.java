@@ -27,6 +27,7 @@ import org.json.JSONObject;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,6 +43,7 @@ public class NSSelectInfo {
   private final SelectGroupBehavior groupBehavior;
   private final String guid; // the group GUID we are maintaining or null for simple select
   private final String query; // The string used to set up the query if applicable
+  private final List<String> projection;
   private final int minRefreshInterval; // in seconds
   /**
    * 
@@ -50,10 +52,13 @@ public class NSSelectInfo {
    * @param selectOperation 
    * @param groupBehavior 
    * @param query 
+   * @param projection 
    * @param minRefreshInterval 
    * @param guid 
    */
-  public NSSelectInfo(int id, Set<InetSocketAddress> serverIds, SelectOperation selectOperation, SelectGroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
+  public NSSelectInfo(int id, Set<InetSocketAddress> serverIds, 
+          SelectOperation selectOperation, SelectGroupBehavior groupBehavior, 
+          String query, List<String> projection, int minRefreshInterval, String guid) {
     this.queryId = id;
     this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<InetSocketAddress, Boolean>());
     this.serversToBeProcessed.addAll(serverIds);
@@ -61,6 +66,7 @@ public class NSSelectInfo {
     this.selectOperation = selectOperation;
     this.groupBehavior = groupBehavior;
     this.query = query;
+    this.projection = projection;
     this.guid = guid;
     this.minRefreshInterval = minRefreshInterval;
   }
@@ -146,6 +152,14 @@ public class NSSelectInfo {
    */
   public String getQuery() {
     return query;
+  }
+
+  /**
+   * 
+   * @return the projection
+   */
+  public List<String> getProjection() {
+    return projection;
   }
   
   /**
