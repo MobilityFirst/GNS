@@ -147,6 +147,8 @@ public class SelectTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception when we were not expecting testing DB: " + e);
     }
   }
+  
+  private static final int WAIT_SETTLE = 500;
 
   /**
    * Check the basic field select command
@@ -154,7 +156,7 @@ public class SelectTest extends DefaultGNSTest {
   @Test
   public void test_30_BasicSelect() {
     try {
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
       JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
@@ -187,7 +189,7 @@ public class SelectTest extends DefaultGNSTest {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(12));
         createdGuids.add(testEntry); // save them so we can delete them later
         clientCommands.setLocation(testEntry, 0.0, 0.0);
-        waitSettle(100);
+        waitSettle(WAIT_SETTLE);
       }
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
@@ -240,7 +242,7 @@ public class SelectTest extends DefaultGNSTest {
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
@@ -289,7 +291,7 @@ public class SelectTest extends DefaultGNSTest {
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
@@ -341,7 +343,7 @@ public class SelectTest extends DefaultGNSTest {
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while tryin to create the guids: " + e);
     }
@@ -352,7 +354,7 @@ public class SelectTest extends DefaultGNSTest {
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
       Assert.assertThat(result.length(), Matchers.equalTo(0));
     } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception executing selectQuery: " + e);
@@ -377,7 +379,7 @@ public class SelectTest extends DefaultGNSTest {
         json.put("field1", "value1");
         clientCommands.update(testEntry.getGuid(), json, testEntry);
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
     } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
@@ -434,7 +436,7 @@ public class SelectTest extends DefaultGNSTest {
         json.put("nested", subJson);
         clientCommands.update(testEntry.getGuid(), json, testEntry);
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
     } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
@@ -503,7 +505,7 @@ public class SelectTest extends DefaultGNSTest {
   @Test
   public void test_80_SelectPass() {
     try {
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
       JSONArray result = clientCommands.selectQuery(masterGuid, buildLocationQuery(createIndexTestField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
