@@ -595,8 +595,11 @@ public class FieldAccess {
     if (responsePacket != null
             && // Fixme: probably should just have handleSelectRequestFromClient throw a clientException
             SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
-      JSONArray guids = responsePacket.getGuids();
-      return guids;
+      if (packet.getProjection() == null) {
+        return responsePacket.getGuids();
+      } else {
+        return responsePacket.getRecords();
+      }
     } else {
       return null;
     }

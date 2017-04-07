@@ -265,7 +265,7 @@ public class Select {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
       jsonRecords = aclCheckFilterForRecordsArray(request, jsonRecords, request.getReader(), app);
-      response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(
+      response = SelectResponsePacket.makeSuccessPacketForFullRecords(
               request.getId(), request.getClientAddress(),
               request.getCcpQueryId(), request.getNsQueryId(),
               app.getNodeAddress(), jsonRecords);
@@ -306,7 +306,7 @@ public class Select {
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
       jsonRecords = aclCheckFilterForRecordsArray(request, jsonRecords, request.getReader(), app);
       @SuppressWarnings("unchecked")
-      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(),
+      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForFullRecords(request.getId(),
               request.getClientAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), app.getNodeAddress(), jsonRecords);
       LOGGER.log(Level.FINE,
@@ -440,14 +440,29 @@ public class Select {
           GNSApplicationInterface<String> replica) throws JSONException,
           ClientException, IOException, InternalRequestException {
     // If all the servers have sent us a response we're done.
-    Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
 
     // must be done before the notify below
     // we're done processing this select query
     QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
 
-    // Create a response from the returned guids
-    SelectResponsePacket response = createReponsePacket(header, packet.getId(), packet.getReturnAddress(), guids, replica);
+    Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
+    List<JSONObject> records = info.getResponsesAsList();
+    LOGGER.log(Level.FINE,
+            "NS{0} guids:{1}",
+            new Object[]{replica.getNodeID(), guids});
+    LOGGER.log(Level.FINE,
+            "NS{0} record:{1}",
+            new Object[]{replica.getNodeID(), records});
+    
+    SelectResponsePacket response;
+    if (info.getProjection() == null) {
+      response = SelectResponsePacket.makeSuccessPacketForGuidsOnly(packet.getId(),
+              null, -1, null, new JSONArray(guids));
+    } else {
+      response = SelectResponsePacket.makeSuccessPacketForFullRecords(packet.getId(),
+              null, -1, -1, null, new JSONArray(records));
+    }
+
     // and put the result where the coordinator can see it.
     QUERY_RESULT.put(packet.getNsQueryId(), response);
     // and let the coordinator know the value is there
@@ -456,7 +471,6 @@ public class Select {
         QUERIES_IN_PROGRESS.notify();
       }
     }
-    //sendReponsePacketToCaller(packet.getId(), packet.getReturnAddress(), guids, replica);
     // Now we update any group guid stuff
     if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP)) {
       LOGGER.log(Level.FINE,
@@ -466,7 +480,7 @@ public class Select {
               info.getQuery(), info.getProjection(), replica.getRequestHandler());
       NSGroupAccess.updateMinRefresh(header, info.getGuid(), info.getMinRefreshInterval(), replica.getRequestHandler());
     }
-    if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP) 
+    if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP)
             || info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
       String guid = info.getGuid();
       LOGGER.log(Level.FINE, "NS{0} updating group members", replica.getNodeID());
@@ -563,9 +577,9 @@ public class Select {
       if (isGuidRecord(record)) { // Filter out any non-guids
         String name = record.getString(NameRecord.NAME.getName());
         if (info.addResponseIfNotSeenYet(name, record)) {
-          LOGGER.log(Level.FINE, "NS{0} added record for {1}", new Object[]{ar.getNodeID(), name});
+          LOGGER.log(Level.FINE, "NS{0} added record {1}", new Object[]{ar.getNodeID(), record});
         } else {
-          LOGGER.log(Level.FINE, "NS{0} already saw record for {1}", new Object[]{ar.getNodeID(), name});
+          LOGGER.log(Level.FINE, "NS{0} already saw record {1}", new Object[]{ar.getNodeID(), record});
         }
       } else {
         LOGGER.log(Level.FINE, "NS{0} not a guid record {1}", new Object[]{ar.getNodeID(), record});

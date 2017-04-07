@@ -32,9 +32,7 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
@@ -1571,6 +1569,66 @@ public class GNSCommand extends CommandPacket {
     return getCommand(CommandType.SelectQuery, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.QUERY.toString(), query);
+  }
+
+  /**
+   * Selects all guid records that match {@code query}. The result type of the
+   * execution result of this query is {@link CommandResultType#LIST}.
+   * Requires all fields accessed to be world readable.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * There are some predefined field names such as
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+   * default.
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spatial coordinates.
+   *
+   * @param query
+   * The select query being issued.
+   * @param fields
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectQueryProjection(String query, List<String> fields)
+          throws ClientException {
+    return getCommand(CommandType.SelectQuery,
+            GNSProtocol.QUERY.toString(), query,
+            GNSProtocol.FIELDS.toString(), fields);
+  }
+
+  /**
+   * Selects all guid records that match {@code query}. The result type of the
+   * execution result of this query is {@link CommandResultType#LIST}.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * There are some predefined field names such as
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+   * default.
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spatial coordinates.
+   *
+   * @param reader
+   * @param query
+   * The select query being issued.
+   * @param fields
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectQueryProjection(GuidEntry reader, String query, List<String> fields)
+          throws ClientException {
+    return getCommand(CommandType.SelectQuery, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.QUERY.toString(), query,
+            GNSProtocol.FIELDS.toString(), fields
+    );
   }
 
   /**

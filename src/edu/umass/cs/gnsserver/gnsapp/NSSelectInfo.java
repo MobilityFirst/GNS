@@ -23,6 +23,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -36,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * about Select operations performed on the GNS.
  */
 public class NSSelectInfo {
+
   private final int queryId;
   private final Set<InetSocketAddress> serversToBeProcessed; // the list of servers that have yet to be processed
   private final ConcurrentHashMap<String, JSONObject> responses;
@@ -45,19 +47,20 @@ public class NSSelectInfo {
   private final String query; // The string used to set up the query if applicable
   private final List<String> projection;
   private final int minRefreshInterval; // in seconds
+
   /**
-   * 
+   *
    * @param id
-   * @param serverIds 
-   * @param selectOperation 
-   * @param groupBehavior 
-   * @param query 
-   * @param projection 
-   * @param minRefreshInterval 
-   * @param guid 
+   * @param serverIds
+   * @param selectOperation
+   * @param groupBehavior
+   * @param query
+   * @param projection
+   * @param minRefreshInterval
+   * @param guid
    */
-  public NSSelectInfo(int id, Set<InetSocketAddress> serverIds, 
-          SelectOperation selectOperation, SelectGroupBehavior groupBehavior, 
+  public NSSelectInfo(int id, Set<InetSocketAddress> serverIds,
+          SelectOperation selectOperation, SelectGroupBehavior groupBehavior,
           String query, List<String> projection, int minRefreshInterval, String guid) {
     this.queryId = id;
     this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<InetSocketAddress, Boolean>());
@@ -72,7 +75,7 @@ public class NSSelectInfo {
   }
 
   /**
-   * 
+   *
    * @return the queryId
    */
   public int getId() {
@@ -81,21 +84,24 @@ public class NSSelectInfo {
 
   /**
    * Removes the server if from the list of servers that have yet to be processed.
-   * @param address 
+   *
+   * @param address
    */
   public void removeServerAddress(InetSocketAddress address) {
     serversToBeProcessed.remove(address);
   }
+
   /**
-   * 
+   *
    * @return the set of servers
    */
   public Set<InetSocketAddress> serversYetToRespond() {
     return serversToBeProcessed;
   }
+
   /**
    * Returns true if all the names servers have responded.
-   * 
+   *
    * @return true if all the names servers have responded
    */
   public boolean allServersResponded() {
@@ -104,7 +110,7 @@ public class NSSelectInfo {
 
   /**
    * Adds the result of a query for a particular guid if the guid has not been seen yet.
-   * 
+   *
    * @param name
    * @param json
    * @return true if the response was not seen yet, false otherwise
@@ -120,7 +126,7 @@ public class NSSelectInfo {
 
   /**
    * Returns that responses that have been see for this query.
-   * 
+   *
    * @return a set of JSONObjects
    */
   public Set<JSONObject> getResponsesAsSet() {
@@ -128,8 +134,17 @@ public class NSSelectInfo {
   }
 
   /**
+   * Returns that responses that have been see for this query.
+   *
+   * @return a set of JSONObjects
+   */
+  public List<JSONObject> getResponsesAsList() {
+    return new ArrayList<>(responses.values());
+  }
+
+  /**
    * Return the operation.
-   * 
+   *
    * @return a {@link SelectOperation}
    */
   public SelectOperation getSelectOperation() {
@@ -138,16 +153,16 @@ public class NSSelectInfo {
 
   /**
    * Return the behavior.
-   * 
+   *
    * @return a GroupBehavior
    */
   public SelectGroupBehavior getGroupBehavior() {
     return groupBehavior;
   }
-  
+
   /**
    * Return the query.
-   * 
+   *
    * @return a string
    */
   public String getQuery() {
@@ -155,16 +170,16 @@ public class NSSelectInfo {
   }
 
   /**
-   * 
+   *
    * @return the projection
    */
   public List<String> getProjection() {
     return projection;
   }
-  
+
   /**
    * Return the guid.
-   * 
+   *
    * @return a string
    */
   public String getGuid() {
@@ -173,11 +188,11 @@ public class NSSelectInfo {
 
   /**
    * Return the minimum refresh interval.
-   * 
+   *
    * @return an int
    */
   public int getMinRefreshInterval() {
     return minRefreshInterval;
   }
-  
+
 }
