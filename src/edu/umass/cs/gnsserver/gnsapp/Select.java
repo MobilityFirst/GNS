@@ -83,6 +83,15 @@ import java.util.regex.Pattern;
  * to all the servers and collate the responses.
  * The most general purpose select method is implemented in SelectQuery. It takes a
  * mongo-style query and returns all the records that match that query.
+ *
+ * SelectQuery can be used two ways. The older style is that it returns a
+ * list of GUIDS. The newer style is that it returns entire records or
+ * subsets of the fields in records. The guid of the record is returned
+ * in the using the special "_GUID" key.
+ * The behavior SelectQuery of is controlled by the
+ * field (or projection) parameter. In this code if it is null that means
+ * old style.
+ *
  * Select, SelectNear, SelectWithin all handle specific types of queries.
  * They remove the need for the user to understand mongo syntax, but are really not necessary.
  *
@@ -151,8 +160,7 @@ public class Select {
     }
   }
 
-  /* FIXME: arun: need to determine this timeout systematically, not an ad hoc constant.
-   */
+  //FIXME: We need to determine this timeout systematically, not an ad hoc constant.
   private static final long SELECT_REQUEST_TIMEOUT = Config.getGlobalInt(GNSConfig.GNSC.SELECT_REQUEST_TIMEOUT);
 
   /**
@@ -190,7 +198,8 @@ public class Select {
                   "GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for {0}",
                   packet.getGuid());
           ResultValue result = NSGroupAccess.lookupMembers(header, packet.getGuid(), true, app.getRequestHandler());
-          return createReponsePacket(header, packet.getId(), packet.getClientAddress(), result.toStringSet(), app);
+          return SelectResponsePacket.makeSuccessPacketForGuidsOnly(packet.getId(), null, -1, null,
+                  new JSONArray(result.toStringSet()));
         }
       } else {
         LOGGER.fine("GROUP_LOOKUP Request: No Last Update Info ");
@@ -340,8 +349,6 @@ public class Select {
         List<String> fields = getFieldsForQueryType(packet);
         ResponseCode responseCode = NSAuthentication.signatureAndACLCheck(null, guid, null, fields, reader,
                 null, null, MetaDataTypeName.READ_WHITELIST, app, true);
-//        ResponseCode responseCode = signatureAndACLCheckForRead(header, commandPacket, guid, null,
-//                fields, reader, signature, message, null, app, true);
         LOGGER.log(Level.FINE, "ACL check for select: guid={0} fields={1} responsecode={2}",
                 new Object[]{guid, fields, responseCode});
         if (responseCode.isOKResult()) {
@@ -355,17 +362,7 @@ public class Select {
     return result;
   }
 
-  private static List<String> getFieldsFromQuery(String line) {
-    List<String> result = new ArrayList<>();
-    // Create a Pattern object
-    Matcher m = Pattern.compile("~\\w+(\\.\\w+)*").matcher(line);
-    // Now create matcher object.
-    while (m.find()) {
-      result.add(m.group().substring(1));
-    }
-    return result;
-  }
-
+  // Returns the fields that present in a query.
   private static List<String> getFieldsForQueryType(SelectRequestPacket request) {
     switch (request.getSelectOperation()) {
       case EQUALS:
@@ -377,6 +374,18 @@ public class Select {
       default:
         return new ArrayList<>();
     }
+  }
+  
+  // Uses a regular expression to extract the fields from a select query.
+  private static List<String> getFieldsFromQuery(String query) {
+    List<String> result = new ArrayList<>();
+    // Create a Pattern object
+    Matcher m = Pattern.compile("~\\w+(\\.\\w+)*").matcher(query);
+    // Now create matcher object.
+    while (m.find()) {
+      result.add(m.group().substring(1));
+    }
+    return result;
   }
 
   /**
@@ -414,7 +423,7 @@ public class Select {
               new Object[]{replica.getNodeID(), packet.getErrorMessage()});
     }
     // Remove the NS Address from the list to keep track of who has responded
-    boolean allServersResponded = false;
+    boolean allServersResponded;
     /* synchronization needed, otherwise assertion in app.sendToClient
      * implying that an outstanding request is always found gets violated. */
     synchronized (info) {
@@ -431,18 +440,11 @@ public class Select {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  private static SelectResponsePacket createReponsePacket(InternalRequestHeader header, long id,
-          InetSocketAddress address, Set<String> guids,
-          GNSApplicationInterface<String> app) throws JSONException {
-    return SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, -1, null, new JSONArray(guids));
-  }
-
+  // If all the servers have sent us a response we're done.
   private static void handledAllServersResponded(InternalRequestHeader header,
           SelectResponsePacket packet, NSSelectInfo info,
           GNSApplicationInterface<String> replica) throws JSONException,
           ClientException, IOException, InternalRequestException {
-    // If all the servers have sent us a response we're done.
     // must be done before the notify below
     // we're done processing this select query
     QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
@@ -468,7 +470,7 @@ public class Select {
               null, -1, -1, null, new JSONArray(records));
     }
 
-    // and put the result where the coordinator can see it.
+    // Put the result where the coordinator can see it.
     QUERY_RESULT.put(packet.getNsQueryId(), response);
     // and let the coordinator know the value is there
     if (GNSApp.DELEGATE_CLIENT_MESSAGING) {
@@ -497,6 +499,8 @@ public class Select {
     }
   }
 
+  // Converts a record from the database into something we can return to 
+  // the user. Adds the "_GUID" and removes internal fields.
   private static List<JSONObject> filterAndMassageRecords(Set<JSONObject> records) {
     List<JSONObject> result = new ArrayList<>();
     for (JSONObject record : records) {
@@ -520,6 +524,8 @@ public class Select {
     return result;
   }
 
+  // Pulls the guids out of the record to return to the user for "old-style" 
+  // select calls.
   private static Set<String> extractGuidsFromRecords(Set<JSONObject> records) {
     Set<String> result = new HashSet<>();
     for (JSONObject json : records) {
@@ -581,12 +587,14 @@ public class Select {
     // think about returning a cursor that has prefetched a limited (100 which is like mongo limit)
     // number of records in it and the ability to fetch more
     while (cursor != null && cursor.hasNext()) {
-      jsonRecords.put(cursor.nextJSONObject());
+      JSONObject record = cursor.nextJSONObject();
+      LOGGER.log(Level.FINE, "NS{0} record returned: {1}", new Object[]{ar.getNodeID(), record});
+      jsonRecords.put(record);
     }
     return jsonRecords;
   }
 
-  // takes the JSON records that are returned from an NS and stuffs the into the NSSelectInfo record
+  // Takes the JSON records that are returned from an NS and stuffs the into the NSSelectInfo record
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info,
           GNSApplicationInterface<String> ar) throws JSONException {
     int length = jsonArray.length();
