@@ -65,16 +65,16 @@ import java.util.logging.Level;
  * @author westy, Abhigyan, arun
  */
 public class MongoRecords implements NoSQLRecords {
-  
+
   private static final String DBROOTNAME = "UMASS_GNS_DB_";
   /**
    * The name of the document where name records are stored.
    */
   public static final String DBNAMERECORD = "NameRecord";
-  
+
   private DB db;
   private String dbName;
-  
+
   private MongoClient mongoClient;
   private MongoCollectionSpecs mongoCollectionSpecs;
 
@@ -96,7 +96,7 @@ public class MongoRecords implements NoSQLRecords {
   public MongoRecords(String nodeID, int port) {
     init(nodeID, port);
   }
-  
+
   private void init(String nodeID, int mongoPort) {
     if (Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB)) {
       return;
@@ -111,7 +111,7 @@ public class MongoRecords implements NoSQLRecords {
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSProtocol.LOCATION_FIELD_NAME_2D_SPHERE.toString(), "2dsphere"));
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSProtocol.IPADDRESS_FIELD_NAME.toString(), 1));
-    
+
     boolean fatalException = false;
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
@@ -125,7 +125,7 @@ public class MongoRecords implements NoSQLRecords {
         mongoClient = new MongoClient("localhost");
       }
       db = mongoClient.getDB(dbName);
-      
+
       initializeIndexes();
     } catch (UnknownHostException e) {
       fatalException = true;
@@ -139,13 +139,13 @@ public class MongoRecords implements NoSQLRecords {
       }
     }
   }
-  
+
   private void initializeIndexes() {
     for (MongoCollectionSpec spec : mongoCollectionSpecs.allCollectionSpecs()) {
       initializeIndex(spec.getName());
     }
   }
-  
+
   private void initializeIndex(String collectionName) {
     MongoCollectionSpec spec = mongoCollectionSpecs.getCollectionSpec(collectionName);
     db.getCollection(spec.getName()).createIndex(spec.getPrimaryIndex(), new BasicDBObject("unique", true));
@@ -154,7 +154,7 @@ public class MongoRecords implements NoSQLRecords {
     }
     DatabaseConfig.getLogger().fine("Indexes initialized");
   }
-  
+
   @Override
   public void createIndex(String collectionName, String field, String index) {
     MongoCollectionSpec spec = mongoCollectionSpecs.getCollectionSpec(collectionName);
@@ -162,13 +162,13 @@ public class MongoRecords implements NoSQLRecords {
     DBObject index2d = BasicDBObjectBuilder.start(NameRecord.VALUES_MAP.getName() + "." + field, index).get();
     db.getCollection(spec.getName()).createIndex(index2d);
   }
-  
+
   @Override
   public void insert(String collectionName, String guid, JSONObject value) throws FailedDBOperationException, RecordExistsException {
     db.requestStart();
     try {
       db.requestEnsureConnection();
-      
+
       DBCollection collection = db.getCollection(collectionName);
       DBObject dbObject = (DBObject) JSON.parse(value.toString());
       try {
@@ -183,12 +183,12 @@ public class MongoRecords implements NoSQLRecords {
       db.requestDone();
     }
   }
-  
+
   @Override
   public JSONObject lookupEntireRecord(String collectionName, String guid) throws RecordNotFoundException, FailedDBOperationException {
     return lookupEntireRecord(collectionName, guid, false);
   }
-  
+
   private JSONObject lookupEntireRecord(String collectionName, String guid, boolean explain) throws RecordNotFoundException, FailedDBOperationException {
     long startTime = System.currentTimeMillis();
     db.requestStart();
@@ -230,7 +230,7 @@ public class MongoRecords implements NoSQLRecords {
       db.requestDone();
     }
   }
-  
+
   @Override
   public HashMap<ColumnField, Object> lookupSomeFields(String collectionName,
           String guid, ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
@@ -243,11 +243,11 @@ public class MongoRecords implements NoSQLRecords {
     try {
       String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
       db.requestEnsureConnection();
-      
+
       DBCollection collection = db.getCollection(collectionName);
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       BasicDBObject projection = new BasicDBObject().append("_id", 0);
-      
+
       if (valuesMapField != null && valuesMapKeys != null) {
         for (int i = 0; i < valuesMapKeys.size(); i++) {
           String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
@@ -273,7 +273,7 @@ public class MongoRecords implements NoSQLRecords {
           if (containsFieldDotNotation(userKey, bson) == false) {
             DatabaseConfig.getLogger().log(Level.FINE,
                     "DBObject doesn't contain {0}", new Object[]{userKey});
-            
+
             continue;
           }
           try {
@@ -309,7 +309,7 @@ public class MongoRecords implements NoSQLRecords {
       db.requestDone();
     }
   }
-  
+
   private Object getWithDotNotation(String key, BasicDBObject bson) throws JSONException {
     if (key.contains(".")) {
       int indexOfDot = key.indexOf(".");
@@ -328,7 +328,7 @@ public class MongoRecords implements NoSQLRecords {
       return result;
     }
   }
-  
+
   private boolean containsFieldDotNotation(String key, BasicDBObject bson) {
     try {
       return getWithDotNotation(key, bson) != null;
@@ -336,7 +336,7 @@ public class MongoRecords implements NoSQLRecords {
       return false;
     }
   }
-  
+
   @Override
   public boolean contains(String collectionName, String guid) throws FailedDBOperationException {
     db.requestStart();
@@ -354,7 +354,7 @@ public class MongoRecords implements NoSQLRecords {
       db.requestDone();
     }
   }
-  
+
   @Override
   public void removeEntireRecord(String collectionName, String guid) throws FailedDBOperationException {
     String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -367,7 +367,7 @@ public class MongoRecords implements NoSQLRecords {
               "Original mongo exception:" + e.getMessage());
     }
   }
-  
+
   @Override
   public void updateEntireRecord(String collectionName, String guid, ValuesMap valuesMap)
           throws FailedDBOperationException {
@@ -403,7 +403,7 @@ public class MongoRecords implements NoSQLRecords {
     // Maybe check the result?
     BulkWriteResult result = unordered.execute();
   }
-  
+
   @Override
   public void updateIndividualFields(String collectionName, String guid,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
@@ -430,7 +430,7 @@ public class MongoRecords implements NoSQLRecords {
     }
     doUpdate(collectionName, guid, updates);
   }
-  
+
   private void doUpdate(String collectionName, String guid, BasicDBObject updates)
           throws FailedDBOperationException {
     String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -462,16 +462,16 @@ public class MongoRecords implements NoSQLRecords {
       return JSON.parse(object.toString());
     }
   }
-  
+
   @Override
   public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
           throws FailedDBOperationException {
     String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
     DBCollection collection = db.getCollection(collectionName);
     BasicDBObject query = new BasicDBObject(primaryKey, name);
-    
+
     BasicDBObject updates = new BasicDBObject();
-    
+
     if (mapField != null && mapKeys != null) {
       for (int i = 0; i < mapKeys.size(); i++) {
         String fieldName = mapField.getName() + "." + mapKeys.get(i).getName();
@@ -506,7 +506,7 @@ public class MongoRecords implements NoSQLRecords {
           throws FailedDBOperationException {
     return selectRecords(collectionName, valuesMapField, key, value, false);
   }
-  
+
   private MongoRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value,
           boolean explain) throws FailedDBOperationException {
     db.requestEnsureConnection();
@@ -536,18 +536,18 @@ public class MongoRecords implements NoSQLRecords {
     }
     return new MongoRecordCursor(cursor, mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey());
   }
-  
+
   @Override
   public MongoRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value)
           throws FailedDBOperationException {
     return selectRecordsWithin(collectionName, valuesMapField, key, value, false);
   }
-  
+
   private MongoRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value, boolean explain)
           throws FailedDBOperationException {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
-    
+
     BasicDBList box = parseJSONArrayLocationStringIntoDBList(value);
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject shapeClause = new BasicDBObject("$box", box);
@@ -565,7 +565,7 @@ public class MongoRecords implements NoSQLRecords {
     }
     return new MongoRecordCursor(cursor, mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey());
   }
-  
+
   private BasicDBList parseJSONArrayLocationStringIntoDBList(String string) {
     BasicDBList box1 = new BasicDBList();
     BasicDBList box2 = new BasicDBList();
@@ -583,7 +583,7 @@ public class MongoRecords implements NoSQLRecords {
     }
     return box;
   }
-  
+
   private final static double METERS_PER_DEGREE = 111.12 * 1000; // at the equator
 
   @Override
@@ -591,12 +591,12 @@ public class MongoRecords implements NoSQLRecords {
           Double maxDistance) throws FailedDBOperationException {
     return selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance, false);
   }
-  
+
   private MongoRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value,
           Double maxDistance, boolean explain) throws FailedDBOperationException {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
-    
+
     double maxDistanceInRadians = maxDistance / METERS_PER_DEGREE;
     BasicDBList tuple = new BasicDBList();
     try {
@@ -621,20 +621,24 @@ public class MongoRecords implements NoSQLRecords {
     }
     return new MongoRecordCursor(cursor, mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey());
   }
-  
+
   @Override
   public MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField,
           String query, List<String> projection) throws FailedDBOperationException {
     return selectRecordsQuery(collectionName, valuesMapField, query, projection, false);
   }
-  
+
   private MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField,
           String query, List<String> projection, boolean explain) throws FailedDBOperationException {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
     DBCursor cursor = null;
     try {
-      if (projection == null) {
+      if (projection == null
+              // this handles the special case of the user wanting all fields 
+              // in the projection
+              || (!projection.isEmpty()
+              && projection.get(0).equals(GNSProtocol.ENTIRE_RECORD.toString()))) {
         cursor = collection.find(parseMongoQuery(query, valuesMapField));
       } else {
         cursor = collection.find(parseMongoQuery(query, valuesMapField), generateProjection(projection));
@@ -648,7 +652,7 @@ public class MongoRecords implements NoSQLRecords {
     }
     return new MongoRecordCursor(cursor, mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey());
   }
-  
+
   private DBObject parseMongoQuery(String query, ColumnField valuesMapField) {
     // convert something like this: ~fred : ($gt: 0) into the queryable 
     // format, namely this: {~nr_valuesMap.fred : ($gt: 0)}
@@ -664,7 +668,7 @@ public class MongoRecords implements NoSQLRecords {
     DBObject parse = (DBObject) JSON.parse(edittedQuery);
     return parse;
   }
-  
+
   public static String buildAndQuery(String... querys) {
     StringBuilder result = new StringBuilder();
     result.append("{$and: [");
@@ -677,7 +681,7 @@ public class MongoRecords implements NoSQLRecords {
     result.append("]}");
     return result.toString();
   }
-  
+
   private DBObject generateProjection(List<String> fields) {
     // produces { field1: true, field2: true ... }
     DBObject result = new BasicDBObject();
@@ -690,12 +694,12 @@ public class MongoRecords implements NoSQLRecords {
     }
     return result;
   }
-  
+
   @Override
   public MongoRecordCursor getAllRowsIterator(String collectionName) throws FailedDBOperationException {
     return new MongoRecordCursor(db, collectionName, mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey());
   }
-  
+
   @Override
   public void printAllEntries(String collectionName) throws FailedDBOperationException {
     MongoRecordCursor cursor = getAllRowsIterator(collectionName);
@@ -703,7 +707,7 @@ public class MongoRecords implements NoSQLRecords {
       System.out.println(cursor.nextJSONObject());
     }
   }
-  
+
   @Override
   public String toString() {
     return "DB " + dbName;
@@ -733,19 +737,19 @@ public class MongoRecords implements NoSQLRecords {
     }
     String dbName = DBROOTNAME + sanitizeDBName(nodeID);
     mongoClient.dropDatabase(dbName);
-    
+
     List<String> names = mongoClient.getDatabaseNames();
     for (String name : names) {
       if (name.startsWith(dbName)) {
         mongoClient.dropDatabase(name);
       }
     }
-    
+
     System.out.println("Dropped DB " + dbName);
   }
-  
+
   private static String sanitizeDBName(String nodeID) {
     return nodeID.replace('.', '_');
   }
-  
+
 }

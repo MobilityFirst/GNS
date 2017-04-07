@@ -329,7 +329,7 @@ public class SelectTest extends DefaultGNSTest {
    * Check a query select with unreadable fields
    */
   @Test
-  public void test_56_QuerySelectWorldNotReadable() {
+  public void test_55_QuerySelectWorldNotReadable() {
     String fieldName = "testQueryWorldNotReadable";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
@@ -358,12 +358,12 @@ public class SelectTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception executing selectQuery: " + e);
     }
   }
-  
+
   /**
-   * Check a query select with a reader
+   * Check a query select with a projection
    */
   @Test
-  public void test_58_QuerySelectwithProjection() {
+  public void test_57_QuerySelectwithProjection() {
     String fieldName = "testQueryProjection";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
@@ -372,17 +372,76 @@ public class SelectTest extends DefaultGNSTest {
         clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
                 GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
         createdGuids.add(testEntry); // save them so we can delete them later
-        JSONArray array = new JSONArray(Arrays.asList(25));
-        clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
+         JSONObject json = new JSONObject();
+        json.put(fieldName, Arrays.asList(25));
+        json.put("field1", "value1");
+        clientCommands.update(testEntry.getGuid(), json, testEntry);
       }
       waitSettle(100);
-    } catch (ClientException | IOException e) {
+    } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
 
     try {
       String query = "~" + fieldName + " : ($gt: 0)";
-      JSONArray result = clientCommands.selectQueryProjection(masterGuid, query, Arrays.asList(fieldName));
+      JSONArray result = clientCommands.selectRecords(masterGuid, query, Arrays.asList(fieldName));
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing selectNear: " + e);
+    }
+
+    try {
+
+      JSONArray rect = new JSONArray();
+      JSONArray upperLeft = new JSONArray();
+      upperLeft.put(1.0);
+      upperLeft.put(1.0);
+      JSONArray lowerRight = new JSONArray();
+      lowerRight.put(-1.0);
+      lowerRight.put(-1.0);
+      rect.put(upperLeft);
+      rect.put(lowerRight);
+      JSONArray result = clientCommands.selectWithin(masterGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
+      // best we can do should be at least 5, but possibly more objects in results
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (JSONException | ClientException | IOException e) {
+      Utils.failWithStackTrace("Exception executing selectWithin: " + e);
+    }
+  }
+
+  /**
+   * Check a query select with a projection of all fields
+   */
+  @Test
+  public void test_58_QuerySelectwithProjectionAll() {
+    String fieldName = "testQueryProjectionAll";
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
+        // Remove default all fields / all guids ACL;
+        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
+                GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+        createdGuids.add(testEntry); // save them so we can delete them later
+        JSONObject json = new JSONObject();
+        json.put(fieldName, Arrays.asList(25));
+        json.put("field1", "value1");
+        JSONObject subJson = new JSONObject();
+        subJson.put("subfield", "subvalue1");
+        json.put("nested", subJson);
+        clientCommands.update(testEntry.getGuid(), json, testEntry);
+      }
+      waitSettle(100);
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
+    }
+
+    try {
+      String query = "~" + fieldName + " : ($gt: 0)";
+      JSONArray result = clientCommands.selectRecords(masterGuid, query, null);
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }

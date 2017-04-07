@@ -1572,8 +1572,13 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * Selects all guid records that match {@code query}. The result type of the
-   * execution result of this query is {@link CommandResultType#LIST}.
+   * Selects all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records. {@code null}
+   * means return all fields.
+   * 
+   * The result type of the execution result of this query 
+   * is {@link CommandResultType#LIST}.
    * Requires all fields accessed to be world readable.
    *
    * The query syntax is described here:
@@ -1593,16 +1598,18 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket selectQueryProjection(String query, List<String> fields)
+  public static final CommandPacket selectRecords(String query, List<String> fields)
           throws ClientException {
     return getCommand(CommandType.SelectQuery,
             GNSProtocol.QUERY.toString(), query,
-            GNSProtocol.FIELDS.toString(), fields);
+            GNSProtocol.FIELDS.toString(), fields == null ? GNSProtocol.ENTIRE_RECORD : fields);
   }
 
   /**
-   * Selects all guid records that match {@code query}. The result type of the
-   * execution result of this query is {@link CommandResultType#LIST}.
+   * Selects all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records. {@code null}
+   * means return all fields.
    *
    * The query syntax is described here:
    * https://gns.name/wiki/index.php?title=Query_Syntax
@@ -1622,12 +1629,12 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket selectQueryProjection(GuidEntry reader, String query, List<String> fields)
+  public static final CommandPacket selectRecords(GuidEntry reader, String query, List<String> fields)
           throws ClientException {
     return getCommand(CommandType.SelectQuery, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.QUERY.toString(), query,
-            GNSProtocol.FIELDS.toString(), fields
+            GNSProtocol.FIELDS.toString(), fields == null ? GNSProtocol.ENTIRE_RECORD : fields
     );
   }
 

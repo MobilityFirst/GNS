@@ -417,8 +417,12 @@ public class GNSClientCommands extends GNSClient {
   }
   
   /**
-   * Selects all records that match query. Returns the result of the query as
-   * a JSONArray of guids. Requires that all fields accessed be world readable.
+   * Returns a list of all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records. {@code null}
+   * means return all fields.
+   * 
+   * Requires that all fields accessed be world readable.
    *
    * The query syntax is described here:
    * https://gns.name/wiki/index.php?title=Query_Syntax
@@ -441,13 +445,15 @@ public class GNSClientCommands extends GNSClient {
    * @throws java.io.IOException
    * if a communication error occurs
    */
-  public JSONArray selectQueryProjection(String query, List<String> fields) throws ClientException, IOException {
-    return execute(GNSCommand.selectQueryProjection(query, fields)).getResultJSONArray();
+  public JSONArray selectRecords(String query, List<String> fields) throws ClientException, IOException {
+    return execute(GNSCommand.selectRecords(query, fields)).getResultJSONArray();
   }
 
   /**
-   * Selects all records that match query. Returns the result of the query as
-   * a JSONArray of guids.
+   * Returns a list of all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records.{@code null}
+   * means return all fields.
    *
    * The query syntax is described here:
    * https://gns.name/wiki/index.php?title=Query_Syntax
@@ -471,8 +477,8 @@ public class GNSClientCommands extends GNSClient {
    * @throws java.io.IOException
    * if a communication error occurs
    */
-  public JSONArray selectQueryProjection(GuidEntry reader, String query, List<String> fields) throws ClientException, IOException {
-    return execute(GNSCommand.selectQueryProjection(reader, query, fields)).getResultJSONArray();
+  public JSONArray selectRecords(GuidEntry reader, String query, List<String> fields) throws ClientException, IOException {
+    return execute(GNSCommand.selectRecords(reader, query, fields)).getResultJSONArray();
   }
 
   /**
