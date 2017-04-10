@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -412,7 +411,7 @@ public class GroupAccess {
     }
   }
 
-  public static final boolean DO_IT_IN_PARALLEL = true;
+  public static final boolean DO_IT_IN_PARALLEL = false;
 
   /**
    * Removes all group links back to the guid when we're deleting a guid.
