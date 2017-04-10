@@ -687,8 +687,9 @@ public class MongoRecords implements NoSQLRecords {
     DBObject result = new BasicDBObject();
     // Always return the guid
     result.put(NameRecord.NAME.getName(), "true");
-    // This is the receiver knows it is a guid record
+    // Put this in so the upstream receiver knows that it is a GUID record
     result.put(NameRecord.VALUES_MAP.getName() + "." + AccountAccess.GUID_INFO, "true");
+    // Add all the fields in the projection
     for (String field : fields) {
       result.put(NameRecord.VALUES_MAP.getName() + "." + field, "true");
     }

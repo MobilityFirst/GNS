@@ -1,9 +1,5 @@
 package edu.umass.cs.gnsclient.client.testing.activecode;
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,10 +18,6 @@ import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 

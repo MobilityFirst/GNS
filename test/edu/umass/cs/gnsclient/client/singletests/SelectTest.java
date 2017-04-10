@@ -166,20 +166,6 @@ public class SelectTest extends DefaultGNSTest {
     }
   }
 
-//  /**
-//   * Check the basic field select command with world readable records
-//   */
-//  @Test
-//  public void test_31_BasicSelectWorldReadable() {
-//    try {
-//      JSONArray result = clientCommands.select("cats", "fred");
-//      // best we can do since there will be one, but possibly more objects in results
-//      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
-//    } catch (ClientException | IOException e) {
-//      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
-//    }
-//  }
-
   /**
    * Check a near and within commands
    */

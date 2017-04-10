@@ -1594,7 +1594,7 @@ public class GNSCommand extends CommandPacket {
    *
    * @param query
    * The select query being issued.
-   * @param fields
+   * @param fields A list of fields or null meaning all fields
    * @return CommandPacket
    * @throws ClientException
    */
@@ -1625,7 +1625,7 @@ public class GNSCommand extends CommandPacket {
    * @param reader
    * @param query
    * The select query being issued.
-   * @param fields
+   * @param fields A list of fields or null meaning all fields
    * @return CommandPacket
    * @throws ClientException
    */

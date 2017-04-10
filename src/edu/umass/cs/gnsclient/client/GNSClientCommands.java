@@ -438,7 +438,7 @@ public class GNSClientCommands extends GNSClient {
    *
    * @param query
    * - the query
-   * @param fields
+   * @param fields A list of fields or null meaning all fields
    * @return - a JSONArray of guids
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * if a protocol error occurs or the list cannot be parsed
@@ -470,7 +470,7 @@ public class GNSClientCommands extends GNSClient {
    * @param reader
    * @param query
    * - the query
-   * @param fields
+   * @param fields A list of fields or null meaning all fields
    * @return - a JSONArray of guids
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * if a protocol error occurs or the list cannot be parsed
