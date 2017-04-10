@@ -129,10 +129,10 @@ public class ActiveCodeTest extends DefaultGNSTest {
       System.out.println("Active code is disabled!");
       return;
     }
-    byte[] readcode = null;
+    String readcode = null;
     try {
       // read in the code as a string
-      readcode = Files.readAllBytes(Paths.get("scripts/activeCode/testing/readTest.js"));
+      readcode = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/readTest.js")));
     } catch (IOException e) {
       Utils.failWithStackTrace("Exception reading code file: " + e);
     }
@@ -193,10 +193,10 @@ public class ActiveCodeTest extends DefaultGNSTest {
       System.out.println("Active code is disabled!");
       return;
     }
-    byte[] writecode = null;
+    String writecode = null;
     try {
       // read in the code as a string
-      writecode = Files.readAllBytes(Paths.get("scripts/activeCode/testing/writeTest.js"));
+      writecode = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/writeTest.js")));
     } catch (IOException e) {
       Utils.failWithStackTrace("Exception reading code file: " + e);
     }
@@ -274,10 +274,10 @@ public class ActiveCodeTest extends DefaultGNSTest {
       System.out.println("Active code is disabled!");
       return;
     }
-    byte[] writecode = null;
+    String writecode = null;
     try {
       // read in the code as a string
-      writecode = Files.readAllBytes(Paths.get("scripts/activeCode/testing/writeFromReadGuidTest.js"));
+      writecode = new String(Files.readAllBytes(Paths.get("scripts/activeCode/testing/writeFromReadGuidTest.js")));
     } catch (IOException e) {
       Utils.failWithStackTrace("Exception reading code file: " + e);
     }
