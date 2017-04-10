@@ -45,6 +45,8 @@ public class NSSelectInfo {
   private final SelectGroupBehavior groupBehavior;
   private final String guid; // the group GUID we are maintaining or null for simple select
   private final String query; // The string used to set up the query if applicable
+  // The list of fields to return. 
+  // Null means return GUIDS instead of whole records (old style select).
   private final List<String> projection;
   private final int minRefreshInterval; // in seconds
 
@@ -170,7 +172,10 @@ public class NSSelectInfo {
   }
 
   /**
-   *
+   * Return the projection which is a list of fields.
+   * Null means that select should return a list of guids instead
+   * of records (old-style).
+   * 
    * @return the projection
    */
   public List<String> getProjection() {

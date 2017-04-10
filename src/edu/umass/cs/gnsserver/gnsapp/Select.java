@@ -87,8 +87,8 @@ import java.util.regex.Pattern;
  * SelectQuery can be used two ways. The older style is that it returns a
  * list of GUIDS. The newer style is that it returns entire records or
  * subsets of the fields in records. The guid of the record is returned
- * in the using the special "_GUID" key.
- * The behavior SelectQuery of is controlled by the
+ * using the special "_GUID" key.
+ * The behavior of SelectQuery is controlled by the
  * field (or projection) parameter. In this code if it is null that means
  * old style.
  *
@@ -457,10 +457,11 @@ public class Select {
             new Object[]{replica.getNodeID(), guids});
 
     SelectResponsePacket response;
+    // If projection is null we return guids (old-style).
     if (info.getProjection() == null) {
-
       response = SelectResponsePacket.makeSuccessPacketForGuidsOnly(packet.getId(),
               null, -1, null, new JSONArray(guids));
+      // Otherwise we return a list of records.
     } else {
       List<JSONObject> records = filterAndMassageRecords(allRecords);
       LOGGER.log(Level.FINE,

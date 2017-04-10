@@ -38,6 +38,9 @@ import org.json.JSONObject;
 
 /**
  * A query that returns all guids that satisfy the given query.
+ * This supports an older style that returns only GUIDs 
+ * as well as newer SelectRecords calls that return entire records
+ * or partial records based on the value of the FIELDS parameter.
  *
  * @author westy
  */
