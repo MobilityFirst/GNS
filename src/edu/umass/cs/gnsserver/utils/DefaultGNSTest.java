@@ -30,6 +30,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import edu.umass.cs.utils.UtilServer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -279,7 +280,7 @@ public class DefaultGNSTest extends DefaultTest {
 			numServersUp = 0;
 			for (File f : files) {
                            if (!f.isDirectory()) {
-				numServersUp += Util.readFileAsString(f.getAbsolutePath())
+				numServersUp += UtilServer.readFileAsString(f.getAbsolutePath())
 						.contains("server ready") ? 1 : 0;
                            }
                         }

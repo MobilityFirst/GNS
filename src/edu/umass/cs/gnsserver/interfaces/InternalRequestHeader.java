@@ -18,7 +18,7 @@ public interface InternalRequestHeader {
 	/**
 	 * The default number of TTL hops.
 	 */
-	public static final int DEFAULT_TTL = 5;
+	public static final int DEFAULT_TTL = 10;
 
 	/**
 	 * @return The request ID corresponding to the request that originated the
@@ -76,5 +76,12 @@ public interface InternalRequestHeader {
 	 */
 	default boolean verifyInternal() {
 		return false;
-	}	
+	}
+	
+	/**
+	 * @return source IP address
+	 */
+	default String getSourceAddress() {
+		return null;
+	}
 }

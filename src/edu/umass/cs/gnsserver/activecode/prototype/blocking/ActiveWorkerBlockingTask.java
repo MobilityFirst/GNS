@@ -8,6 +8,8 @@ import javax.script.ScriptException;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 
 /**
+ * The task to execute requests by calling ActiveRunner's runCode method.
+ * 
  * @author gaozy
  *
  */
@@ -29,6 +31,7 @@ public class ActiveWorkerBlockingTask implements Callable<ActiveMessage> {
 					runner.runCode(request.getGuid(), request.getAccessor(), request.getCode(), request.getValue(), request.getTtl(), request.getId()),
 					null);
 		} catch (NoSuchMethodException | ScriptException e) {
+			e.printStackTrace();
 			ActiveBlockingWorker.getLogger().log(Level.FINE, 
 					"get an exception {0} when executing request {1} with code {2}", 
 					new Object[]{e, request, request.getCode()});
