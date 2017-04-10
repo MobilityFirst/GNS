@@ -240,7 +240,11 @@ public class ActiveCodeHandler {
 			}
         }
         // Run code
+<<<<<<< HEAD
         newResult = runCode(header, code, guid, accessorGuid, action, value, header.getTTL());
+=======
+        newResult = runCode(header, code, guid, accessorGuid, action, value, 5);
+>>>>>>> upstream/master
         
         // Strip the appended fields
         if(newResult.has(SOURCE_IP_FIELD)){

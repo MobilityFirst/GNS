@@ -60,8 +60,7 @@ public class ActiveNonBlockingQuerier implements Querier,DNSQuerier {
 	@Override
 	public ScriptObjectMirror readGuid(String queriedFields, String queriedGuid) throws ActiveException{
 		if(currentTTL <=0)
-			throw new ActiveException(); //"Out of query limit"
-		//String queriedFields = js2String(field);		
+			throw new ActiveException(); //"Out of query limit"	
 		if(queriedGuid==null)
 			return string2JS(readValueFromField(currentGuid, currentGuid, queriedFields, currentTTL));
 		return string2JS(readValueFromField(currentGuid, queriedGuid, queriedFields, currentTTL));
