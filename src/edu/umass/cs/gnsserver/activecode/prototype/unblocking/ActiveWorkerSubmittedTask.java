@@ -44,7 +44,6 @@ public class ActiveWorkerSubmittedTask implements Runnable {
 		try {
 			response = future.get(timeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			e.printStackTrace();
 			// return an error
 			response = new ActiveMessage(request.getId(), null, e.getMessage());
 			ActiveNonBlockingWorker.getLogger().log(Level.FINE, 
