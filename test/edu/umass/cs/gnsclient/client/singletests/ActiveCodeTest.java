@@ -324,4 +324,23 @@ public class ActiveCodeTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception reading field: " + e);
     }
   }
+  
+  /**
+  *
+  */
+ @Test
+ public void test_150_ActiveCodeClearCodeAgain() {
+   if (Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)) {
+     System.out.println("Active code is disabled!");
+     return;
+   }
+   try {
+	 // Don't forget to clean up the code again
+     // clear code for both read and write action
+     clientCommands.activeCodeClear(masterGuid.getGuid(), ActiveCode.READ_ACTION, masterGuid);
+     clientCommands.activeCodeClear(masterGuid.getGuid(), ActiveCode.WRITE_ACTION, masterGuid);
+   } catch (ClientException | IOException e) {
+     Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
+   }
+ }
 }
