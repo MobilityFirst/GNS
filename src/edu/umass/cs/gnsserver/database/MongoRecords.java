@@ -623,16 +623,26 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) throws FailedDBOperationException {
-    return selectRecordsQuery(collectionName, valuesMapField, query, false);
+  public MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField,
+          String query, List<String> projection) throws FailedDBOperationException {
+    return selectRecordsQuery(collectionName, valuesMapField, query, projection, false);
   }
 
-  private MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query, boolean explain) throws FailedDBOperationException {
+  private MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField,
+          String query, List<String> projection, boolean explain) throws FailedDBOperationException {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
     DBCursor cursor = null;
     try {
-      cursor = collection.find(parseMongoQuery(query, valuesMapField));
+      if (projection == null
+              // this handles the special case of the user wanting all fields 
+              // in the projection
+              || (!projection.isEmpty()
+              && projection.get(0).equals(GNSProtocol.ENTIRE_RECORD.toString()))) {
+        cursor = collection.find(parseMongoQuery(query, valuesMapField));
+      } else {
+        cursor = collection.find(parseMongoQuery(query, valuesMapField), generateProjection(projection));
+      }
     } catch (MongoException e) {
       throw new FailedDBOperationException(collectionName, query,
               "Original mongo exception:" + e.getMessage());
@@ -658,7 +668,7 @@ public class MongoRecords implements NoSQLRecords {
     DBObject parse = (DBObject) JSON.parse(edittedQuery);
     return parse;
   }
-  
+
   public static String buildAndQuery(String... querys) {
     StringBuilder result = new StringBuilder();
     result.append("{$and: [");
@@ -670,6 +680,20 @@ public class MongoRecords implements NoSQLRecords {
     }
     result.append("]}");
     return result.toString();
+  }
+
+  private DBObject generateProjection(List<String> fields) {
+    // produces { field1: true, field2: true ... }
+    DBObject result = new BasicDBObject();
+    // Always return the guid
+    result.put(NameRecord.NAME.getName(), "true");
+    // Put this in so the upstream receiver knows that it is a GUID record
+    result.put(NameRecord.VALUES_MAP.getName() + "." + AccountAccess.GUID_INFO, "true");
+    // Add all the fields in the projection
+    for (String field : fields) {
+      result.put(NameRecord.VALUES_MAP.getName() + "." + field, "true");
+    }
+    return result;
   }
 
   @Override

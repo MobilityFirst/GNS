@@ -21,6 +21,7 @@ import edu.umass.cs.utils.DiskMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -380,9 +381,11 @@ public class DiskMapRecords implements NoSQLRecords {
   }
 
   @Override
-  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query) throws FailedDBOperationException {
+  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, 
+          String query, List<String> projection) throws FailedDBOperationException {
     getMap(collection).commit();
-    return getMongoRecords(collection).selectRecordsQuery(MongoRecords.DBNAMERECORD, valuesMapField, query);
+    return getMongoRecords(collection).selectRecordsQuery(MongoRecords.DBNAMERECORD, valuesMapField, 
+            query, projection);
   }
 
   @Override
