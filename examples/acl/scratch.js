@@ -153,54 +153,6 @@
 // });
 // });
 
-
-// $("#request_send_8").click(function() {
-
-// var jsonObject = {};
-// jsonObject["COMMANDINT"] = 518;
-// jsonObject["field"] = "+ALL+";
-// // jsonObject["field"] = "occupation";
-// // jsonObject["field"] = "location";
-// // jsonObject["field"] = "name";
-
-// jsonObject["guid"] = guid; // target guid - user@gns.name 
-// jsonObject["aclType"] = "READ_WHITELIST"; // querier guid -- reader@gns.name
-// // jsonObject["reader"] = reader; // querier guid -- reader@gns.name
-// // jsonObject["seqnum"] = randomString(32); // insert random request nonce
-// now = moment().utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"; // require the format: "2017-03-28T14:35:24Z";
-// jsonObject["timestamp"] = now;
-// var message = JSON.stringify(jsonObject);
-// var sig = new KJUR.crypto.Signature({"alg": "SHA1withRSA"});
-// // initialize for signature generation
-// sig.init(account_key);   // rsaPrivateKey of RSAKey object
-// // update data
-// sig.updateString(message);
-// // calculate signature
-// var sigValueHex = sig.sign();
-
-// sigValueHex = sigValueHex.toUpperCase();
-// jsonObject["signature"]=btoa(sigValueHex);
-// console.log(jsonObject);
-//   $.ajax({
-//     url: "http://localhost:24703/GNS/fieldaclexists",
-//     cache:true,
-//     jsonp: false,
-//     data: jsonObject,
-//     type: 'GET',
-//     crossDomain: true,
-//     dataType: 'text',
-//     // jsonpCallback:"logResults",
-//     success: function(response) {
-//         alert(response);
-//         return response;        
-//       },
-//       error: function(response) {
-//         alert(JSON.stringify(response));
-//         // console.log(response);
-//       }
-// });
-// });
-
 // $("#request_send_9").click(function() {
 
 // var jsonObject = {};
