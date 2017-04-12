@@ -435,7 +435,7 @@ public class GNSClient {
 			CommandPacket commandPacket, Request response) {
           GNSClientConfig.getLogger().log(
 			Level.INFO,
-			"Handle reponse {0} for request {1}",
+			"Handle response {0} for request {1}",
 			new Object[] {response.getSummary(), commandPacket.getSummary()});
 		return PacketUtils.setResult(commandPacket, defaultHandleResponse(response));
 	}

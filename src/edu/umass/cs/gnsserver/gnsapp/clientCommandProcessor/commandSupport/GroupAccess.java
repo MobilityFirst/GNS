@@ -411,7 +411,7 @@ public class GroupAccess {
     }
   }
 
-  public static final boolean DO_IT_IN_PARALLEL = false;
+  public static final boolean DO_IT_IN_PARALLEL = true;
 
   /**
    * Removes all group links back to the guid when we're deleting a guid.
@@ -467,6 +467,8 @@ public class GroupAccess {
       return ResponseCode.UPDATE_ERROR;
     }
   }
+  
+  private final static int N_AT_A_TIME = 1;
 
   private static ResponseCode removeGuidFromGroupsInParallel(InternalRequestHeader header, CommandPacket commandPacket,
           String memberGuid, ClientRequestHandlerInterface handler)
@@ -481,8 +483,8 @@ public class GroupAccess {
               null, null,
               null, handler, true).toStringSet());
       // do 10 at a time
-      for (List<String> groupGuids : ListUtils.partition(allGroupGuids, 10)) {
-        LOGGER.log(Level.INFO, "Doing first 10: {0}", groupGuids.toString());
+      for (List<String> groupGuids : ListUtils.partition(allGroupGuids, N_AT_A_TIME)) {
+        LOGGER.log(Level.INFO, "Doing first {0}: {1}", new Object[]{N_AT_A_TIME, groupGuids.toString()});
         List<RequestFuture<CommandPacket>> futures = new ArrayList<>();
         // We're ignoring signatures and authentication
         for (String groupGuid : groupGuids) {
