@@ -1,4 +1,7 @@
 .DS_Store
+.idea/
+code2.2.iml
+hs_err_pid51261.log
 build.number
 /nbproject/private/
 /build/
