@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
@@ -33,7 +33,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
@@ -86,25 +85,19 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
     /**
      * check if certificate is self signed
      *
-     * @param cert
+     * @param cert candidate certificate for checking
      * @return true/false
-     * @throws CertificateException
-     * @throws NoSuchProviderException
-     * @throws NoSuchAlgorithmException
+     * @throws GeneralSecurityException general security exception
      */
 
-    private Boolean checkSelfSigned(X509Certificate cert)  throws  CertificateException, NoSuchProviderException, NoSuchAlgorithmException{
+    private Boolean checkSelfSigned(X509Certificate cert) throws GeneralSecurityException{
         try {
             // Try to verify certificate signature with its own public key
-           // LOG.log(Level.FINEST, cert.getIssuerDN().getName());
             PublicKey key = cert.getPublicKey();
             cert.verify(key);
             return true;
-        } catch (SignatureException sigEx) {
-            // Invalid signature --> not self-signed
-            return false;
-        } catch (InvalidKeyException keyEx) {
-            // Invalid key --> not self-signed
+        } catch (SignatureException | InvalidKeyException e) {
+            // Invalid signature/key --> not self-signed
             return false;
         }
     }
@@ -112,8 +105,8 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
     /**
      * Helper function to load certificates from trust store
      * @return trustedCerts
-     * @throws IOException
-     * @throws GeneralSecurityException
+     * @throws IOException if trust file is not found
+     * @throws GeneralSecurityException general security exception
      */
 
     private Set<X509Certificate> loadCertificatesFromTrustStore() throws IOException, GeneralSecurityException{
@@ -140,17 +133,15 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
      * helper function to construct the chain using trsuter certs and intermediate
      * return true if we are able to construct path else returns false
      *
-     * @param cert
-     * @param trustedRootCerts
-     * @param intermediateCerts
+     * @param cert candidate for building path
+     * @param trustedRootCerts set of trusted roots
+     * @param intermediateCerts set of intermediate roots
      * @return 0/1
-     * @throws GeneralSecurityException
+     * @throws GeneralSecurityException general security exception
      */
 
     private static Boolean verifyCertificatePath(X509Certificate cert, Set<X509Certificate> trustedRootCerts,
                                                                Set<X509Certificate> intermediateCerts) throws GeneralSecurityException {
-
-        LOG.log(Level.FINEST, "RegisterAccountWithCertificate inside building path");
 
         // Create the selector that specifies the starting certificate
         X509CertSelector selector = new X509CertSelector();
@@ -166,7 +157,8 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
         PKIXBuilderParameters pkixParams =
                 new PKIXBuilderParameters(trustAnchors, selector);
 
-        // Disable CRL checks
+        // Disable CRL checks since certificate currently generated do not have crl distribution points
+        // TODO: Add support for crls
         pkixParams.setRevocationEnabled(false);
 
         // Specify a list of intermediate certificates
@@ -193,18 +185,17 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
     /**
      * Function to verify trust parameters of the certificate
      *
-     * @param cert
-     * @return
-     * @throws IOException
-     * @throws GeneralSecurityException
+     * @param cert candidate certificate for verification
+     * @return 0/1
+     * @throws IOException if keystore file is not found
+     * @throws GeneralSecurityException general security sxception
      */
     private Boolean verify_certificate_trust(X509Certificate cert)
             throws IOException, GeneralSecurityException {
         // check if certificate is self signed if yes return false
 
-        LOG.log(Level.FINEST, "RegisterAccountWithCertificate inside certificate trust");
         if ( checkSelfSigned(cert)) {
-            // TODO log this self certified certificate event
+            LOG.log(Level.FINEST, "Given certificate was self signed");
             return false;
         }
 
@@ -217,11 +208,9 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
         Set<X509Certificate> trustedRootCerts = new HashSet<X509Certificate>();
         Set<X509Certificate> intermediateCerts = new HashSet<X509Certificate>();
 
-        LOG.log(Level.FINEST, "RegisterAccountWithCertificate iterating certificates");
-        int list_count = 0;
+
         for (X509Certificate additionalCert : trustedCerts) {
-            LOG.log(Level.FINEST, "listcount" + String.valueOf(list_count));
-            list_count++;
+            // if a certificate is in trustStore and selfsigned then it is trusted root or else intermediate
             if (checkSelfSigned(additionalCert)) {
                 trustedRootCerts.add(additionalCert);
             } else {
@@ -237,14 +226,18 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
     /**
      *  Function to verify validity of the certificate
      *
-     *  @param cert
+     *  @param cert candidate certificate for verification
      *
      *  @return 0/1
      */
 
     private Boolean verify_certificate_validity(X509Certificate cert){
-
-        return Boolean.TRUE;
+        try {
+            cert.checkValidity();
+            return true;
+        }catch (CertificateExpiredException | CertificateNotYetValidException e) {
+            return false;
+        }
     }
 
 
@@ -258,8 +251,6 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
    */
   private Boolean verify_certificate_name(String name, X509Certificate cert) {
       String name_in_certificate = SharedGuidUtils.getNameFromCertificate(cert);
-      System.out.println("Name in certificate" + name_in_certificate);
-      System.out.println("Name given by GNS client" + name);
       return name_in_certificate.equals(name);
   }
 
@@ -286,6 +277,10 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
 
         String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKeyString);
 
+        if (!NSAccessSupport.verifySignature(publicKeyString, signature, message)) {
+            return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString()
+                    + " " + GNSProtocol.BAD_SIGNATURE.toString());
+        }
 
         if(!verify_certificate_name(name, cert)) {
             // TODO: Log name verification failure
@@ -293,20 +288,11 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
                                         GNSProtocol.NAME_MISMATCH_ERROR.toString());
         }
 
-        LOG.log(Level.FINEST, "RegisterAccountWithCertificate before trust");
-
-        try {
-            if (!verify_certificate_trust(cert)) {
-                //TODO : log certificate trust failure
-                return new CommandResponse(ResponseCode.TRUST_INVALID_CERTIFICATE,
+        if (!verify_certificate_trust(cert)) {
+            //TODO : log certificate trust failure
+            return new CommandResponse(ResponseCode.TRUST_INVALID_CERTIFICATE,
                                         GNSProtocol.TRUST_INVALID_ERROR.toString());
-            }
-        } catch(GeneralSecurityException e){
-            // TODO: log this exception
-            return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString()
-                                        + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
         }
-
 
         if(!verify_certificate_validity(cert)) {
             //TODO : log certificate validity failure
@@ -314,11 +300,6 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
                                         GNSProtocol.TIME_INVALID_ERROR.toString());
         }
 
-
-        if (!NSAccessSupport.verifySignature(publicKeyString, signature, message)) {
-        return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString()
-                                        + " " + GNSProtocol.BAD_SIGNATURE.toString());
-        }
         
         CommandResponse result = AccountAccess.addAccount(header, commandPacket,
                 handler.getHttpServerHostPortString(),
@@ -334,7 +315,7 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
             // Otherwise return the error response.
             return result;
         }
-    } catch (ClientException | IOException |CertificateException e) {
+    } catch (ClientException | IOException | GeneralSecurityException e) {
       return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
                                         + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
     }
