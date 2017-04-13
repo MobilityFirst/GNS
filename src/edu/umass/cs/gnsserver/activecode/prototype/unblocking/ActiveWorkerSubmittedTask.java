@@ -8,12 +8,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
-import com.maxmind.geoip2.DatabaseReader;
-
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 
 /**
+ * This class submits a task to a thread pool and time out the task.
+ * If the task is timed out, it gets a TimeoutException and returns
+ * a failure message to the client.
+ * 
  * @author gaozy
  *
  */
@@ -42,7 +44,7 @@ public class ActiveWorkerSubmittedTask implements Runnable {
 		try {
 			response = future.get(timeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			// return an error
 			response = new ActiveMessage(request.getId(), null, e.getMessage());
 			ActiveNonBlockingWorker.getLogger().log(Level.FINE, 

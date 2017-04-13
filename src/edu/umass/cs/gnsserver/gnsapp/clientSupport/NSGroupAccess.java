@@ -30,11 +30,13 @@ import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -66,6 +68,10 @@ public class NSGroupAccess {
    * The field for group query string.
    */
   public static final String GROUP_QUERY_STRING = InternalField.makeInternalFieldString("groupQueryString");
+  /**
+   * The field for group projection string.
+   */
+  public static final String GROUP_PROJECTION_STRING = InternalField.makeInternalFieldString("groupProjectionString");
 
   /**
    * The default interval (in seconds) before which a query will not be refreshed. In other words
@@ -173,15 +179,22 @@ public class NSGroupAccess {
    * @param header
    * @param guid
    * @param queryString
+   * @param projection
    * @param handler
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    * @throws InternalRequestException
    */
-  public static void updateQueryString(InternalRequestHeader header, String guid, String queryString, ClientRequestHandlerInterface handler)
+  public static void updateQueryString(InternalRequestHeader header, String guid,
+          String queryString, List<String> projection, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException, InternalRequestException {
-    handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GROUP_QUERY_STRING, queryString, header));
+    handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GROUP_QUERY_STRING,
+            queryString, header));
+    if (projection != null) {
+      handler.getInternalClient().execute(GNSCommandInternal.fieldUpdate(guid, GROUP_PROJECTION_STRING,
+              new JSONArray(projection).toString(), header));
+    }
   }
 
   /**
@@ -235,6 +248,20 @@ public class NSGroupAccess {
           throws FailedDBOperationException {
     return getGroupFieldAsString(header, guid, GROUP_QUERY_STRING, handler);
   }
+  
+  /**
+   * Returns the query string for this group guid.
+   *
+   * @param header
+   * @param guid
+   * @param handler
+   * @return the query string or null if it can't be found
+   * @throws FailedDBOperationException
+   */
+  public static List<String> getProjection(InternalRequestHeader header, String guid, ClientRequestHandlerInterface handler)
+          throws FailedDBOperationException {
+    return getGroupFieldAsStringList(header, guid, GROUP_PROJECTION_STRING, handler);
+  }
 
   /**
    *
@@ -254,7 +281,32 @@ public class NSGroupAccess {
         // Something simpler here?
         return (String) valuesMap.get(field);
       } catch (JSONException e) {
-        GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing GROUP_QUERY_STRING for {0}: {1}", new Object[]{field, e});
+        GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing string for {0}: {1}", new Object[]{field, e});
+      }
+    }
+    return null;
+  }
+  
+  /**
+   *
+   * @param header
+   * @param guid
+   * @param field
+   * @param handler
+   * @return the field
+   * @throws FailedDBOperationException
+   */
+  public static List<String> getGroupFieldAsStringList(InternalRequestHeader header, String guid, 
+          String field, ClientRequestHandlerInterface handler)
+          throws FailedDBOperationException {
+    ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(header, guid, field, handler.getApp());
+    ClientSupportConfig.getLogger().log(Level.FINE, "++++valuesMap = {0}", valuesMap);
+    if (valuesMap.has(field)) {
+      try {
+        // Something simpler here?
+        return JSONUtils.JSONArrayToArrayListString(valuesMap.getJSONArray(field));
+      } catch (JSONException e) {
+        GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing string list for {0}: {1}", new Object[]{field, e});
       }
     }
     return null;
@@ -279,7 +331,7 @@ public class NSGroupAccess {
         // Something simpler here?
         return (Number) valuesMap.get(field);
       } catch (JSONException e) {
-        GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing GROUP_QUERY_STRING for {0}: {1}", new Object[]{field, e});
+        GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing number for {0}: {1}", new Object[]{field, e});
       }
     }
     return defaultValue;

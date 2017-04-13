@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
+import edu.umass.cs.gnsserver.gnsapp.GNSAppUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -42,7 +43,6 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
-import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -345,9 +345,10 @@ public class GNSClient {
 				response = defaultHandleResponse(this.sendSyncInternal(packet,
 						timeout));
 			} catch (ClientException ce) {
-				if (ce.getCode() == ResponseCode.TIMEOUT)
+				// iOS client doesn't support empty body "if" statements
+				//if (ce.getCode() == ResponseCode.TIMEOUT)
 					// do nothing
-					;
+				//	;
 			}
 		} while ((count++ < this.numRetriesUponTimeout && (response == null || response
 				.getErrorCode() == ResponseCode.TIMEOUT)));
@@ -594,7 +595,7 @@ public class GNSClient {
 		@Override
 		public Request getRequest(byte[] bytes, NIOHeader header)
 				throws RequestParseException {
-			return GNSApp.getRequestStatic(bytes, header, unstringer);
+			return GNSAppUtil.getRequestStatic(bytes, header, unstringer);
 		}
 	} // End of AsyncClient
 

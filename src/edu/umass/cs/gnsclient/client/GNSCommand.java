@@ -16,10 +16,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,9 +32,7 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
@@ -495,22 +490,6 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * Get the public key for {@code alias}.
-   *
-   * @param alias
-   * @return CommandPacket
-   * @throws edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException
-   * @throws ClientException
-   * @throws java.io.IOException
-   */
-  public PublicKey publicKeyLookupFromAlias(String alias)
-          throws InvalidGuidException, ClientException, IOException {
-    throw new RuntimeException("Unimplementable");
-    // String guid = lookupGuid(alias);
-    // return publicKeyLookupFromGuid(guid);
-  }
-
-  /**
    * Get the public key for a given guid.
    *
    * @param targetGUID
@@ -682,7 +661,7 @@ public class GNSCommand extends CommandPacket {
    *
    * The name of the GNS service instance.
    *
-   * @param accountGUID
+   * @param accountGuid
    * The account guid under which the guid is being created.
    * @param alias
    * The alias assigned to the guid being created.
@@ -693,10 +672,16 @@ public class GNSCommand extends CommandPacket {
 //FIXME: The name this of these violates the NOUNVERB naming convention adopted
 // almost everywhere else in here.
   public static final CommandPacket createGUID(
-          GuidEntry accountGUID, String alias) throws ClientException {
+          GuidEntry accountGuid, String alias) throws ClientException {
     try {
-      return guidCreateHelper(accountGUID, alias, GuidUtils
-              .createAndSaveGuidEntry(alias, GNSClient.getGNSProvider()).getPublicKey());
+      GuidEntry guidEntry = GuidUtils
+              .createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
+
+      return getCommand(CommandType.AddGuid, accountGuid,
+              GNSProtocol.GUID.toString(), accountGuid.getGuid(),
+              GNSProtocol.NAME.toString(), alias,
+              GNSProtocol.PUBLIC_KEY.toString(), KeyPairUtils.publicKeyToBase64ForGuid(guidEntry));
+
     } catch (NoSuchAlgorithmException e) {
       throw new ClientException(e);
     }
@@ -1269,14 +1254,7 @@ public class GNSCommand extends CommandPacket {
      * incurring an GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString() for a new (non-existent) guid.
      */
     if (guidEntry == null) {
-      KeyPair keyPair = KeyPairGenerator.getInstance(GNSProtocol.RSA_ALGORITHM.toString())
-              .generateKeyPair();
-      String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-              .getPublic().getEncoded());
-      // Squirrel this away now just in case the call below times out.
-      KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
-      guidEntry = new GuidEntry(alias, guid, keyPair.getPublic(),
-              keyPair.getPrivate());
+      guidEntry = GuidUtils.createAndSaveGuidEntry(alias, gnsInstance);
     }
     return guidEntry;
   }
@@ -1287,20 +1265,9 @@ public class GNSCommand extends CommandPacket {
     return getCommand(commandType,
             guidEntry, GNSProtocol.NAME.toString(), alias,
             GNSProtocol.PUBLIC_KEY.toString(),
-            Base64.encodeToString(
-                    guidEntry.publicKey.getEncoded(), false),
+            KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
             GNSProtocol.PASSWORD.toString(),
             password != null ? Password.encryptAndEncodePassword(password, alias) : "");
-  }
-
-  private static CommandPacket guidCreateHelper(GuidEntry accountGuid,
-          String name, PublicKey publicKey) throws ClientException {
-    byte[] publicKeyBytes = publicKey.getEncoded();
-    String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
-    return getCommand(CommandType.AddGuid, accountGuid,
-            GNSProtocol.GUID.toString(), accountGuid.getGuid(),
-            GNSProtocol.NAME.toString(), name,
-            GNSProtocol.PUBLIC_KEY.toString(), publicKeyString);
   }
 
   private static CommandPacket aclAdd(String accessType,
@@ -1602,6 +1569,73 @@ public class GNSCommand extends CommandPacket {
     return getCommand(CommandType.SelectQuery, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.QUERY.toString(), query);
+  }
+
+  /**
+   * Selects all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records. {@code null}
+   * means return all fields.
+   * 
+   * The result type of the execution result of this query 
+   * is {@link CommandResultType#LIST}.
+   * Requires all fields accessed to be world readable.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * There are some predefined field names such as
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+   * default.
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spatial coordinates.
+   *
+   * @param query
+   * The select query being issued.
+   * @param fields A list of fields or null meaning all fields
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectRecords(String query, List<String> fields)
+          throws ClientException {
+    return getCommand(CommandType.SelectQuery,
+            GNSProtocol.QUERY.toString(), query,
+            GNSProtocol.FIELDS.toString(), fields == null ? GNSProtocol.ENTIRE_RECORD : fields);
+  }
+
+  /**
+   * Selects all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records. {@code null}
+   * means return all fields.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * There are some predefined field names such as
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+   * default.
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spatial coordinates.
+   *
+   * @param reader
+   * @param query
+   * The select query being issued.
+   * @param fields A list of fields or null meaning all fields
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectRecords(GuidEntry reader, String query, List<String> fields)
+          throws ClientException {
+    return getCommand(CommandType.SelectQuery, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.QUERY.toString(), query,
+            GNSProtocol.FIELDS.toString(), fields == null ? GNSProtocol.ENTIRE_RECORD : fields
+    );
   }
 
   /**

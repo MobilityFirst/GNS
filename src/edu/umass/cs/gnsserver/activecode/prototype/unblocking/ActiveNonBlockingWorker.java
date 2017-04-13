@@ -20,6 +20,9 @@ import edu.umass.cs.gnsserver.activecode.prototype.channels.ActiveNamedPipe;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 
 /**
+ * This is a non-blocking worker.
+ * It is initialized when the system is boot up or a worker crashes.
+ * 
  * @author gaozy
  *
  */
