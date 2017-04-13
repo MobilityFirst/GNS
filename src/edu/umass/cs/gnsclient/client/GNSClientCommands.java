@@ -835,7 +835,7 @@ public class GNSClientCommands extends GNSClient {
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias)
           throws ClientException, IOException {
 
-    execute(GNSCommand.createGUID(accountGuid, alias));
+    execute(GNSCommand.guidCreate(accountGuid, alias));
     GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
     // If something went wrong an exception should be thrown above, but we're checking
     // here anyway just to be safe.
@@ -885,7 +885,7 @@ public class GNSClientCommands extends GNSClient {
    * if a communication error occurs
    */
   public void guidRemove(GuidEntry guid) throws ClientException, IOException {
-    execute(GNSCommand.removeGUID(guid));
+    execute(GNSCommand.guidRemove(guid));
   }
 
   /**
@@ -900,7 +900,7 @@ public class GNSClientCommands extends GNSClient {
    */
   public void guidRemove(GuidEntry accountGuid, String guidToRemove)
           throws ClientException, IOException {
-    execute(GNSCommand.removeGUID(accountGuid, guidToRemove));
+    execute(GNSCommand.guidRemove(accountGuid, guidToRemove));
   }
 
   // GROUP COMMANDS

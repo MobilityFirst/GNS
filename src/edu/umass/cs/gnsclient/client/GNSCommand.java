@@ -12,7 +12,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * Initial developer(s): Westy */
+ * 
+ */
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
@@ -668,14 +669,11 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  @SuppressWarnings("deprecation") // FIXME:
-//FIXME: The name this of these violates the NOUNVERB naming convention adopted
-// almost everywhere else in here.
-  public static final CommandPacket createGUID(
+  @SuppressWarnings("deprecation") // FIXME
+  public static final CommandPacket guidCreate(
           GuidEntry accountGuid, String alias) throws ClientException {
     try {
-      GuidEntry guidEntry = GuidUtils
-              .createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
+      GuidEntry guidEntry = GuidUtils.createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
 
       return getCommand(CommandType.AddGuid, accountGuid,
               GNSProtocol.GUID.toString(), accountGuid.getGuid(),
@@ -685,6 +683,27 @@ public class GNSCommand extends CommandPacket {
     } catch (NoSuchAlgorithmException e) {
       throw new ClientException(e);
     }
+  }
+
+  /**
+   *
+   * @param accountGuid
+   * @param alias
+   * @return
+   * @throws ClientException
+   * @deprecated Use guidCreate instead.
+   */
+  @Deprecated // doesn't conform to the nounVerb naming convention
+  public static final CommandPacket createGUID(
+          GuidEntry accountGuid, String alias) throws ClientException {
+    return guidCreate(accountGuid, alias);
+  }
+
+  public static final CommandPacket guidCreateKeyless(GuidEntry accountGuid, String alias)
+          throws ClientException {
+    return getCommand(CommandType.AddGuid, accountGuid,
+            GNSProtocol.GUID.toString(), accountGuid.getGuid(),
+            GNSProtocol.NAME.toString(), alias);
   }
 
   /**
@@ -733,10 +752,23 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket removeGUID(GuidEntry targetGUID)
+  public static final CommandPacket guidRemove(GuidEntry targetGUID)
           throws ClientException {
     return getCommand(CommandType.RemoveGuidNoAccount, targetGUID,
             GNSProtocol.GUID.toString(), targetGUID.getGuid());
+  }
+
+  /**
+   *
+   * @param targetGUID
+   * @return
+   * @throws ClientException
+   * @deprecated Use guidRemove instead
+   */
+  @Deprecated // doesn't conform to the nounVerb naming convention
+  public static final CommandPacket removeGUID(GuidEntry targetGUID)
+          throws ClientException {
+    return guidRemove(targetGUID);
   }
 
   /**
@@ -747,13 +779,25 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  //FIXME: The name this of these violates the NOUNVERB naming convention adopted
-  // almost everywhere else in here.
-  public static final CommandPacket removeGUID(GuidEntry accountGUID,
+  public static final CommandPacket guidRemove(GuidEntry accountGUID,
           String targetGUID) throws ClientException {
     return getCommand(CommandType.RemoveGuid, accountGUID,
             GNSProtocol.ACCOUNT_GUID.toString(), accountGUID.getGuid(),
             GNSProtocol.GUID.toString(), targetGUID);
+  }
+
+  /**
+   *
+   * @param accountGUID
+   * @param targetGUID
+   * @return
+   * @throws ClientException
+   * @deprecated Use guidRemove instead.
+   */
+  @Deprecated // doesn't conform to the nounVerb naming convention
+  public static final CommandPacket removeGUID(GuidEntry accountGUID,
+          String targetGUID) throws ClientException {
+    return guidRemove(accountGUID, targetGUID);
   }
 
   // GROUP COMMANDS
@@ -1240,63 +1284,6 @@ public class GNSCommand extends CommandPacket {
             guid.getGuid());
   }
 
-  // ///////////////////////////////
-  // // PRIVATE METHODS BELOW /////
-  // /////////////////////////////
-  private static GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
-          String alias) throws NoSuchAlgorithmException, EncryptionException {
-    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
-    /*
-     * Don't recreate pair if one already exists. Otherwise you can
-     * not get out of the funk where the account creation timed out but
-     * wasn't rolled back fully at the server. Re-using
-     * the same guid will at least pass verification as opposed to
-     * incurring an GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString() for a new (non-existent) guid.
-     */
-    if (guidEntry == null) {
-      guidEntry = GuidUtils.createAndSaveGuidEntry(alias, gnsInstance);
-    }
-    return guidEntry;
-  }
-
-  private static CommandPacket accountGuidCreateInternal(String alias, String password,
-          CommandType commandType, GuidEntry guidEntry)
-          throws ClientException, NoSuchAlgorithmException {
-    return getCommand(commandType,
-            guidEntry, GNSProtocol.NAME.toString(), alias,
-            GNSProtocol.PUBLIC_KEY.toString(),
-            KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
-            GNSProtocol.PASSWORD.toString(),
-            password != null ? Password.encryptAndEncodePassword(password, alias) : "");
-  }
-
-  private static CommandPacket aclAdd(String accessType,
-          GuidEntry guid, String field, String accesserGuid)
-          throws ClientException {
-    return getCommand(CommandType.AclAddSelf, guid,
-            GNSProtocol.ACL_TYPE.toString(), accessType,
-            GNSProtocol.GUID.toString(), guid.getGuid(),
-            GNSProtocol.FIELD.toString(), field,
-            GNSProtocol.ACCESSER.toString(),
-            accesserGuid == null ? GNSProtocol.ALL_GUIDS.toString() : accesserGuid);
-  }
-
-  private static CommandPacket aclRemove(String accessType,
-          GuidEntry guid, String field, String accesserGuid)
-          throws ClientException {
-    return getCommand(CommandType.AclRemoveSelf, guid, GNSProtocol.ACL_TYPE.toString(),
-            accessType, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.ACCESSER.toString(),
-            accesserGuid == null ? GNSProtocol.ALL_GUIDS.toString() : accesserGuid);
-  }
-
-  private static CommandPacket aclGet(String accessType,
-          GuidEntry guid, String field, String readerGuid)
-          throws ClientException {
-    return getCommand(CommandType.AclRetrieve, guid, GNSProtocol.ACL_TYPE.toString(), accessType,
-            GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.READER.toString(),
-            readerGuid == null ? GNSProtocol.ALL_GUIDS.toString() : readerGuid);
-  }
-
   /* ******************* Extended commands ******************** */
   /**
    * Creates anew {@code targetGUID}:{@code field} with the value
@@ -1576,8 +1563,8 @@ public class GNSCommand extends CommandPacket {
    * The {@code fields} parameter is a list of the fields that
    * should be included in the returned records. {@code null}
    * means return all fields.
-   * 
-   * The result type of the execution result of this query 
+   *
+   * The result type of the execution result of this query
    * is {@link CommandResultType#LIST}.
    * Requires all fields accessed to be world readable.
    *
@@ -2537,4 +2524,62 @@ public class GNSCommand extends CommandPacket {
   public CommandResultType getResultType() {
     return this.getCommandType().getResultType();
   }
+
+  // ///////////////////////////////
+  // // PRIVATE METHODS BELOW /////
+  // /////////////////////////////
+  private static GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
+          String alias) throws NoSuchAlgorithmException, EncryptionException {
+    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
+    /*
+     * Don't recreate pair if one already exists. Otherwise you can
+     * not get out of the funk where the account creation timed out but
+     * wasn't rolled back fully at the server. Re-using
+     * the same guid will at least pass verification as opposed to
+     * incurring an GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString() for a new (non-existent) guid.
+     */
+    if (guidEntry == null) {
+      guidEntry = GuidUtils.createAndSaveGuidEntry(alias, gnsInstance);
+    }
+    return guidEntry;
+  }
+
+  private static CommandPacket accountGuidCreateInternal(String alias, String password,
+          CommandType commandType, GuidEntry guidEntry)
+          throws ClientException, NoSuchAlgorithmException {
+    return getCommand(commandType,
+            guidEntry, GNSProtocol.NAME.toString(), alias,
+            GNSProtocol.PUBLIC_KEY.toString(),
+            KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
+            GNSProtocol.PASSWORD.toString(),
+            password != null ? Password.encryptAndEncodePassword(password, alias) : "");
+  }
+
+  private static CommandPacket aclAdd(String accessType,
+          GuidEntry guid, String field, String accesserGuid)
+          throws ClientException {
+    return getCommand(CommandType.AclAddSelf, guid,
+            GNSProtocol.ACL_TYPE.toString(), accessType,
+            GNSProtocol.GUID.toString(), guid.getGuid(),
+            GNSProtocol.FIELD.toString(), field,
+            GNSProtocol.ACCESSER.toString(),
+            accesserGuid == null ? GNSProtocol.ALL_GUIDS.toString() : accesserGuid);
+  }
+
+  private static CommandPacket aclRemove(String accessType,
+          GuidEntry guid, String field, String accesserGuid)
+          throws ClientException {
+    return getCommand(CommandType.AclRemoveSelf, guid, GNSProtocol.ACL_TYPE.toString(),
+            accessType, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.ACCESSER.toString(),
+            accesserGuid == null ? GNSProtocol.ALL_GUIDS.toString() : accesserGuid);
+  }
+
+  private static CommandPacket aclGet(String accessType,
+          GuidEntry guid, String field, String readerGuid)
+          throws ClientException {
+    return getCommand(CommandType.AclRetrieve, guid, GNSProtocol.ACL_TYPE.toString(), accessType,
+            GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.READER.toString(),
+            readerGuid == null ? GNSProtocol.ALL_GUIDS.toString() : readerGuid);
+  }
+
 }

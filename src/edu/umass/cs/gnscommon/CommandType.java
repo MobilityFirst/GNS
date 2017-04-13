@@ -837,10 +837,10 @@ public enum CommandType {
           + "Returns +BADGUID+ if the guid has not been registered.",
           new String[]{GNSProtocol.NAME.toString(),
             GNSProtocol.GUID.toString(),
-            GNSProtocol.PUBLIC_KEY.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          // optional parameters
+          new String[]{GNSProtocol.PUBLIC_KEY.toString(),}),
   /**
    *
    */

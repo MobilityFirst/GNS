@@ -39,7 +39,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateRemoveTest extends DefaultGNSTest {
+public class CreateUpdateRemoveRepeatTest extends DefaultGNSTest {
 
   private static final int REPEAT = 100;
 
@@ -49,7 +49,7 @@ public class CreateRemoveTest extends DefaultGNSTest {
   /**
    *
    */
-  public CreateRemoveTest() {
+  public CreateUpdateRemoveRepeatTest() {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
@@ -74,7 +74,7 @@ public class CreateRemoveTest extends DefaultGNSTest {
     // CHECKED FOR VALIDITY
     String alias = "testGUID" + RandomString.randomString(12);
     String createdGUID = client.execute(
-            GNSCommand.createGUID(masterGuid, alias)).getResultString();
+            GNSCommand.guidCreate(masterGuid, alias)).getResultString();
     GuidEntry createdGUIDEntry = GuidUtils.getGUIDKeys(alias);
     Assert.assertEquals(alias, createdGUIDEntry.entityName);
     Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
@@ -83,7 +83,7 @@ public class CreateRemoveTest extends DefaultGNSTest {
             new JSONObject().put(key, value), createdGUIDEntry));
     Assert.assertEquals(value,
             client.execute(GNSCommand.fieldRead(createdGUIDEntry, key)).getResultMap().get(key));
-    client.execute(GNSCommand.removeGUID(masterGuid, createdGUID));
+    client.execute(GNSCommand.guidRemove(masterGuid, createdGUID));
   }
 
 }
