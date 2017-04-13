@@ -97,7 +97,7 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
    * @param records
    * @return a SelectResponsePacket
    */
-  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(
+  public static SelectResponsePacket makeSuccessPacketForFullRecords(
           long id, InetSocketAddress lnsAddress,
           long lnsQueryId,
           int nsQueryId, InetSocketAddress nsAddress, JSONArray records) {

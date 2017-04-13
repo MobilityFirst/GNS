@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -138,8 +139,9 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
-  public AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) throws FailedDBOperationException {
-    return noSqlRecords.selectRecordsQuery(collectionName, valuesMapField, query);
+  public AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, 
+          String query, List<String> projection) throws FailedDBOperationException {
+    return noSqlRecords.selectRecordsQuery(collectionName, valuesMapField, query, projection);
   }
 
   @Override

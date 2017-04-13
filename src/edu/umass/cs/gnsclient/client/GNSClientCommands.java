@@ -415,13 +415,13 @@ public class GNSClientCommands extends GNSClient {
   public JSONArray selectQuery(GuidEntry reader, String query) throws ClientException, IOException {
     return execute(GNSCommand.selectQuery(reader, query)).getResultJSONArray();
   }
-
+  
   /**
    * Returns a list of all guid records that match the {@code query}.
    * The {@code fields} parameter is a list of the fields that
    * should be included in the returned records. {@code null}
    * means return all fields.
-   *
+   * 
    * Requires that all fields accessed be world readable.
    *
    * The query syntax is described here:

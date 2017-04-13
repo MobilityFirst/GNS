@@ -60,11 +60,14 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SelectTest extends DefaultGNSTest {
 
+   
+  private static final int WAIT_SETTLE = 100;
+
   private static GNSClientCommands clientCommands = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
-  private static final Set<GuidEntry> createdGuids = new HashSet<>();
+  private static final Set<GuidEntry> CREATED_GUIDS = new HashSet<>();
 
   /**
    *
@@ -147,29 +150,15 @@ public class SelectTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception when we were not expecting testing DB: " + e);
     }
   }
-
+ 
   /**
    * Check the basic field select command
    */
   @Test
   public void test_30_BasicSelect() {
     try {
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
       JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
-      // best we can do since there will be one, but possibly more objects in results
-      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
-    } catch (ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
-    }
-  }
-
-  /**
-   * Check the basic field select command with world readable records
-   */
-  @Test
-  public void test_31_BasicSelectWorldReadable() {
-    try {
-      JSONArray result = clientCommands.select("cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
     } catch (ClientException | IOException e) {
@@ -185,9 +174,9 @@ public class SelectTest extends DefaultGNSTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(12));
-        createdGuids.add(testEntry); // save them so we can delete them later
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
         clientCommands.setLocation(testEntry, 0.0, 0.0);
-        waitSettle(100);
+        waitSettle(WAIT_SETTLE);
       }
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
@@ -236,11 +225,11 @@ public class SelectTest extends DefaultGNSTest {
         // Remove default all fields / all guids ACL;
         clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
                 GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
-        createdGuids.add(testEntry); // save them so we can delete them later
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
@@ -254,25 +243,7 @@ public class SelectTest extends DefaultGNSTest {
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (ClientException | IOException | JSONException e) {
-      Utils.failWithStackTrace("Exception executing selectNear: " + e);
-    }
-
-    try {
-
-      JSONArray rect = new JSONArray();
-      JSONArray upperLeft = new JSONArray();
-      upperLeft.put(1.0);
-      upperLeft.put(1.0);
-      JSONArray lowerRight = new JSONArray();
-      lowerRight.put(-1.0);
-      lowerRight.put(-1.0);
-      rect.put(upperLeft);
-      rect.put(lowerRight);
-      JSONArray result = clientCommands.selectWithin(masterGuid, GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
-      // best we can do should be at least 5, but possibly more objects in results
-      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (JSONException | ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception executing selectWithin: " + e);
+      Utils.failWithStackTrace("Exception executing selectQuery: " + e);
     }
   }
 
@@ -280,16 +251,16 @@ public class SelectTest extends DefaultGNSTest {
    * Check a query select with world readable fields
    */
   @Test
-  public void test_51_QuerySelectWorldReadable() {
+  public void test_53_QuerySelectWorldReadable() {
     String fieldName = "testQueryWorldReadable";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
-        createdGuids.add(testEntry); // save them so we can delete them later
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
     }
@@ -303,25 +274,7 @@ public class SelectTest extends DefaultGNSTest {
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
     } catch (ClientException | IOException | JSONException e) {
-      Utils.failWithStackTrace("Exception executing selectNear: " + e);
-    }
-
-    try {
-
-      JSONArray rect = new JSONArray();
-      JSONArray upperLeft = new JSONArray();
-      upperLeft.put(1.0);
-      upperLeft.put(1.0);
-      JSONArray lowerRight = new JSONArray();
-      lowerRight.put(-1.0);
-      lowerRight.put(-1.0);
-      rect.put(upperLeft);
-      rect.put(lowerRight);
-      JSONArray result = clientCommands.selectWithin(GNSProtocol.LOCATION_FIELD_NAME.toString(), rect);
-      // best we can do should be at least 5, but possibly more objects in results
-      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (JSONException | ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception executing selectWithin: " + e);
+      Utils.failWithStackTrace("Exception executing selectQuery: " + e);
     }
   }
 
@@ -329,7 +282,7 @@ public class SelectTest extends DefaultGNSTest {
    * Check a query select with unreadable fields
    */
   @Test
-  public void test_52_QuerySelectWorldNotReadable() {
+  public void test_55_QuerySelectWorldNotReadable() {
     String fieldName = "testQueryWorldNotReadable";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
@@ -337,11 +290,11 @@ public class SelectTest extends DefaultGNSTest {
         // Remove default all fields / all guids ACL;
         clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
                 GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
-        createdGuids.add(testEntry); // save them so we can delete them later
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
         clientCommands.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while tryin to create the guids: " + e);
     }
@@ -352,10 +305,85 @@ public class SelectTest extends DefaultGNSTest {
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
       Assert.assertThat(result.length(), Matchers.equalTo(0));
     } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception executing selectQuery: " + e);
+    }
+  }
+
+  /**
+   * Check a query select with a projection
+   */
+  @Test
+  public void test_57_QuerySelectwithProjection() {
+    String fieldName = "testQueryProjection";
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
+        // Remove default all fields / all guids ACL;
+        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
+                GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
+         JSONObject json = new JSONObject();
+        json.put(fieldName, Arrays.asList(25));
+        json.put("field1", "value1");
+        clientCommands.update(testEntry.getGuid(), json, testEntry);
+      }
+      waitSettle(WAIT_SETTLE);
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
+    }
+
+    try {
+      String query = "~" + fieldName + " : ($gt: 0)";
+      JSONArray result = clientCommands.selectRecords(masterGuid, query, Arrays.asList(fieldName));
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing selectRecords: " + e);
+    }
+  }
+
+  /**
+   * Check a query select with a projection of all fields
+   */
+  @Test
+  public void test_58_QuerySelectwithProjectionAll() {
+    String fieldName = "testQueryProjectionAll";
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = clientCommands.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(12));
+        // Remove default all fields / all guids ACL;
+        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
+                GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+        CREATED_GUIDS.add(testEntry); // save them so we can delete them later
+        JSONObject json = new JSONObject();
+        json.put(fieldName, Arrays.asList(25));
+        json.put("field1", "value1");
+        JSONObject subJson = new JSONObject();
+        subJson.put("subfield", "subvalue1");
+        json.put("nested", subJson);
+        clientCommands.update(testEntry.getGuid(), json, testEntry);
+      }
+      waitSettle(WAIT_SETTLE);
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception while tryint to create the guids: " + e);
+    }
+
+    try {
+      String query = "~" + fieldName + " : ($gt: 0)";
+      JSONArray result = clientCommands.selectRecords(masterGuid, query, null);
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+    } catch (ClientException | IOException | JSONException e) {
+      Utils.failWithStackTrace("Exception executing selectRecords: " + e);
     }
   }
 
@@ -392,7 +420,7 @@ public class SelectTest extends DefaultGNSTest {
   @Test
   public void test_80_SelectPass() {
     try {
-      waitSettle(100);
+      waitSettle(WAIT_SETTLE);
       JSONArray result = clientCommands.selectQuery(masterGuid, buildLocationQuery(createIndexTestField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
@@ -400,7 +428,7 @@ public class SelectTest extends DefaultGNSTest {
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
     } catch (JSONException | ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception executing second selectNear: " + e);
+      Utils.failWithStackTrace("Exception executing second selectQuery: " + e);
     }
   }
 
@@ -525,10 +553,10 @@ public class SelectTest extends DefaultGNSTest {
   @Test
   public void test_999_SelectCleanup() {
     try {
-      for (GuidEntry guid : createdGuids) {
+      for (GuidEntry guid : CREATED_GUIDS) {
         clientCommands.guidRemove(masterGuid, guid.getGuid());
       }
-      createdGuids.clear();
+      CREATED_GUIDS.clear();
       clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
       clientCommands.guidRemove(masterGuid, samEntry.getGuid());
     } catch (ClientException | IOException e) {

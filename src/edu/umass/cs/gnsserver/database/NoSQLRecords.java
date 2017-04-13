@@ -26,6 +26,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Provides an interface for insert, update, remove and lookup 
@@ -204,10 +205,12 @@ public interface NoSQLRecords {
    * @param collection the name of the collection
    * @param valuesMapField the field that contains the ValuesMap
    * @param query the query to execute
+   * @param projection
    * @return an AbstractRecordCursor
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query)
+  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, 
+          String query, List<String> projection)
           throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
