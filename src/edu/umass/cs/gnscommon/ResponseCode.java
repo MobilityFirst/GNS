@@ -231,8 +231,24 @@ public enum ResponseCode implements Serializable {
            * IO exception incurred either by the client or by an induced remote query.
            */
           IO_EXCEPTION(412, IOException.class.getSimpleName(),
-        		  ResponseCodeType.EXCEPTION)
+        		  ResponseCodeType.EXCEPTION),
 
+  /**
+   * Unable to validate certificate due to trust mismatch while registering the account
+   *
+   */
+  TRUST_INVALID_CERTIFICATE(414, GNSProtocol.TRUST_INVALID_ERROR.toString(),ResponseCodeType.ERROR),
+
+  /**
+   * Unable to validate certificate due to validity while registering the account
+   *
+   */
+  TIME_INVALID_CERTIFICATE(415, GNSProtocol.TIME_INVALID_ERROR.toString(),ResponseCodeType.ERROR),
+  
+  /**
+   * An error occurred to name mismatch while registering the account
+   */
+   NAME_MISMATCH_CERTIFICATE(413, GNSProtocol.NAME_MISMATCH_ERROR.toString(),ResponseCodeType.ERROR)
         ;
 
   // stash the codes in a lookup table

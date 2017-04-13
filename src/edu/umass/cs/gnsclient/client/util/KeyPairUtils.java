@@ -48,7 +48,10 @@ import edu.umass.cs.gnsclient.client.util.keystorage.SimpleKeyStore;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.utils.Config;
+import org.apache.cassandra.config.EncryptionOptions;
+
 import javax.xml.bind.DatatypeConverter;
+
 
 /**
  * @author westy
@@ -115,6 +118,7 @@ public class KeyPairUtils {
     }
   }
 
+
   /**
    * Remove the public/private key pair from preferences for the given user.
    *
@@ -172,6 +176,17 @@ public class KeyPairUtils {
     String privateString =  DatatypeConverter.printHexBinary(keyPair.getPrivate().getEncoded());
     //String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
     //String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
+    keyStorageObj.put(generateKey(gnsName, username, PUBLIC), publicString);
+    keyStorageObj.put(generateKey(gnsName, username, PRIVATE), privateString);
+    keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
+  }
+
+  public static void saveKeyPair(String gnsName, String username, String guid, PublicKey publicKey, PrivateKey privateKey) {
+    createSingleton();
+
+    String publicString =  DatatypeConverter.printHexBinary(publicKey.getEncoded());
+    String privateString =  DatatypeConverter.printHexBinary(privateKey.getEncoded());
+    
     keyStorageObj.put(generateKey(gnsName, username, PUBLIC), publicString);
     keyStorageObj.put(generateKey(gnsName, username, PRIVATE), privateString);
     keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
@@ -414,6 +429,9 @@ public class KeyPairUtils {
     }
     assert (keyStorageObj != null);
   }
+
+
+ 
 
   /**
    *

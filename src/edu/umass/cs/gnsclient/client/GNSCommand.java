@@ -15,12 +15,23 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnsclient.client;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.PrivateKey;
+import java.security.KeyPair;
+
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -528,6 +539,48 @@ public class GNSCommand extends CommandPacket {
     @SuppressWarnings("deprecation") // FIXME
     GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
     return accountGuidCreateInternal(alias, password, CommandType.RegisterAccount, guidEntry);
+  }
+
+
+
+  /**
+   * Register a new account guid with  a certifcate
+   * {@code certificate}. Executing this query generates a new guid with public key, aliasname
+   * given in certifcate.
+   *
+   * @param certificateFileName
+   * @param password
+   * @param privateKeyFileName
+   *
+   * @return CommandPacket
+   * @throws ClientException
+   * @throws java.io.IOException
+   * @throws java.security.NoSuchAlgorithmException
+   */
+
+  public static final CommandPacket createAccountWithCertificate(
+          String certificateFileName, String password, String privateKeyFileName) throws IOException, FileNotFoundException, 
+          CertificateException, ClientException , NoSuchAlgorithmException, InvalidKeySpecException {
+ 
+    // get certificate from file
+    X509Certificate cert = SharedGuidUtils.loadCertificateFromFile(certificateFileName);
+
+    //Get Name from certificate 
+    String alias = SharedGuidUtils.getNameFromCertificate(cert);
+
+    //get public key from certificate
+    PublicKey publickey = SharedGuidUtils.getPublicKeyFromCertificate(cert);
+
+    // load private key from file 
+    PrivateKey privatekey = SharedGuidUtils.loadPrivateKeyFromFile(privateKeyFileName);
+
+    @SuppressWarnings("deprecation") // FIXME
+    // In this case lookup is not required since guid is created for the first time
+    //  also previous value may contain older values which may be inconsistent
+    // so overwrite the local hashmap with new values
+    GuidEntry guidEntry = createGuidEntryWithCertificate(GNSClient.getGNSProvider(),
+                                        alias, publickey, privatekey);
+    return accountGuidCreateInternalWithCertificate(alias, password, CommandType.RegisterAccountWithCertificate, guidEntry, cert);
   }
 
   /**
@@ -1261,6 +1314,27 @@ public class GNSCommand extends CommandPacket {
     return guidEntry;
   }
 
+  /**
+   * Function to get guidentry from local database if present given gnsinstance, alias ,private keyobject
+   * 
+   * @param gnsInstance
+   * @param alias
+   * @param publicKey
+   * @param privateKey
+   * @return GuidEntry
+   * 
+   */
+  private static GuidEntry createGuidEntryWithCertificate( String gnsInstance, String alias,
+              PublicKey publicKey, PrivateKey privateKey) throws EncryptionException, ClientException {
+
+    String guid = SharedGuidUtils.createGuidStringFromPublicKey(publicKey.getEncoded());
+    GuidEntry guidEntry = new GuidEntry(gnsInstance, guid, publicKey, privateKey);
+    KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, publicKey, privateKey);
+
+    return guidEntry;
+  }
+
+
   private static CommandPacket accountGuidCreateInternal(String alias, String password,
           CommandType commandType, GuidEntry guidEntry)
           throws ClientException, NoSuchAlgorithmException {
@@ -1270,6 +1344,28 @@ public class GNSCommand extends CommandPacket {
             KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
             GNSProtocol.PASSWORD.toString(),
             password != null ? Password.encryptAndEncodePassword(password, alias) : "");
+  }
+  /**
+   * Helper function to get commandpacket for RegisterAccountWithCertificate
+   * 
+   * @param alias
+   * @param password
+   * @param 
+   * 
+   * @return CommandPacket
+   */
+  private static CommandPacket accountGuidCreateInternalWithCertificate(String alias, String password,
+              CommandType commandType, GuidEntry guidEntry, X509Certificate cert)
+              throws ClientException, NoSuchAlgorithmException, CertificateEncodingException {
+
+    byte []cert_bytes = cert.getEncoded();
+    String cert_encoded_string = Base64.encodeToString(cert_bytes, true);
+
+    return getCommand( commandType, guidEntry, GNSProtocol.NAME.toString(), alias,
+              GNSProtocol.CERTIFICATE.toString(), cert_encoded_string,
+              GNSProtocol.PASSWORD.toString(),
+              password != null ? Password.encryptAndEncodePassword(password, alias) : "");            
+
   }
 
   private static CommandPacket aclAdd(String accessType,
@@ -1571,6 +1667,73 @@ public class GNSCommand extends CommandPacket {
     return getCommand(CommandType.SelectQuery, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.QUERY.toString(), query);
+  }
+
+  /**
+   * Selects all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records. {@code null}
+   * means return all fields.
+   *
+   * The result type of the execution result of this query
+   * is {@link CommandResultType#LIST}.
+   * Requires all fields accessed to be world readable.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * There are some predefined field names such as
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+   * default.
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spatial coordinates.
+   *
+   * @param query
+   * The select query being issued.
+   * @param fields A list of fields or null meaning all fields
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectRecords(String query, List<String> fields)
+          throws ClientException {
+    return getCommand(CommandType.SelectQuery,
+            GNSProtocol.QUERY.toString(), query,
+            GNSProtocol.FIELDS.toString(), fields == null ? GNSProtocol.ENTIRE_RECORD : fields);
+  }
+
+  /**
+   * Selects all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records. {@code null}
+   * means return all fields.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * There are some predefined field names such as
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+   * default.
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spatial coordinates.
+   *
+   * @param reader
+   * @param query
+   * The select query being issued.
+   * @param fields A list of fields or null meaning all fields
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket selectRecords(GuidEntry reader, String query, List<String> fields)
+          throws ClientException {
+    return getCommand(CommandType.SelectQuery, reader,
+            GNSProtocol.GUID.toString(), reader.getGuid(),
+            GNSProtocol.QUERY.toString(), query,
+            GNSProtocol.FIELDS.toString(), fields == null ? GNSProtocol.ENTIRE_RECORD : fields
+    );
   }
 
   /**

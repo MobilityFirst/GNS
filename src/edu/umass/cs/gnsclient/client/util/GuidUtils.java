@@ -24,11 +24,17 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.http.HttpClient;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
 
 /**
@@ -180,6 +186,46 @@ public class GuidUtils {
   public static GuidEntry lookupOrCreateAccountGuid(GNSClientCommands client, String name, String password,
           boolean verbose) throws Exception {
     return lookupOrCreateAccountGuidInternal(client, name, password, false, verbose);
+  }
+
+  /**
+   * Register a new account guid on the GNS server using certificate
+   * server. This generates a guid from the given public, private key pair.
+   * Returns a GuidEntry for the new account which contains all of this
+   * information.
+   *
+   * @param password
+   * @param certificateFileName
+   * @param privatekeyFileName
+   * @return GuidEntry for {@code alias}
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws IOException
+   * if unable to create a certificate from the given path
+   * @throws CertificateException
+   * @throws InvalidKeySpecException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public static GuidEntry accountGuidCreateWithCertificate(GNSClient client, String password, String certificateFileName,
+                                                    String privatekeyFileName) throws ClientException, IOException,
+          CertificateException, InvalidKeySpecException{
+
+    X509Certificate cert = SharedGuidUtils.loadCertificateFromFile(certificateFileName);
+    String alias = SharedGuidUtils.getNameFromCertificate(cert);
+
+    try {
+      client.execute(GNSCommand.createAccountWithCertificate(certificateFileName,password, privatekeyFileName));
+    } catch (NoSuchAlgorithmException e) {
+      throw new ClientException(e);
+    }
+    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(client, alias);
+    // If something went wrong an exception should be thrown above, but we're checking
+    // here anyway just to be safe.
+    if (guidEntry == null) {
+      throw new ClientException("Failed to create account guid for " + alias);
+    }
+    return guidEntry;
   }
 
   /**

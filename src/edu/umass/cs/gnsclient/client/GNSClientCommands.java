@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Set;
 import org.json.JSONException;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import java.util.List;
 
 /**
  *
@@ -416,6 +417,71 @@ public class GNSClientCommands extends GNSClient {
   }
 
   /**
+   * Returns a list of all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records. {@code null}
+   * means return all fields.
+   *
+   * Requires that all fields accessed be world readable.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * Currently there are two predefined field names in the GNS client (this is
+   * in edu.umass.cs.gnsclient.client.GNSCommandProtocol):
+   * GNSProtocol.LOCATION_FIELD_NAME.toString() = "geoLocation";
+   * Defined as a "2d" index in the database.
+   * GNSProtocol.IPADDRESS_FIELD_NAME.toString() = "netAddress";
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spacial coordinates.
+   *
+   * @param query
+   * - the query
+   * @param fields A list of fields or null meaning all fields
+   * @return - a JSONArray of guids
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public JSONArray selectRecords(String query, List<String> fields) throws ClientException, IOException {
+    return execute(GNSCommand.selectRecords(query, fields)).getResultJSONArray();
+  }
+
+  /**
+   * Returns a list of all guid records that match the {@code query}.
+   * The {@code fields} parameter is a list of the fields that
+   * should be included in the returned records.{@code null}
+   * means return all fields.
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * Currently there are two predefined field names in the GNS client (this is
+   * in edu.umass.cs.gnsclient.client.GNSCommandProtocol):
+   * GNSProtocol.LOCATION_FIELD_NAME.toString() = "geoLocation";
+   * Defined as a "2d" index in the database.
+   * GNSProtocol.IPADDRESS_FIELD_NAME.toString() = "netAddress";
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spacial coordinates.
+   *
+   * @param reader
+   * @param query
+   * - the query
+   * @param fields A list of fields or null meaning all fields
+   * @return - a JSONArray of guids
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public JSONArray selectRecords(GuidEntry reader, String query, List<String> fields) throws ClientException, IOException {
+    return execute(GNSCommand.selectRecords(reader, query, fields)).getResultJSONArray();
+  }
+
+  /**
    * Set up a context aware group guid using a query. Requires a accountGuid
    * and a publicKey which are used to set up the new guid or look it up if it
    * already exists. Requires that all fields accessed be world readable.
@@ -648,6 +714,8 @@ public class GNSClientCommands extends GNSClient {
     }
     return guidEntry;
   }
+
+
 
   /**
    * Register a new account guid with the corresponding alias on the GNS

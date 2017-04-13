@@ -1473,6 +1473,21 @@ public enum CommandType {
                   GNSProtocol.AC_ACTION.toString(),
                   GNSProtocol.SIGNATURE.toString(),
                   GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+/**
+ * 
+ * 
+ */
+   RegisterAccountWithCertificate(813, CommandCategory.CREATE_DELETE,
+          "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountWithCertificate",
+          CommandResultType.NULL, false, false,
+          "Creates an account guid associated with the human readable name and the supplied certificate"
+                  + "Must be signed with the public key. Returns a guid.",
+          new String[]{GNSProtocol.NAME.toString(),
+                  GNSProtocol.CERTIFICATE.toString(),
+                  GNSProtocol.PASSWORD.toString(),
+                  GNSProtocol.SIGNATURE.toString(),
+                  GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+          new String[]{}),
   /**
    *
    */
