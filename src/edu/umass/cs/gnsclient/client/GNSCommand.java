@@ -15,12 +15,23 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnsclient.client;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.PrivateKey;
+import java.security.KeyPair;
+
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,6 +49,7 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 
 /**
  * A helper class with static methods to help construct GNS commands.
@@ -89,7 +101,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static CommandPacket getCommand(CommandType type, GuidEntry querier,
-          Object... keysAndValues) throws ClientException {
+                                         Object... keysAndValues) throws ClientException {
     JSONObject command = CommandUtils.createAndSignCommand(type, querier,
             keysAndValues);
     if (CommandPacket.getJSONCommandType(command).isMutualAuth()) {
@@ -105,7 +117,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static CommandPacket getCommand(CommandType type,
-          Object... keysAndValues) throws ClientException {
+                                         Object... keysAndValues) throws ClientException {
     return getCommand(type, null, keysAndValues);
   }
 
@@ -135,7 +147,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket update(String targetGUID,
-          JSONObject json, GuidEntry querierGUID) throws ClientException {
+                                           JSONObject json, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.ReplaceUserJSON, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.USER_JSON.toString(), json.toString(), GNSProtocol.WRITER.toString(),
             querierGUID.getGuid());
@@ -151,7 +163,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket update(GuidEntry targetGUID,
-          JSONObject json) throws ClientException {
+                                           JSONObject json) throws ClientException {
     return update(targetGUID.getGuid(), json, targetGUID);
   }
 
@@ -170,7 +182,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldUpdate(String targetGuid,
-          String field, Object value, GuidEntry querierGUID)
+                                                String field, Object value, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.ReplaceUserJSON, querierGUID, GNSProtocol.GUID.toString(),
             targetGuid, GNSProtocol.USER_JSON.toString(), getJSONObject(field, value).toString(),
@@ -222,7 +234,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   protected static final CommandPacket fieldCreateIndex(GuidEntry GUID,
-          String field, String index) throws ClientException {
+                                                        String field, String index) throws ClientException {
     return getCommand(CommandType.CreateIndex, GUID,
             GNSProtocol.GUID.toString(), GUID.getGuid(),
             GNSProtocol.FIELD.toString(), field,
@@ -244,7 +256,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldUpdate(GuidEntry targetGUID,
-          String field, Object value) throws ClientException {
+                                                String field, Object value) throws ClientException {
     return fieldUpdate(targetGUID.getGuid(), field, value, targetGUID);
   }
 
@@ -263,9 +275,9 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket read(String targetGUID,
-          GuidEntry querierGUID) throws ClientException {
+                                         GuidEntry querierGUID) throws ClientException {
     return getCommand(querierGUID != null ? CommandType.ReadArray
-            : CommandType.ReadArrayUnsigned, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
+                    : CommandType.ReadArrayUnsigned, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.FIELD.toString(), GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.READER.toString(),
             querierGUID != null ? querierGUID.getGuid() : null);
   }
@@ -313,9 +325,9 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldExists(String targetGUID,
-          String field, GuidEntry querierGUID) throws ClientException {
+                                                String field, GuidEntry querierGUID) throws ClientException {
     return getCommand(querierGUID != null ? CommandType.Read
-            : CommandType.ReadUnsigned, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
+                    : CommandType.ReadUnsigned, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.FIELD.toString(), field, GNSProtocol.READER.toString(),
             querierGUID != null ? querierGUID.getGuid() : null);
   }
@@ -332,7 +344,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldExists(GuidEntry targetGUID,
-          String field) throws ClientException {
+                                                String field) throws ClientException {
     return fieldExists(targetGUID.getGuid(), field, targetGUID);
   }
 
@@ -352,9 +364,9 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldRead(String targetGUID,
-          String field, GuidEntry querierGUID) throws ClientException {
+                                              String field, GuidEntry querierGUID) throws ClientException {
     return getCommand(querierGUID != null ? CommandType.Read
-            : CommandType.ReadUnsigned, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
+                    : CommandType.ReadUnsigned, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.FIELD.toString(), field, GNSProtocol.READER.toString(),
             querierGUID != null ? querierGUID.getGuid() : null);
   }
@@ -372,7 +384,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldRead(GuidEntry targetGUID,
-          String field) throws ClientException {
+                                              String field) throws ClientException {
     return fieldRead(targetGUID.getGuid(), field, targetGUID);
   }
 
@@ -392,10 +404,10 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldRead(String targetGUID,
-          ArrayList<String> fields, GuidEntry querierGUID)
+                                              ArrayList<String> fields, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(querierGUID != null ? CommandType.ReadMultiField
-            : CommandType.ReadMultiFieldUnsigned, querierGUID, GNSProtocol.GUID.toString(),
+                    : CommandType.ReadMultiFieldUnsigned, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELDS.toString(), fields, GNSProtocol.READER.toString(),
             querierGUID != null ? querierGUID.getGuid() : null);
   }
@@ -411,7 +423,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldRead(GuidEntry targetGUID,
-          ArrayList<String> fields) throws ClientException {
+                                              ArrayList<String> fields) throws ClientException {
     return fieldRead(targetGUID.getGuid(), fields, targetGUID);
   }
 
@@ -430,7 +442,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldRemove(String targetGUID,
-          String field, GuidEntry querierGUID) throws ClientException {
+                                                String field, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.RemoveField, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.WRITER.toString(), querierGUID.getGuid());
   }
@@ -524,8 +536,50 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket createAccount(
           String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
     @SuppressWarnings("deprecation") // FIXME
-    GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
+            GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
     return accountGuidCreateInternal(alias, password, CommandType.RegisterAccount, guidEntry);
+  }
+
+
+
+  /**
+   * Register a new account guid with  a certifcate
+   * {@code certificate}. Executing this query generates a new guid with public key, aliasname
+   * given in certifcate.
+   *
+   * @param certificateFileName
+   * @param password
+   * @param privateKeyFileName
+   *
+   * @return CommandPacket
+   * @throws ClientException
+   * @throws java.io.IOException
+   * @throws java.security.NoSuchAlgorithmException
+   */
+
+  public static final CommandPacket createAccountWithCertificate(
+          String certificateFileName, String password, String privateKeyFileName) throws IOException, FileNotFoundException,
+          CertificateException, ClientException , NoSuchAlgorithmException, InvalidKeySpecException {
+
+    // get certificate from file
+    X509Certificate cert = SharedGuidUtils.loadCertificateFromFile(certificateFileName);
+
+    //Get Name from certificate
+    String alias = SharedGuidUtils.getNameFromCertificate(cert);
+
+    //get public key from certificate
+    PublicKey publickey = SharedGuidUtils.getPublicKeyFromCertificate(cert);
+
+    // load private key from file
+    PrivateKey privatekey = SharedGuidUtils.loadPrivateKeyFromFile(privateKeyFileName);
+
+    @SuppressWarnings("deprecation") // FIXME
+            // In this case lookup is not required since guid is created for the first time
+            //  also previous value may contain older values which may be inconsistent
+            // so overwrite the local hashmap with new values
+            GuidEntry guidEntry = createGuidEntryWithCertificate(GNSClient.getGNSProvider(),
+            alias, publickey, privatekey);
+    return accountGuidCreateInternalWithCertificate(alias, password, CommandType.RegisterAccountWithCertificate, guidEntry, cert);
   }
 
   /**
@@ -544,7 +598,7 @@ public class GNSCommand extends CommandPacket {
           String alias) throws ClientException, IOException,
           NoSuchAlgorithmException {
     @SuppressWarnings("deprecation") // FIXME
-    GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
+            GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
     return accountGuidCreateInternal(alias, null,
             CommandType.RegisterAccount, guidEntry);
   }
@@ -585,7 +639,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket accountGuidVerify(GuidEntry accountGUID,
-          String code) throws ClientException {
+                                                      String code) throws ClientException {
     return getCommand(CommandType.VerifyAccount, accountGUID,
             GNSProtocol.GUID.toString(),
             accountGUID.getGuid(),
@@ -750,7 +804,7 @@ public class GNSCommand extends CommandPacket {
   //FIXME: The name this of these violates the NOUNVERB naming convention adopted
   // almost everywhere else in here.
   public static final CommandPacket removeGUID(GuidEntry accountGUID,
-          String targetGUID) throws ClientException {
+                                               String targetGUID) throws ClientException {
     return getCommand(CommandType.RemoveGuid, accountGUID,
             GNSProtocol.ACCOUNT_GUID.toString(), accountGUID.getGuid(),
             GNSProtocol.GUID.toString(), targetGUID);
@@ -770,7 +824,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket groupGetMembers(String groupGuid,
-          GuidEntry querierGUID) throws ClientException {
+                                                    GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.GetGroupMembers, querierGUID, GNSProtocol.GUID.toString(),
             groupGuid, GNSProtocol.READER.toString(), querierGUID.getGuid());
   }
@@ -787,7 +841,7 @@ public class GNSCommand extends CommandPacket {
    * if a protocol error occurs or the list cannot be parsed
    */
   public static final CommandPacket guidGetGroups(String targetGUID,
-          GuidEntry querierGUID) throws ClientException {
+                                                  GuidEntry querierGUID) throws ClientException {
 
     return getCommand(CommandType.GetGroups, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.READER.toString(), querierGUID.getGuid());
@@ -806,7 +860,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket groupAddGuid(String groupGUID,
-          String toAddGUID, GuidEntry querierGUID) throws ClientException {
+                                                 String toAddGUID, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.AddToGroup, querierGUID, GNSProtocol.GUID.toString(), groupGUID,
             GNSProtocol.MEMBER.toString(), toAddGUID,
             GNSProtocol.WRITER.toString(), querierGUID.getGuid());
@@ -825,7 +879,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket groupAddGUIDs(String groupGUID,
-          JSONArray members, GuidEntry querierGUID) throws ClientException {
+                                                  JSONArray members, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.AddMembersToGroup, querierGUID, GNSProtocol.GUID.toString(),
             groupGUID, GNSProtocol.MEMBERS.toString(), members.toString(),
             GNSProtocol.WRITER.toString(), querierGUID.getGuid());
@@ -844,7 +898,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket groupAddGUIDs(String groupGUID,
-          Set<String> members, GuidEntry querierGUID) throws ClientException {
+                                                  Set<String> members, GuidEntry querierGUID) throws ClientException {
     return groupAddGUIDs(groupGUID, new JSONArray(members), querierGUID);
   }
 
@@ -863,7 +917,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket groupRemoveGuid(String groupGUID,
-          String toRemoveGUID, GuidEntry querierGUID) throws ClientException {
+                                                    String toRemoveGUID, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.RemoveFromGroup, querierGUID, GNSProtocol.GUID.toString(),
             groupGUID, GNSProtocol.MEMBER.toString(), toRemoveGUID, GNSProtocol.WRITER.toString(), querierGUID.getGuid());
   }
@@ -881,7 +935,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket groupRemoveGuids(String groupGUID,
-          JSONArray members, GuidEntry querierGUID) throws ClientException {
+                                                     JSONArray members, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.RemoveMembersFromGroup, querierGUID,
             GNSProtocol.GUID.toString(), groupGUID, GNSProtocol.MEMBERS.toString(), members.toString(), GNSProtocol.WRITER.toString(),
             querierGUID.getGuid());
@@ -993,7 +1047,7 @@ public class GNSCommand extends CommandPacket {
    * if the query is not accepted by the server.
    */
   public static final CommandPacket aclAdd(AclAccessType accessType,
-          GuidEntry targetGUID, String field, String accesserGUID)
+                                           GuidEntry targetGUID, String field, String accesserGUID)
           throws ClientException {
     return aclAdd(accessType.name(), targetGUID, field, accesserGUID);
   }
@@ -1017,7 +1071,7 @@ public class GNSCommand extends CommandPacket {
    * if the query is not accepted by the server.
    */
   public static final CommandPacket aclAddSecure(AclAccessType accessType,
-          String guid, String field, String accesserGUID)
+                                                 String guid, String field, String accesserGUID)
           throws ClientException {
     return getCommand(CommandType.AclAddSecured, null,
             GNSProtocol.ACL_TYPE.toString(), accessType.name(),
@@ -1045,7 +1099,7 @@ public class GNSCommand extends CommandPacket {
    * if the query is not accepted by the server.
    */
   public static final CommandPacket aclRemove(AclAccessType accessType,
-          GuidEntry targetGUID, String field, String accesserGUID)
+                                              GuidEntry targetGUID, String field, String accesserGUID)
           throws ClientException {
     return aclRemove(accessType.name(), targetGUID, field, accesserGUID);
   }
@@ -1067,7 +1121,7 @@ public class GNSCommand extends CommandPacket {
    * if the query is not accepted by the server.
    */
   public static final CommandPacket aclRemoveSecure(AclAccessType accessType,
-          String guid, String field, String accesserGUID)
+                                                    String guid, String field, String accesserGUID)
           throws ClientException {
     return getCommand(CommandType.AclRemoveSecured, null,
             GNSProtocol.ACL_TYPE.toString(), accessType.name(),
@@ -1095,7 +1149,7 @@ public class GNSCommand extends CommandPacket {
    * if the query is not accepted by the server.
    */
   public static final CommandPacket aclGet(AclAccessType accessType,
-          GuidEntry targetGUID, String field, String querierGUID)
+                                           GuidEntry targetGUID, String field, String querierGUID)
           throws ClientException {
     return aclGet(accessType.name(), targetGUID, field, querierGUID);
   }
@@ -1117,7 +1171,7 @@ public class GNSCommand extends CommandPacket {
    * if the query is not accepted by the server.
    */
   public static final CommandPacket aclGetSecure(AclAccessType accessType,
-          String guid, String field)
+                                                 String guid, String field)
           throws ClientException {
     return getCommand(CommandType.AclRetrieveSecured, null,
             GNSProtocol.ACL_TYPE.toString(), accessType.name(),
@@ -1139,7 +1193,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldCreateAcl(AclAccessType accessType,
-          GuidEntry guid, String field, String writerGuid)
+                                                   GuidEntry guid, String field, String writerGuid)
           throws ClientException {
     return getCommand(CommandType.FieldCreateAcl, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType.name(),
@@ -1162,7 +1216,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldDeleteAcl(AclAccessType accessType,
-          GuidEntry guid, String field, String writerGuid)
+                                                   GuidEntry guid, String field, String writerGuid)
           throws ClientException {
     return getCommand(CommandType.FieldDeleteAcl, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType.name(),
@@ -1185,7 +1239,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldAclExists(AclAccessType accessType,
-          GuidEntry guid, String field, String reader)
+                                                   GuidEntry guid, String field, String reader)
           throws ClientException {
     return getCommand(CommandType.FieldAclExists, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType.name(),
@@ -1222,7 +1276,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket removeAlias(GuidEntry targetGUID,
-          String name) throws ClientException {
+                                                String name) throws ClientException {
     return getCommand(CommandType.RemoveAlias, targetGUID, GNSProtocol.GUID.toString(),
             targetGUID.getGuid(), GNSProtocol.NAME.toString(), name);
   }
@@ -1244,7 +1298,7 @@ public class GNSCommand extends CommandPacket {
   // // PRIVATE METHODS BELOW /////
   // /////////////////////////////
   private static GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
-          String alias) throws NoSuchAlgorithmException, EncryptionException {
+                                                   String alias) throws NoSuchAlgorithmException, EncryptionException {
     GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
     /*
      * Don't recreate pair if one already exists. Otherwise you can
@@ -1259,8 +1313,29 @@ public class GNSCommand extends CommandPacket {
     return guidEntry;
   }
 
+  /**
+   * Function to get guidentry from local database if present given gnsinstance, alias ,private keyobject
+   *
+   * @param gnsInstance
+   * @param alias
+   * @param publicKey
+   * @param privateKey
+   * @return GuidEntry
+   *
+   */
+  private static GuidEntry createGuidEntryWithCertificate( String gnsInstance, String alias,
+                                                           PublicKey publicKey, PrivateKey privateKey) throws EncryptionException, ClientException {
+
+    String guid = SharedGuidUtils.createGuidStringFromPublicKey(publicKey.getEncoded());
+    GuidEntry guidEntry = new GuidEntry(gnsInstance, guid, publicKey, privateKey);
+    KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, publicKey, privateKey);
+
+    return guidEntry;
+  }
+
+
   private static CommandPacket accountGuidCreateInternal(String alias, String password,
-          CommandType commandType, GuidEntry guidEntry)
+                                                         CommandType commandType, GuidEntry guidEntry)
           throws ClientException, NoSuchAlgorithmException {
     return getCommand(commandType,
             guidEntry, GNSProtocol.NAME.toString(), alias,
@@ -1269,9 +1344,31 @@ public class GNSCommand extends CommandPacket {
             GNSProtocol.PASSWORD.toString(),
             password != null ? Password.encryptAndEncodePassword(password, alias) : "");
   }
+  /**
+   * Helper function to get commandpacket for RegisterAccountWithCertificate
+   *
+   * @param alias
+   * @param password
+   * @param
+   *
+   * @return CommandPacket
+   */
+  private static CommandPacket accountGuidCreateInternalWithCertificate(String alias, String password,
+                                                                        CommandType commandType, GuidEntry guidEntry, X509Certificate cert)
+          throws ClientException, NoSuchAlgorithmException, CertificateEncodingException {
+
+    byte []cert_bytes = cert.getEncoded();
+    String cert_encoded_string = Base64.encodeToString(cert_bytes, true);
+
+    return getCommand( commandType, guidEntry, GNSProtocol.NAME.toString(), alias,
+            GNSProtocol.CERTIFICATE.toString(), cert_encoded_string,
+            GNSProtocol.PASSWORD.toString(),
+            password != null ? Password.encryptAndEncodePassword(password, alias) : "");
+
+  }
 
   private static CommandPacket aclAdd(String accessType,
-          GuidEntry guid, String field, String accesserGuid)
+                                      GuidEntry guid, String field, String accesserGuid)
           throws ClientException {
     return getCommand(CommandType.AclAddSelf, guid,
             GNSProtocol.ACL_TYPE.toString(), accessType,
@@ -1282,7 +1379,7 @@ public class GNSCommand extends CommandPacket {
   }
 
   private static CommandPacket aclRemove(String accessType,
-          GuidEntry guid, String field, String accesserGuid)
+                                         GuidEntry guid, String field, String accesserGuid)
           throws ClientException {
     return getCommand(CommandType.AclRemoveSelf, guid, GNSProtocol.ACL_TYPE.toString(),
             accessType, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.ACCESSER.toString(),
@@ -1290,7 +1387,7 @@ public class GNSCommand extends CommandPacket {
   }
 
   private static CommandPacket aclGet(String accessType,
-          GuidEntry guid, String field, String readerGuid)
+                                      GuidEntry guid, String field, String readerGuid)
           throws ClientException {
     return getCommand(CommandType.AclRetrieve, guid, GNSProtocol.ACL_TYPE.toString(), accessType,
             GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.READER.toString(),
@@ -1314,7 +1411,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldCreateList(String targetGUID,
-          String field, JSONArray list, GuidEntry querierGUID)
+                                                    String field, JSONArray list, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.CreateList, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), list.toString(), GNSProtocol.WRITER.toString(),
@@ -1383,7 +1480,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldAppend(String targetGUID,
-          String field, JSONArray list, GuidEntry querierGUID)
+                                                String field, JSONArray list, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.AppendListWithDuplication, querierGUID,
             GNSProtocol.GUID.toString(), targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), list.toString(), GNSProtocol.WRITER.toString(),
@@ -1405,7 +1502,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldReplaceList(String targetGUID,
-          String field, JSONArray list, GuidEntry querierGUID)
+                                                     String field, JSONArray list, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.ReplaceList, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), list.toString(), GNSProtocol.WRITER.toString(),
@@ -1428,7 +1525,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldClear(String targetGUID,
-          String field, JSONArray list, GuidEntry querierGUID)
+                                               String field, JSONArray list, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.RemoveList, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), list.toString(), GNSProtocol.WRITER.toString(),
@@ -1448,7 +1545,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldClear(String targetGUID,
-          String field, GuidEntry querierGUID) throws ClientException {
+                                               String field, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.Clear, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.FIELD.toString(), field, GNSProtocol.WRITER.toString(), querierGUID.getGuid());
   }
@@ -1467,9 +1564,9 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldReadArray(String targetGUID,
-          String field, GuidEntry querierGUID) throws ClientException {
+                                                   String field, GuidEntry querierGUID) throws ClientException {
     return getCommand(querierGUID != null ? CommandType.ReadArray
-            : CommandType.ReadArrayUnsigned, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
+                    : CommandType.ReadArrayUnsigned, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.FIELD.toString(), field, GNSProtocol.READER.toString(),
             querierGUID != null ? querierGUID.getGuid() : null);
   }
@@ -1493,7 +1590,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldSetElement(String targetGUID,
-          String field, String newValue, int index, GuidEntry querierGUID)
+                                                    String field, String newValue, int index, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.Set, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), newValue, GNSProtocol.N.toString(), Integer.toString(index),
@@ -1511,7 +1608,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldSetNull(String targetGUID,
-          String field, GuidEntry querierGUID) throws ClientException {
+                                                 String field, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.SetFieldNull, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.WRITER.toString(), querierGUID.getGuid());
   }
@@ -1576,7 +1673,7 @@ public class GNSCommand extends CommandPacket {
    * The {@code fields} parameter is a list of the fields that
    * should be included in the returned records. {@code null}
    * means return all fields.
-   * 
+   *
    * The result type of the execution result of this query
    * is {@link CommandResultType#LIST}.
    * Requires all fields accessed to be world readable.
@@ -1689,7 +1786,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket selectSetupGroupQuery(GuidEntry reader,
-          GuidEntry accountGUID, String publicKey, String query, int interval)
+                                                          GuidEntry accountGUID, String publicKey, String query, int interval)
           throws ClientException {
     return getCommand(CommandType.SelectGroupSetupQuery, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
@@ -1730,7 +1827,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket selectLookupGroupQuery(GuidEntry reader,
-          String groupGUID)
+                                                           String groupGUID)
           throws ClientException {
     return getCommand(CommandType.SelectGroupLookupQuery, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
@@ -1836,7 +1933,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket selectNear(String field, JSONArray value,
-          Double maxDistance) throws ClientException {
+                                               Double maxDistance) throws ClientException {
     return getCommand(CommandType.SelectNear,
             GNSProtocol.FIELD.toString(), field,
             GNSProtocol.NEAR.toString(), value.toString(),
@@ -1859,7 +1956,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket selectNear(GuidEntry reader, String field, JSONArray value,
-          Double maxDistance) throws ClientException {
+                                               Double maxDistance) throws ClientException {
     return getCommand(CommandType.SelectNear, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.FIELD.toString(), field,
@@ -1883,7 +1980,7 @@ public class GNSCommand extends CommandPacket {
    * if a GNS error occurs
    */
   public static final CommandPacket setLocation(String targetGUID,
-          double longitude, double latitude, GuidEntry querierGUID)
+                                                double longitude, double latitude, GuidEntry querierGUID)
           throws ClientException {
     return fieldReplaceOrCreateList(targetGUID, GNSProtocol.LOCATION_FIELD_NAME.toString(),
             new JSONArray(Arrays.asList(longitude, latitude)), querierGUID);
@@ -1903,7 +2000,7 @@ public class GNSCommand extends CommandPacket {
    * if a GNS error occurs
    */
   public static final CommandPacket setLocation(GuidEntry targetGUID,
-          double longitude, double latitude) throws ClientException {
+                                                double longitude, double latitude) throws ClientException {
     return setLocation(targetGUID.getGuid(), longitude, latitude,
             targetGUID);
   }
@@ -1920,7 +2017,7 @@ public class GNSCommand extends CommandPacket {
    * if a GNS error occurs
    */
   public static final CommandPacket getLocation(String targetGUID,
-          GuidEntry querierGUID) throws ClientException {
+                                                GuidEntry querierGUID) throws ClientException {
     return fieldReadArray(targetGUID, GNSProtocol.LOCATION_FIELD_NAME.toString(), querierGUID);
   }
 
@@ -1952,7 +2049,7 @@ public class GNSCommand extends CommandPacket {
    * @throws IOException
    */
   public static final CommandPacket activeCodeClear(String targetGUID,
-          String action, GuidEntry querierGUID) throws ClientException,
+                                                    String action, GuidEntry querierGUID) throws ClientException,
           IOException {
     return getCommand(CommandType.ClearCode, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.WRITER.toString(), querierGUID.getGuid());
@@ -1970,7 +2067,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket activeCodeSet(String targetGUID,
-          String action, byte[] code, GuidEntry querierGUID)
+                                                  String action, byte[] code, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.SetCode, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.AC_CODE.toString(),
@@ -1991,7 +2088,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket activeCodeGet(String targetGUID,
-          String action, GuidEntry querierGUID) throws ClientException {
+                                                  String action, GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.GetCode, querierGUID,
             GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.AC_ACTION.toString(), action,
@@ -2012,7 +2109,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldCreateList(GuidEntry targetGUID,
-          String field, JSONArray list) throws ClientException {
+                                                    String field, JSONArray list) throws ClientException {
     return fieldCreateList(targetGUID.getGuid(), field, list, targetGUID);
   }
 
@@ -2076,7 +2173,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldAppendOrCreate(String targetGUID,
-          String field, String value, GuidEntry querierGUID)
+                                                        String field, String value, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.AppendOrCreate, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(),
@@ -2100,7 +2197,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldReplaceOrCreate(String targetGUID,
-          String field, String value, GuidEntry querierGUID)
+                                                         String field, String value, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.ReplaceOrCreate, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(),
@@ -2164,7 +2261,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldReplace(String targetGUID,
-          String field, String value, GuidEntry querierGUID)
+                                                 String field, String value, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.Replace, querierGUID, GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(), querierGUID.getGuid());
@@ -2184,7 +2281,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldReplace(GuidEntry targetGUID,
-          String field, String value) throws ClientException {
+                                                 String field, String value) throws ClientException {
     return fieldReplace(targetGUID.getGuid(), field, value, targetGUID);
   }
 
@@ -2200,7 +2297,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldReplace(GuidEntry targetGUID,
-          String field, JSONArray value) throws ClientException {
+                                                 String field, JSONArray value) throws ClientException {
     return fieldReplaceList(targetGUID.getGuid(), field, value, targetGUID);
   }
 
@@ -2220,7 +2317,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldAppend(String targetGUID,
-          String field, String value, GuidEntry querierGUID)
+                                                String field, String value, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.AppendWithDuplication, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), value, GNSProtocol.WRITER.toString(),
@@ -2241,7 +2338,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldAppend(GuidEntry targetGUID,
-          String field, String value) throws ClientException {
+                                                String field, String value) throws ClientException {
     return fieldAppend(targetGUID.getGuid(), field, value, targetGUID);
   }
 
@@ -2343,7 +2440,7 @@ public class GNSCommand extends CommandPacket {
    */
   @Deprecated
   public static final CommandPacket fieldReplaceFirstElement(String targetGuid, String field,
-          String value, GuidEntry writer)
+                                                             String value, GuidEntry writer)
           throws IOException, ClientException {
     return getCommand(writer != null ? CommandType.Replace : CommandType.ReplaceUnsigned,
             writer,
@@ -2367,7 +2464,7 @@ public class GNSCommand extends CommandPacket {
    */
   @Deprecated
   public CommandPacket fieldReplaceFirstElement(GuidEntry targetGuid, String field,
-          String value) throws IOException, ClientException {
+                                                String value) throws IOException, ClientException {
     return fieldReplaceFirstElement(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -2389,8 +2486,8 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldSubstitute(String targetGUID,
-          String field, String newValue, String oldValue,
-          GuidEntry querierGUID) throws ClientException {
+                                                    String field, String newValue, String oldValue,
+                                                    GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.Substitute, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), newValue, GNSProtocol.OLD_VALUE.toString(), oldValue,
             GNSProtocol.WRITER.toString(), querierGUID.getGuid());
@@ -2408,7 +2505,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldSubstitute(GuidEntry targetGUID,
-          String field, String newValue, String oldValue)
+                                                    String field, String newValue, String oldValue)
           throws ClientException {
     return fieldSubstitute(targetGUID.getGuid(), field, newValue, oldValue,
             targetGUID);
@@ -2433,8 +2530,8 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldSubstitute(String targetGUID,
-          String field, JSONArray newValue, JSONArray oldValue,
-          GuidEntry querierGUID) throws ClientException {
+                                                    String field, JSONArray newValue, JSONArray oldValue,
+                                                    GuidEntry querierGUID) throws ClientException {
     return getCommand(CommandType.SubstituteList, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.FIELD.toString(), field, GNSProtocol.VALUE.toString(), newValue.toString(),
             GNSProtocol.OLD_VALUE.toString(), oldValue.toString(), GNSProtocol.WRITER.toString(), querierGUID.getGuid());
@@ -2457,7 +2554,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldSubstitute(GuidEntry targetGUID,
-          String field, JSONArray newValue, JSONArray oldValue)
+                                                    String field, JSONArray newValue, JSONArray oldValue)
           throws ClientException {
     return fieldSubstitute(targetGUID.getGuid(), field, newValue, oldValue,
             targetGUID);
@@ -2477,9 +2574,9 @@ public class GNSCommand extends CommandPacket {
   @Deprecated
   // FIXME: This should probably go away.
   public static final CommandPacket fieldReadArrayFirstElement(String targetGUID, String field,
-          GuidEntry reader) throws ClientException {
+                                                               GuidEntry reader) throws ClientException {
     return getCommand(reader != null ? CommandType.ReadArrayOne
-            : CommandType.ReadArrayOneUnsigned, reader,
+                    : CommandType.ReadArrayOneUnsigned, reader,
             GNSProtocol.GUID.toString(), targetGUID,
             GNSProtocol.FIELD.toString(), field,
             GNSProtocol.READER.toString(), reader != null ? reader.getGuid() : null);
@@ -2514,7 +2611,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket fieldRemove(GuidEntry targetGUID,
-          String field) throws ClientException {
+                                                String field) throws ClientException {
     return fieldRemove(targetGUID.getGuid(), field, targetGUID);
   }
 
