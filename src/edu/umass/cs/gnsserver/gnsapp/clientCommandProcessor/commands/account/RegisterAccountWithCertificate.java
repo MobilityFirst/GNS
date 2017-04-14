@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
@@ -54,33 +53,31 @@ import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
  *
  * @author tramteja
  */
 public class RegisterAccountWithCertificate extends AbstractCommand {
 
-  /**
-   * Creates a RegisterAccount instance.
-   *
-   * @param module
-   */
-  public static final Logger LOG = Logger.getLogger(Reconfigurator.class.getName());
+    /**
+     * Creates a RegisterAccount instance.
+     *
+     * @param module
+     */
+    public static final Logger LOG = Logger.getLogger(Reconfigurator.class.getName());
 
-  public RegisterAccountWithCertificate(CommandModule module) {
-    super(module);
-  }
+    public RegisterAccountWithCertificate(CommandModule module) {
+        super(module);
+    }
 
-  /**
-   *
-   * @return the command type
-   */
-  @Override
-  public CommandType getCommandType() {
-    return CommandType.RegisterAccountWithCertificate;
-  }
-
+    /**
+     *
+     * @return the command type
+     */
+    @Override
+    public CommandType getCommandType() {
+        return CommandType.RegisterAccountWithCertificate;
+    }
 
     /**
      * check if certificate is self signed
@@ -90,7 +87,7 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
      * @throws GeneralSecurityException general security exception
      */
 
-    private Boolean checkSelfSigned(X509Certificate cert) throws GeneralSecurityException{
+    private Boolean checkSelfSigned(X509Certificate cert) throws GeneralSecurityException {
         try {
             // Try to verify certificate signature with its own public key
             PublicKey key = cert.getPublicKey();
@@ -109,7 +106,7 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
      * @throws GeneralSecurityException general security exception
      */
 
-    private Set<X509Certificate> loadCertificatesFromTrustStore() throws IOException, GeneralSecurityException{
+    private Set<X509Certificate> loadCertificatesFromTrustStore() throws IOException, GeneralSecurityException {
         char[] trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword").toCharArray();
         FileInputStream tsInputStream = new FileInputStream(System.getProperty("javax.net.ssl.trustStore"));
 
@@ -121,7 +118,7 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
 
         Iterator<TrustAnchor> it = params.getTrustAnchors().iterator();
         Set<X509Certificate> trustedCerts = new HashSet<X509Certificate>();
-        while( it.hasNext() ) {
+        while (it.hasNext()) {
             TrustAnchor ta = it.next();
             trustedCerts.add(ta.getTrustedCert());
         }
@@ -141,7 +138,7 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
      */
 
     private static Boolean verifyCertificatePath(X509Certificate cert, Set<X509Certificate> trustedRootCerts,
-                                                               Set<X509Certificate> intermediateCerts) throws GeneralSecurityException {
+                                                 Set<X509Certificate> intermediateCerts) throws GeneralSecurityException {
 
         // Create the selector that specifies the starting certificate
         X509CertSelector selector = new X509CertSelector();
@@ -154,8 +151,7 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
         }
 
         // Configure the PKIX certificate builder algorithm parameters
-        PKIXBuilderParameters pkixParams =
-                new PKIXBuilderParameters(trustAnchors, selector);
+        PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(trustAnchors, selector);
 
         // Disable CRL checks since certificate currently generated do not have crl distribution points
         // TODO: Add support for crls
@@ -170,17 +166,15 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
         CertPathBuilder builder = CertPathBuilder.getInstance("PKIX");
 
         try {
-            PKIXCertPathBuilderResult result =
-                    (PKIXCertPathBuilderResult) builder.build(pkixParams);
+            PKIXCertPathBuilderResult result = (PKIXCertPathBuilderResult) builder.build(pkixParams);
             // since we are able to build  valid path return true
             return true;
         } catch (CertPathBuilderException | InvalidAlgorithmParameterException e) {
             // unable to build certificate path return false
-            LOG.log(Level.FINEST, "Exception occurred while building the certificate chain " +e.toString());
+            LOG.log(Level.FINEST, "Exception occurred while building the certificate chain " + e.toString());
             return false;
         }
     }
-
 
     /**
      * Function to verify trust parameters of the certificate
@@ -190,11 +184,10 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
      * @throws IOException if keystore file is not found
      * @throws GeneralSecurityException general security sxception
      */
-    private Boolean verify_certificate_trust(X509Certificate cert)
-            throws IOException, GeneralSecurityException {
+    private Boolean verify_certificate_trust(X509Certificate cert) throws IOException, GeneralSecurityException {
         // check if certificate is self signed if yes return false
 
-        if ( checkSelfSigned(cert)) {
+        if (checkSelfSigned(cert)) {
             LOG.log(Level.FINEST, "Given certificate was self signed");
             return false;
         }
@@ -207,7 +200,6 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
         // and a set of intermediate certificates
         Set<X509Certificate> trustedRootCerts = new HashSet<X509Certificate>();
         Set<X509Certificate> intermediateCerts = new HashSet<X509Certificate>();
-
 
         for (X509Certificate additionalCert : trustedCerts) {
             // if a certificate is in trustStore and selfsigned then it is trusted root or else intermediate
@@ -231,94 +223,85 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
      *  @return 0/1
      */
 
-    private Boolean verify_certificate_validity(X509Certificate cert){
+    private Boolean verify_certificate_validity(X509Certificate cert) {
         try {
             cert.checkValidity();
             return true;
-        }catch (CertificateExpiredException | CertificateNotYetValidException e) {
+        } catch (CertificateExpiredException | CertificateNotYetValidException e) {
             return false;
         }
     }
 
-
-  /**
-   * Function to verify name given  with common name in the certificate
-   * 
-   * @param cert
-   * @param name
-   * 
-   * @return 0/1
-   */
-  private Boolean verify_certificate_name(String name, X509Certificate cert) {
-      String name_in_certificate = SharedGuidUtils.getNameFromCertificate(cert);
-      return name_in_certificate.equals(name);
-  }
-
-  @Override
-  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket,
-                                 ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException,
-          InternalRequestException {
-
-    // TODO: log about reception of commandPacket
-    JSONObject json = commandPacket.getCommand();
-    String name = json.getString(GNSProtocol.NAME.toString());
-    String certificate_encoded = json.getString(GNSProtocol.CERTIFICATE.toString());
-    String password = json.getString(GNSProtocol.PASSWORD.toString());
-    String signature = json.getString(GNSProtocol.SIGNATURE.toString());
-    String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
-
-    try {
-
-        // Make  certificate object from stream obtained
-        X509Certificate cert = SharedGuidUtils.getCertificateFromString(certificate_encoded);
-        PublicKey publicKey = SharedGuidUtils.getPublicKeyFromCertificate(cert);
-        String publicKeyString = SharedGuidUtils.getPublicKeyString(publicKey);
-
-        String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKeyString);
-
-        if (!NSAccessSupport.verifySignature(publicKeyString, signature, message)) {
-            return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString()
-                    + " " + GNSProtocol.BAD_SIGNATURE.toString());
-        }
-
-        if(!verify_certificate_name(name, cert)) {
-            // TODO: Log name verification failure
-            return new CommandResponse(ResponseCode.NAME_MISMATCH_CERTIFICATE,
-                                        GNSProtocol.NAME_MISMATCH_ERROR.toString());
-        }
-
-        if (!verify_certificate_trust(cert)) {
-            //TODO : log certificate trust failure
-            return new CommandResponse(ResponseCode.TRUST_INVALID_CERTIFICATE,
-                                        GNSProtocol.TRUST_INVALID_ERROR.toString());
-        }
-
-        if(!verify_certificate_validity(cert)) {
-            //TODO : log certificate validity failure
-            return new CommandResponse(ResponseCode.TIME_INVALID_CERTIFICATE,
-                                        GNSProtocol.TIME_INVALID_ERROR.toString());
-        }
-
-        
-        CommandResponse result = AccountAccess.addAccount(header, commandPacket,
-                handler.getHttpServerHostPortString(),
-                name, guid, publicKeyString,
-                password,
-                Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION),
-                handler);
-        if (result.getExceptionOrErrorCode().isOKResult()) {
-            // Everything is hunkey dorey so return the new guid
-            return new CommandResponse(ResponseCode.NO_ERROR, guid);
-        } else {
-            assert (result.getExceptionOrErrorCode() != null);
-            // Otherwise return the error response.
-            return result;
-        }
-    } catch (ClientException | IOException | GeneralSecurityException e) {
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " "
-                                        + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
+    /**
+     * Function to verify name given  with common name in the certificate
+     *
+     * @param cert
+     * @param name
+     *
+     * @return 0/1
+     */
+    private Boolean verify_certificate_name(String name, X509Certificate cert) {
+        String name_in_certificate = SharedGuidUtils.getNameFromCertificate(cert);
+        return name_in_certificate.equals(name);
     }
-  }
+
+    @Override
+    public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket,
+                                   ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException, JSONException,
+            NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException, InternalRequestException {
+
+        LOG.log(Level.FINEST, "Command received for certificate based account registration");
+        JSONObject json = commandPacket.getCommand();
+        String name = json.getString(GNSProtocol.NAME.toString());
+        String certificate_encoded = json.getString(GNSProtocol.CERTIFICATE.toString());
+        String password = json.getString(GNSProtocol.PASSWORD.toString());
+        String signature = json.getString(GNSProtocol.SIGNATURE.toString());
+        String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
+
+        try {
+
+            // Make  certificate object from stream obtained
+            X509Certificate cert = SharedGuidUtils.getCertificateFromString(certificate_encoded);
+            PublicKey publicKey = SharedGuidUtils.getPublicKeyFromCertificate(cert);
+            String publicKeyString = SharedGuidUtils.getPublicKeyString(publicKey);
+
+            String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKeyString);
+
+            if (!NSAccessSupport.verifySignature(publicKeyString, signature, message)) {
+                return new CommandResponse(ResponseCode.SIGNATURE_ERROR,
+                        GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
+            }
+
+            if (!verify_certificate_name(name, cert)) {
+                LOG.log(Level.FINEST, "Name mismatch in the certificate");
+                return new CommandResponse(ResponseCode.NAME_MISMATCH_CERTIFICATE, GNSProtocol.NAME_MISMATCH_ERROR.toString());
+            }
+
+            if (!verify_certificate_trust(cert)) {
+                LOG.log(Level.FINEST, "Unable to build certificate chain");
+                return new CommandResponse(ResponseCode.TRUST_INVALID_CERTIFICATE, GNSProtocol.TRUST_INVALID_ERROR.toString());
+            }
+
+            if (!verify_certificate_validity(cert)) {
+                LOG.log(Level.FINEST, "Certificate has been expired or not yet valid");
+                return new CommandResponse(ResponseCode.TIME_INVALID_CERTIFICATE, GNSProtocol.TIME_INVALID_ERROR.toString());
+            }
+
+            CommandResponse result = AccountAccess.addAccount(header, commandPacket, handler.getHttpServerHostPortString(),
+                    name, guid, publicKeyString, password, Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION),
+                    handler);
+            if (result.getExceptionOrErrorCode().isOKResult()) {
+                // Everything is hunkey dorey so return the new guid
+                return new CommandResponse(ResponseCode.NO_ERROR, guid);
+            } else {
+                assert (result.getExceptionOrErrorCode() != null);
+                // Otherwise return the error response.
+                return result;
+            }
+        } catch (ClientException | IOException | GeneralSecurityException e) {
+            return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR,
+                    GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.UNSPECIFIED_ERROR.toString() + " " + e.getMessage());
+        }
+    }
 
 }
