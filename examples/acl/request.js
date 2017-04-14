@@ -1,6 +1,5 @@
 $(document).ready(function(){
 $("#request_send_1").click(function() {
-  // var x = document.getElementById("input_box_1").value;
 	$.ajax({
     
     url: "http://127.0.0.1:24703/GNS/lookupguid",
@@ -20,7 +19,6 @@ $("#request_send_1").click(function() {
       },
       error: function(response) {
         console.log(response);
-        // document.getElementById("box").innerHTML = JSON.stringify(response);
       }
 });
 
@@ -66,7 +64,6 @@ $("#request_send_3").click(function() {
     dataType: 'text',
 
     success: function(response) {
-        // alert(response);
         var data = parseData(response);
         document.getElementById("data").innerHTML = data;
         document.getElementById('result').innerHTML = "";
@@ -86,15 +83,9 @@ if (!("name".includes(x) || "id".includes(x) || "location".includes(x) || "conta
   } else {
 var jsonObject = {};
 jsonObject["COMMANDINT"] = 160;
-// jsonObject["field"] = "+ALL+";
-// jsonObject["field"] = "occupation";
-// jsonObject["field"] = String(x);
 jsonObject["field"] = x;
-// jsonObject["field"] = "name";
-
 jsonObject["guid"] = guid; // target guid - user@gns.name 
 jsonObject["reader"] = reader; // querier guid -- reader@gns.name
-// jsonObject["seqnum"] = randomString(32); // insert random request nonce
 now = moment().utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"; // require the format: "2017-03-28T14:35:24Z";
 jsonObject["timestamp"] = now;
 var message = JSON.stringify(jsonObject);
@@ -119,19 +110,16 @@ console.log(jsonObject);
     dataType: 'text',
     success: function(response) {
       if (response.includes("+ACCESS_DENIED+")) {
-        // alert("Access Denied");
         document.getElementById("result").innerHTML = "Access Denied";
       } else if (response.includes("+GENERICERROR+")) {
         document.getElementById("result").innerHTML = "Error ! ";
       } else {
-        // alert(x + " : " + response);
         document.getElementById("result").innerHTML = "Field Value: " + response;
       } 
         return response;        
       },
       error: function(response) {
-        // alert(JSON.stringify(response));
-        // console.log(response);
+         console.log(response);
       }
     
 });
@@ -150,18 +138,10 @@ $("#request_send_16").click(function() {
 jsonObject["COMMANDINT"] = 511;
 jsonObject["accesser"] = reader;
 jsonObject["aclType"] = "READ_WHITELIST";
-// jsonObject["field"] = "+ALL+";
-// jsonObject["field"] = "occupation";
-// jsonObject["field"] = String(x);
-
 jsonObject["field"] = x;
-// jsonObject["field"] = "name";
-// "seqnum":"5219034722923587065","timestamp":"2017-04-11T20:04:13Z"
 jsonObject["guid"] = guid; // target guid - user@gns.name 
 
  // querier guid -- reader@gns.name
-// jsonObject["seqnum"] = randomString(32); // insert random request nonce
-// jsonObject["seqnum"] = "-950303443815860452"; // insert random request nonce
 now = moment().utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"; // require the format: "2017-03-28T14:35:24Z";
 jsonObject["timestamp"] = now;
 var message = JSON.stringify(jsonObject);
@@ -186,10 +166,8 @@ console.log(jsonObject);
     dataType: 'text',
     success: function(response) {
       if (response.includes("+ACCESS_DENIED+")) {
-        // alert("Access Denied");
         document.getElementById("result").innerHTML = "Error: " + "Access Denied";
       } else {
-        // alert(x + " : " + response);
         if (response.includes("+OK+")) {
         document.getElementById("result").innerHTML = "Alias reader@gns.name added to ACL of : " + x+". Now reader can read the value of the field : " + x;;
       }
@@ -197,8 +175,7 @@ console.log(jsonObject);
         return response;        
       },
       error: function(response) {
-        // alert(JSON.stringify(response));
-        // console.log(response);
+         console.log(response);
       }
 });
 }
@@ -215,18 +192,10 @@ $("#request_send_17").click(function() {
 jsonObject["COMMANDINT"] = 513;
 jsonObject["accesser"] = reader;
 jsonObject["aclType"] = "READ_WHITELIST";
-// jsonObject["field"] = "+ALL+";
-// jsonObject["field"] = "occupation";
-// jsonObject["field"] = String(x);
-
 jsonObject["field"] = x;
-// jsonObject["field"] = "name";
-// "seqnum":"5219034722923587065","timestamp":"2017-04-11T20:04:13Z"
-jsonObject["guid"] = guid; // target guid - user@gns.name 
+jsonObject["guid"] = guid; // target guid - user@gns.name
 
  // querier guid -- reader@gns.name
-// jsonObject["seqnum"] = randomString(32); // insert random request nonce
-// jsonObject["seqnum"] = "-950303443815860452"; // insert random request nonce
 now = moment().utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"; // require the format: "2017-03-28T14:35:24Z";
 jsonObject["timestamp"] = now;
 var message = JSON.stringify(jsonObject);
@@ -275,14 +244,9 @@ var jsonObject = {};
 jsonObject["COMMANDINT"] = 518;
 jsonObject["aclType"] = "READ_WHITELIST"; // querier guid -- reader@gns.name
 jsonObject["field"] = "+ALL+";
-// jsonObject["field"] = "occupation";
-// jsonObject["field"] = "location";
-// jsonObject["field"] = "name";
-
-jsonObject["guid"] = guid; // target guid - user@gns.name 
+jsonObject["guid"] = guid; // target guid - user@gns.name
 
 jsonObject["reader"] = reader; // querier guid -- reader@gns.name
-// jsonObject["seqnum"] = randomString(32); // insert random request nonce
 now = moment().utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"; // require the format: "2017-03-28T14:35:24Z";
 jsonObject["timestamp"] = now;
 var message = JSON.stringify(jsonObject);
@@ -305,14 +269,12 @@ console.log(jsonObject);
     type: 'GET',
     crossDomain: true,
     dataType: 'text',
-    // jsonpCallback:"logResults",
     success: function(response) {
         alert(response);
       return response;          
       },
       error: function(response) {
-        // alert(JSON.stringify(response));
-        // console.log(response);
+         console.log(response);
         return response; 
       }
 
