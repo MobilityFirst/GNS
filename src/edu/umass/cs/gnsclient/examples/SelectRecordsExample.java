@@ -117,6 +117,8 @@ public class SelectRecordsExample {
         double lat = BOTTOM_LAT + (TOP_LAT - BOTTOM_LAT) * random.nextDouble();
         client.execute(GNSCommand.setLocation(userGuid, lon, lat));
         client.execute(GNSCommand.fieldUpdate(userGuid, "age", random.nextInt(40) + 20));
+        client.execute(GNSCommand.fieldUpdate(userGuid, "preference", random.nextInt(3)));
+               
       } catch (ClientException e) {
         if (ResponseCode.CONFLICTING_GUID_EXCEPTION.equals(e.getCode())) {
           System.out.print(".");
