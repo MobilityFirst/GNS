@@ -296,6 +296,7 @@ public class ConsoleModule {
    *
    */
   public void help() {
+    printString("Command usage <command_name> \"<parameters in quotes>\" \n");
     printString("Commands available for the main menu are:\n");
     ConsoleCommand command;
     Iterator<ConsoleCommand> it = commands.iterator();
