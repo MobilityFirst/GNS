@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.utils.StringParser;
 
 /**
  * Command that saves GUID/alias/Keypair information to a file
@@ -70,7 +71,7 @@ public class GuidExport extends ConsoleCommand {
   @Override
   public void parse(String commandText) throws Exception {
     try {
-      StringTokenizer st = new StringTokenizer(commandText.trim());
+      StringParser st = new StringParser(commandText.trim());
       if (st.countTokens() != 2) {
         wrongArguments();
         return;

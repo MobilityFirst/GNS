@@ -389,7 +389,11 @@ public class ConsoleModule {
     }
     try {
       printString("Looking for default GUID: " + guid + "\n");
-      new GuidUse(this).parse(guid.getEntityName());
+      String entity_name = guid.getEntityName();
+      if(entity_name.contains(" "))
+        entity_name = "\"" + entity_name + "\"";
+
+      new GuidUse(this).parse(entity_name);
     } catch (Exception e) {
       printString("Couldn't connect default GUID " + guid);
     }

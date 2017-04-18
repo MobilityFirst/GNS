@@ -25,6 +25,8 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.StringParser;
+
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -70,7 +72,7 @@ public class SetDefaultGuid extends ConsoleCommand {
   @Override
   public void parse(String commandText) throws Exception {
 
-    StringTokenizer st = new StringTokenizer(commandText.trim());
+    StringParser st = new StringParser(commandText.trim());
     if (st.countTokens() != 1) {
       wrongArguments();
       return;

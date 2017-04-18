@@ -24,6 +24,7 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.StringParser;
 import edu.umass.cs.gnscommon.utils.StringUtil;
 import java.io.IOException;
 import javax.xml.bind.DatatypeConverter;
@@ -60,7 +61,7 @@ public class KeyLookup extends ConsoleCommand {
   @Override
   public void parse(String commandText) throws Exception {
     try {
-      StringTokenizer st = new StringTokenizer(commandText.trim());
+      StringParser st = new StringParser(commandText.trim());
       String alias;
       switch (st.countTokens()) {
         case 0:

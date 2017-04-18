@@ -19,9 +19,8 @@
  */
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.security.PublicKey;
 
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
+
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -29,10 +28,11 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
+
 
 import java.security.cert.X509Certificate;
 import java.util.StringTokenizer;
+import edu.umass.cs.gnscommon.utils.StringParser;
 
 /**
  * Create a new account
@@ -71,7 +71,7 @@ public class AccountCreateWithCertificate extends ConsoleCommand
   @Override
   public void parse(String commandText) throws Exception
   {
-      StringTokenizer st = new StringTokenizer(commandText.trim());
+      StringParser st = new StringParser(commandText.trim());
       printString("I am here \n");
       if ((st.countTokens() != 3))
       {
@@ -79,7 +79,9 @@ public class AccountCreateWithCertificate extends ConsoleCommand
         return;
       }
       String certificatePath = st.nextToken();
+
       String privateKeyPath = st.nextToken();
+
       String password = st.nextToken();
 
       X509Certificate cert = SharedGuidUtils.loadCertificateFromFile(certificatePath);

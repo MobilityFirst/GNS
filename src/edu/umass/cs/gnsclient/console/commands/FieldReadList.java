@@ -21,6 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
 
+import edu.umass.cs.gnscommon.utils.StringParser;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -77,7 +78,7 @@ public class FieldReadList extends ConsoleCommand {
     try {
       GNSClientCommands gnsClient = module.getGnsClient();
 
-      StringTokenizer st = new StringTokenizer(commandText.trim());
+      StringParser st = new StringParser(commandText.trim());
       String guid;
       switch (st.countTokens()) {
         case 1:

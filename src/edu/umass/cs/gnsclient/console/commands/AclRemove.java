@@ -21,6 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
 
+import edu.umass.cs.gnscommon.utils.StringParser;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -75,7 +76,7 @@ public class AclRemove extends ConsoleCommand {
   public void parse(String commandText) throws Exception {
     try {
       GNSClientCommands gnsClient = module.getGnsClient();
-      StringTokenizer st = new StringTokenizer(commandText.trim());
+      StringParser st = new StringParser(commandText.trim());
       if (st.countTokens() != 3) {
         wrongArguments();
         return;

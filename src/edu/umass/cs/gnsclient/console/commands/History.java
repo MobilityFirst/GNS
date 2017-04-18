@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.utils.StringParser;
 
 /**
  * Shows the history
@@ -58,7 +59,7 @@ public class History extends ConsoleCommand
   public void parse(String commandText) throws Exception
   {
     List<String> list = module.getHistory();
-    StringTokenizer st = new StringTokenizer(commandText);
+    StringParser st = new StringParser(commandText.trim());
     if (st.countTokens() == 0)
     {
       for (int i = 0; i < list.size(); i++)

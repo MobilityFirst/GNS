@@ -250,6 +250,8 @@ public class KeyPairUtils {
       return KeyPairUtilsAndroid.getDefaultGuidEntryFromPreferences(gnsName);
     } else {
       createSingleton();
+      System.out.println(gnsName);
+      System.out.println(DEFAULT_GUID);
       return getGuidEntry(gnsName, keyStorageObj.get(gnsName + DEFAULT_GUID, null));
     }
   }

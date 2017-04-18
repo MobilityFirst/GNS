@@ -26,6 +26,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
+import edu.umass.cs.gnscommon.utils.StringParser;
 
 import java.util.StringTokenizer;
 
@@ -66,7 +67,7 @@ public class AccountCreate extends ConsoleCommand
   @Override
   public void parse(String commandText) throws Exception
   {
-      StringTokenizer st = new StringTokenizer(commandText.trim());
+      StringParser st = new StringParser(commandText.trim());
       if ((st.countTokens() != 2))
       {
         wrongArguments();
