@@ -46,7 +46,7 @@ public class SetupChainCode {
 			numChains = Integer.parseInt(System.getProperty("numChains"));
 		}
 		
-		byte[] code = Files.readAllBytes(Paths.get(codeFile));
+		String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 		
 		client = new GNSClientCommands();	
 		

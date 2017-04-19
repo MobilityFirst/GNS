@@ -50,7 +50,7 @@ public class ActiveNonBlockingRunner implements Runner {
 	private final DatabaseReader dbReader;
 	
 	// This object is used to serialize/deserialize values passing between Java and Javascript
-	private static ScriptObjectMirror JSON;
+	private ScriptObjectMirror JSON;
 	
 	/**
 	 * @param channel 
@@ -124,12 +124,11 @@ public class ActiveNonBlockingRunner implements Runner {
 		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
+				
 		Object ret = invocable.invokeFunction("run", JSON.callMember("parse", value),
-				accessor, querier);
-			 
-		Object ret1 = JSON.callMember("stringify", ret);
+				accessor, querier);		
 		
-		String result = ret1.toString();
+		String result = JSON.callMember("stringify", ret).toString();
 		
 		map.remove(id);
 		return result;

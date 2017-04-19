@@ -1970,13 +1970,11 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket activeCodeSet(String targetGUID,
-          String action, byte[] code, GuidEntry querierGUID)
+          String action, String code, GuidEntry querierGUID)
           throws ClientException {
     return getCommand(CommandType.SetCode, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.AC_CODE.toString(),
-            // This doesn't agree with the original method.
-            // Is this encoding the byes for the user? Where is it decoded?
-            Base64.encodeToString(code, true), GNSProtocol.WRITER.toString(),
+            code, GNSProtocol.WRITER.toString(),
             querierGUID.getGuid());
   }
 
