@@ -116,15 +116,16 @@ public class SelectRecordsExample {
         client.execute(GNSCommand.createGUID(accountGuidEntry, "user-" + i));
         GuidEntry userGuid = GuidUtils.getGUIDKeys("user-" + i);
         System.out.print("+");
+        // Randomly place the in the region
         double lon = LEFT_LON + (RIGHT_LON - LEFT_LON) * random.nextDouble();
         double lat = BOTTOM_LAT + (TOP_LAT - BOTTOM_LAT) * random.nextDouble();
         client.execute(GNSCommand.setLocation(userGuid, lon, lat));
+        // Add some additional random attributes
         client.execute(GNSCommand.fieldUpdate(userGuid, "age", random.nextInt(40) + 20));
-
         client.execute(GNSCommand.fieldUpdate(userGuid, "preference",
                 random.nextInt(2) == 0 ? "Long" : "Short"));
-
       } catch (ClientException e) {
+        // Catch the normal case where the records already exist
         if (ResponseCode.CONFLICTING_GUID_EXCEPTION.equals(e.getCode())) {
           System.out.print(".");
         } else {
@@ -138,10 +139,10 @@ public class SelectRecordsExample {
   }
 
   /**
-   * Creates a query that checks for records with an ageField between age1 and age2
-   * and overlaps between a polygon
-   * specified as a closed list of polygons and a the location
-   * field in a GUID record.
+   * Creates a query that checks for records with an {@code ageField} 
+   * between age1 and age2 a {@code prefField} field that equals prefValue
+   * and that overlap the polygon specified as a closed list of polygons and 
+   * the {@code locationField} in a GUID record.
    *
    * @param locationField
    * @param coordinates
@@ -156,12 +157,6 @@ public class SelectRecordsExample {
     return "$and: ["
             + "{"
             + buildLocationsQuery(locationField, coordinates)
-            //            + "{~" + locationField + ":{"
-            //            + "$geoIntersects:{"
-            //            //+ "$geoWithin:{"
-            //            + "$geometry:"
-            //            + createGeoJSONPolygon(coordinates).toString()
-            //            + "}}},"
             + "},"
             + "{~" + ageField + ":{$gt:" + age1 + ", $lt:" + age2 + "}},"
             + "{~" + prefField + ":{$eq:\"" + prefValue + "\"}}"
@@ -170,8 +165,8 @@ public class SelectRecordsExample {
 
   /**
    * Creates a query that checks for overlaps between a polygon
-   * specified as a closed list of polygons and a the location
-   * field in a GUID record.
+   * specified as a closed list of polygons and the 
+   * {@code locationField} in a GUID record.
    *
    * @param locationField
    * @param coordinates
