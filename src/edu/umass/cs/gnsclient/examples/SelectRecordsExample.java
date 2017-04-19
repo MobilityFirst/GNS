@@ -1,4 +1,4 @@
-/* Copyright (c) 2016 University of Massachusetts
+/* Copyright (c) 2017 University of Massachusetts
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * Initial developer(s): Westy */
+ */
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
@@ -22,7 +22,6 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import java.awt.geom.Point2D;
 import java.io.IOException;
@@ -39,11 +38,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This example creates an account GUID record, updates access lists,
- * performs a few reads and writes to its fields. It uses client
- * commands similar to those used by the CASA Alerts application.
- *
- * @author arun, westy
+ * This example creates records and retrieves them using 
+ * the selectRecords client method.
  */
 public class SelectRecordsExample {
 
@@ -56,7 +52,7 @@ public class SelectRecordsExample {
   private static final double TOP_LAT = 33.635;
   private static final double RIGHT_LON = -96.01;
   private static final double BOTTOM_LAT = 31.854;
-  // Don't forget that longitude is X and latitude us Y so
+  // Don't forget that longitude is X and latitude is Y so
   // for point systems it's often (long, lat).
   private static final Point2D DOMAIN_UPPER_LEFT = new Point2D.Double(LEFT_LON, TOP_LAT);
   private static final Point2D DOMAIN_UPPER_RIGHT = new Point2D.Double(RIGHT_LON, TOP_LAT);
