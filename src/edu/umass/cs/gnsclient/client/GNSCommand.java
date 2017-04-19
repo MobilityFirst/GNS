@@ -1869,6 +1869,7 @@ public class GNSCommand extends CommandPacket {
 
   /**
    * Update the location field for {@code targetGUID}.
+   * See also {@link GNSProtocol#LOCATION_FIELD_NAME}.
    *
    * @param targetGUID
    * The guid being queried.
@@ -1891,6 +1892,7 @@ public class GNSCommand extends CommandPacket {
 
   /**
    * Update the location field for {@code targetGUID}.
+   * See also {@link GNSProtocol#LOCATION_FIELD_NAME}.
    *
    * @param longitude
    * the guid longitude
@@ -1926,6 +1928,7 @@ public class GNSCommand extends CommandPacket {
 
   /**
    * Get the location of {@code targetGUID} as a JSONArray: [LONG, LAT]
+   * See also {@link GNSProtocol#LOCATION_FIELD_NAME}.
    *
    * @param targetGUID
    * The guid being queried.
