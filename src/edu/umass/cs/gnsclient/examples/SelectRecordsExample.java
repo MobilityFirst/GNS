@@ -23,7 +23,7 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
-import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -68,7 +68,7 @@ public class SelectRecordsExample {
           DOMAIN_LOWER_LEFT, DOMAIN_LOWER_RIGHT,
           DOMAIN_UPPER_RIGHT));
 
-  private static final String accountAlias = "exampleAccount@gns.name";
+  private static String accountAlias = "exampleAccount@gns.name";
   private static GNSClient client;
   private static GuidEntry accountGuidEntry;
 
@@ -93,18 +93,25 @@ public class SelectRecordsExample {
     accountGuidEntry = GuidUtils.getGUIDKeys(accountAlias);
     // Next we create some fake user records as subguids
     createUserRecords();
+    // Create the query string
+    String query = buildLocationsAgePrefQuery(GNSProtocol.LOCATION_FIELD_NAME.toString(), AREA_EXTENT,
+            "age", 30, 50, "preference", "Long");
     // Display the query
-    System.out.println(buildLocationsAndAgeQuery(GNSProtocol.LOCATION_FIELD_NAME.toString(), AREA_EXTENT,
-            "age", 30, 50));
-    // Execute the query and print the results
-    System.out.println(client.execute(GNSCommand.selectRecords(accountGuidEntry,
-            buildLocationsAndAgeQuery(GNSProtocol.LOCATION_FIELD_NAME.toString(), AREA_EXTENT,
-                    "age", 40, 45),
-            Arrays.asList(GNSProtocol.LOCATION_FIELD_NAME.toString(), "age"))).getResultJSONArray());
-    ThreadUtils.sleep(30000);
-    System.exit(0);
+    System.out.println("QUERY:");
+    System.out.println(new JSONObject("{" + query + "}").toString(4));
+    // Create the command
+    CommandPacket command = GNSCommand.selectRecords(accountGuidEntry,
+            query,
+            Arrays.asList(GNSProtocol.LOCATION_FIELD_NAME.toString(), "age", "preference"));
+    // Execute the query command and print the results
+    JSONArray jsonArray = client.execute(command).getResultJSONArray();
+    System.out.println("RESULT:");
+    System.out.println(jsonArray.toString(4));
   }
 
+  /**
+   * Create some example user records.
+   */
   private static void createUserRecords() {
     Random random = new Random();
 
@@ -117,8 +124,10 @@ public class SelectRecordsExample {
         double lat = BOTTOM_LAT + (TOP_LAT - BOTTOM_LAT) * random.nextDouble();
         client.execute(GNSCommand.setLocation(userGuid, lon, lat));
         client.execute(GNSCommand.fieldUpdate(userGuid, "age", random.nextInt(40) + 20));
-        client.execute(GNSCommand.fieldUpdate(userGuid, "preference", random.nextInt(3)));
-               
+
+        client.execute(GNSCommand.fieldUpdate(userGuid, "preference",
+                random.nextInt(2) == 0 ? "Long" : "Short"));
+
       } catch (ClientException e) {
         if (ResponseCode.CONFLICTING_GUID_EXCEPTION.equals(e.getCode())) {
           System.out.print(".");
@@ -146,8 +155,8 @@ public class SelectRecordsExample {
    * @return
    * @throws JSONException
    */
-  private static String buildLocationsAndAgeQuery(String locationField, List<Point2D> coordinates,
-          String ageField, int age1, int age2) throws JSONException {
+  private static String buildLocationsAgePrefQuery(String locationField, List<Point2D> coordinates,
+          String ageField, int age1, int age2, String prefField, String prefValue) throws JSONException {
     return "$and: ["
             + "{"
             + buildLocationsQuery(locationField, coordinates)
@@ -158,7 +167,8 @@ public class SelectRecordsExample {
             //            + createGeoJSONPolygon(coordinates).toString()
             //            + "}}},"
             + "},"
-            + "{~" + ageField + ":{$gt:" + age1 + ", $lt:" + age2 + "}}"
+            + "{~" + ageField + ":{$gt:" + age1 + ", $lt:" + age2 + "}},"
+            + "{~" + prefField + ":{$eq:\"" + prefValue + "\"}}"
             + "]";
   }
 
