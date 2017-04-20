@@ -139,7 +139,7 @@ public class SelectRecordsExample {
   }
 
   /**
-   * Creates a query that checks for records with an {@code ageField} 
+   * Creates a query that checks for records with a {@code ageField} 
    * between age1 and age2 a {@code prefField} field that equals prefValue
    * and that overlap the polygon specified as a closed list of polygons and 
    * the {@code locationField} in a GUID record.
@@ -149,6 +149,8 @@ public class SelectRecordsExample {
    * @param ageField
    * @param age1
    * @param age2
+   * @param prefField
+   * @param prefValue
    * @return
    * @throws JSONException
    */
