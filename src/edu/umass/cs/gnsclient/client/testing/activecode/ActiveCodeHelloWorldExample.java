@@ -1,13 +1,23 @@
 package edu.umass.cs.gnsclient.client.testing.activecode;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.json.JSONException;
+
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 
 /**
@@ -24,9 +34,11 @@ public class ActiveCodeHelloWorldExample {
 	
 	/**
 	 * @param args
-	 * @throws Exception
+	 * @throws IOException 
+	 * @throws ClientException 
+	 * @throws JSONException 
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws IOException, ClientException, JSONException {
 		
 		boolean update = true;
 		if(System.getProperty("update")!=null){
@@ -53,14 +65,31 @@ public class ActiveCodeHelloWorldExample {
 		}
 				
 		// create a client
-		final GNSClientCommands client = new GNSClientCommands();
+		final GNSClient client = new GNSClient();
 		
 		final String ACCOUNT_GUID_PREFIX = "GNS_ACCOUNT_";
 		final String ACCOUNT_GUID = ACCOUNT_GUID_PREFIX + name;
 		final String PASSWORD = "";
+		edu.umass.cs.gnsclient.client.util.GuidEntry entry = null;
+		// create an account	
+		try {
+			entry = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_GUID, PASSWORD);
+			ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(new File("guid")));
+			entry.writeObject(output);
+			output.flush();
+			output.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			// The guid is already created, try to read from a local file
+			try {
+				ObjectInputStream input = new ObjectInputStream(new FileInputStream(new File("guid")));
+				entry = new GuidEntry(input);
+				input.close();
+			} catch (IOException | EncryptionException ie) {
+				ie.printStackTrace();
+			}
+		}
 		
-		// create an account
-		final edu.umass.cs.gnsclient.client.util.GuidEntry entry = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_GUID, PASSWORD);
 		
 		String field = "someField";
 		String value = "original value";
@@ -69,31 +98,34 @@ public class ActiveCodeHelloWorldExample {
 		String depth_result = "Depth query succeeds";
 		
 		// set up a field
-		client.fieldUpdate(entry, field, value);
-		client.fieldUpdate(entry, depth_field, depth_result);
-		
+		client.execute(GNSCommand.fieldUpdate(entry, field, value));
+		client.execute(GNSCommand.fieldUpdate(entry,depth_field, depth_result));
+
 		// clear code for both read and write action
-		client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
-		client.activeCodeClear(entry.getGuid(), ActiveCode.WRITE_ACTION, entry);
+		client.execute(GNSCommand.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry));
+		client.execute(GNSCommand.activeCodeClear(entry.getGuid(), ActiveCode.WRITE_ACTION, entry));
 		
 		// get the value of the field
-		String response = client.fieldRead(entry, field);
+		String response = client.execute(GNSCommand.fieldRead(entry, field)).getResultJSONObject().getString(field); 
 		
 		System.out.println("Before the code is deployed, the value of field("+field+") is "+response);
 		
 		// read in the code as a string
-		final byte[] code = Files.readAllBytes(Paths.get(codeFile));
+		final String code =  new String(Files.readAllBytes(Paths.get(codeFile)));
 		
 		// set up the code for on read operation
 		if(isRead){
-			if(update)
-				client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
+			if(update){
+				client.execute(GNSCommand.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry));
+			}
 		} else {
-			if(update)
-				client.activeCodeSet(entry.getGuid(), ActiveCode.WRITE_ACTION, code, entry);
+			if(update){
+				client.execute(GNSCommand.activeCodeSet(entry.getGuid(), ActiveCode.WRITE_ACTION, code, entry));
+			}
 		}
+		
 		// get the value of the field again
-		response = client.fieldRead(entry, field);
+		response = client.execute(GNSCommand.fieldRead(entry, field)).getResultJSONObject().getString(field);
 		System.out.println("After the code is deployed, the value of field("+field+") is "+response);
 		
 		ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(new File("guid")));
