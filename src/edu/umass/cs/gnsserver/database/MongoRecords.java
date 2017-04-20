@@ -176,6 +176,7 @@ public class MongoRecords implements NoSQLRecords {
       } catch (DuplicateKeyException e) {
         throw new RecordExistsException(collectionName, guid);
       } catch (MongoException e) {
+        DatabaseConfig.getLogger().log(Level.FINE, "insert failed: {0}", e.getMessage());
         throw new FailedDBOperationException(collectionName, dbObject.toString(),
                 "Original mongo exception:" + e.getMessage());
       }
@@ -224,6 +225,7 @@ public class MongoRecords implements NoSQLRecords {
               "Unable to parse JSON: {0}", e);
       return null;
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "find failed: {0}", e.getMessage());
       throw new FailedDBOperationException(collectionName, guid,
               "Original mongo exception:" + e.getMessage());
     } finally {
@@ -303,6 +305,7 @@ public class MongoRecords implements NoSQLRecords {
       }
       return hashMap;
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "lookup failed: {0}", e.getMessage());
       throw new FailedDBOperationException(collectionName, guid,
               "Original mongo exception:" + e.getMessage());
     } finally {
@@ -348,6 +351,7 @@ public class MongoRecords implements NoSQLRecords {
       DBCursor cursor = collection.find(query);
       return cursor.hasNext();
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "contains failed: {0}", e.getMessage());
       throw new FailedDBOperationException(collectionName, guid,
               "Original mongo exception:" + e.getMessage());
     } finally {
