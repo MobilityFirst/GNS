@@ -128,21 +128,21 @@ public class SelectTest extends DefaultGNSTest {
     }
   }
 
-  /**
-   * Check the basic field select command
-   */
-  @Test
-  public void test_030_BasicSelect() {
-    try {
-      waitSettle(WAIT_SETTLE);
-      JSONArray result = client.execute(GNSCommand.select(masterGuid, "cats", "fred")).getResultJSONArray();
-      //JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
-      // best we can do since there will be one, but possibly more objects in results
-      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
-    } catch (ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
-    }
-  }
+//  /**
+//   * Check the basic field select command
+//   */
+//  @Test
+//  public void test_030_BasicSelect() {
+//    try {
+//      waitSettle(WAIT_SETTLE);
+//      JSONArray result = client.execute(GNSCommand.select(masterGuid, "cats", "fred")).getResultJSONArray();
+//      //JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
+//      // best we can do since there will be one, but possibly more objects in results
+//      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
+//    } catch (ClientException | IOException e) {
+//      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
+//    }
+//  }
 //
 //  /**
 //   * Check a near and within commands
@@ -484,7 +484,6 @@ public class SelectTest extends DefaultGNSTest {
     try {
       String query = "";
       JSONArray result = client.execute(GNSCommand.selectQuery(query)).getResultJSONArray();
-      //JSONArray result = clientCommands.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
         Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
       }
@@ -501,7 +500,6 @@ public class SelectTest extends DefaultGNSTest {
     try {
       String query = "{}";
       JSONArray result = client.execute(GNSCommand.selectQuery(query)).getResultJSONArray();
-      //JSONArray result = clientCommands.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
         Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
       }
@@ -518,7 +516,22 @@ public class SelectTest extends DefaultGNSTest {
     try {
       String query = "[]";
       JSONArray result = client.execute(GNSCommand.selectQuery(query)).getResultJSONArray();
-      //JSONArray result = clientCommands.selectQuery(query);
+      for (int i = 0; i < result.length(); i++) {
+        Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
+      }
+    } catch (IOException | JSONException | ClientException e) {
+      Utils.failWithStackTrace("Exception executing empty query " + e);
+    }
+  }
+  
+  /**
+   * Check an empty query
+   */
+  @Test
+  public void test_093_MalformedJSONQuery() {
+    try {
+      String badQuery = "\"~money:{$gt:0";
+      JSONArray result = client.execute(GNSCommand.selectQuery(badQuery)).getResultJSONArray();
       for (int i = 0; i < result.length(); i++) {
         Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
       }
