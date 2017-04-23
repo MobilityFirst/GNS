@@ -340,18 +340,19 @@ public class Select {
   }
 
   /**
-   * Filters records and fields from returned records based on ACL checks. 
-   * 
+   * Filters records and fields from returned records based on ACL checks.
+   *
    * @param packet
    * @param records
    * @param reader
    * @param app
-   * @return 
+   * @return
    */
   private static JSONArray aclCheckFilterReturnedRecord(SelectRequestPacket packet, JSONArray records,
           String reader, GNSApplicationInterface<String> app) {
     // First we filter out records
     JSONArray filteredRecords = aclCheckFilterForRecordsArray(packet, records, reader, app);
+    //return filteredRecords;
     // then we filter fields
     return aclCheckFilterFields(packet, filteredRecords, reader, app);
   }
@@ -377,14 +378,15 @@ public class Select {
         List<String> queryFields = getFieldsForQueryType(packet);
         ResponseCode responseCode = NSAuthentication.signatureAndACLCheck(null, guid, null, queryFields, reader,
                 null, null, MetaDataTypeName.READ_WHITELIST, app, true);
-        LOGGER.log(Level.FINE, "ACL check for select: guid={0} queryFields={1} responsecode={2}",
-                new Object[]{guid, queryFields, responseCode});
+        LOGGER.log(Level.FINE, "{0} ACL check for select: guid={0} queryFields={1} responsecode={2}",
+                new Object[]{app.getNodeID(), guid, queryFields, responseCode});
         if (responseCode.isOKResult()) {
           result.put(record);
         }
       } catch (JSONException | InvalidKeyException | InvalidKeySpecException | SignatureException | NoSuchAlgorithmException | FailedDBOperationException | UnsupportedEncodingException e) {
         // ignore json errros
-        LOGGER.log(Level.FINE, "Problem getting guid from json: {0}", e.getMessage());
+        LOGGER.log(Level.FINE, "{0} Problem getting guid from json: {1}",
+                new Object[]{app.getNodeID(), e.getMessage()});
       }
     }
     return result;
@@ -405,18 +407,26 @@ public class Select {
       try {
         JSONObject record = records.getJSONObject(i);
         String guid = record.getString(NameRecord.NAME.getName());
-        Iterator<?> keys = record.keys();
+        // Look at the keys in the values map
+        JSONObject valuesMap = record.getJSONObject(NameRecord.VALUES_MAP.getName());
+        Iterator<?> keys = valuesMap.keys();
         while (keys.hasNext()) {
           String field = (String) keys.next();
-          ResponseCode responseCode = NSAuthentication.signatureAndACLCheck(null, guid, field, null, reader,
-                  null, null, MetaDataTypeName.READ_WHITELIST, app, true);
-          if (!responseCode.isOKResult()) {
-            record.remove(field);
+          if (!InternalField.isInternalField(field)) {
+            LOGGER.log(Level.FINE, "{0} Checking: {1}", new Object[]{app.getNodeID(), field});
+            ResponseCode responseCode = NSAuthentication.signatureAndACLCheck(null, guid, field, null, reader,
+                    null, null, MetaDataTypeName.READ_WHITELIST, app, true);
+            if (!responseCode.isOKResult()) {
+              LOGGER.log(Level.FINE, "{0} Removing: {1}", new Object[]{app.getNodeID(), field});
+              // removing the offending field
+              keys.remove();
+            }
           }
         }
       } catch (JSONException | InvalidKeyException | InvalidKeySpecException | SignatureException | NoSuchAlgorithmException | FailedDBOperationException | UnsupportedEncodingException e) {
         // ignore json errros
-        LOGGER.log(Level.FINE, "Problem getting guid from json: {0}", e.getMessage());
+        LOGGER.log(Level.FINE, "{0} Problem getting guid from json: {1}",
+                new Object[]{app.getNodeID(), e.getMessage()});
       }
     }
     return records;
