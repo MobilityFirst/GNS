@@ -109,40 +109,40 @@ public class SelectTest extends DefaultGNSTest {
     }
   }
 
-  /**
-   * Create the fields
-   */
-  @Test
-  public void test_020_Cats() {
-    try {
-      client.execute(GNSCommand.fieldCreateOneElementList(westyEntry.getGuid(), "cats", "fred", westyEntry));
-      //clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "cats", "whacky", westyEntry);
-
-      Assert.assertEquals("fred",
-              client.execute(GNSCommand.fieldReadArrayFirstElement(westyEntry.getGuid(),
-                      "cats", westyEntry)).getResultString());
-//      Assert.assertEquals("whacky",
-//              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
-    } catch (IOException | ClientException e) {
-      Utils.failWithStackTrace("Exception when we were not expecting testing DB: " + e);
-    }
-  }
-
-  /**
-   * Check the basic field select command
-   */
-  @Test
-  public void test_030_BasicSelect() {
-    try {
-      waitSettle(WAIT_SETTLE);
-      JSONArray result = client.execute(GNSCommand.select(masterGuid, "cats", "fred")).getResultJSONArray();
-      //JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
-      // best we can do since there will be one, but possibly more objects in results
-      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
-    } catch (ClientException | IOException e) {
-      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
-    }
-  }
+//  /**
+//   * Create the fields
+//   */
+//  @Test
+//  public void test_020_Cats() {
+//    try {
+//      client.execute(GNSCommand.fieldCreateOneElementList(westyEntry.getGuid(), "cats", "fred", westyEntry));
+//      //clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "cats", "whacky", westyEntry);
+//
+//      Assert.assertEquals("fred",
+//              client.execute(GNSCommand.fieldReadArrayFirstElement(westyEntry.getGuid(),
+//                      "cats", westyEntry)).getResultString());
+////      Assert.assertEquals("whacky",
+////              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "cats", westyEntry));
+//    } catch (IOException | ClientException e) {
+//      Utils.failWithStackTrace("Exception when we were not expecting testing DB: " + e);
+//    }
+//  }
+//
+//  /**
+//   * Check the basic field select command
+//   */
+//  @Test
+//  public void test_030_BasicSelect() {
+//    try {
+//      waitSettle(WAIT_SETTLE);
+//      JSONArray result = client.execute(GNSCommand.select(masterGuid, "cats", "fred")).getResultJSONArray();
+//      //JSONArray result = clientCommands.select(masterGuid, "cats", "fred");
+//      // best we can do since there will be one, but possibly more objects in results
+//      Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(1));
+//    } catch (ClientException | IOException e) {
+//      Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
+//    }
+//  }
 //
 //  /**
 //   * Check a near and within commands
@@ -324,14 +324,15 @@ public class SelectTest extends DefaultGNSTest {
 
     try {
       String query = "~" + fieldName + " : ($gt: 0)";
-      JSONArray result = client.execute(GNSCommand.selectRecords(masterGuid,
-              query, Arrays.asList(fieldName))).getResultJSONArray();
+      JSONArray result = waitForQueryResults(query);
+      //JSONArray result = client.execute(GNSCommand.selectRecords(masterGuid, query, Arrays.asList(fieldName))).getResultJSONArray();
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (ClientException | IOException | JSONException e) {
+    } catch (JSONException e) {
+      //} catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception executing selectRecords: " + e);
     }
   }
@@ -366,13 +367,15 @@ public class SelectTest extends DefaultGNSTest {
 
     try {
       String query = "~" + fieldName + " : ($gt: 0)";
-      JSONArray result = client.execute(GNSCommand.selectRecords(masterGuid, query, null)).getResultJSONArray();
+      JSONArray result = waitForQueryResults(query);
+      //JSONArray result = client.execute(GNSCommand.selectRecords(masterGuid, query, null)).getResultJSONArray();
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (ClientException | IOException | JSONException e) {
+    } catch (JSONException e) {
+      //} catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception executing selectRecords: " + e);
     }
   }
@@ -416,15 +419,35 @@ public class SelectTest extends DefaultGNSTest {
     }
     try {
       String query = "~" + fieldName + " : ($gt: 0)";
-      JSONArray result = client.execute(GNSCommand.selectRecords(masterGuid, query, null)).getResultJSONArray();
+      //JSONArray result = client.execute(GNSCommand.selectRecords(masterGuid, query, null)).getResultJSONArray();
+      JSONArray result = waitForQueryResults(query);
       for (int i = 0; i < result.length(); i++) {
         System.out.println(result.get(i).toString());
       }
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
-    } catch (ClientException | IOException | JSONException e) {
+    } catch (JSONException e) {
+      //} catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception executing selectRecords: " + e);
     }
+  }
+
+  private JSONArray waitForQueryResults(String query) {
+    int cnt = 50;
+    JSONArray result = null;
+    do {
+      try {
+        result = client.execute(GNSCommand.selectRecords(masterGuid, query, null)).getResultJSONArray();
+        if (result.length() >= 5) {
+          return result;
+        }
+      } catch (ClientException | IOException e) {
+        Utils.failWithStackTrace("Exception executing selectRecords: " + e);
+        return result;
+      }
+      waitSettle(cnt > 10 ? WAIT_SETTLE : WAIT_SETTLE * 5);
+    } while (cnt-- > 0);
+    return result;
   }
 
   private static String createIndexTestField;
