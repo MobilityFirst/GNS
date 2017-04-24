@@ -30,7 +30,6 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This is a Client implementation with unix named pipe as the way
@@ -80,6 +79,8 @@ public class ActiveBlockingClient implements Client {
 	private AtomicInteger counter = new AtomicInteger(0);
 	
 	/**
+	 * This is the method to return the total number of received responses from its worker.
+	 * This method is only used for test.
 	 * 
 	 * @return the total number of received responses
 	 */
@@ -88,6 +89,8 @@ public class ActiveBlockingClient implements Client {
 	}
 	
 	/**
+	 * Initialize a blocking client
+	 * 
 	 * @param nodeId 
 	 * @param app 
 	 * @param ifile
@@ -112,6 +115,8 @@ public class ActiveBlockingClient implements Client {
 	}
 	
 	/**
+	 * Initialize a blocking client with a worker of default heap size. 
+	 * 
 	 * @param app
 	 * @param ifile
 	 * @param ofile
@@ -141,6 +146,7 @@ public class ActiveBlockingClient implements Client {
 	
 	/**
 	 * Initialize a client with a UDP channel
+	 * 
 	 * @param nodeId 
 	 * @param app
 	 * @param port
@@ -181,7 +187,7 @@ public class ActiveBlockingClient implements Client {
 	
 	/**
 	 * Destroy the worker process if it's still running,
-	 * delete the 
+	 * delete the pipe file if the client uses named pipe.
 	 */
 	@Override
 	public void shutdown(){
@@ -201,6 +207,7 @@ public class ActiveBlockingClient implements Client {
 	
 	/**
 	 * Create a worker with named pipe
+	 * 
 	 * @param ifile
 	 * @param ofile
 	 * @param id
@@ -225,6 +232,7 @@ public class ActiveBlockingClient implements Client {
 	    command.add(ofile);
 	    command.add(""+id);
 	    command.add(""+workerNumThread);
+	    command.add(ActiveCodeConfig.activeGeoIPFilePath);
 	    command.add(Boolean.toString(pipeEnable));
 	    command.add("ReconfigurableNode");
 	    command.add(nodeId);
@@ -265,6 +273,7 @@ public class ActiveBlockingClient implements Client {
 	    command.add(""+port2);
 	    command.add(""+id);
 	    command.add(""+workerNumThread);
+	    command.add(ActiveCodeConfig.activeGeoIPFilePath);
 		command.add(Boolean.toString(pipeEnable));
 		command.add("ReconfigurableNode");
 	    command.add(nodeId);
@@ -395,6 +404,8 @@ public class ActiveBlockingClient implements Client {
 	
 	
 	/**
+	 * Unit test
+	 * 
 	 * @param args
 	 * @throws InterruptedException 
 	 * @throws JSONException 

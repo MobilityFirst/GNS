@@ -91,7 +91,7 @@ public class LookupTask implements Callable<Message> {
         response = NameResolution.forwardToGnsServer(nameServer, query);
         break;
       case GNSLOCAL:
-        response = NameResolution.lookupGnsServer(query, handler);
+        response = NameResolution.lookupGnsServer(null, query, handler);
         break;
     }
     return response;

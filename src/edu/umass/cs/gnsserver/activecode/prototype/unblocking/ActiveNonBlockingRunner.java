@@ -31,6 +31,10 @@ import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 /**
+ * This class implements Runner interface.
+ * It has a script engine to execute user code and a in-memory map to cache
+ * evaled user code context. 
+ * 
  * @author gaozy
  *
  */
@@ -46,10 +50,11 @@ public class ActiveNonBlockingRunner implements Runner {
 	private final DatabaseReader dbReader;
 	
 	// This object is used to serialize/deserialize values passing between Java and Javascript
-	private static ScriptObjectMirror JSON;
+	private ScriptObjectMirror JSON;
 	
 	/**
 	 * @param channel 
+	 * @param dbReader 
 	 */
 	public ActiveNonBlockingRunner(Channel channel, DatabaseReader dbReader){
 		this.channel = channel;
@@ -111,15 +116,19 @@ public class ActiveNonBlockingRunner implements Runner {
 	 * @throws NoSuchMethodException
 	 */
         @Override
-	public String runCode(String guid, String accessor, String code, String value, int ttl, long id) throws ScriptException, NoSuchMethodException {		
-		ActiveNonBlockingQuerier querier = new ActiveNonBlockingQuerier(channel, dbReader, JSON, ttl, guid, id);
+	public String runCode(String guid, String accessor, String code, String value, int ttl, long id) 
+			throws ScriptException, NoSuchMethodException {		
+		
+        ActiveNonBlockingQuerier querier = new ActiveNonBlockingQuerier(channel, dbReader, JSON, ttl, guid, id);
 		map.put(id, querier);
 		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
+				
+		Object ret = invocable.invokeFunction("run", JSON.callMember("parse", value),
+				accessor, querier);		
 		
-		String result = querier.js2String((ScriptObjectMirror) invocable.invokeFunction("run", querier.string2JS(value),
-				accessor, querier));
+		String result = JSON.callMember("stringify", ret).toString();
 		
 		map.remove(id);
 		return result;

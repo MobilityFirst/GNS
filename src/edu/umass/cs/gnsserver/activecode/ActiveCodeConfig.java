@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
+ * This class contains all config options for active code.
+ * ActiveCodeConfig uses the same config file as GNSConfig. 
+ * 
  * @author gaozy
  *
  */
@@ -41,8 +44,13 @@ public class ActiveCodeConfig {
 	  /**
 	   * switch between blocking and non-blocking design
 	   */
-	  public static boolean acitveCodeBlockingEnabled = false;
-	  	  
+	  public static boolean activeCodeBlockingEnabled = false;
+	  
+	  /**
+	   * Test performance for active code with trusted code
+	   */
+	  public static boolean activeCodeTrustedMode = false;
+	  
 	  /**
 	   * Worker heap size
 	   */
@@ -85,6 +93,8 @@ public class ActiveCodeConfig {
 	  
 	  private static final String ACTIVE_CODE_BLOCKING_ENABLED = "ACTIVE_CODE_BLOCKING_ENABLED"; 
 	  
+	  private static final String ACTIVE_CODE_TRUSTED_MODE = "ACTIVE_CODE_TRUSTED_MODE";
+	  
 	  private static final String ACTIVE_WORKER_HEAP_SIZE = "ACTIVE_WORKER_HEAP_SIZE";
 	  
 	  private static final String ACTIVE_GEOIP_FILE_PATH = "ACTIVE_GEOIP_FILE_PATH";
@@ -99,7 +109,7 @@ public class ActiveCodeConfig {
 	  
 	  private static final String ACTIVE_CODE_ENABLE_DEBUGGING = "ACTIVE_CODE_ENABLE_DEBUGGING";
 	  
-	  
+	
 	/**
 	 * @param allValues
 	 */
@@ -125,7 +135,7 @@ public class ActiveCodeConfig {
 		    }
 		    
 		    if(allValues.containsKey(ACTIVE_CODE_BLOCKING_ENABLED)) {
-		    	acitveCodeBlockingEnabled = Boolean.parseBoolean(allValues.getProperty(ACTIVE_CODE_BLOCKING_ENABLED));
+		    	activeCodeBlockingEnabled = Boolean.parseBoolean(allValues.getProperty(ACTIVE_CODE_BLOCKING_ENABLED));
 		    }
 		    
 		    if(allValues.containsKey(ACTIVE_WORKER_HEAP_SIZE)){
@@ -143,6 +153,11 @@ public class ActiveCodeConfig {
 		    if(allValues.containsKey(ACTIVE_GEOIP_FILE_PATH)) {
 		    	activeGeoIPFilePath = allValues.getProperty(ACTIVE_GEOIP_FILE_PATH);
 		    }
+		    
+		    if(allValues.containsKey(ACTIVE_CODE_TRUSTED_MODE)) {
+		    	activeCodeTrustedMode = Boolean.parseBoolean(allValues.getProperty(ACTIVE_CODE_TRUSTED_MODE));
+		    }
+		    
 	  }
 	 
 	/**

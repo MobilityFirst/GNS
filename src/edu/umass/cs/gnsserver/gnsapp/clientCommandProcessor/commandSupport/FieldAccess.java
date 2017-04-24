@@ -595,8 +595,11 @@ public class FieldAccess {
     if (responsePacket != null
             && // Fixme: probably should just have handleSelectRequestFromClient throw a clientException
             SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
-      JSONArray guids = responsePacket.getGuids();
-      return guids;
+      if (packet.getProjection() == null) {
+        return responsePacket.getGuids();
+      } else {
+        return responsePacket.getRecords();
+      }
     } else {
       return null;
     }
@@ -728,6 +731,7 @@ public class FieldAccess {
    * @param commandPacket
    * @param reader
    * @param query
+   * @param projection
    * @param signature
    * @param message
    * @param handler
@@ -735,7 +739,7 @@ public class FieldAccess {
    * @throws InternalRequestException
    */
   public static CommandResponse selectQuery(InternalRequestHeader header, CommandPacket commandPacket,
-          String reader, String query,
+          String reader, String query, List<String> projection,
           String signature, String message,
           ClientRequestHandlerInterface handler) throws InternalRequestException {
     if (Select.queryContainsEvil(query)) {
@@ -746,7 +750,7 @@ public class FieldAccess {
     }
     JSONArray result;
     try {
-      SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, reader, query);
+      SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, reader, query, projection);
       result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
@@ -817,13 +821,15 @@ public class FieldAccess {
 
     try {
       SelectRequestPacket packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
-              reader, query, guid, interval);
+              reader, query, null, guid, interval);
       result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
+      LOGGER.log(Level.FINE,
+              "Silently failing select for query: {0} field: {1} reader: {2} due to {3}",
+              new Object[]{guid, query, reader, e.getMessage()});
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }

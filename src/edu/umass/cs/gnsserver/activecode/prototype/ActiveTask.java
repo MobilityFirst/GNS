@@ -8,6 +8,8 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
+ * This is a test class for testing the throughput of ActiveCodeHandler when running a no-op code.
+ * 
  * @author gaozy
  *
  */
