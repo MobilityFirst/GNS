@@ -512,7 +512,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   public void test_010_CreateEntity() throws Exception {
     // CHECKED FOR VALIDITY
     String alias = "testGUID" + RandomString.randomString(12);
-    String createdGUID = client.execute(GNSCommand.createGUID(masterGuid, alias))
+    String createdGUID = client.execute(GNSCommand.guidCreate(masterGuid, alias))
             .getResultString();
     Assert.assertEquals(alias, GuidUtils.getGUIDKeys(alias).entityName);
     Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
@@ -531,7 +531,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     // CHECKED FOR VALIDITY
     String alias = "testGUID" + RandomString.randomString(12);
     String createdGUID = client.execute(
-            GNSCommand.createGUID(masterGuid, alias)).getResultString();
+            GNSCommand.guidCreate(masterGuid, alias)).getResultString();
     GuidEntry createdGUIDEntry = GuidUtils.getGUIDKeys(alias);
     String key = "key1", value = "value1";
     client.execute(GNSCommand.update(createdGUID,
@@ -577,8 +577,8 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     //CHECKED FOR VALIDITY
     String testGuidName = "testGUID" + RandomString.randomString(12);
 
-    String testGUID = client.execute(GNSCommand.createGUID(masterGuid, testGuidName)).getResultString();
-    client.execute(GNSCommand.removeGUID(GuidUtils.getGUIDKeys(testGuidName)));
+    String testGUID = client.execute(GNSCommand.guidCreate(masterGuid, testGuidName)).getResultString();
+    client.execute(GNSCommand.guidRemove(GuidUtils.getGUIDKeys(testGuidName)));
 //    GuidEntry testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
 //    clientCommands.guidRemove(testGuid);
 

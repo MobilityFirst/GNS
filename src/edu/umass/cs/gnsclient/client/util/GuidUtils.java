@@ -372,7 +372,7 @@ public class GuidUtils {
           System.out.println("Old guid for " + name + " is invalid. Creating a new one.");
         }
       }
-      client.execute(GNSCommand.createGUID( accountGuid, name));
+      client.execute(GNSCommand.guidCreate( accountGuid, name));
       guid = lookupGuidEntryFromDatabase(client, name);
       return guid;
     } else {

@@ -224,13 +224,13 @@ public class SecureCommandTestStandalone {
   public void test_15_SecureRead() {
     GuidEntry masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
     try {
-      client.execute(GNSCommand.createGUID(masterGuid, "whatever"));
+      client.execute(GNSCommand.guidCreate(masterGuid, "whatever"));
       GuidEntry testGuid = GuidUtils.lookupGuidEntryFromDatabase(client, "whatever");
       client.execute(GNSCommand.fieldUpdate(testGuid, "fred", "value"));
       JSONObject actual = client.execute(GNSCommand.readSecure(testGuid.getGuid())).getResultJSONObject();
       JSONAssert.assertEquals(new JSONObject().put("fred", "value"),
               actual, JSONCompareMode.STRICT);
-      client.execute(GNSCommand.removeGUID(masterGuid, testGuid.getGuid()));
+      client.execute(GNSCommand.guidRemove(masterGuid, testGuid.getGuid()));
     } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception while removing account record: ", e);
     }
