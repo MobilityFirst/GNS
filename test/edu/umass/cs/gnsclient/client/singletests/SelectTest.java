@@ -426,6 +426,10 @@ public class SelectTest extends DefaultGNSTest {
       }
       // best we can do should be at least 5, but possibly more objects in results
       Assert.assertThat(result.length(), Matchers.greaterThanOrEqualTo(5));
+      // Make sure that one of them has the field we want and
+      Assert.assertTrue(result.getJSONObject(0).has("field1"));
+      // doesn't have the field we can't see
+      Assert.assertFalse(result.getJSONObject(0).has("inaccessableField"));
     } catch (JSONException e) {
       //} catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception executing selectRecords: " + e);
