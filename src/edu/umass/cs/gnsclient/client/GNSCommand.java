@@ -658,7 +658,7 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   * Creates an new guid associated with an account on the GNS server.
+   * Creates a new guid associated with an account on the GNS server.
    *
    * The name of the GNS service instance.
    *
@@ -686,7 +686,8 @@ public class GNSCommand extends CommandPacket {
   }
 
   /**
-   *
+   * Creates a new guid associated with an account on the GNS server.
+   * 
    * @param accountGuid
    * @param alias
    * @return
@@ -699,6 +700,16 @@ public class GNSCommand extends CommandPacket {
     return guidCreate(accountGuid, alias);
   }
 
+  /**
+   * Creates a new guid associated with an account on the GNS server
+   * that doesn't have a public/private keypair. This guid can only be accessed
+   * using the accountGuid.
+   * 
+   * @param accountGuid
+   * @param alias
+   * @return
+   * @throws ClientException 
+   */
   public static final CommandPacket guidCreateKeyless(GuidEntry accountGuid, String alias)
           throws ClientException {
     return getCommand(CommandType.AddGuid, accountGuid,
