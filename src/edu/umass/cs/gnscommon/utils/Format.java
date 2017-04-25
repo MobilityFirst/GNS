@@ -742,39 +742,7 @@ public class Format {
   }
 
   /**
-   * ISO8601
-   */
-  public final static ThreadLocal<SimpleDateFormat> formatDateISO8601
-          = new ThreadLocal<SimpleDateFormat>() {
-    @Override
-    protected SimpleDateFormat initialValue() {
-      SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-      return result;
-    }
-  };
-
-  /**
-   * Format is yyyy-MM-dd'T'HH:mm:ssX
-   *
-   * @param date
-   * @return the formatted time
-   */
-  public static String formatDateISO8601(Date date) {
-    return formatDateISO8601.get().format(date);
-  }
-
-  /**
-   *
-   * @param text
-   * @return the date
-   * @throws ParseException
-   */
-  public static Date parseDateISO8601(String text) throws ParseException {
-    return formatDateISO8601.get().parse(text);
-  }
-
-  /**
-   * ISO8601
+   * ISO8601 UTC
    */
   public final static ThreadLocal<SimpleDateFormat> formatDateISO8601UTC
           = new ThreadLocal<SimpleDateFormat>() {
@@ -787,23 +755,31 @@ public class Format {
   };
 
   /**
-   * Format is yyyy-MM-dd'T'HH:mm:ssX
+   * Format is yyyy-MM-dd'T'HH:mm:ss'Z'
    *
    * @param date
    * @return the formatted time
    */
   public static String formatDateISO8601UTC(Date date) {
-    return formatDateISO8601.get().format(date);
+    return formatDateISO8601UTC.get().format(date);
   }
 
   /**
-   *
+   * Format is yyyy-MM-dd'T'HH:mm:ss'Z'
+   * 
    * @param text
    * @return the date
    * @throws ParseException
    */
   public static Date parseDateISO8601UTC(String text) throws ParseException {
-    return formatDateISO8601.get().parse(text);
+    return formatDateISO8601UTC.get().parse(text);
   }
 
+  public static void main(String[] args) throws ParseException {
+    
+    System.out.println(formatDateISO8601UTC(new Date()));
+    System.out.println(parseDateISO8601UTC(formatDateISO8601UTC(new Date())));
+    System.out.println(formatDateISO8601UTC(parseDateISO8601UTC(formatDateISO8601UTC(new Date()))));
+   
+  }
 }

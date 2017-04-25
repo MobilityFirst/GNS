@@ -827,7 +827,9 @@ public class FieldAccess {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
+      LOGGER.log(Level.FINE,
+              "Silently failing select for query: {0} field: {1} reader: {2} due to {3}",
+              new Object[]{guid, query, reader, e.getMessage()});
     }
     return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
