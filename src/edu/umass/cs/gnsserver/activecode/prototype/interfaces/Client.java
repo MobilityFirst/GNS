@@ -20,8 +20,7 @@ public interface Client {
 	 * 
 	 * <p>An ActiveException should be thrown by this method if the
 	 * request failed as indicated by the response message, or 
-	 * communication channel is broken. The caller of this method needs
-	 * to handle this exception as required by PAXOS.
+	 * communication channel is broken.
 	 * 
 	 * @param header 
 	 * @param guid

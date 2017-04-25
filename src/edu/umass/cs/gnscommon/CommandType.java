@@ -673,6 +673,7 @@ public enum CommandType {
   /**
    *
    */
+  @Deprecated
   Select(310, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select",
           CommandResultType.LIST, false, false,
           "Returns the guids of all records that have a field with the given value. "
@@ -687,6 +688,7 @@ public enum CommandType {
   /**
    *
    */
+  @Deprecated
   SelectNear(320, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNear",
           CommandResultType.LIST, false, false,
           "Return the guids of all records that are within max distance of value. Key must be a GeoSpatial field. "
@@ -703,6 +705,7 @@ public enum CommandType {
   /**
    *
    */
+  @Deprecated
   SelectWithin(321, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin",
           CommandResultType.LIST, false, false,
           "Returns the guids of all records that are within value which is a bounding box specified. "
