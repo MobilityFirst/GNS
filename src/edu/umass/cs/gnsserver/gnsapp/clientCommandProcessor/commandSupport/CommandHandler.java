@@ -91,7 +91,6 @@ public class CommandHandler {
       // method is instrumentation.
       CommandResponse returnValue = executeCommand(command,
               commandPacket, handler);
-
       assert (commandPacket.getRequestType() != null) : "request type is null";
       assert (commandPacket.getCommandType() != null) : "command type is null";
       assert (command != null) : "command is null";

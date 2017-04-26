@@ -93,6 +93,7 @@ public class GNSCommand extends CommandPacket {
           Object... keysAndValues) throws ClientException {
     JSONObject command = CommandUtils.createAndSignCommand(type, querier,
             keysAndValues);
+    //System.out.println(command);
     if (CommandPacket.getJSONCommandType(command).isMutualAuth()) {
       return new AdminCommandPacket(randomLong(), command);
     }
