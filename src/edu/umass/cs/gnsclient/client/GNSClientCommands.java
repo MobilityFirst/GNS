@@ -824,7 +824,7 @@ public class GNSClientCommands extends GNSClient {
   }
 
   /**
-   * Creates an new guid associated with an account on the GNS server.
+   * Creates a new guid associated with an account on the GNS server.
    *
    * @param accountGuid
    * @param alias the alias
@@ -837,7 +837,7 @@ public class GNSClientCommands extends GNSClient {
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias)
           throws ClientException, IOException {
 
-    execute(GNSCommand.createGUID(accountGuid, alias));
+    execute(GNSCommand.guidCreate(accountGuid, alias));
     GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
     // If something went wrong an exception should be thrown above, but we're checking
     // here anyway just to be safe.
@@ -846,7 +846,33 @@ public class GNSClientCommands extends GNSClient {
     }
     return guidEntry;
   }
+  
+  /**
+   * Creates a new guid associated with an account on the GNS server
+   * that doesn't have a public/private keypair. 
+   * This guid can only be accessed using the accountGuid.
+   * 
+   * @param accountGuid
+   * @param alias
+   * @return the newly created guid entry
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * if a protocol error occurs or the list cannot be parsed
+   * @throws java.io.IOException
+   * if a communication error occurs
+   */
+  public GuidEntry guidCreateKeyless(GuidEntry accountGuid, String alias)
+          throws ClientException, IOException {
 
+    execute(GNSCommand.guidCreateKeyless(accountGuid, alias));
+    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+    // If something went wrong an exception should be thrown above, but we're checking
+    // here anyway just to be safe.
+    if (guidEntry == null) {
+      throw new ClientException("Failed to create guid for " + alias);
+    }
+    return guidEntry;
+  }
+  
   /**
    * Batch create guids with the given aliases.
    *
@@ -887,7 +913,7 @@ public class GNSClientCommands extends GNSClient {
    * if a communication error occurs
    */
   public void guidRemove(GuidEntry guid) throws ClientException, IOException {
-    execute(GNSCommand.removeGUID(guid));
+    execute(GNSCommand.guidRemove(guid));
   }
 
   /**
@@ -902,7 +928,7 @@ public class GNSClientCommands extends GNSClient {
    */
   public void guidRemove(GuidEntry accountGuid, String guidToRemove)
           throws ClientException, IOException {
-    execute(GNSCommand.removeGUID(accountGuid, guidToRemove));
+    execute(GNSCommand.guidRemove(accountGuid, guidToRemove));
   }
 
   // GROUP COMMANDS
@@ -1825,7 +1851,7 @@ public class GNSClientCommands extends GNSClient {
    * @throws java.io.IOException
    * if a communication error occurs
    */
-  public void activeCodeSet(String guid, String action, byte[] code,
+  public void activeCodeSet(String guid, String action, String code,
           GuidEntry writerGuid) throws ClientException, IOException {
     // The GNSCommand method expects bytes which it Base64 encodes.
     execute(GNSCommand.activeCodeSet(guid, action, code, writerGuid));

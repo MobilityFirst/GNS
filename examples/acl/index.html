@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="moment.js"></script>
+	<script src="http://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js"></script>
+	<script type="text/javascript" src="config.js"></script>
+	<script type="text/javascript" src="request.js"></script>
+	<style type="text/css">
+		#main {
+			width: 40%;
+			position:fixed;
+    			top: 20%;
+    			left: 30%;
+			background: #f3f3f3;
+			text-align: center;
+
+		}
+		.inside {
+			margin-left: 7%; 
+		}
+		#result, #data {
+			/*text-align: left;*/
+		}
+	</style>
+</head>
+<body>
+<div id ="main">
+<p class="inside">ACL calls</p>
+<!-- <input id="input_box_1" type="text" class="inside" placeholder="user@gns.name"></input> -->
+<button id="request_send_1" class="inside">Fetch GUID for Alias: "user@gns.name"</button>
+<br></br>
+
+<button id="request_send_3" class="inside">Get record data for Alias: "user@gns.name"</button>
+<br></br>
+
+<input id="input_box_12" type="text" class="inside" placeholder="Any field key"></input>
+<button id="request_send_12" class="inside">Read ACL Controlled field value</button>
+<br></br>
+
+<input type="button" value="Refresh Page" class="inside" onClick="window.location.reload()">
+
+<p class="inside"> Toggle ACL for the fields </p>
+<input id="input_box_16" type="text" class="inside" placeholder="Any field key"></input>
+<button id="request_send_16" class="inside"> Add reader to field's ACL </button>
+<br></br>
+
+<input id="input_box_17" type="text" class="inside" placeholder="Any field key"></input>
+<button id="request_send_17" class="inside"> Remove reader from field's ACL </button>
+<br></br>
+
+<p id="result" class="inside"></p>
+<p id="data" class="inside"></p>
+
+</div>
+</body>
+</html>

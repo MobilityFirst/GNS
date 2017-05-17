@@ -101,7 +101,7 @@ public class AclRemoveSecured extends AbstractCommand {
     }
     if (!(responseCode = FieldMetaData.removeValue(header, commandPacket,
             access,
-            guid, field, accessorPublicKey,
+            guid, accesser, field,  accessorPublicKey,
             GNSProtocol.INTERNAL_QUERIER.toString(),
             //GNSConfig.getInternalOpSecret(),
             null, null, timestamp, handler)).isExceptionOrError()) {

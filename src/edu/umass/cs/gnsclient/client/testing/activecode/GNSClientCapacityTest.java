@@ -213,7 +213,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 			codeFile = "scripts/activeCode/noop.js";
 		
 		
-		byte[] code = Files.readAllBytes(Paths.get(codeFile));
+		String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 
 		try {
 			clients[0].fieldUpdate(guid, someField, someValue);

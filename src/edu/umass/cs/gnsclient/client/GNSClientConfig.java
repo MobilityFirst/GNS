@@ -87,7 +87,9 @@ public class GNSClientConfig {
     /**
      * The port used by the local name server.
      */
-    LOCAL_NAME_SERVER_PORT(24398);
+    LOCAL_NAME_SERVER_PORT(24398),
+
+    ENABLE_CROSS_ORIGIN_REQUESTS(false);
     
     final Object defaultValue;
     

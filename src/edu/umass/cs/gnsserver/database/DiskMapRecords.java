@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gnsserver.database;
 
+import com.mongodb.MongoException;
 import com.mongodb.util.JSON;
 
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
@@ -110,6 +111,7 @@ public class DiskMapRecords implements NoSQLRecords {
       // Make a new object to make sure there aren't any DBObjects lurking in here
       return recursiveCopyJSONObject(record); //copyJsonObject(record);
     } catch (JSONException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "lookupEntireRecord failed: {0}", e.getMessage());
       throw new FailedDBOperationException(collection, name, "Unable to parse json record");
     }
   }
@@ -279,6 +281,7 @@ public class DiskMapRecords implements NoSQLRecords {
     try {
       record = lookupEntireRecord(collection, name);
     } catch (RecordNotFoundException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "updateIndividualFields failed: {0}", e.getMessage());
       throw new FailedDBOperationException(collection, name, "Record not found.");
     }
     LOGGER.log(Level.FINE, "Record before:{0}", record);
@@ -306,9 +309,9 @@ public class DiskMapRecords implements NoSQLRecords {
         LOGGER.log(Level.FINE, "Json after:{0}", json);
         record.put(valuesMapField.getName(), json);
         LOGGER.log(Level.FINE, "Record after:{0}", record);
-      } catch (JSONException e) {
-        LOGGER.log(Level.SEVERE,
-                "Problem updating json: {0}", e.getMessage());
+      } catch (Exception e) {
+        LOGGER.log(Level.SEVERE, "Problem updating json: {0}", e.getMessage());
+        throw new FailedDBOperationException(collection, name, "Unable to parse json " + e.getMessage());
       }
     }
     getMap(collection).put(name, record);
@@ -334,6 +337,7 @@ public class DiskMapRecords implements NoSQLRecords {
     }
     LOGGER.log(Level.FINE, "Record before:{0}", record);
     if (record == null) {
+      DatabaseConfig.getLogger().log(Level.FINE, "removeMapKeys failed. record is null");
       throw new FailedDBOperationException(collection, name, "Record not found.");
     }
     if (mapField != null && mapKeys != null) {
@@ -381,10 +385,10 @@ public class DiskMapRecords implements NoSQLRecords {
   }
 
   @Override
-  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, 
+  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField,
           String query, List<String> projection) throws FailedDBOperationException {
     getMap(collection).commit();
-    return getMongoRecords(collection).selectRecordsQuery(MongoRecords.DBNAMERECORD, valuesMapField, 
+    return getMongoRecords(collection).selectRecordsQuery(MongoRecords.DBNAMERECORD, valuesMapField,
             query, projection);
   }
 
