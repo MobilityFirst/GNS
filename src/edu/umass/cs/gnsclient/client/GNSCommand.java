@@ -1351,25 +1351,10 @@ public class GNSCommand extends CommandPacket {
             guid.getGuid());
   }
 
-<<<<<<< HEAD
+
   // ///////////////////////////////
   // // PRIVATE METHODS BELOW /////
   // /////////////////////////////
-  private static GuidEntry lookupOrCreateGuidEntry(String gnsInstance,
-                                                   String alias) throws NoSuchAlgorithmException, EncryptionException {
-    GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias);
-    /*
-     * Don't recreate pair if one already exists. Otherwise you can
-     * not get out of the funk where the account creation timed out but
-     * wasn't rolled back fully at the server. Re-using
-     * the same guid will at least pass verification as opposed to
-     * incurring an GNSProtocol.ACTIVE_REPLICA_EXCEPTION.toString() for a new (non-existent) guid.
-     */
-    if (guidEntry == null) {
-      guidEntry = GuidUtils.createAndSaveGuidEntry(alias, gnsInstance);
-    }
-    return guidEntry;
-  }
 
   /**
    * Function to get guidentry from local database if present given gnsinstance, alias ,private keyobject
@@ -1392,16 +1377,6 @@ public class GNSCommand extends CommandPacket {
   }
 
 
-  private static CommandPacket accountGuidCreateInternal(String alias, String password,
-                                                         CommandType commandType, GuidEntry guidEntry)
-          throws ClientException, NoSuchAlgorithmException {
-    return getCommand(commandType,
-            guidEntry, GNSProtocol.NAME.toString(), alias,
-            GNSProtocol.PUBLIC_KEY.toString(),
-            KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
-            GNSProtocol.PASSWORD.toString(),
-            password != null ? Password.encryptAndEncodePassword(password, alias) : "");
-  }
   /**
    * Helper function to get commandpacket for RegisterAccountWithCertificate
    *
@@ -1425,35 +1400,7 @@ public class GNSCommand extends CommandPacket {
 
   }
 
-  private static CommandPacket aclAdd(String accessType,
-                                      GuidEntry guid, String field, String accesserGuid)
-          throws ClientException {
-    return getCommand(CommandType.AclAddSelf, guid,
-            GNSProtocol.ACL_TYPE.toString(), accessType,
-            GNSProtocol.GUID.toString(), guid.getGuid(),
-            GNSProtocol.FIELD.toString(), field,
-            GNSProtocol.ACCESSER.toString(),
-            accesserGuid == null ? GNSProtocol.ALL_GUIDS.toString() : accesserGuid);
-  }
 
-  private static CommandPacket aclRemove(String accessType,
-                                         GuidEntry guid, String field, String accesserGuid)
-          throws ClientException {
-    return getCommand(CommandType.AclRemoveSelf, guid, GNSProtocol.ACL_TYPE.toString(),
-            accessType, GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.ACCESSER.toString(),
-            accesserGuid == null ? GNSProtocol.ALL_GUIDS.toString() : accesserGuid);
-  }
-
-  private static CommandPacket aclGet(String accessType,
-                                      GuidEntry guid, String field, String readerGuid)
-          throws ClientException {
-    return getCommand(CommandType.AclRetrieve, guid, GNSProtocol.ACL_TYPE.toString(), accessType,
-            GNSProtocol.GUID.toString(), guid.getGuid(), GNSProtocol.FIELD.toString(), field, GNSProtocol.READER.toString(),
-            readerGuid == null ? GNSProtocol.ALL_GUIDS.toString() : readerGuid);
-  }
-
-=======
->>>>>>> 62a58a517453d96a57c0a9af44075438d1dfbdbb
   /* ******************* Extended commands ******************** */
   /**
    * Creates anew {@code targetGUID}:{@code field} with the value
@@ -2130,11 +2077,7 @@ public class GNSCommand extends CommandPacket {
    * @throws ClientException
    */
   public static final CommandPacket activeCodeSet(String targetGUID,
-<<<<<<< HEAD
-                                                  String action, byte[] code, GuidEntry querierGUID)
-=======
           String action, String code, GuidEntry querierGUID)
->>>>>>> 62a58a517453d96a57c0a9af44075438d1dfbdbb
           throws ClientException {
     return getCommand(CommandType.SetCode, querierGUID, GNSProtocol.GUID.toString(),
             targetGUID, GNSProtocol.AC_ACTION.toString(), action, GNSProtocol.AC_CODE.toString(),
