@@ -30,12 +30,12 @@ public interface Querier {
 	 * may apply. But the ttl value should be provided by ActiveQuerier, but not
 	 * user's code.
 	 * 
-	 * @param fields all fields to query
+	 * @param field the field to query
 	 * @param queriedGuid the target guid
 	 * @return the ValuesMap read from the field of the guid
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
-	public ScriptObjectMirror readGuid(ScriptObjectMirror fields, String queriedGuid) throws ActiveException;
+	public ScriptObjectMirror readGuid(String field, String queriedGuid) throws ActiveException;
 	
 	
 	/**

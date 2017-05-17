@@ -268,8 +268,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     try {
       Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType ? (Packet.PacketType) request
               .getRequestType() : null;
-      GNSConfig.getLogger().log(Level.FINE, "{0} starting execute({1})",
-              new Object[]{this, request.getSummary()});
+      GNSConfig.getLogger().log(Level.FINE, "{0} starting execute({1}) doNotReplyToClient={2}",
+              new Object[]{this, request.getSummary(), doNotReplyToClient});
       Request prev = null;
       // arun: enqueue request, dequeue before returning
       if (request instanceof RequestIdentifier) {
@@ -741,9 +741,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    * @param responseJSON
    * @throws IOException
    */
+  @Override
   public void sendToClient(CommandPacket originalRequest, Request response, JSONObject responseJSON)
           throws IOException {
-
+     GNSConfig.getLogger().log(Level.FINE, "sendToClient");
     if (DELEGATE_CLIENT_MESSAGING) {
       if (enqueueCommand()) {
         this.outstanding.remove(((RequestIdentifier) response)

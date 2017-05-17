@@ -27,7 +27,6 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -195,11 +194,12 @@ public class AccountAccess {
       try {
         value = handler.getInternalClient().execute(GNSCommandInternal.fieldRead(guid, ACCOUNT_INFO, header)).getResultString();
       } catch (IOException | JSONException | ClientException e) {
-        // Do nothing as this is a normal result when the record doesn't
-        // exist.
       } catch (InternalRequestException e) {
+        //FIXME: This should do something other than print a stack trace
         e.printStackTrace();
       }
+      // Do nothing as this is a normal result when the record doesn't
+      // exist.
       if (value != null) {
         try {
           return new AccountInfo(new JSONObject(value));
@@ -432,20 +432,15 @@ public class AccountAccess {
       GNSConfig.getLogger().log(Level.FINE,
               "LOOKING REMOTELY for GUID_INFO for {0}", guid);
       String value = null;
-      Object obj = null;
+      Object obj;
       try {
-        value = (obj = handler
-                .getInternalClient()
-                .execute(
-                        GNSCommandInternal.fieldRead(guid, GUID_INFO,
-                                header)).getResultMap().get(GUID_INFO)) != null ? obj
-                .toString() : value;
+        value = (obj = handler.getInternalClient().execute(
+                GNSCommandInternal.fieldRead(guid, GUID_INFO,
+                        header)).getResultMap().get(GUID_INFO)) != null ? obj.toString() : value;
       } catch (IOException | JSONException | ClientException | InternalRequestException e) {
-        GNSConfig
-                .getLogger()
-                .log(Level.SEVERE,
-                        "Problem getting GUID_INFO for {0} from remote server: {1}",
-                        new Object[]{guid, e});
+        GNSConfig.getLogger().log(Level.SEVERE,
+                "Problem getting GUID_INFO for {0} from remote server: {1}",
+                new Object[]{guid, e});
       }
       if (value != null) {
         try {
@@ -453,11 +448,9 @@ public class AccountAccess {
           GUID_INFO_CACHE.put(guid, result);
           return result;
         } catch (JSONException | ParseException e) {
-          GNSConfig
-                  .getLogger()
-                  .log(Level.SEVERE,
-                          "Problem parsing GUID_INFO value from remote server for {0}: {1}",
-                          new Object[]{guid, e});
+          GNSConfig.getLogger().log(Level.SEVERE,
+                  "Problem parsing GUID_INFO value from remote server for {0}: {1}",
+                  new Object[]{guid, e});
         }
       }
     }
@@ -972,9 +965,12 @@ public class AccountAccess {
     return null;
   }
 
-  /* This method is currently not used because roll backs when invoked seem as
-	 * likely to cause new problems as they are to fix limbo create operations.
-	 * The clean way to fix them is to have support for transactions. */
+  //FIXME: This documentation lies.
+  /**
+   * This method is currently not used because roll backs when invoked seem as
+   * likely to cause new problems as they are to fix limbo create operations.
+   * The clean way to fix them is to have support for transactions.
+   */
   private static CommandResponse rollback(
           ClientRequestHandlerInterface handler, ResponseCode returnCode,
           String name, String guid) throws ClientException {
@@ -1287,7 +1283,7 @@ public class AccountAccess {
           GuidInfo accountGuidInfo, ClientRequestHandlerInterface handler) {
     try {
       long startTime = System.currentTimeMillis();
-      Set<String> guids = new HashSet<>();
+      //Set<String> guids = new HashSet<>();
       Map<String, JSONObject> hrnMap = new HashMap<>();
       Map<String, JSONObject> guidInfoMap = new HashMap<>();
       for (int i = 0; i < names.size(); i++) {
@@ -1296,7 +1292,7 @@ public class AccountAccess {
         String guid = SharedGuidUtils
                 .createGuidStringFromBase64PublicKey(publicKey);
         accountInfo.addGuid(guid);
-        guids.add(guid);
+        //guids.add(guid);
         // HRN records
         JSONObject jsonHRN = new JSONObject();
         jsonHRN.put(HRN_GUID, guid);
@@ -1323,11 +1319,9 @@ public class AccountAccess {
       DelayProfiler.updateDelay("addMultipleGuidsSetup", startTime);
       accountInfo.noteUpdate();
 
-      // first we createField the HRN records as a batch
+      // First we create the HRN records as a batch
       ResponseCode returnCode;
-      // First try to createField the HRNS to insure that that name does
-      // not
-      // already exist
+      // First try to create the HRNS to insure that that name does not already exist
       Map<String, String> nameStates = new HashMap<>();
       for (String key : hrnMap.keySet()) {
         nameStates.put(key, hrnMap.get(key).toString());

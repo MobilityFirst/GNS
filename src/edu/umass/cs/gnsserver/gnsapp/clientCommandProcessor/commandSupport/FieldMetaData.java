@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
@@ -91,7 +92,7 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode createField(InternalRequestHeader header, 
+  public static ResponseCode createField(InternalRequestHeader header,
           CommandPacket commandPacket,
           MetaDataTypeName type, String guid,
           String key, String writer, String signature,
@@ -117,7 +118,7 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode deleteField(InternalRequestHeader header, 
+  public static ResponseCode deleteField(InternalRequestHeader header,
           CommandPacket commandPacket,
           MetaDataTypeName type, String guid,
           String key, String writer, String signature,
@@ -165,14 +166,14 @@ public class FieldMetaData {
    * @param handler
    * @return a set of strings
    */
-  public static Set<String> lookup(InternalRequestHeader header, 
+  public static Set<String> lookup(InternalRequestHeader header,
           CommandPacket commandPacket,
           MetaDataTypeName type, String guid, String key,
           String reader, String signature,
           String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     String field = makeFieldMetaDataKey(type, key);
-    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, field, 
+    ResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(header, commandPacket, guid, field,
             null, //fields
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -189,8 +190,9 @@ public class FieldMetaData {
    * @param commandPacket
    * @param type
    * @param guid
+   * @param accessor
    * @param key
-   * @param value
+   * @param accessorPublicKey
    * @param writer
    * @param signature
    * @param message
@@ -198,11 +200,25 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link ResponseCode}
    */
-  public static ResponseCode removeValue(InternalRequestHeader header, 
+  public static ResponseCode removeValue(InternalRequestHeader header,
           CommandPacket commandPacket,
-          MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
+          MetaDataTypeName type, String guid, String accessor, 
+          String key, String accessorPublicKey, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(header, commandPacket, guid, makeFieldMetaDataKey(type, key), value, null, -1,
+    // Special case check for removing read or write access for account guid from the ACL of a keyless subguid
+    GuidInfo guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler);
+    // If we're changing the read or write whitelist for the entire record for a keyless subguid
+    if ((MetaDataTypeName.READ_WHITELIST.equals(type) || MetaDataTypeName.WRITE_WHITELIST.equals(type))
+            && key.equals(GNSProtocol.ENTIRE_RECORD.toString())
+            && guidInfo.isKeyless()) {
+      String accountGuid = AccountAccess.lookupPrimaryGuid(header, guid, handler, false);
+      // And the parent account guid is the guid accessor we're removing we return an error
+      if (accountGuid != null && accountGuid.equals(accessor)) {
+        return ResponseCode.NO_ERROR;
+      }
+    }
+    return FieldAccess.update(header, commandPacket, guid, makeFieldMetaDataKey(type, key), 
+            accessorPublicKey, null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, timestamp, handler);
   }
 

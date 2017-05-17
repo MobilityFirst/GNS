@@ -101,12 +101,12 @@ public class ClientACLExample {
 		// First we create an alias for the phoneGuid
 		String phoneAlias = "phone" + RandomString.randomString(12);
 		// Create a sub guid under our guid account
-		client.execute(GNSCommand.createGUID(GUID, phoneAlias));
+		client.execute(GNSCommand.guidCreate(GUID, phoneAlias));
 		// Get the GuidEntry from the local database
 		phoneGuid = GuidUtils.getGUIDKeys(phoneAlias);
 
 		System.out.println("\n// Create phoneGuid\n"
-				+ "client.createGuid(guid, phoneAlias) // phoneAlias="
+				+ "client.guidCreate(guid, phoneAlias) // phoneAlias="
 				+ phoneAlias);
 
 		// Give phoneGuid read access to fields in guid

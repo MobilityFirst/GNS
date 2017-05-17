@@ -19,8 +19,11 @@
  */
 package edu.umass.cs.gnsserver.gnamed;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 
 import java.io.IOException;
@@ -77,7 +80,11 @@ public class UdpDnsServer extends Thread implements Shutdownable {
    */
   public UdpDnsServer(InetAddress addr, int port, String dnsServerIP, String gnsServerIP,
           ClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
-    this.dnsServer = dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
+    this.dnsServer = dnsServerIP != null ? 
+    		// If running the server as a managed DNS server, then set the dnsServer 
+    		// to null so that it does not respond to the recursive request.
+    		(Config.getGlobalBoolean(GNSConfig.GNSC.IS_MANAGED_DNS)? null:new SimpleResolver(dnsServerIP)) 
+    		: null;
     this.gnsServer = gnsServerIP != null ? new SimpleResolver(gnsServerIP) : null;
     this.dnsCache = dnsServerIP != null ? new Cache() : null;
     this.dnsServerIP = dnsServerIP;

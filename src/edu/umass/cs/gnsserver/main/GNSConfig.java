@@ -204,6 +204,11 @@ public class GNSConfig {
      */
     DNS_GNS_ONLY(false),
     /**
+     *  If the DNS server is running as a managed DNS server, this value is true. If it's a recursive local DNS server, then
+     *   set it to false.
+     */
+    IS_MANAGED_DNS(false),
+    /**
      * For the DNS service the name of the GNS server to forward GNS
      * requests.
      */

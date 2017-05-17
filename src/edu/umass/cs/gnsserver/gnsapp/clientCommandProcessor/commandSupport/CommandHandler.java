@@ -91,7 +91,6 @@ public class CommandHandler {
       // method is instrumentation.
       CommandResponse returnValue = executeCommand(command,
               commandPacket, handler);
-
       assert (commandPacket.getRequestType() != null) : "request type is null";
       assert (commandPacket.getCommandType() != null) : "command type is null";
       assert (command != null) : "command is null";
@@ -234,7 +233,6 @@ public class CommandHandler {
      * entire chain information, which seems like too much work given that
      * we already have TTLs to limit cycles.
      */
-
     // nothing suspicious detected
     return header;
   }
@@ -243,7 +241,8 @@ public class CommandHandler {
 
   /**
    * Called when a command return value packet is received by the app.
- * @param command 
+   *
+   * @param command
    *
    * @param returnPacket
    * @param doNotReplyToClient
@@ -252,11 +251,14 @@ public class CommandHandler {
    * @throws JSONException
    * @throws IOException
    */
-  public static void handleCommandReturnValuePacketForApp(CommandPacket command, 
+  public static void handleCommandReturnValuePacketForApp(CommandPacket command,
           ResponsePacket returnPacket, boolean doNotReplyToClient,
           GNSApplicationInterface<String> app) throws JSONException, IOException {
+    GNSConfig.getLogger().log(Level.FINE, "handleCommandReturnValuePacketForApp");
     if (!doNotReplyToClient) {
       app.sendToClient(command, returnPacket, returnPacket.toJSONObject());
+    } else {
+      GNSConfig.getLogger().log(Level.FINER, "doNotReplyToClient");
     }
 
     // shows us stats every 100 commands, but not more than once every 5
