@@ -19,17 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
-import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.SharedGuidUtils;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -38,8 +27,19 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 /**
  *
@@ -54,7 +54,7 @@ public class NSAuthentication {
    * Does access and signature checking for a field OR fields in a guid.
    * For explicit multi-field access all fields must be accessible or
    * ACL check fails.
-   *
+   * @param header - the request header that contains the information as shown in {@link InternalRequestHeader}
    * @param guid - the guid containing the field being accessed
    * @param field - the field being accessed (one of this or fields should be non-null)
    * @param fields - or the fields being accessed (one of this or field should be non-null)
@@ -86,7 +86,7 @@ public class NSAuthentication {
    * Does access and signature checking for a field OR fields in a guid.
    * For explicit multi-field access all fields must be accessible or
    * ACL check fails.
-   *
+   * @param header - the request header that contains the information as shown in {@link InternalRequestHeader}
    * @param guid - the guid containing the field being accessed
    * @param field - the field being accessed (one of this or fields should be non-null)
    * @param fields - or the fields being accessed (one of this or field should be non-null)
@@ -111,6 +111,7 @@ public class NSAuthentication {
           GNSApplicationInterface<String> gnsApp, boolean skipSigCheck)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
           FailedDBOperationException, UnsupportedEncodingException {
+	  
     // Do a check for unsigned reads if there is no signature
     if ((!skipSigCheck && signature == null) || accessorGuid == null) {
       if (NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp)) {
@@ -174,7 +175,7 @@ public class NSAuthentication {
    * @param accessorGuid
    * @param access
    * @param gnsApp
-   * @return
+   * @return acl check result
    * @throws FailedDBOperationException
    */
   public static AclCheckResult aclCheck(InternalRequestHeader header, String targetGuid, String field,
@@ -183,7 +184,6 @@ public class NSAuthentication {
     ClientSupportConfig.getLogger().log(Level.FINE,
             "@@@@@@@@@@@@@@@@ACL Check guid={0} key={1} accessor={2} access={3}",
             new Object[]{targetGuid, field, accessorGuid, access});
-
     // This method attempts to look up the public key as well as check for ACL access.
     String publicKey;
     if (accessorGuid.equals(targetGuid)) {
@@ -230,6 +230,7 @@ public class NSAuthentication {
     }
   }
 
+
   /**
    * Attempts to look up the public key for a accessorGuid using the
    * ACL of the guid for the given field.
@@ -272,6 +273,7 @@ public class NSAuthentication {
               "================> Public key not found: accessor={0} guid={1} field={2} public keys={3}",
               new Object[]{accessorGuid, guid, field, publicKeys});
     }
+    
     return publicKey;
   }
 
@@ -280,7 +282,7 @@ public class NSAuthentication {
    *
    * @param guid
    * @param gnsApp
-   * @return
+   * @return public key
    * @throws FailedDBOperationException
    */
   public static String lookupPublicKeyLocallyWithCacheing(String guid, GNSApplicationInterface<String> gnsApp)
