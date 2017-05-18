@@ -30,6 +30,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import com.sun.net.httpserver.HttpsExchange;
 import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
@@ -193,6 +194,9 @@ public class GNSHttpServer {
           String host = requestHeaders.getFirst("Host");
           Headers responseHeaders = exchange.getResponseHeaders();
           responseHeaders.set("Content-Type", "text/plain");
+          if (Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_CROSS_ORIGIN_REQUESTS)) {
+            responseHeaders.set("Access-Control-Allow-Origin", "*");
+          }
           exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
 
           try (OutputStream responseBody = exchange.getResponseBody()) {
@@ -247,7 +251,7 @@ public class GNSHttpServer {
     // the signature, and the message signed.
     try {
       // Note that the commandName is not part of the queryString string here so
-      // it doesn't end up in the jsonCommand. Also see below where we put the 
+      // it doesn't end up in the jsonCommand. Also see below where we put the
       // command integer into the jsonCommand.
       JSONObject jsonCommand = Util.parseURIQueryStringIntoJSONObject(queryString);
       // If the signature exists it is Base64 encoded so decode it now.
@@ -272,7 +276,7 @@ public class GNSHttpServer {
       }
 
       // The client currently just uses the command name (which is not part of the
-      // query string above) so we need to stuff 
+      // query string above) so we need to stuff
       // in the Command integer for the signature check and execution.
       jsonCommand.put(GNSProtocol.COMMAND_INT.toString(), commandType.getInt());
       // Optionally does some sanity checking on the message if that was enabled at the client.
@@ -289,8 +293,8 @@ public class GNSHttpServer {
         try {
           command = commandModule.lookupCommand(commandType);
           // Do some work to get the signature and message into the command for
-          // signature checking that happens later on. 
-          // This only happens for local execution because remote handling (in the 
+          // signature checking that happens later on.
+          // This only happens for local execution because remote handling (in the
           // other side of the if) already does this.
           processSignature(jsonCommand);
           if (command != null) {
@@ -311,7 +315,7 @@ public class GNSHttpServer {
           LOGGER.log(Level.FINE, "Sending command out to a remote server: {0}", jsonCommand);
           CommandPacket commandResponsePacket = getResponseUsingGNSClient(client, jsonCommand);
           return new CommandResponse(ResponseCode.NO_ERROR,
-                  // Some crap here to make single field reads return just the value for backward compatibility 
+                  // Some crap here to make single field reads return just the value for backward compatibility
                   // There is similar code to this other places.
                   specialCaseSingleFieldRead(commandResponsePacket.getResultString(),
                           commandType, jsonCommand));
@@ -363,7 +367,7 @@ public class GNSHttpServer {
     }
   }
 
-  //make single field reads return just the value for backward compatibility 
+  //make single field reads return just the value for backward compatibility
   private static String specialCaseSingleFieldRead(String response, CommandType commandType,
           JSONObject jsonFormattedArguments) {
     try {

@@ -23,6 +23,8 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
 import edu.umass.cs.gnscommon.utils.Base64;
 
+import edu.umass.cs.gnsserver.utils.JSONUtils;
+import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,13 +45,14 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
   private final static String VALUE = "value";
   private final static String OTHERVALUE = "otherValue";
   private final static String QUERY = "query";
+  private final static String PROJECTION = "projection";
   private final static String CCPQUERYID = "ccpQueryId";
   private final static String NSQUERYID = "nsQueryId";
   private final static String SELECT_OPERATION = "operation";
   private final static String GROUP_BEHAVIOR = "group";
   private final static String GUID = "guid";
   private final static String REFRESH = "refresh";
-  
+
   //
   private long requestId;
   private String reader;
@@ -57,6 +60,7 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
   private Object value;
   private Object otherValue;
   private String query;
+  private List<String> projection;
   private int ccpQueryId = -1; // used by the command processor to maintain state
   private int nsQueryId = -1; // used by the name server to maintain state
   private SelectOperation selectOperation;
@@ -76,7 +80,7 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @param value
    * @param otherValue
    */
-  public SelectRequestPacket(long id, SelectOperation selectOperation, 
+  public SelectRequestPacket(long id, SelectOperation selectOperation,
           SelectGroupBehavior groupBehavior,
           String reader, String key, Object value, Object otherValue) {
     super();
@@ -89,6 +93,7 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
     this.selectOperation = selectOperation;
     this.groupBehavior = groupBehavior;
     this.query = null;
+    this.projection = null;
     this.guid = null;
   }
 
@@ -103,14 +108,16 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @param guid
    * @param minRefreshInterval
    */
-  private SelectRequestPacket(long id, SelectOperation selectOperation, 
+  private SelectRequestPacket(long id, SelectOperation selectOperation,
           SelectGroupBehavior groupOperation,
-          String reader, String query, String guid, int minRefreshInterval) {
+          String reader, String query, List<String> projection,
+          String guid, int minRefreshInterval) {
     super();
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.requestId = id;
     this.reader = reader;
     this.query = query;
+    this.projection = projection;
     this.selectOperation = selectOperation;
     this.groupBehavior = groupOperation;
     this.key = null;
@@ -126,11 +133,13 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @param id
    * @param reader
    * @param query
+   * @param projection
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket MakeQueryRequest(long id, String reader, String query) {
-    return new SelectRequestPacket(id, SelectOperation.QUERY, 
-             SelectGroupBehavior.NONE, reader, query, null, -1);
+  public static SelectRequestPacket MakeQueryRequest(long id, String reader, String query, List<String> projection) {
+    return new SelectRequestPacket(id, SelectOperation.QUERY,
+            SelectGroupBehavior.NONE, reader, query, projection,
+            null, -1);
   }
 
   /**
@@ -140,15 +149,18 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @param id
    * @param reader
    * @param query
+   * @param projection
    * @param guid
    * @param refreshInterval
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket MakeGroupSetupRequest(long id, String reader, String query,
+  public static SelectRequestPacket MakeGroupSetupRequest(long id, String reader,
+          String query, List<String> projection,
           String guid,
           int refreshInterval) {
     return new SelectRequestPacket(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP,
-            reader, query, guid, refreshInterval);
+            reader, query, projection,
+            guid, refreshInterval);
   }
 
   /**
@@ -161,7 +173,7 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @return a SelectRequestPacket
    */
   public static SelectRequestPacket MakeGroupLookupRequest(long id, String reader, String guid) {
-    return new SelectRequestPacket(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, 
+    return new SelectRequestPacket(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP,
             reader, null, guid, -1);
   }
 
@@ -183,6 +195,11 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
     this.value = json.optString(VALUE, null);
     this.otherValue = json.optString(OTHERVALUE, null);
     this.query = json.optString(QUERY, null);
+    if (json.has(PROJECTION)) {
+      this.projection = JSONUtils.JSONArrayToArrayListString(json.getJSONArray(PROJECTION));
+    } else {
+      this.projection = null;
+    }
     this.ccpQueryId = json.getInt(CCPQUERYID);
     //this.nsID = new NodeIDType(json.getString(NSID));
     this.nsQueryId = json.getInt(NSQUERYID);
@@ -224,6 +241,9 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
     }
     if (query != null) {
       json.put(QUERY, query);
+    }
+    if (projection != null) {
+      json.put(PROJECTION, projection);
     }
     json.put(CCPQUERYID, ccpQueryId);
     //json.put(NSID, nsID.toString());
@@ -276,14 +296,12 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
 
   /**
    * Return the reader.
-   * 
-   * @return  the reader
+   *
+   * @return the reader
    */
   public String getReader() {
     return reader;
   }
-  
-  
 
   /**
    * Return the key.
@@ -367,6 +385,22 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
   }
 
   /**
+   * 
+   * @return the projection
+   */
+  public List<String> getProjection() {
+    return projection;
+  }
+
+  /**
+   *
+   * @param projection
+   */
+  public void setProjection(List<String> projection) {
+    this.projection = projection;
+  }
+
+  /**
    *
    * @return the service name
    */
@@ -426,9 +460,11 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
     return new Object() {
       @Override
       public String toString() {
-        return SelectRequestPacket.this.getType() + ":"
-                + SelectRequestPacket.this.requestId + ":"
-                + SelectRequestPacket.this.getQuery() + "[" + SelectRequestPacket.this.getClientAddress() + "]";
+        return getType() + ":"
+                + requestId + ":"
+                + getQuery() 
+                + getProjection()
+                + "[" + SelectRequestPacket.this.getClientAddress() + "]";
       }
     };
   }

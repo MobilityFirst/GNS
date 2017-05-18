@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -470,11 +471,13 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    *
    * @param recordMap
    * @param query
+   * @param projection
    * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static AbstractRecordCursor selectRecordsQuery(BasicRecordMap recordMap, String query) throws FailedDBOperationException {
-    return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);
+  public static AbstractRecordCursor selectRecordsQuery(BasicRecordMap recordMap, 
+          String query, List<String> projection) throws FailedDBOperationException {
+    return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query, projection);
   }
 
   /**

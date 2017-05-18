@@ -42,6 +42,12 @@ import java.util.Set;
  * @author westy
  */
 public class GuidInfo {
+  
+  /**
+   * Used to indicate that this guid is keyless. 
+   * When keyless the {@code publicKey} will start with this string.
+   */
+  public static final String KEYLESS_PREFIX = "KEYLESS-";
 
   /**
    * The GUID.
@@ -245,6 +251,14 @@ public class GuidInfo {
    */
   public void removeTag(String tag) {
     tags.remove(tag);
+  }
+  
+  /**
+   * Returns true
+   * @return 
+   */
+  public boolean isKeyless() {
+    return publicKey.startsWith(KEYLESS_PREFIX);
   }
 
   /**

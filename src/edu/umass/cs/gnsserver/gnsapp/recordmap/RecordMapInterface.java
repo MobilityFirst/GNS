@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -191,10 +192,11 @@ public interface RecordMapInterface {
    *
    * @param valuesMapField
    * @param query
+   * @param projection
    * @return {@link AbstractRecordCursor}
    * @throws FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField,
-          String query) throws FailedDBOperationException;
+          String query, List<String> projection) throws FailedDBOperationException;
 
 }

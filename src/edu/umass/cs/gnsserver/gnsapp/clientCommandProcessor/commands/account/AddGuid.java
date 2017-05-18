@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
@@ -78,13 +77,18 @@ public class AddGuid extends AbstractCommand {
     JSONObject json = commandPacket.getCommand();
     String name = json.getString(GNSProtocol.NAME.toString());
     String accountGuid = json.getString(GNSProtocol.GUID.toString());
-    String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
+    String publicKey = json.optString(GNSProtocol.PUBLIC_KEY.toString(), null);
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
 
-    String newGuid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
-//    byte[] publicKeyBytes = Base64.decode(publicKey);
-//    String newGuid = SharedGuidUtils.createGuidStringFromPublicKey(publicKeyBytes);
+    String newGuid;
+    if (publicKey != null) {
+      newGuid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
+    } else {
+      // add a fake public key
+      publicKey = GuidInfo.KEYLESS_PREFIX + name;
+      newGuid = SharedGuidUtils.createGuidStringFromPublicKey(publicKey.getBytes());
+    }
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accountGuid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + accountGuid);

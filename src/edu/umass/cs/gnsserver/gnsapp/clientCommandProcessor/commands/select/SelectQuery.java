@@ -30,11 +30,17 @@ import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
+import edu.umass.cs.gnsserver.utils.JSONUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * A query that returns all guids that satisfy the given query.
+ * This supports an older style that returns only GUIDs 
+ * as well as newer SelectRecords calls that return entire records
+ * or partial records based on the value of the FIELDS parameter.
  *
  * @author westy
  */
@@ -62,9 +68,24 @@ public class SelectQuery extends AbstractCommand {
     JSONObject json = commandPacket.getCommand();
     String reader = json.optString(GNSProtocol.GUID.toString(), null);
     String query = json.getString(GNSProtocol.QUERY.toString());
+
     String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
     String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
-    return FieldAccess.selectQuery(header, commandPacket, reader, query, signature, message, handler);
+    // Special case handling of the fields argument
+    // Empty means this is an older style select which is converted to null
+    // GNSProtocol.ENTIRE_RECORD means what you think and is converted to a unique value which
+    // is the fields array is length one and has GNSProtocol.ENTIRE_RECORD string as the first element
+    // otherwise it is a list of fields
+    ArrayList<String> fields;
+    if (!json.has(GNSProtocol.FIELDS.toString())) {
+      fields = null;
+    } else if (GNSProtocol.ENTIRE_RECORD.toString().equals(json.optString(GNSProtocol.FIELDS.toString()))) {
+      fields = new ArrayList<>(Arrays.asList(GNSProtocol.ENTIRE_RECORD.toString()));
+    } else {
+      fields = JSONUtils.JSONArrayToArrayListString(json.getJSONArray(GNSProtocol.FIELDS.toString()));
+    }
+    return FieldAccess.selectQuery(header, commandPacket, reader, query, fields,
+            signature, message, handler);
   }
 
 }
