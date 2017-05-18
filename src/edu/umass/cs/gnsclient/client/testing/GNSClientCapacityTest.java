@@ -260,13 +260,13 @@ public class GNSClientCapacityTest extends DefaultTest {
 					}
 					else
 						assert(clients[clientIndex].execute(GNSCommand.fieldRead(guid.getGuid(), 
-								someField, null)).getResultJSONObject().getString(someField).equals(someValue));
-					incrFinishedOps();
+								someField, null)).getResultJSONObject().getString(someField).equals(someValue));					
 				} catch (ClientException | JSONException | IOException e) {
 					log.severe("Client " + clientIndex + " failed to read "
 							+ guid);
 					e.printStackTrace();
 				}
+				incrFinishedOps();
 			}
 		});
 	}
@@ -277,13 +277,13 @@ public class GNSClientCapacityTest extends DefaultTest {
 			@Override
 			public void run() {
 				try {
-					clients[clientIndex].execute(GNSCommand.fieldUpdate(guid, someField, someValue));
-					incrFinishedOps();
+					clients[clientIndex].execute(GNSCommand.fieldUpdate(guid, someField, someValue));					
 				} catch (ClientException | IOException e) {
 					log.severe("Client " + clientIndex + " failed to update "
 							+ guid);
 					e.printStackTrace();
 				}
+				incrFinishedOps();
 			}
 			
 		});
@@ -295,12 +295,12 @@ public class GNSClientCapacityTest extends DefaultTest {
 			@Override
 			public void run() {
 				try {
-					clients[clientIndex].execute(GNSCommand.fieldRemove(guid, someField+reqID));
-					incrFinishedOps();
+					clients[clientIndex].execute(GNSCommand.fieldRemove(guid, someField+reqID));					
 				} catch (ClientException | IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}				
+				}	
+				incrFinishedOps();
 			}
 			
 		});
