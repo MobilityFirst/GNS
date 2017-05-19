@@ -5,11 +5,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.json.JSONException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -20,10 +19,9 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -56,8 +54,8 @@ public class GNSClientCapacityTest extends DefaultTest {
 	private static int numAccountGuids;
 	private static GuidEntry[] accountGuidEntries;
 	private static GuidEntry[] guidEntries;
-	private static GNSClient[] clients;
-	private static ThreadPoolExecutor executor;
+	private static GNSClientCommands[] clients;
+	private static ScheduledThreadPoolExecutor executor;
 
 	private static Logger log = GNSClientConfig.getLogger();
 
@@ -89,13 +87,12 @@ public class GNSClientCapacityTest extends DefaultTest {
 	}
 
 	private static void setupClientsAndGuids() throws Exception {
-		clients = new GNSClient[numClients];
-		executor = (ThreadPoolExecutor) Executors
-				.newFixedThreadPool(50*numClients);
+		clients = new GNSClientCommands[numClients];
+		executor = (ScheduledThreadPoolExecutor) Executors
+				.newScheduledThreadPool(numClients);
 		for (int i = 0; i < numClients; i++)
 			clients[i] = new GNSClientCommands();
-		@SuppressWarnings("deprecation")
-		String gnsInstance = GNSClient.getGNSProvider();
+		String gnsInstance = clients[0].getGNSProvider();
 		accountGuidEntries = new GuidEntry[numAccountGuids];
 
 		int numPreExisting = 0;
@@ -134,7 +131,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		guidEntries = new GuidEntry[numGuids];
 		Set<String> subGuids = new HashSet<String>();
 		for (int i = 0, j = 0; i < numGuids; i++) {
-			subGuids.add(accountGUIDPrefix+Config.getGlobalString(TC.TEST_GUID_PREFIX) + i);
+			subGuids.add(Config.getGlobalString(TC.TEST_GUID_PREFIX) + i);
 
 			if (subGuids.size() == numGuidsPerAccount || i == numGuids - 1) {
 				// because batch creation seems buggy
@@ -153,13 +150,13 @@ public class GNSClientCapacityTest extends DefaultTest {
 				} else
 					try {
 						// batch create
-						clients[0].execute(GNSCommand.batchCreateGUIDs(accountGuidEntries[i
-                              /numGuidsPerAccount], subGuids));
+						clients[0].guidBatchCreate(accountGuidEntries[i
+								/ numGuidsPerAccount], subGuids);
 					} catch (Exception e) {
 						for (String subGuid : subGuids) {
-							try {								
-								clients[0].execute(GNSCommand.guidCreate(accountGuidEntries[i
-                                        / numGuidsPerAccount], subGuid));
+							try {
+								clients[0].guidCreate(accountGuidEntries[i
+										/ numGuidsPerAccount], subGuid);
 							} catch (DuplicateNameException de) {
 								// ignore, will retrieve it locally below
 							}
@@ -194,16 +191,20 @@ public class GNSClientCapacityTest extends DefaultTest {
 	public void test_01_SingleWrite() {
 		GuidEntry guid = guidEntries[0];
 		try {
-			clients[0].execute(GNSCommand.fieldUpdate(guid, someField, someValue));
+			clients[0].fieldUpdate(guid, someField, someValue);
 			// verify written value
-			Assert.assertEquals(clients[0].execute(GNSCommand.fieldRead(guid, someField)).getResultJSONObject().getString(someField),
+			Assert.assertEquals(clients[0].fieldRead(guid, someField),
 					(someValue));
 			Assert.assertEquals(
-					clients[numClients > 1 ? 1 : 0].execute(GNSCommand.fieldRead(guid, someField)).getResultJSONObject().getString(someField),
+					clients[numClients > 1 ? 1 : 0].fieldRead(guid, someField),
 					(someValue));
-		} catch (IOException | ClientException | JSONException e) {
+		} catch (IOException | ClientException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -216,7 +217,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			long t1 = System.nanoTime();
-			clients[0].execute(GNSCommand.fieldRead(guidEntries[0], someField));
+			clients[0].fieldRead(guidEntries[0], someField);
 			DelayProfiler.updateDelayNano("e2eLatency", t1);
 		}
 		System.out.print("sequential_read_rate="
@@ -234,7 +235,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			long t1 = System.nanoTime();
-			clients[0].execute(GNSCommand.fieldRead(guidEntries[0].getGuid(), someField, null));
+			clients[0].fieldRead(guidEntries[0].getGuid(), someField, null);
 			DelayProfiler.updateDelayNano("e2eLatency", t1);
 		}
 		System.out.print("sequential_read_rate="
@@ -243,11 +244,11 @@ public class GNSClientCapacityTest extends DefaultTest {
 		System.out.println(DelayProfiler.getStats());
 	}
 
-	private static int numFinishedOps = 0;
+	private static int numFinishedReads = 0;
 	private static long lastReadFinishedTime = System.currentTimeMillis();
 
-	synchronized static void incrFinishedOps() {
-		numFinishedOps++;
+	synchronized static void incrFinishedReads() {
+		numFinishedReads++;
 		lastReadFinishedTime = System.currentTimeMillis();
 	}
 
@@ -255,101 +256,40 @@ public class GNSClientCapacityTest extends DefaultTest {
 		executor.submit(new Runnable() {
 			public void run() {
 				try {
-					if (signed){
-						assert(clients[clientIndex].execute(GNSCommand.fieldRead(guid, someField)).getResultJSONObject().getString(someField).equals(someValue));
-					}
+					if (signed)
+						assert(clients[clientIndex].fieldRead(guid, someField).equals(someValue));
 					else
-						assert(clients[clientIndex].execute(GNSCommand.fieldRead(guid.getGuid(), 
-								someField, null)).getResultJSONObject().getString(someField).equals(someValue));					
-				} catch (ClientException | JSONException | IOException e) {
+						assert(clients[clientIndex].fieldRead(guid.getGuid(),
+								someField, null).equals(someValue));
+
+					incrFinishedReads();
+				} catch (Exception e) {
 					log.severe("Client " + clientIndex + " failed to read "
 							+ guid);
 					e.printStackTrace();
 				}
-				incrFinishedOps();
 			}
 		});
 	}
-	
-	private void blockingWrite(int clientIndex, GuidEntry guid, int reqID) {
-		executor.submit(new Runnable() {
 
-			@Override
-			public void run() {
-				try {
-					clients[clientIndex].execute(GNSCommand.fieldUpdate(guid, someField, someValue));					
-				} catch (ClientException | IOException e) {
-					log.severe("Client " + clientIndex + " failed to update "
-							+ guid);
-					e.printStackTrace();
-				}
-				incrFinishedOps();
-			}
-			
-		});
-	}
-	
-	private void blockingRemove(int clientIndex, GuidEntry guid, int reqID) {
-		executor.submit(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					clients[clientIndex].execute(GNSCommand.fieldRemove(guid, someField+reqID));					
-				} catch (ClientException | IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}	
-				incrFinishedOps();
-			}
-			
-		});
-	}
-	
-	private static final int numWriteAndRemove = 20000;
-	
-	/**
-	 * @throws Exception
-	 */
-	@Test
-	public void test_02_ParralelWriteCapacity() throws Exception {
-		int numWrites = numWriteAndRemove;
-		long t = System.currentTimeMillis();
-		for (int i=0; i<numWrites; i++){
-			blockingWrite(i % numClients, guidEntries[0], i);
-		}
-		System.out.print("[total_writes=" + numWrites+": ");
-		int lastCount = 0;
-		while (numFinishedOps < numWrites) {
-			if(numFinishedOps>lastCount)  {
-				lastCount = numFinishedOps;
-				System.out.print(numFinishedOps + "@" + Util.df(numFinishedOps * 1.0 / (lastReadFinishedTime - t))+"K/s ");
-			}
-			Thread.sleep(1000);
-		}
-		System.out.print("] ");
-		System.out.print("parallel_write_rate="
-				+ Util.df(numWrites * 1.0 / (lastReadFinishedTime - t))
-				+ "K/s");
-	}
-	
 	/**
 	 * @throws Exception
 	 */
 	@Test
 	public void test_03_ParallelSignedReadCapacity() throws Exception {
-		reset();
-		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS);
+		int numReads = Math.min(
+				Config.getGlobalBoolean(GNSCC.ENABLE_SECRET_KEY) ? Integer.MAX_VALUE : 10000,
+				Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
-			blockingRead(i % numClients, guidEntries[0], true);
+			blockingRead(numReads % numClients, guidEntries[0], true);
 		}
 		System.out.print("[total_reads=" + numReads+": ");
 		int lastCount = 0;
-		while (numFinishedOps < numReads) {
-			if(numFinishedOps>lastCount)  {
-				lastCount = numFinishedOps;
-				System.out.print(numFinishedOps + "@" + Util.df(numFinishedOps * 1.0 / (lastReadFinishedTime - t))+"K/s ");
+		while (numFinishedReads < numReads) {
+			if(numFinishedReads>lastCount)  {
+				lastCount = numFinishedReads;
+				System.out.print(numFinishedReads + "@" + Util.df(numFinishedReads * 1.0 / (lastReadFinishedTime - t))+"K/s ");
 			}
 			Thread.sleep(1000);
 		}
@@ -361,7 +301,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	}
 
 	private void reset() {
-		numFinishedOps = 0;
+		numFinishedReads = 0;
 		lastReadFinishedTime = System.currentTimeMillis();
 	}
 
@@ -375,14 +315,14 @@ public class GNSClientCapacityTest extends DefaultTest {
 		reset();
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
-			blockingRead(i % numClients, guidEntries[0], false);
+			blockingRead(numReads % numClients, guidEntries[0], false);
 		}
 		int j = 1;
 		System.out.print("[total_reads=" + numReads+": ");
-		while (numFinishedOps < numReads) {
-			if (numFinishedOps >= j) {
+		while (numFinishedReads < numReads) {
+			if (numFinishedReads >= j) {
 				j *= 2;
-				System.out.print(numFinishedOps + "@" + Util.df(numFinishedOps * 1.0 / (lastReadFinishedTime - t))+"K/s ");
+				System.out.print(numFinishedReads + "@" + Util.df(numFinishedReads * 1.0 / (lastReadFinishedTime - t))+"K/s ");
 			}
 			Thread.sleep(500);
 		}
@@ -393,32 +333,6 @@ public class GNSClientCapacityTest extends DefaultTest {
 		}
 	}
 
-	/**
-	 * @throws Exception
-	 */
-	@Test
-	public void test_05_ParallelRemoveCapacity() throws Exception {
-		reset();
-		int numRemoves = numWriteAndRemove;
-		long t = System.currentTimeMillis();
-		for (int i=0; i<numRemoves; i++){
-			blockingRemove(i % numClients, guidEntries[0], i);
-		}
-		System.out.print("[total_removes=" + numRemoves+": ");
-		int lastCount = 0;
-		while (numFinishedOps < numRemoves) {
-			if(numFinishedOps>lastCount)  {
-				lastCount = numFinishedOps;
-				System.out.print(numFinishedOps + "@" + Util.df(numFinishedOps * 1.0 / (lastReadFinishedTime - t))+"K/s ");
-			}
-			Thread.sleep(1000);
-		}
-		System.out.print("] ");
-		System.out.print("parallel_remove_rate="
-				+ Util.df(numRemoves * 1.0 / (lastReadFinishedTime - t))
-				+ "K/s");
-	}
-	
 	/**
 	 * Removes all account and sub-guids created during the test.
 	 * 
@@ -435,8 +349,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 				try {
 					log.log(Level.FINE, "About to delete sub-guid {0}",
 							new Object[] { guidEntry });
-					if(guidEntry!=null)
-						clients[0].execute(GNSCommand.guidRemove(guidEntry));
+					clients[0].guidRemove(guidEntry);
 					log.log(Level.FINE, "Deleted sub-guid {0}",
 							new Object[] { guidEntry });
 				} catch (Exception e) {
@@ -453,8 +366,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 			try {
 				log.log(Level.FINE, "About to delete account guid {0}",
 						new Object[] { accGuidEntry });
-				if(accGuidEntry != null)
-					clients[0].execute(GNSCommand.accountGuidRemove(accGuidEntry));
+				clients[0].accountGuidRemove(accGuidEntry);
 				log.log(Level.FINE, "Deleted account guid {0}",
 						new Object[] { accGuidEntry });
 			} catch (Exception e) {
@@ -464,13 +376,12 @@ public class GNSClientCapacityTest extends DefaultTest {
 				// continue with rest
 			}
 		}
-		for (GNSClient client : clients)
+		for (GNSClientCommands client : clients)
 			client.close();
 		executor.shutdown();
 		System.out.println(DelayProfiler.getStats());
 	}
 
-	
 	private static void processArgs(String[] args) throws IOException {
 		Config.register(args);
 	}
