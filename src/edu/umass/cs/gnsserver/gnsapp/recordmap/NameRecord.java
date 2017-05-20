@@ -50,11 +50,7 @@ import java.util.logging.Level;
  *
  * @author abhigyan
  */
-public class NameRecord implements Comparable<NameRecord>, Summarizable {
-  /**
-   * The field that contains meta data of a GUID
-   */
-  public final static String META_DATA_FIELD = "nr_valuesMap";	
+public class NameRecord implements Comparable<NameRecord>, Summarizable {	
   /**
    * NAME
    */
@@ -62,7 +58,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   /**
    * VALUES_MAP
    */
-  public final static ColumnField VALUES_MAP = new ColumnField(META_DATA_FIELD, ColumnFieldType.VALUES_MAP);
+  public final static ColumnField VALUES_MAP = new ColumnField("nr_valuesMap", ColumnFieldType.VALUES_MAP);
   /**
    * This HashMap stores all the (field,value) tuples that are read from the database for this name record.
    */

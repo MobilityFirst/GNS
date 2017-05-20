@@ -269,7 +269,7 @@ public class NSAccessSupport {
   }
 
   /**
-   * Check for one of the groups that accessorguid is in being a member of allowed users.
+   * Check for one of the groups that accessorGuid is in being a member of allowed users.
    * Field can be dotted and at any level.
    *
    * @param accessType
@@ -307,7 +307,7 @@ public class NSAccessSupport {
 	 * @param item
 	 * @return index of item in arr
 	 */
-	private static int indexOf(JSONArray arr, String item){
+	protected static int indexOfItemInJSONArray(JSONArray arr, String item){
 		int index = -1;
 		if(arr == null)
 			return index;
@@ -347,18 +347,17 @@ public class NSAccessSupport {
 	 }
 	 // we need another field called MD
 	 final String md = "MD";
-	 
 	 try {
 			JSONArray aclOfField = metaData.getJSONObject(access.getPrefix())
 					.getJSONObject(access.name()).getJSONObject(field).getJSONArray(md);
-			if(indexOf(aclOfField, GNSProtocol.EVERYONE.toString()) >= 0){				
+			if(indexOfItemInJSONArray(aclOfField, GNSProtocol.EVERYONE.toString()) >= 0){				
 				return true;
 			}
 	 } catch (JSONException e) {
 			try {
 				JSONArray aclOfEntireRecord = metaData.getJSONObject(access.getPrefix())
 						.getJSONObject(access.name()).getJSONObject(GNSProtocol.ENTIRE_RECORD.toString()).getJSONArray(md);
-				if(indexOf(aclOfEntireRecord, GNSProtocol.EVERYONE.toString()) >= 0){				
+				if(indexOfItemInJSONArray(aclOfEntireRecord, GNSProtocol.EVERYONE.toString()) >= 0){				
 					return true;
 				}
 			} catch (JSONException e1) {
@@ -374,7 +373,7 @@ public class NSAccessSupport {
    * @param basicRecordMap
    * @return meta data
    */
-  public static JSONObject getMataDataForACLCheck(String guid, BasicRecordMap basicRecordMap) {
+  protected static JSONObject getMataDataForACLCheck(String guid, BasicRecordMap basicRecordMap) {
 	  /**
 	   *  For the rest of ACL and signature check, let's first retrieve
 	   *  the entire record, then check ACL.
@@ -397,21 +396,15 @@ public class NSAccessSupport {
 		   */
 		  return null;
 	  }
-	
-	
+		
 	  if(json == null){
 		  // The entire record is null, so we did not find the record
 		  return null;
 	  }
-	
-	  /**
-	   * 2. Now let's check ACL with the entire record.
-	   * Since the meta data is written and can only be written by GNS,
-	   * therefore we could assume the meta data is in the field "nr_valuesMap".
-	   */
+	  
 	  JSONObject metaData = null; 
 	  try {
-		  metaData = json.getJSONObject(NameRecord.META_DATA_FIELD);
+		  metaData = json.getJSONObject(GNSProtocol.META_DATA_FIELD.toString());
 	  } catch (JSONException e) {
 		  return null;
 	  }
@@ -426,14 +419,24 @@ public class NSAccessSupport {
    * @param access
    * @param guid
    * @param field
-   * @param database
+   * @param metaData 
    * @return a set of public keys
    * @throws FailedDBOperationException
    */
   @SuppressWarnings("unchecked")
-  public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
-          BasicRecordMap database) throws FailedDBOperationException {
+  public static JSONArray lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
+          JSONObject metaData) throws FailedDBOperationException {
     ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", new Object[]{field});
+    JSONArray publicKeys;
+    try {
+    	publicKeys = metaData.getJSONObject(access.getPrefix())
+				.getJSONObject(access.name()).getJSONObject(field).getJSONArray("MD");
+		return publicKeys;
+	} catch (JSONException e) {
+		ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
+	}
+    
+	/*
     try {
       // If the field is found this will return a list of the public keys in the ACL,
       // empty or otherwise. If it is empty we will stop looking.
@@ -444,15 +447,16 @@ public class NSAccessSupport {
       return new HashSet<>();
     } catch (FieldNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
-    }
+    }*/
+	
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
-      return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
+      return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), metaData);
       // One last check at the root (GNSProtocol.ENTIRE_RECORD.toString()) field.
     } else if (!GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-      return lookupPublicKeysFromAcl(access, guid, GNSProtocol.ENTIRE_RECORD.toString(), database);
+      return lookupPublicKeysFromAcl(access, guid, GNSProtocol.ENTIRE_RECORD.toString(), metaData);
     } else {
-      return new HashSet<>();
+      return null;
     }
   }
 
