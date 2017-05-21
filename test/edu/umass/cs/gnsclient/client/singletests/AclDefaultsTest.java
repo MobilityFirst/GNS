@@ -56,10 +56,8 @@ import org.junit.runners.MethodSorters;
  * 2. Each field is associated with a read or write white list,
  * the GUID in the read white list can read from the field, the 
  * GUID in the write white list can write into the field.
- * 3. The GUID in a higher level field's ACL white list is also
- * authorized to access to the lower level field. Here, in a JSON, 
- * a higher level field is the field whose value is another JSON
- * that contains the lower level field. 
+ * 3. The GUID in a field's ACL white list is allowed to access 
+ * to its sub fields.
  * 4. The GUIDs does not fall in the rule 1-3 are not allowed to
  * access to target GUID's field.
  * 

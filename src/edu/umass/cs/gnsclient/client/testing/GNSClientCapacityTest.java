@@ -347,13 +347,10 @@ public class GNSClientCapacityTest extends DefaultTest {
 	@Test
 	public void test_03_ParrallelWriteWithACLCapacity() throws InterruptedException, ClientException, IOException{
 		reset();
+		// The old GNS ACL implementation does not allow a GUID in ENTIRE_RECORD's ACL to write into a sub field.
 		clients[0].execute(GNSCommand.aclAdd(AclAccessType.WRITE_WHITELIST, 
-				guidEntries[0], GNSProtocol.ENTIRE_RECORD.toString(), accessor.getGuid()));
-		CommandPacket response = clients[0].execute(GNSCommand.aclGet(AclAccessType.WRITE_WHITELIST, 
-				guidEntries[0], GNSProtocol.ENTIRE_RECORD.toString(), guidEntries[0].getGuid()));
-		System.out.println("accessor is in ACL:"+response);
-		return;
-		/*
+				guidEntries[0], someField, accessor.getGuid()));
+
 		int numWrites = numWriteAndRemove;
 		long t = System.currentTimeMillis();
 		for (int i=0; i<numWrites; i++){
@@ -374,8 +371,8 @@ public class GNSClientCapacityTest extends DefaultTest {
 				+ "K/s");
 		
 		clients[0].execute(GNSCommand.aclRemove(AclAccessType.WRITE_WHITELIST, 
-				guidEntries[0], GNSProtocol.ENTIRE_RECORD.toString(), accessor.getGuid()));
-			*/
+				guidEntries[0], someField, accessor.getGuid()));
+			
 	}
 	
 	/**
