@@ -32,6 +32,7 @@ import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.DelayProfiler;
@@ -345,9 +346,14 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_03_ParrallelWriteWithACLCapacity() throws InterruptedException, ClientException, IOException{
+		reset();
 		clients[0].execute(GNSCommand.aclAdd(AclAccessType.WRITE_WHITELIST, 
 				guidEntries[0], GNSProtocol.ENTIRE_RECORD.toString(), accessor.getGuid()));
-		
+		CommandPacket response = clients[0].execute(GNSCommand.aclGet(AclAccessType.WRITE_WHITELIST, 
+				guidEntries[0], GNSProtocol.ENTIRE_RECORD.toString(), guidEntries[0].getGuid()));
+		System.out.println("accessor is in ACL:"+response);
+		return;
+		/*
 		int numWrites = numWriteAndRemove;
 		long t = System.currentTimeMillis();
 		for (int i=0; i<numWrites; i++){
@@ -369,6 +375,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		
 		clients[0].execute(GNSCommand.aclRemove(AclAccessType.WRITE_WHITELIST, 
 				guidEntries[0], GNSProtocol.ENTIRE_RECORD.toString(), accessor.getGuid()));
+			*/
 	}
 	
 	/**
