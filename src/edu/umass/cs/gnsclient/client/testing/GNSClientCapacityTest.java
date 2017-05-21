@@ -272,6 +272,24 @@ public class GNSClientCapacityTest extends DefaultTest {
 		});
 	}
 	
+	
+	private void blockingWriteWithACL(int clientIndex, GuidEntry accessorGuid, String targetGuid) {
+		executor.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					clients[clientIndex].execute(GNSCommand.fieldUpdate(targetGuid, someField, someValue, accessorGuid));
+				} catch (ClientException | IOException e) {
+					log.severe("Client " + clientIndex + " failed to write "
+							+ targetGuid+ " with accessor "+accessor.getGuid());
+					e.printStackTrace();
+				}
+				incrFinishedOps();
+			}			
+		});
+	}
+	
+	
 	private void blockingRemove(int clientIndex, GuidEntry guid, int reqID) {
 		executor.submit(new Runnable() {
 
@@ -289,7 +307,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		});
 	}
 	
-	private static final int numWriteAndRemove = 20000;
+	private static final int numWriteAndRemove = 50000;
 	
 	/**
 	 * FIXME: we should update different fields, but it will trigger a derby exception.
@@ -319,17 +337,52 @@ public class GNSClientCapacityTest extends DefaultTest {
 	}
 	
 	/**
+	 * Test write throughput with ACL 
+	 * 
+	 * @throws InterruptedException
+	 * @throws ClientException
+	 * @throws IOException
+	 */
+	@Test
+	public void test_03_ParrallelWriteWithACLCapacity() throws InterruptedException, ClientException, IOException{
+		clients[0].execute(GNSCommand.aclAdd(AclAccessType.WRITE_WHITELIST, 
+				guidEntries[0], GNSProtocol.ENTIRE_RECORD.toString(), accessor.getGuid()));
+		
+		int numWrites = numWriteAndRemove;
+		long t = System.currentTimeMillis();
+		for (int i=0; i<numWrites; i++){
+			blockingWriteWithACL(i%numClients, accessor, guidEntries[0].getGuid());
+		}
+		System.out.print("[total_writes_with_acl=" + numWrites+": ");
+		int lastCount = 0;
+		while (numFinishedOps < numWrites) {
+			if(numFinishedOps>lastCount)  {
+				lastCount = numFinishedOps;
+				System.out.print(numFinishedOps + "@" + Util.df(numFinishedOps * 1.0 / (lastOpFinishedTime - t))+"K/s ");
+			}
+			Thread.sleep(1000);
+		}
+		System.out.print("] ");
+		System.out.print("parallel_write_with_acl_rate="
+				+ Util.df(numWrites * 1.0 / (lastOpFinishedTime - t))
+				+ "K/s");
+		
+		clients[0].execute(GNSCommand.aclRemove(AclAccessType.WRITE_WHITELIST, 
+				guidEntries[0], GNSProtocol.ENTIRE_RECORD.toString(), accessor.getGuid()));
+	}
+	
+	/**
 	 * @throws Exception
 	 */
 	@Test
-	public void test_03_ParallelSignedReadCapacity() throws Exception {
+	public void test_11_ParallelSignedReadCapacity() throws Exception {
 		reset();
 		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS);
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			blockingRead(i % numClients, guidEntries[0], true);
 		}
-		System.out.print("[total_reads=" + numReads+": ");
+		System.out.print("[total_signed_reads=" + numReads+": ");
 		int lastCount = 0;
 		while (numFinishedOps < numReads) {
 			if(numFinishedOps>lastCount)  {
@@ -354,7 +407,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void test_04_ParallelUnsignedReadCapacity() throws Exception {
+	public void test_12_ParallelUnsignedReadCapacity() throws Exception {
 		
 		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS);
 		reset();
@@ -363,7 +416,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 			blockingRead(i % numClients, guidEntries[0], false);
 		}
 		int j = 1;
-		System.out.print("[total_reads=" + numReads+": ");
+		System.out.print("[total_unsigned_reads=" + numReads+": ");
 		while (numFinishedOps < numReads) {
 			if (numFinishedOps >= j) {
 				j *= 2;
@@ -384,7 +437,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 * @throws InterruptedException
 	 */
 	@Test
-	public void test_05_ParallelReadWithACLCapacity() throws ClientException, IOException, InterruptedException {
+	public void test_13_ParallelReadWithACLCapacity() throws ClientException, IOException, InterruptedException {
 		reset();
 		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS);
 		clients[0].execute(GNSCommand.aclAdd(AclAccessType.READ_WHITELIST, guidEntries[0], 
@@ -395,7 +448,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 			blockingReadWithACL( i%numClients, accessor, guidEntries[0].getGuid());
 		}
 		int j = 1;
-		System.out.print("[total_reads=" + numReads+": ");
+		System.out.print("[total_reads_with_acl=" + numReads+": ");
 		while (numFinishedOps < numReads) {
 			if (numFinishedOps >= j) {
 				j *= 2;
@@ -417,8 +470,8 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 * 
 	 * @throws Exception
 	 */
-	//@Test
-	public void test_10_ParallelRemoveCapacity() throws Exception {
+	@Test
+	public void test_21_ParallelRemoveCapacity() throws Exception {
 		reset();
 		int numRemoves = numWriteAndRemove;
 		long t = System.currentTimeMillis();
