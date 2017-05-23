@@ -5,6 +5,9 @@ jdk:
 - oraclejdk8
 services:
 - mongodb
+before_install:
+- sudo apt-get update -qq
+- sudo apt-get install -qq ant-optional
 notifications:
   email:
     on_success: always
