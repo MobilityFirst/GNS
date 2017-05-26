@@ -23,6 +23,7 @@ import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
@@ -68,8 +69,14 @@ public class CreateAccountWithCertificate extends DefaultGNSTest {
         try {
             String certificateFileName = "/home/tramteja/work/gns_source/GNS/certificate_firsttest.crt";
             String privateKeyFileName = "/home/tramteja/work/gns_source/GNS/final_key.pem";
+            testGuid = GuidUtils.lookupOrCreateAccountGuidWithCertificate(gnsClient, certificateFileName,
+                    privateKeyFileName, "password", true);
 
-            testGuid = GuidUtils.accountGuidCreateWithCertificate(gnsClient, TEST_ACCOUNT_PASSWORD,certificateFileName, privateKeyFileName );
+            KeyPairUtils.removeKeyPair(GNSClient.getGNSProvider(), "firsttest");
+
+            testGuid = GuidUtils.lookupOrCreateAccountGuidWithCertificate(gnsClient, certificateFileName,
+                    privateKeyFileName, "password", true);
+            //testGuid = GuidUtils.accountGuidCreateWithCertificate(gnsClient, TEST_ACCOUNT_PASSWORD,certificateFileName, privateKeyFileName );
         } catch (Exception e) {
             Utils.failWithStackTrace("Exception when we were not expecting it: " + e);
         }

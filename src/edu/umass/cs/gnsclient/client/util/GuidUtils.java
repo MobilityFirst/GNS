@@ -58,7 +58,7 @@ public class GuidUtils {
 
   private static boolean guidExists(GNSClient client, GuidEntry guid) throws IOException {
     try {
-      client.execute(GNSCommand.lookupGUID(guid.getGuid())).getResultJSONObject();
+      client.execute(GNSCommand.lookupGUIDRecord(guid.getGuid())).getResultJSONObject();
     } catch (ClientException e) {
       return false;
     }
@@ -187,6 +187,49 @@ public class GuidUtils {
           boolean verbose) throws Exception {
     return lookupOrCreateAccountGuidInternal(client, name, password, false, verbose);
   }
+
+
+
+  public static GuidEntry lookupOrCreateAccountGuidWithCertificate(GNSClient client, String certificateFileName,
+                                                                   String privatekeyFileName, String password, boolean verbose)
+                    throws ClientException, IOException, CertificateException, InvalidKeySpecException {
+
+    X509Certificate cert = SharedGuidUtils.loadCertificateFromFile(certificateFileName);
+    String name = SharedGuidUtils.getNameFromCertificate(cert);
+
+    GuidEntry guid = lookupGuidEntryFromDatabase(client, name);
+
+    if (guid == null || !guidExists(client, guid)) {
+      if (verbose) {
+        if (guid == null) {
+          System.out.println("  Creating a new account GUID for " + name);
+        } else {
+          System.out.println("  Old account GUID " + guid + " found locally is invalid, creating a new one.");
+        }
+      }
+
+      try {
+        guid = accountGuidCreateWithCertificate(client, password, certificateFileName, privatekeyFileName);
+
+      } catch (DuplicateNameException e) {
+        // ignore as it is most likely because of a seemingly failed creation operation that actually succeeded.
+        System.out.println("  Account GUID " + guid + " aready exists on the server; " + e.getMessage());
+      }
+
+      if (verbose)
+          System.out.println("  Created account GUID " + guid);
+
+      return guid;
+
+    }
+    else {
+      if (verbose)
+        System.out.println("Found account guid for " + guid.getEntityName() + " (" + guid.getGuid() + ")");
+      return guid;
+    }
+
+  }
+
 
   /**
    * Register a new account guid on the GNS server using certificate
