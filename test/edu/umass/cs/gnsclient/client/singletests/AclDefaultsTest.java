@@ -49,7 +49,43 @@ import org.junit.runners.MethodSorters;
 /**
  * This test tests all manner of ACL uses with emphasis
  * on checking the default ACL access settings.
- *
+ * 
+ * The invariants  of ACL is described as follows:
+ * 1. The target GUID itself is always allowed to access to all
+ * of its information (i.e., every field).
+ * 2. Each field is associated with a read or write white list,
+ * the GUID in the read white list can read from the field, the 
+ * GUID in the write white list can write into the field.
+ * 3. The GUID in a field's ACL white list is allowed to access 
+ * to its sub fields.
+ * 4. The GUIDs does not fall in the rule 1-3 are not allowed to
+ * access to target GUID's field.
+ * 
+ * Here is an example for the rules described above.
+ * Let's denote the original JSON as follows:
+ * {
+ * 	"layer1":
+ * 			{
+ * 				"layer2":"some value"
+ * 			}
+ * 	"another field": "some value"
+ * }
+ * Let's denote the target GUID's ACL as follows:
+ * {
+ * 	"_GNS_ACL":{
+ * 		"READ_WHITELIST":{
+ * 		"+ALL+":[guid1],
+ * 		"layer1":[guid2],
+ * 		"layer1.layer2":[guid3]
+ * 		}
+ * 	}
+ * }
+ * 
+ * In this example, guid1 is allowed to access all the field, including "another field",
+ * as it is in the root's ACL whitelist (i.e., "+ALL+"). While guid2 is only in the whitelist
+ * of "layer1", therefore, it is only allowed to access to all the fields in "layer1"(i.e.,
+ * "layer1" as well as "layer2"). Finally guid3 is only allowed to access to "layer2".
+ * Any other guid is not allowed to access to any of these fields.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AclDefaultsTest extends DefaultGNSTest {
@@ -727,18 +763,20 @@ public class AclDefaultsTest extends DefaultGNSTest {
     }
   }
 
+  /**
+   * Since GNSProtocol.ALL_GUIDS.toString() is at the root white list, it means
+   * every one is allowed to access to all the fields of this GUID.
+   * So this test should succeed. 
+   */
   // This should still fail because the ACL for test.deeper.field is empty even though test 
   // now has an GNSProtocol.ALL_GUIDS.toString() at the root (this is different than the old model).
-  /**
-   *
-   */
   @Test
   public void test_158_ACLReadDeeperFieldOtherFail() {
     try {
       try {
         Assert.assertEquals("fieldValue", clientCommands.fieldRead(westyEntry.getGuid(), "test.deeper.field", samEntry));
-        Utils.failWithStackTrace("This read should have failed.");
       } catch (ClientException | IOException e) {
+    	  Utils.failWithStackTrace("This read should succeed: ",e);
       }
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: ", e);
