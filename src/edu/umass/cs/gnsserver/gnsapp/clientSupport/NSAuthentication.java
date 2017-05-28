@@ -24,13 +24,12 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.common.cache.Cache;
@@ -265,9 +264,13 @@ public class NSAuthentication {
   private static String lookupPublicKeyFromMetaData(InternalRequestHeader header, String guid, String field, String accessorGuid,
           MetaDataTypeName access, JSONObject metaData, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
-	  
+	  List<String> fields = null;
+	if(field.contains("."))  
+		fields = Arrays.asList(field.split("."));
+	else
+		fields = Arrays.asList(field);
     // Field could also be GNSProtocol.ENTIRE_RECORD.toString() here 
-    JSONArray publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, metaData);
+    JSONArray publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, fields, metaData);
     String publicKey = SharedGuidUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
     ClientSupportConfig.getLogger().log(Level.FINE,
             "================> {0} lookup for {1} returned: {2} public keys={3}",

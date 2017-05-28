@@ -137,9 +137,8 @@ public class SharedGuidUtils {
    * @return a public key
    */
   public static String findPublicKeyForGuid(String guid, JSONArray publicKeys) {
-    if (guid != null) {
-      for (int i=0; i<publicKeys.length(); i++) {
-    	 
+    if (guid != null && publicKeys != null) {
+      for (int i=0; i<publicKeys.length(); i++) {    	 
         try {
         	String publicKey = publicKeys.getString(i);
 	        if (guid.equals(createGuidStringFromBase64PublicKey(publicKey))) {
