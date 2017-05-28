@@ -479,7 +479,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         DelayProfiler.updateDelayNano("jsonificationApp", t);
       }
       Request request = (Request) Packet.createInstance(json, nodeConfig);
-      return request;
+      return GNSAppUtil.checkSanity(request);
     } catch (JSONException e) {
       throw new RequestParseException(e);
     }
