@@ -15,49 +15,47 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+
+import javax.xml.bind.DatatypeConverter;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.exceptions.server.ServerRuntimeException;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnsserver.utils.Email;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
-
-import java.io.IOException;
-import java.net.UnknownHostException;
-
-import org.json.JSONException;
-
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-
-import javax.xml.bind.DatatypeConverter;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * Provides the basic interface to GNS accounts.
@@ -1325,7 +1323,7 @@ public class AccountAccess {
       for (String key : hrnMap.keySet()) {
         nameStates.put(key, hrnMap.get(key).toString());
       }
-      if (!(returnCode = handler.getInternalClient().createOrExists(new CreateServiceName(null, nameStates)))
+      if (!(returnCode = handler.getInternalClient().createOrExists(new CreateServiceName(nameStates)))
               .isExceptionOrError()) {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(header, commandPacket, accountInfo,
@@ -1334,7 +1332,7 @@ public class AccountAccess {
           for (String key : guidInfoMap.keySet()) {
             guidInfoNameStates.put(key, guidInfoMap.get(key).toString());
           }
-          handler.getInternalClient().createOrExists(new CreateServiceName(null, guidInfoNameStates));
+          handler.getInternalClient().createOrExists(new CreateServiceName(guidInfoNameStates));
 
           GNSConfig.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse(ResponseCode.NO_ERROR,

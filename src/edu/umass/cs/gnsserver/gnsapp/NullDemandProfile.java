@@ -19,15 +19,15 @@
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.gigapaxos.interfaces.Request;
-import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
-import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
-
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableAppInfo;
+import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 
 /**
  * @author Westy
@@ -97,24 +97,17 @@ public class NullDemandProfile extends AbstractDemandProfile {
    * @param nodeConfig
    */
   @Override
-  public void register(Request request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
+  public boolean shouldReportDemandStats(Request request, InetAddress sender, ReconfigurableAppInfo nodeConfig) {
+	    return false;
   }
 
-  /**
-   *
-   * @return false
-   */
-  @Override
-  public boolean shouldReport() {
-    return false;
-  }
 
   /**
    *
    * @return the stats
    */
   @Override
-  public JSONObject getStats() {
+  public JSONObject getDemandStats() {
     JSONObject json = new JSONObject();
     try {
       json.put(Keys.SERVICE_NAME.toString(), this.name);
@@ -151,8 +144,8 @@ public class NullDemandProfile extends AbstractDemandProfile {
    * @return  a list of addresses we should reconfigure
    */
   @Override
-  public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
-          InterfaceGetActiveIPs nodeConfig) {
+  public Set<String> reconfigure(Set<String> curActives, 
+          ReconfigurableAppInfo nodeConfig) {
     return null;
   }
 
