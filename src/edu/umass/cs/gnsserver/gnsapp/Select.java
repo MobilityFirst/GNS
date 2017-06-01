@@ -176,7 +176,6 @@ public class Select {
    * @throws FailedDBOperationException
    * @throws InternalRequestException
    */
-  @SuppressWarnings("unchecked")
   public static SelectResponsePacket handleSelectRequestFromClient(InternalRequestHeader header,
           SelectRequestPacket packet,
           GNSApplicationInterface<String> app) throws JSONException, UnknownHostException,
@@ -268,7 +267,6 @@ public class Select {
     return null;
   }
 
-  @SuppressWarnings("unchecked")
   private static SelectResponsePacket getMySelectedRecords(
           SelectRequestPacket request,
           GNSApplicationInterface<String> app) {
@@ -306,7 +304,6 @@ public class Select {
    * @param app
    * @throws JSONException
    */
-  @SuppressWarnings("unchecked")
   private static void handleSelectRequestFromNS(SelectRequestPacket request,
           GNSApplicationInterface<String> app) throws JSONException {
     LOGGER.log(Level.FINE,
@@ -317,7 +314,6 @@ public class Select {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
       jsonRecords = aclCheckFilterForRecordsArray(request, jsonRecords, request.getReader(), app);
-      @SuppressWarnings("unchecked")
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForFullRecords(request.getId(),
               request.getClientAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), app.getNodeAddress(), jsonRecords);
@@ -630,7 +626,7 @@ public class Select {
    * internal keys.
    *
    * @param query
-   * @return
+   * @return True if query is bad.
    */
   public static boolean queryContainsEvil(String query) {
     try {
@@ -688,7 +684,12 @@ public class Select {
     return false;
   }
 
-  public static void main(String[] args) throws JSONException, UnknownHostException {
+  /**
+ * @param args
+ * @throws JSONException
+ * @throws UnknownHostException
+ */
+public static void main(String[] args) throws JSONException, UnknownHostException {
     String testQuery = "$or: [{~geoLocationCurrent:{"
             + "$geoIntersects:{$geometry:{\"coordinates\":"
             + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"

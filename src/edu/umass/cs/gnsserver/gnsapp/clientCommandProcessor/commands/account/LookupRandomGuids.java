@@ -73,7 +73,8 @@ public class LookupRandomGuids extends AbstractCommand {
     if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
     }
-    if (acccountInfo != null) {
+    assert (acccountInfo != null);
+    {
       List<String> guids = acccountInfo.getGuids();
       if (count >= guids.size()) {
         return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(guids).toString());
@@ -85,10 +86,6 @@ public class LookupRandomGuids extends AbstractCommand {
         }
         return new CommandResponse(ResponseCode.NO_ERROR, new JSONArray(result).toString());
       }
-    } else {
-      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
-    }
-    // }
+    } 
   }
-
 }

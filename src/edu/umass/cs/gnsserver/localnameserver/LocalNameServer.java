@@ -19,35 +19,8 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
-import edu.umass.cs.gigapaxos.interfaces.Request;
-import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig;
-import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
-import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
-import edu.umass.cs.gnsserver.utils.Shutdownable;
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnscommon.utils.NetworkUtils;
-import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.nio.JSONNIOTransport;
-import edu.umass.cs.protocoltask.ProtocolExecutor;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.nio.MessageNIOTransport;
-import edu.umass.cs.nio.SSLDataProcessingWorker;
-import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-import edu.umass.cs.nio.interfaces.IntegerPacketType;
-import edu.umass.cs.nio.interfaces.Stringifiable;
-import edu.umass.cs.nio.nioutils.NIOHeader;
-import edu.umass.cs.nio.nioutils.StringifiableDefault;
-import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -57,11 +30,37 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umass.cs.utils.Config;
 
-import java.net.InetAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnscommon.utils.NetworkUtils;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
+import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig;
+import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.JSONNIOTransport;
+import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.nio.SSLDataProcessingWorker;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.NIOHeader;
+import edu.umass.cs.nio.nioutils.StringifiableDefault;
+import edu.umass.cs.protocoltask.ProtocolExecutor;
+import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.Config;
 
 /**
  *
@@ -134,8 +133,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
     this.nodeConfig = nodeConfig;
     this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
-    AsyncLNSClient asyncClient;
-    this.demultiplexer = new LNSPacketDemultiplexer<>(this, asyncClient = new AsyncLNSClient(
+    this.demultiplexer = new LNSPacketDemultiplexer<>(this, new AsyncLNSClient(
             ReconfigurationConfig.getReconfiguratorAddresses()));
     // FIXME: Eventually need separate servers for ssl and clear
     //LNSPacketDemultiplexer<String> sslDemultiplexer = new LNSPacketDemultiplexer<>(this, asyncClient);
@@ -501,7 +499,8 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
    * @param packet
    * @throws IOException
    */
-  @Override
+  @SuppressWarnings("deprecation")
+@Override
   public void sendToClosestReplica(Set<InetSocketAddress> servers, JSONObject packet) throws IOException {
     InetSocketAddress replicaAddress = LocalNameServer.this.getClosestReplica(servers);
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.
@@ -530,12 +529,11 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
    */
   public void testCache() {
     String serviceName = "fred";
-    Set<InetSocketAddress> actives;
-    if ((actives = getActivesIfValid(serviceName)) != null) {
+    if ((getActivesIfValid(serviceName)) != null) {
       LOGGER.severe("Cache should be empty!");
     }
     updateCacheEntry(serviceName, new HashSet<>(Arrays.asList(new InetSocketAddress(35000))));
-    if ((actives = getActivesIfValid(serviceName)) == null) {
+    if ((getActivesIfValid(serviceName)) == null) {
       LOGGER.severe("Cache should not be empty!");
     }
     StringBuilder cacheString = new StringBuilder();

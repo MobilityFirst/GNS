@@ -33,7 +33,6 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-@SuppressWarnings("deprecation")
 public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddress
         implements ClientRequest {
 

@@ -198,7 +198,7 @@ public class LookupWorker implements Runnable {
     Message successResponse = null;
     Message errorResponse = null;
     // loop throught the tasks getting results as they complete
-    for (LookupTask task : tasks) { // this is just doing things twice btw
+    for (int i=0; i<tasks.size(); i++) { // this is just doing things twice btw
       try {
         Message result = completionService.take().get();
         if (result.getHeader().getRcode() == Rcode.NOERROR) {

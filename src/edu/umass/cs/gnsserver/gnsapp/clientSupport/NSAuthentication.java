@@ -54,6 +54,7 @@ public class NSAuthentication {
    * Does access and signature checking for a field OR fields in a guid.
    * For explicit multi-field access all fields must be accessible or
    * ACL check fails.
+   * @param header 
    *
    * @param guid - the guid containing the field being accessed
    * @param field - the field being accessed (one of this or fields should be non-null)
@@ -86,6 +87,7 @@ public class NSAuthentication {
    * Does access and signature checking for a field OR fields in a guid.
    * For explicit multi-field access all fields must be accessible or
    * ACL check fails.
+   * @param header 
    *
    * @param guid - the guid containing the field being accessed
    * @param field - the field being accessed (one of this or fields should be non-null)
@@ -121,13 +123,7 @@ public class NSAuthentication {
         return ResponseCode.ACCESS_ERROR;
       }
     }
-    // If the signature is being checking and isn't null a null accessorGuid is also an access failure because
-    // only unsigned reads (handled above) can have a null accessorGuid
-    if (!skipSigCheck && accessorGuid == null) {
-      ClientSupportConfig.getLogger().log(Level.WARNING, "Name {0} key={1} : NULL accessorGuid",
-              new Object[]{guid, field});
-      return ResponseCode.ACCESS_ERROR;
-    }
+ 
 
     // Now we do the ACL check. By doing this now we also look up the public key as
     // side effect which we need for the signing check below.
@@ -174,7 +170,7 @@ public class NSAuthentication {
    * @param accessorGuid
    * @param access
    * @param gnsApp
-   * @return
+   * @return Result of ACL check
    * @throws FailedDBOperationException
    */
   public static AclCheckResult aclCheck(InternalRequestHeader header, String targetGuid, String field,
@@ -280,7 +276,7 @@ public class NSAuthentication {
    *
    * @param guid
    * @param gnsApp
-   * @return
+   * @return Public key as String.
    * @throws FailedDBOperationException
    */
   public static String lookupPublicKeyLocallyWithCacheing(String guid, GNSApplicationInterface<String> gnsApp)

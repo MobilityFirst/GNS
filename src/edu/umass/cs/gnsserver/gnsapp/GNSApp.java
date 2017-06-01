@@ -257,7 +257,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    * @param doNotReplyToClient
    * @return true if the command is successfully executed
    */
-  @SuppressWarnings("unchecked")
   // we explicitly check type
   @Override
   public boolean execute(Request request, boolean doNotReplyToClient) {
