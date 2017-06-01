@@ -67,6 +67,7 @@
     <mkdir dir="${bin.dir}"/>
     <get src="https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpServer.sh" dest="bin/"/>
     <get src="https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpClient.sh" dest="bin/"/>
+    <get src="https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpEnv.sh" dest="bin/"/>
     <!--    make scripts executable-->
     <chmod perm="ug+x" dir="${bin.dir}" includes="**/*.sh"/>
   </target>
