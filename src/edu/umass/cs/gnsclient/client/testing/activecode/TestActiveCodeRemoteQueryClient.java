@@ -392,7 +392,7 @@ public class TestActiveCodeRemoteQueryClient {
 		} catch (ClientException e) {
 			e.printStackTrace();
 		}
-		client.execute(GNSCommand.accountGuidRemove(entries[1]));
+		client.execute(GNSCommand.accountGuidRemove(entries[0]));
 		client.execute(GNSCommand.accountGuidRemove(entries[1]));
 		client.close();
 	}
