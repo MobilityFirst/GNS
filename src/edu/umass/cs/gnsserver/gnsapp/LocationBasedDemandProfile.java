@@ -19,29 +19,32 @@
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
-import com.google.common.net.InetAddresses;
-
-import edu.umass.cs.gigapaxos.interfaces.Request;
-
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import com.google.common.net.InetAddresses;
+
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.utils.Util;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableAppInfo;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
-import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 import edu.umass.cs.utils.DefaultTest;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class maintains the demand profile for a single name.
@@ -180,7 +183,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    * @return the stats
    */
   @Override
-  public JSONObject getStats() {
+  public JSONObject getDemandStats() {
     LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> {0} VOTES MAP BEFORE GET STATS: {1}", new Object[]{this.name, this.votesMap});
     JSONObject json = new JSONObject();
     try {
@@ -234,18 +237,18 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    * @param nodeConfig
    */
   @Override
-  public void register(Request request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
+  public boolean shouldReportDemandStats(Request request, InetAddress sender, ReconfigurableAppInfo nodeConfig) {
     if (!request.getServiceName().equals(this.name)) {
-      return;
+      return false;
     }
 
     if (shouldIgnore(request)) {
-      return;
+      return false;
     }
 
     // This happens when called from a reconfigurator
     if (nodeConfig == null) {
-      return;
+      return false;
     }
     this.numRequests++;
     this.numTotalRequests++;
@@ -258,7 +261,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     }
 
     if (sender != null) { // should not happen, but just in case
-      this.votesMap.increment(findActiveReplicaClosestToSender(sender, nodeConfig.getActiveIPs()));
+      this.votesMap.increment(findActiveReplicaClosestToSender(sender, toInetAddresses(nodeConfig.getAllActiveReplicas().values())));
     }
 
     if (request instanceof ReplicableRequest
@@ -268,7 +271,18 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
       lookupCount++;
     }
     LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER REGISTER:{0}", this.toString());
+
+    return getNumRequests() >= NUMBER_OF_REQUESTS_BETWEEN_REPORTS;
+
   }
+  
+	private static ArrayList<InetAddress> toInetAddresses(
+			Collection<InetSocketAddress> sockAddrs) {
+		ArrayList<InetAddress> ipAddrs = new ArrayList<InetAddress>();
+		for (InetSocketAddress sockAddr : sockAddrs)
+			ipAddrs.add(sockAddr.getAddress());
+		return ipAddrs;
+	}
 
   private InetAddress findActiveReplicaClosestToSender(InetAddress sender, List<InetAddress> allActives) {
     assert !allActives.isEmpty();
@@ -334,14 +348,6 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER COMBINE:{0}", this.toString());
   }
 
-  /**
-   *
-   * @return true if we should report
-   */
-  @Override
-  public boolean shouldReport() {
-    return getNumRequests() >= NUMBER_OF_REQUESTS_BETWEEN_REPORTS;
-  }
 
   /**
    * Was this just rconfigured.
@@ -360,7 +366,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    * @return true if we should reconfigure
    */
   @Override
-  public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, InterfaceGetActiveIPs nodeConfig) {
+  public Set<String> reconfigure(Set<String> curActives, ReconfigurableAppInfo nodeConfig) {
     // This happens when called from a reconfigurator
     if (nodeConfig == null) {
       return null;
@@ -382,15 +388,40 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
         return null;
       }
     }
-    int numberOfReplicas = computeNumberOfReplicas(lookupCount, updateCount, nodeConfig.getActiveIPs().size());
+    int numberOfReplicas = computeNumberOfReplicas(lookupCount, updateCount, toInetAddresses(nodeConfig.getAllActiveReplicas().values()).size());
     LOG.log(Level.INFO, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> {0} "
             + "VOTES MAP: {1} TOP: {2} Lookup: {3} Update: {4} ReplicaCount: {5}",
             new Object[]{this.name, this.votesMap, this.votesMap.getTopN(numberOfReplicas),
               lookupCount, updateCount, numberOfReplicas});
 
-    return pickNewActiveReplicas(numberOfReplicas, curActives,
+    List<InetAddress> ipAddrs = pickNewActiveReplicas(numberOfReplicas, toInetAddresses(curActives, nodeConfig.getAllActiveReplicas()),
             this.votesMap.getTopN(numberOfReplicas),
-            nodeConfig.getActiveIPs());
+            toInetAddresses(nodeConfig.getAllActiveReplicas().values()));
+    
+    // convert ipAddrs to Set<String>
+    Set<String> newActives = new HashSet<String>();
+    Map<String, InetSocketAddress> activesMap = nodeConfig.getAllActiveReplicas();
+    for(String curActive : curActives) {
+    	if(activesMap.containsKey(curActive) && ipAddrs.contains(activesMap.get(curActive).getAddress()))
+    		newActives.add(curActive);
+    	if(newActives.size() >= numberOfReplicas)
+    		break;
+    }
+    for(String active : activesMap.keySet()) {
+    	if(activesMap.containsKey(active) && ipAddrs.contains(activesMap.get(active).getAddress()))
+    		newActives.add(active);
+    	if(newActives.size() >= numberOfReplicas)
+    		break;
+    }
+    return newActives;
+
+  }
+  
+  private static ArrayList<InetAddress> toInetAddresses(Set<String> actives, Map<String,InetSocketAddress> map) {
+		ArrayList<InetAddress> ipAddrs = new ArrayList<InetAddress>();
+		for (String active : actives)
+			ipAddrs.add(map.get(active).getAddress());
+		return ipAddrs;
   }
 
   // Routines below for computing new actives list
