@@ -44,10 +44,10 @@ public class SystemThruputTest extends DefaultGNSTest {
 	private static ThreadPoolExecutor executor;
 	
 	private static final int numWrites = 10000;
-	private static final int numReads = 100000;
+	private static final int numReads = 200000;
 	
-	// TODO: not sure 10 is enough to saturate the servers on Travis CI, as there are 3 servers
-	private final static int numClients = 10;
+	// TODO: reduce numClients to 1, it is not enough to saturate the servers on Travis CI
+	private final static int numClients = 1;
 	
 	private static int numFinishedOps = 0;
 	private static long lastOpFinishedTime = System.currentTimeMillis();
