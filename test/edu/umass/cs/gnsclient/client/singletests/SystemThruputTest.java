@@ -43,8 +43,8 @@ public class SystemThruputTest extends DefaultGNSTest {
 	
 	private static ThreadPoolExecutor executor;
 	
-	private static final int numWrites = 50000;
-	private static final int numReads = 400000;
+	private static final int numWrites = 10000;
+	private static final int numReads = 100000;
 	
 	// TODO: not sure 10 is enough to saturate the servers on Travis CI, as there are 3 servers
 	private final static int numClients = 10;

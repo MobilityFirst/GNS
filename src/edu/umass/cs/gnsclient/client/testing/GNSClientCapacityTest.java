@@ -32,7 +32,6 @@ import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.DelayProfiler;
@@ -316,7 +315,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void test_02_ParralelWriteCapacity() throws Exception {
+	public void test_02_ParallelWriteCapacity() throws Exception {
 		int numWrites = numWriteAndRemove;
 		long t = System.currentTimeMillis();
 		for (int i=0; i<numWrites; i++){
@@ -345,7 +344,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 * @throws IOException
 	 */
 	@Test
-	public void test_03_ParrallelWriteWithACLCapacity() throws InterruptedException, ClientException, IOException{
+	public void test_03_ParallelWriteWithACLCapacity() throws InterruptedException, ClientException, IOException{
 		reset();
 		// The old GNS ACL implementation does not allow a GUID in ENTIRE_RECORD's ACL to write into a sub field.
 		clients[0].execute(GNSCommand.aclAdd(AclAccessType.WRITE_WHITELIST, 
