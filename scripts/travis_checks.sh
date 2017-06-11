@@ -107,3 +107,6 @@ ant
 for ((i=0; i<=$test_repeat; i++)); do
    ant test || { echo "Test $i failed, exiting.." ; exit 1; }
 done
+
+# a single round throughput test
+ant thruputtest || {echo "Thruput test failed, exiting.."; exit 1;}
