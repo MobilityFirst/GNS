@@ -67,6 +67,7 @@
     <mkdir dir="${bin.dir}"/>
     <get src="https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpServer.sh" dest="bin/"/>
     <get src="https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpClient.sh" dest="bin/"/>
+    <get src="https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpEnv.sh" dest="bin/"/>
     <!--    make scripts executable-->
     <chmod perm="ug+x" dir="${bin.dir}" includes="**/*.sh"/>
   </target>
@@ -244,7 +245,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
   
   <path id="classpath.test">
     <pathelement location="${build.classes.dir}"/>
-    <pathelement location="${lib.dir}/gigapaxos-1.0.05.jar"/>
+    <pathelement location="${lib.dir}/gigapaxos-1.0.06.jar"/>
     <pathelement location="${lib.dir}/junit-4.12.jar"/>
     <pathelement location="${lib.dir}/hamcrest-all-1.3.jar"/>
     <pathelement location="${lib.dir}/jline-1.0.jar"/>
