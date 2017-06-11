@@ -110,4 +110,4 @@ for ((i=0; i<=$test_repeat; i++)); do
 done
 
 # a single round throughput test
-ant thruputtest || {echo "Thruput test failed, exiting.."; exit 1;}
+ant thruputtest || { echo "Thruput test failed, exiting.."; exit 1; }
