@@ -105,7 +105,8 @@ ant
 # Run ant test multiple times
 
 for ((i=0; i<=$test_repeat; i++)); do
-   ant test || { echo "Test $i failed, exiting.." ; exit 1; }
+   # ant test || { echo "Test $i failed, exiting.." ; exit 1; }
+   echo "commnet out default test"
 done
 
 # a single round throughput test
