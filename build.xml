@@ -317,7 +317,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
 	
   <target name="singlenodethruputtest" description="Starts servers specified in properties file"
           depends="compile, compiletest">
-    <property name="gigapaxosConfig" value="conf/gnsserver.1local.thruputtest.properties"/>
+    <property name="gigapaxosConfig" value="conf/gnsserver.1local.properties"/>
     <property name="java.util.logging.config.file" value="conf/logging.gns.unittest.properties"/>
     <property name="singleJVM" value="false"/>
     <property name="waitTillAllServersReady" value="000"/>
