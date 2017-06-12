@@ -43,11 +43,11 @@ public class SystemThruput extends DefaultGNSTest {
 	
 	private static ThreadPoolExecutor executor;
 	
-	private static final int numWrites = 10000;
+	private static final int numWrites = 50000;
 	private static final int numReads = 200000;
 	
 	// TODO: reduce numClients to 1, it is not enough to saturate the servers on Travis CI
-	private final static int numClients = 1;
+	private final static int numClients = 10;
 	
 	private static int numFinishedOps = 0;
 	private static long lastOpFinishedTime = System.currentTimeMillis();
@@ -85,7 +85,7 @@ public class SystemThruput extends DefaultGNSTest {
 		
 		// initialize thread pool executor
 		executor = (ThreadPoolExecutor) Executors
-				.newFixedThreadPool(50*numClients);
+				.newFixedThreadPool(20*numClients);
 				
 		SecureRandom random = new SecureRandom();
 		// initialize random field and value: 10-byte string
