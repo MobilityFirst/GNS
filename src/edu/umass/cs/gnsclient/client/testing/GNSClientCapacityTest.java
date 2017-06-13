@@ -221,7 +221,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 			blockingWrite(0, guidEntries[0]);
 		}
 		long elapsed = System.nanoTime() - start_time;
-		System.out.println("It takes "+elapsed/1000+"ns to send 10000 write requests.");
+		System.out.println("It takes "+elapsed/1000+"us to send 10000 write requests, the avergae is "+elapsed/1000/10000.0+"us");
 	}
 	
 	/**
@@ -234,7 +234,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 			blockingRead(0, guidEntries[0], false);
 		}
 		long elapsed = System.nanoTime() - start_time;
-		System.out.println("It takes "+elapsed/1000+"ns to send 10000 read requests.");
+		System.out.println("It takes "+elapsed/1000+"us to send 10000 read requests, the avergae is "+elapsed/1000/10000.0+"us");
 	}
 	
 	private static int numFinishedOps = 0;
