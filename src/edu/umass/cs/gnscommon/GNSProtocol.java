@@ -325,6 +325,14 @@ public enum GNSProtocol {
    * Represents the number of guids in a command.
    */
   GUIDCNT("guidCnt"),
+  /**
+   * Represents the ACL field in GUID info's meta data
+   */
+  MD("MD"),
+  /**
+   * Represents the metaData field in user's JSON
+   */
+  META_DATA_FIELD("nr_valuesMap"),
   //
   // Command packet fields
   //

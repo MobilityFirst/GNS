@@ -19,30 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import com.google.common.collect.Sets;
-import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
-import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
-import edu.umass.cs.gnscommon.utils.Base64;
-import java.nio.ByteBuffer;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-
-import edu.umass.cs.gnscommon.SharedGuidUtils;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
-import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.SessionKeys;
-import edu.umass.cs.utils.Util;
-
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
@@ -50,15 +28,40 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.xml.bind.DatatypeConverter;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.google.common.collect.Sets;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
-import javax.xml.bind.DatatypeConverter;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
+import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.SessionKeys;
+import edu.umass.cs.utils.Util;
 
 /**
  * Provides signing and ACL checks for commands.
@@ -265,7 +268,7 @@ public class NSAccessSupport {
   }
 
   /**
-   * Check for one of the groups that accessorguid is in being a member of allowed users.
+   * Check for one of the groups that accessorGuid is in being a member of allowed users.
    * Field can be dotted and at any level.
    *
    * @param accessType
@@ -296,6 +299,29 @@ public class NSAccessSupport {
     }
   }
 
+   /**
+	 * return the first index of item in arr, -1 means not found the item in arr
+	 * 
+	 * @param arr
+	 * @param item
+	 * @return index of item in arr
+	 */
+	protected static int indexOfItemInJSONArray(JSONArray arr, String item){
+		int index = -1;
+		if(arr == null)
+			return index;
+		for (int i=0; i<arr.length(); i++){
+			try {
+				if(arr.getString(i).equals(item)){
+					return i;
+				}
+			} catch (JSONException e) {
+				// It doesn't matter if it is not a string
+			}
+		}
+		return index;
+	}
+  
   /**
    * Returns true if the field has access setting that allow it to be read globally.
    *
@@ -308,31 +334,82 @@ public class NSAccessSupport {
    */
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    // First we check to see if the field has an acl that allows everyone access.
-    // Note: If ACL exists and doesn't give all access we return false because this ACL
-    // overrides the ENTIRE_RECORD ACL.
-    try {
-      try {
-        return (NSFieldMetaData.lookupLocally(access, guid, field, activeReplica.getDB())
-                .contains(GNSProtocol.EVERYONE.toString()));
-      } catch (FieldNotFoundException e) {
-        // If the field has no ACL then we also want to check to see if the entire record has an
-        // ACL that allows access to everyone.
-        try {
-          return NSFieldMetaData.lookupLocally(access, guid, GNSProtocol.ENTIRE_RECORD.toString(),
-                  activeReplica.getDB()).contains(GNSProtocol.EVERYONE.toString());
-        } catch (FieldNotFoundException f) {
-          return false;
-        }
-      }
-    } catch (RecordNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.WARNING,
-              "User {0} access problem for {1}''s {2} field: {3}", 
-              new Object[]{guid, field, access.toString(), e.getMessage()});
-      return false;
-    }
+	  /**
+	   * retrieve the metadata for ACL check
+	   */
+	 JSONObject metaData = getMataDataForACLCheck(guid, activeReplica.getDB());
+	 if(metaData == null){
+		 ClientSupportConfig.getLogger().log(Level.WARNING,
+	              "User {0} access problem for {1}'s {2} field: no meta data exists", 
+	              new Object[]{guid, field, access.toString()});
+		 return false;
+	 }
+	 // we need another field called MD
+	 final String md = "MD";
+	 try {
+			JSONArray aclOfField = metaData.getJSONObject(access.getPrefix())
+					.getJSONObject(access.name()).getJSONObject(field).getJSONArray(md);
+			if(indexOfItemInJSONArray(aclOfField, GNSProtocol.EVERYONE.toString()) >= 0){				
+				return true;
+			}
+	 } catch (JSONException e) {
+			try {
+				JSONArray aclOfEntireRecord = metaData.getJSONObject(access.getPrefix())
+						.getJSONObject(access.name()).getJSONObject(GNSProtocol.ENTIRE_RECORD.toString()).getJSONArray(md);
+				if(indexOfItemInJSONArray(aclOfEntireRecord, GNSProtocol.EVERYONE.toString()) >= 0){				
+					return true;
+				}
+			} catch (JSONException e1) {
+				// We can not find GNSProtocol.EVERYONE, and return false
+				return false;
+			}
+	  }
+	 return false;
   }
 
+  /**
+   * @param guid
+   * @param basicRecordMap
+   * @return meta data
+   */
+  protected static JSONObject getMataDataForACLCheck(String guid, BasicRecordMap basicRecordMap) {
+	  /**
+	   *  For the rest of ACL and signature check, let's first retrieve
+	   *  the entire record, then check ACL.
+	   */	  
+	  JSONObject json = null;
+	  /**
+	   * 1. Fetch the entire record of guid
+	   */
+	  try {
+		  long startTime = System.nanoTime();
+		  /**
+		   * An entire record retrieved from DB is a JSON
+		   */
+		  json = basicRecordMap.lookupEntireRecord(guid);
+		  DelayProfiler.updateDelayNano("lookupEntireRecordForACLCheck", startTime);
+	  } catch (FailedDBOperationException | RecordNotFoundException e) {
+		  /**
+		   * If the entire record can not be retrieved, then there is no way for us to check
+		   * ACL and signature
+		   */
+		  return null;
+	  }
+		
+	  if(json == null){
+		  // The entire record is null, so we did not find the record
+		  return null;
+	  }
+	  
+	  JSONObject metaData = null; 
+	  try {
+		  metaData = json.getJSONObject(GNSProtocol.META_DATA_FIELD.toString());
+	  } catch (JSONException e) {
+		  return null;
+	  }
+	  return metaData;
+  }
+  
   /**
    * Looks up the public key for a guid using the acl of a field.
    * Handles fields that uses dot notation. Recursively goes up the tree
@@ -340,34 +417,40 @@ public class NSAccessSupport {
    *
    * @param access
    * @param guid
-   * @param field
-   * @param database
+   * @param fields a list of fields from the root to the field that needs to be checked
+   * @param metaData 
    * @return a set of public keys
    * @throws FailedDBOperationException
    */
-  @SuppressWarnings("unchecked")
-  public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
-          BasicRecordMap database) throws FailedDBOperationException {
-    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", new Object[]{field});
+  public static JSONArray lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, List<String> fields,
+          JSONObject metaData) throws FailedDBOperationException {
+    ClientSupportConfig.getLogger().log(Level.FINE, "###fields={0}", new Object[]{fields});
     try {
-      // If the field is found this will return a list of the public keys in the ACL,
-      // empty or otherwise. If it is empty we will stop looking.
-      return (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(access, guid, field, database);
-    } catch (RecordNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.WARNING, "User {0} access problem for {1}'s {2} field: {3}",
-              new Object[]{guid, field, access.toString(), e});
-      return new HashSet<>();
-    } catch (FieldNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
-    }
+    	JSONObject fieldACL = metaData.getJSONObject(access.getPrefix())
+				.getJSONObject(access.name());
+    	for(String field:fields){
+    		fieldACL = fieldACL.getJSONObject(field);
+    	}
+    	return fieldACL.getJSONArray(GNSProtocol.MD.toString()); 
+	} catch (JSONException e) {
+		ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{fields});
+	}
+	
     // otherwise go up the hierarchy and check
-    if (field.contains(".")) {
-      return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
-      // One last check at the root (GNSProtocol.ENTIRE_RECORD.toString()) field.
-    } else if (!GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-      return lookupPublicKeysFromAcl(access, guid, GNSProtocol.ENTIRE_RECORD.toString(), database);
+    if (fields.size() > 0) {
+      return lookupPublicKeysFromAcl(access, guid, fields.subList(0, fields.size()-1), metaData);      
+    } else if (fields.size() == 0) {
+    // One last check at the root (GNSProtocol.ENTIRE_RECORD.toString()) field.
+	    try {
+			return metaData.getJSONObject(access.getPrefix())
+					.getJSONObject(access.name()).getJSONObject(GNSProtocol.ENTIRE_RECORD.toString())
+					.getJSONArray(GNSProtocol.MD.toString());
+		} catch (JSONException e) {
+			// No ACL exists for root (GNSProtocol.ENTIRE_RECORD.toString()) field
+			return null;
+		}
     } else {
-      return new HashSet<>();
+      return null;
     }
   }
 

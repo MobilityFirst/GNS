@@ -50,8 +50,7 @@ import java.util.logging.Level;
  *
  * @author abhigyan
  */
-public class NameRecord implements Comparable<NameRecord>, Summarizable {
-
+public class NameRecord implements Comparable<NameRecord>, Summarizable {	
   /**
    * NAME
    */
