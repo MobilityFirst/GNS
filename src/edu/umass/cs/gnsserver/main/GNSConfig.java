@@ -254,7 +254,7 @@ public class GNSConfig {
      * The class name to use for doing sanity checks while updating GNS
      * record. Must extend {@link edu.umass.cs.gnsserver.extensions.sanitycheck.AbstractSanityCheck}
      */
-    SANITY_CHECKER(NullSanityCheck.class.getSimpleName())
+    SANITY_CHECKER(NullSanityCheck.class.getName())
     ;
 
     final Object defaultValue;
