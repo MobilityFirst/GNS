@@ -15,7 +15,6 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsserver.gnsapp;
 
-import android.util.Log;
 import edu.umass.cs.contextservice.integration.ContextServiceGNSClient;
 import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
@@ -40,8 +39,6 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.extensions.sanitycheck.AbstractSanityCheck;
-import edu.umass.cs.gnsserver.extensions.sanitycheck.DefaultSanityCheck;
-import edu.umass.cs.gnsserver.extensions.sanitycheck.NullSanityCheck;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 
