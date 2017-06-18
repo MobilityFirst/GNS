@@ -15,6 +15,7 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsserver.gnsapp;
 
+import android.util.Log;
 import edu.umass.cs.contextservice.integration.ContextServiceGNSClient;
 import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
@@ -23,6 +24,8 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -36,6 +39,9 @@ import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
+import edu.umass.cs.gnsserver.extensions.sanitycheck.AbstractSanityCheck;
+import edu.umass.cs.gnsserver.extensions.sanitycheck.DefaultSanityCheck;
+import edu.umass.cs.gnsserver.extensions.sanitycheck.NullSanityCheck;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 
@@ -170,6 +176,17 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    */
   private AppAdminServer appAdminServer = null;
 
+  private static AbstractSanityCheck sanityCheck;
+
+  static {
+    try {
+      sanityCheck = (AbstractSanityCheck) Class.forName(Config.getGlobalString(GNSConfig.GNSC.SANITY_CHECKER)).newInstance();
+    } catch (ClassNotFoundException|InstantiationException|IllegalAccessException e) {
+      GNSConfig.getLogger().log(Level.SEVERE, "Error instantiating sanity checker class: {0}", e.getMessage());
+    }
+
+  }
+
   /**
    * Constructor invoked via reflection by gigapaxos.
    *
@@ -282,6 +299,24 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                 + " should not be getting requests that do not implement "
                 + RequestIdentifier.class;
       }
+
+      try {
+        if (sanityCheck != null) {
+          sanityCheck.check(request);
+        } else {
+          GNSConfig.getLogger().log(Level.FINE, "Sanity checker has not been instantiated, skipping check");
+        }
+      } catch (RequestParseException e) {
+        //Malformed request, log and skip execution returning an error
+        GNSConfig.getLogger().log(Level.WARNING, "Sanity check caught malformed request: {0}", e.getMessage());
+        ((BasicPacketWithClientAddress) request)
+                .setResponse(new ResponsePacket(request.getServiceName(),
+                                                ((RequestIdentifier) request).getRequestID(),
+                                                ResponseCode.SANITY_CHECK_ERROR,
+                                                GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.SANITY_CHECK_ERROR + " " + e.getMessage()));
+        return true;
+      }
+
 
       switch (packetType) {
         case SELECT_REQUEST:

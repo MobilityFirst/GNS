@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.mongodb.BulkWriteException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -361,45 +362,54 @@ public class DiskMapRecords implements NoSQLRecords {
 
   @Override
   public AbstractRecordCursor getAllRowsIterator(String collection) throws FailedDBOperationException {
-    getMap(collection).commit();
+    commit(collection);
     return getMongoRecords(collection).getAllRowsIterator(MongoRecords.DBNAMERECORD);
   }
 
   @Override
   public AbstractRecordCursor selectRecords(String collection, ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException {
-    getMap(collection).commit();
+    commit(collection);
     return getMongoRecords(collection).selectRecords(MongoRecords.DBNAMERECORD, valuesMapField, key, value);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsWithin(String collection, ColumnField valuesMapField, String key, String value) throws FailedDBOperationException {
-    getMap(collection).commit();
+    commit(collection);
     return getMongoRecords(collection).selectRecordsWithin(MongoRecords.DBNAMERECORD, valuesMapField, key, value);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsNear(String collection, ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException {
-    getMap(collection).commit();
+    commit(collection);
     return getMongoRecords(collection).selectRecordsNear(MongoRecords.DBNAMERECORD, valuesMapField, key, value, maxDistance);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField,
           String query, List<String> projection) throws FailedDBOperationException {
-    getMap(collection).commit();
+    commit(collection);
     return getMongoRecords(collection).selectRecordsQuery(MongoRecords.DBNAMERECORD, valuesMapField,
             query, projection);
   }
 
   @Override
   public void createIndex(String collection, String field, String index) {
-    getMap(collection).commit();
+    commit(collection);
     getMongoRecords(collection).createIndex(MongoRecords.DBNAMERECORD, field, index);
   }
 
   @Override
   public void printAllEntries(String collection) throws FailedDBOperationException {
-    getMap(collection).commit();
+    commit(collection);
     getMongoRecords(collection).printAllEntries(MongoRecords.DBNAMERECORD);
+  }
+
+  private void commit(String collection) {
+    try{
+      getMap(collection).commit();
+    } catch (BulkWriteException e) {
+      LOGGER.log(Level.WARNING, "Caught {e}, ignoring and proceeding: {1}", new Object[]{e.getClass().getSimpleName(), e.getMessage()});
+    }
+
   }
 }

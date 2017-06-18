@@ -32,6 +32,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsserver.extensions.sanitycheck.NullSanityCheck;
 import edu.umass.cs.utils.Config;
 
 /**
@@ -248,7 +249,13 @@ public class GNSConfig {
      * Turn off active code handling. Default is true.
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_ACTIVE_CODE(true);
+    DISABLE_ACTIVE_CODE(true),
+    /**
+     * The class name to use for doing sanity checks while updating GNS
+     * record. Must extend {@link edu.umass.cs.gnsserver.extensions.sanitycheck.AbstractSanityCheck}
+     */
+    SANITY_CHECKER(NullSanityCheck.class.getSimpleName())
+    ;
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;
