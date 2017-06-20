@@ -105,9 +105,15 @@ ant
 # Run ant test multiple times
 
 for ((i=0; i<=$test_repeat; i++)); do
-   # ant test || { echo "Test $i failed, exiting.." ; exit 1; }
-   echo "commnet out default test"
+   #ant test || { echo "Test $i failed, exiting.." ; exit 1; }
+   echo comment out ant test
 done
 
 # a single round throughput test
-ant thruputtest || { echo "Thruput test failed, exiting.."; exit 1; }
+# ant thruputtest || { echo "Thruput test failed, exiting.."; exit 1; }
+./bin/gpServer.sh start all
+./bin/gpClient.sh -DgigapaxosConfig=conf/gnsclient.1local.properties edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest NUM_CLIENTS=10 NUM_REQUESTS=400000 ACCOUNT_GUIDS_ONLY=true NUM_GROUPS=10
+sleep 1
+./bin/gpServer.sh forceclear all
+
+
