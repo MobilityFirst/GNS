@@ -376,7 +376,10 @@ public class GNSClientCapacityTest extends DefaultTest {
 		// The old GNS ACL implementation does not allow a GUID in ENTIRE_RECORD's ACL to write into a sub field.
 		clients[0].execute(GNSCommand.aclAdd(AclAccessType.WRITE_WHITELIST, 
 				guidEntries[0], someField, accessor.getGuid()));
-
+		System.out.println(
+				clients[0].execute(GNSCommand.fieldAclExists(AclAccessType.WRITE_WHITELIST, guidEntries[0], someField, accessor.getGuid()))
+				);
+		/*
 		int numWrites = numWriteAndRemove;
 		long t = System.currentTimeMillis();
 		for (int i=0; i<numWrites; i++){
@@ -395,7 +398,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		System.out.print("parallel_write_with_acl_rate="
 				+ Util.df(numWrites * 1.0 / (lastOpFinishedTime - t))
 				+ "K/s");
-		
+		*/
 		clients[0].execute(GNSCommand.aclRemove(AclAccessType.WRITE_WHITELIST, 
 				guidEntries[0], someField, accessor.getGuid()));
 			
