@@ -77,6 +77,16 @@ public class CommandHandler {
             commandModule.lookupCommand(PacketUtils.getCommand(packet)),
             app.getRequestHandler(), doNotReplyToClient, app);
   }
+  
+  /**
+   * Returns the command module. Mainly used
+   * by custom selects, outside this class. 
+   * @return
+   */
+  public static CommandModule getCommandModule()
+  {
+	  return commandModule;
+  }
 
   private static final long LONG_DELAY_THRESHOLD = 1;
 
@@ -161,7 +171,16 @@ public class CommandHandler {
 
   }
 
-  private static CommandPacket addMessageWithoutSignatureToCommand(
+  /**
+   * FIXME: aditya: Made this method public, as it needs to be used
+   * by the custom select. But not sure what this method actually does 
+   * for adding the documentation.
+   * 
+   * @param commandPacket
+   * @return
+   * @throws JSONException
+   */
+  public static CommandPacket addMessageWithoutSignatureToCommand(
           CommandPacket commandPacket) throws JSONException {
     JSONObject command = PacketUtils.getCommand(commandPacket);
     CommandUtils.addMessageWithoutSignatureToJSON(command);

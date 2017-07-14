@@ -223,7 +223,7 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  protected static final CommandPacket fieldCreateIndex(GuidEntry GUID,
+  public static final CommandPacket fieldCreateIndex(GuidEntry GUID,
           String field, String index) throws ClientException {
     return getCommand(CommandType.CreateIndex, GUID,
             GNSProtocol.GUID.toString(), GUID.getGuid(),
