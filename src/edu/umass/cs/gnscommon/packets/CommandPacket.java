@@ -17,6 +17,7 @@ package edu.umass.cs.gnscommon.packets;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
@@ -31,6 +32,7 @@ import edu.umass.cs.gnscommon.utils.JSONByteConverter;
 import edu.umass.cs.gnscommon.utils.JSONCommonUtils;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.interfaces.Byteable;
@@ -44,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -144,6 +147,11 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
         throw new JSONException("Packet missing field " + COMMAND);
       }
     }
+    
+    // FIXME: not all constructors of CommandPacket
+    // are considered, but this is the constructor used in the GNS for now. 
+    // sets the client address
+    this.setSenderReceiverAddress(json);
 
     this.forceCoordination = json.has(GNSProtocol.FORCE_COORDINATE_READS.toString())
             ? json.getBoolean(GNSProtocol.FORCE_COORDINATE_READS.toString()) : false;
@@ -796,6 +804,43 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
                         + getClientAddress() + "]" : "");
       }
     };
+  }
+  
+  
+  private void setSenderReceiverAddress(JSONObject json)
+  {
+	  if(json.has(MessageNIOTransport.SNDR_ADDRESS_FIELD))
+	  {
+		  String sndrIPAddressInfo;
+		  try
+		  {
+			  sndrIPAddressInfo = json.getString(MessageNIOTransport.SNDR_ADDRESS_FIELD);
+			  String[] parsed = sndrIPAddressInfo.split(":");
+			  this.clientAddress = new InetSocketAddress(parsed[0], 
+					  Integer.parseInt(parsed[1]));	  
+		  } catch (JSONException e) 
+		  {
+			  GNSConfig.getLogger().log(Level.WARNING, 
+					  "Unable to set client address because of JSON exception {0} in json {1}"
+					  , new Object[]{e.getMessage(), json});
+		  }
+	  }
+	  
+	  if(json.has(MessageNIOTransport.RCVR_ADDRESS_FIELD))
+	  {
+		  try 
+		  {
+			  String recvIPAddressInfo = json.getString(MessageNIOTransport.RCVR_ADDRESS_FIELD);
+			  String[] parsed = recvIPAddressInfo.split(":");
+			  this.serverListeningAddress = new InetSocketAddress(parsed[0], 
+				  Integer.parseInt(parsed[1]));
+		  } catch (JSONException e) 
+		  {
+			  GNSConfig.getLogger().log(Level.WARNING, 
+					  "Unable to set server address because of JSON exception {0} in json {1}"
+					  , new Object[]{e.getMessage(), json});
+		  }
+	  }
   }
 
 }

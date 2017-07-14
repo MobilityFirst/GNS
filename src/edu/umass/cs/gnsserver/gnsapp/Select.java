@@ -570,9 +570,14 @@ public class Select {
     }
   }
 
-  // Converts a record from the database into something we can return to 
-  // the user. Adds the "_GUID" and removes internal fields.
-  private static List<JSONObject> filterAndMassageRecords(Set<JSONObject> records) {
+  /**
+   * Converts a record from the database into a format that we can return to 
+   * the user. Adds the "_GUID" and removes internal fields.
+   * 
+   * @param records
+   * @return
+   */
+  public static List<JSONObject> filterAndMassageRecords(Set<JSONObject> records) {
     List<JSONObject> result = new ArrayList<>();
     for (JSONObject record : records) {
       try {
@@ -595,9 +600,14 @@ public class Select {
     return result;
   }
 
-  // Pulls the guids out of the record to return to the user for "old-style" 
-  // select calls.
-  private static Set<String> extractGuidsFromRecords(Set<JSONObject> records) {
+  /**
+   * Pulls the guids out of the record to return to the user for "old-style" 
+   * select calls.
+   * 
+   * @param records
+   * @return
+   */ 
+  public static Set<String> extractGuidsFromRecords(Set<JSONObject> records) {
     Set<String> result = new HashSet<>();
     for (JSONObject json : records) {
       try {
@@ -665,8 +675,17 @@ public class Select {
     return jsonRecords;
   }
 
-  // Takes the JSON records that are returned from an NS and stuffs the into the NSSelectInfo record
-  private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info,
+  /**
+   * Takes the JSON records that are returned from an NS and 
+   * stuffs the into the {@link NSSelectInfo} record
+   * 
+   * @param jsonArray
+   * @param info
+   * @param ar
+   * 
+   * @throws JSONException if there is any JSON parsing exception. 
+   */
+  public static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info,
           GNSApplicationInterface<String> ar) throws JSONException {
     int length = jsonArray.length();
     LOGGER.log(Level.FINE,

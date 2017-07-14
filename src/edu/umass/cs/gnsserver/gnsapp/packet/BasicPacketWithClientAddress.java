@@ -38,8 +38,12 @@ import org.json.JSONObject;
 public abstract class BasicPacketWithClientAddress extends BasicPacket {
 
   private final static String CLIENT_ADDRESS = "clientAddress";
-
-  private InetSocketAddress clientAddress = null;
+  
+  // stores the address of the client that sent the request.
+  protected InetSocketAddress clientAddress = null;
+  
+  // stores the address of the server that receives the request.
+  protected InetSocketAddress serverListeningAddress = null;
 
   /**
    * Creates a BasicPacket.
@@ -92,5 +96,14 @@ public BasicPacketWithClientAddress setResponse(ClientRequest response) {
   public InetSocketAddress getClientAddress() {
     return clientAddress;
   }
-
+  
+  /**
+   * Returns listening address of the server that received this packet.
+   * May be null if not set while creating the object of this class or child class.
+   * @return
+   */
+  public InetSocketAddress getServerListeningAddress()
+  {
+	  return this.serverListeningAddress;
+  }
 }

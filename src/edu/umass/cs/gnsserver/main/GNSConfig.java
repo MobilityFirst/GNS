@@ -254,7 +254,21 @@ public class GNSConfig {
      * The class name to use for doing sanity checks while updating GNS
      * record. Must extend {@link edu.umass.cs.gnsserver.extensions.sanitycheck.AbstractSanityCheck}
      */
-    SANITY_CHECKER(NullSanityCheck.class.getName())
+    SANITY_CHECKER(NullSanityCheck.class.getName()),
+    
+    
+    /** If the flag is true then a custom select implementation is used.
+     * If it is false the blocking {@link edu.umass.cs.gnsserver.gnsapp.Select} 
+     * is used.
+     */
+    ENABLE_CUSTOM_SELECT(false),
+     
+     /**
+      * Specifies the select policy type.
+      * This policy is only used when {@link #ENABLE_CUSTOM_SELECT} is true.
+      */
+     SELECT_POLICY(""),
+     
     ;
 
     final Object defaultValue;

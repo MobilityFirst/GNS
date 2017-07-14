@@ -25,7 +25,7 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
-import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
 
 import java.io.IOException;
 
@@ -106,5 +106,11 @@ public interface GNSApplicationInterface<NodeIDType> {
    * @return the active code handler
    */
   ActiveCodeHandler getActiveCodeHandler();
+  
+  /**
+   *
+   * @return the SSLMessenger
+   */
+  public SSLMessenger<String, JSONObject> getSSLMessenger();
 
 }
