@@ -360,7 +360,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         	{
         		// In the select command , doNotReplyToClient will be false,
         		// as this NS is the originating NS for the select request.
-        		// checking this here because the CNS select internally replies to the client.
+        		// checking this here so that a custom select can internally reply to a client.
         		assert(!doNotReplyToClient);
         		this.selectPolicy.handleSelectRequestFromClient((CommandPacket) request);
         	}
