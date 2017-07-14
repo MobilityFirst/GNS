@@ -34,8 +34,7 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import edu.umass.cs.contextservice.client.ContextServiceClient;
-import edu.umass.cs.contextservice.config.ContextServiceConfig.PrivacySchemes;
+
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gnsclient.client.GNSClient;
@@ -58,12 +57,10 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.database.MongoRecords;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
-import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Repeat;
 import edu.umass.cs.utils.Util;
 
@@ -3567,51 +3564,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
       failWithStackTrace("Exception executing selectLookupGroupQuery: ", e);
     }
   }
-
-  /**
-   * Test to check context service triggers.
-   */
-  // these two attributes right now are supported by CS
-  @Test
-  @Repeat(times = REPEAT)
-  public void test_620_contextServiceTest() {
-    // run it only when CS is enabled
-    // to check if context service is enabled.
-    boolean enableContextService = Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_CNS);
-    String csIPPort = Config.getGlobalString(GNSConfig.GNSC.CNS_NODE_ADDRESS);
-    if (enableContextService) {
-      try {
-        JSONObject attrValJSON = new JSONObject();
-        attrValJSON.put("geoLocationCurrentLat", 42.466);
-        attrValJSON.put("geoLocationCurrentLong", -72.58);
-
-        clientCommands.update(masterGuid, attrValJSON);
-        // just wait for 2 sec before sending search
-        Thread.sleep(1000);
-
-        String[] parsed = csIPPort.split(":");
-        String csIP = parsed[0];
-        int csPort = Integer.parseInt(parsed[1]);
-
-        ContextServiceClient csClient = new ContextServiceClient(csIP, csPort, false, PrivacySchemes.NO_PRIVACY);
-
-        // context service query format
-        String query = "geoLocationCurrentLat >= 40 "
-                + "AND geoLocationCurrentLat <= 50 AND "
-                + "geoLocationCurrentLong >= -80 AND "
-                + "geoLocationCurrentLong <= -70";
-        JSONArray resultArray = new JSONArray();
-        // third argument is arbitrary expiry time, not used now
-        int resultSize = csClient.sendSearchQuery(query, resultArray,
-                300000);
-        Assert.assertThat(resultSize, Matchers.greaterThanOrEqualTo(1));
-
-      } catch (Exception e) {
-        failWithStackTrace("Exception during contextServiceTest: ", e);
-      }
-    }
-  }
-
+  
   /**
    * A basic test to insure that setting LNS Proxy minimally doesn't break.
    */
