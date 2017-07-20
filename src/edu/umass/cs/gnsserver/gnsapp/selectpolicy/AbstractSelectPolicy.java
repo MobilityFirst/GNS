@@ -51,7 +51,7 @@ public abstract class AbstractSelectPolicy
 	 * {@link edu.umass.cs.gnsserver.gnsapp.GNSApp#execute(edu.umass.cs.gigapaxos.interfaces.Request, boolean)} 
 	 * method doesn't need to block for the completion of a
 	 * SelectRequest, i.e., {@link edu.umass.cs.gnsserver.gnsapp.GNSApp#execute(edu.umass.cs.gigapaxos.interfaces.Request, boolean)} 
-	 * calls this method that method forwards the select request to the  required NSs and returns.
+	 * calls this method and the method forwards the select request to the  required NSs and returns.
 	 * 
 	 * @param request, the incoming request
 	 * @return Returns {@link Future}, which the caller of 
