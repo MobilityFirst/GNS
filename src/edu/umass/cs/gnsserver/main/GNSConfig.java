@@ -264,7 +264,7 @@ public class GNSConfig {
     ENABLE_CUSTOM_SELECT(false),
     
     /**
-     * Specifies the select policy type.
+     * Specifies the select policy classpath.
      * This policy is only used when {@link #ENABLE_CUSTOM_SELECT} is true.
      */
     CUSTOM_SELECT_POLICY(""),
