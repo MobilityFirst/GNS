@@ -89,7 +89,7 @@ public abstract class AbstractSelectPolicy
 	 * classpath should be specified in the GNS config files using 
 	 * {@link edu.umass.cs.gnsserver.main.GNSConfig.GNSC#CUSTOM_SELECT_POLICY}.
 	 * 
-	 * @param clazz , the classpath of the custom select policy
+	 * @param clazz , the class corresponding to the custom select policy
 	 * @param gnsApp , an object that implements {@link GNSApplicationInterface}
 	 * @return Returns the object of clazz, or null if the object creation fails.
 	 */
