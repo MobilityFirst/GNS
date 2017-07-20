@@ -105,9 +105,9 @@ public abstract class AbstractSelectPolicy
 				| IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) 
 		{
-			LOG.log(Level.SEVERE, 
-					e.getClass().getSimpleName() + " while creating " + clazz);
-			e.printStackTrace();
+			LOG.log(Level.WARNING, 
+					"{0} exception while creating an object of class {1}.",
+					new Object[] {e.getMessage(), clazz.getCanonicalName()});
 		}
 		return null;
 	}
