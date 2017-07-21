@@ -591,7 +591,7 @@ public class FieldAccess {
       return null;
     }
 
-    SelectResponsePacket responsePacket = Select.handleSelectRequestFromClient(header, packet, app);
+    SelectResponsePacket responsePacket = GNSConfig.getSelector().handleSelectRequestFromClient(header, packet, app);
     if (responsePacket != null
             && // Fixme: probably should just have handleSelectRequestFromClient throw a clientException
             SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
