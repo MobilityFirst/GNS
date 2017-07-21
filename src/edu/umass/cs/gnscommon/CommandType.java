@@ -15,8 +15,6 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnscommon;
 
-import edu.umass.cs.gnsclient.client.CommandResultType;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,7 +22,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
 import org.junit.Assert;
+
+import edu.umass.cs.gnsclient.client.CommandResultType;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 
 /**
  * All the commands supported by the GNS server are listed here.
