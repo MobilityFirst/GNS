@@ -147,6 +147,7 @@ public class Select extends AbstractSelector {
    * @throws UnknownHostException
    * @throws FailedDBOperationException
    */
+  @Override
   public void handleSelectRequest(SelectRequestPacket packet,
           GNSApplicationInterface<String> replica) throws JSONException, UnknownHostException, FailedDBOperationException {
     if (packet.getNsQueryId() != -1) { // this is how we tell if it has been processed by the NS
@@ -172,8 +173,8 @@ public class Select extends AbstractSelector {
    * @throws FailedDBOperationException
    * @throws InternalRequestException
    */
-  @Override
-  public SelectResponsePacket handleSelectRequestFromClient(InternalRequestHeader header,
+//  @Override
+  public  SelectResponsePacket handleSelectRequestFromClient(InternalRequestHeader header,
           SelectRequestPacket packet,
           GNSApplicationInterface<String> app) throws JSONException, UnknownHostException,
           FailedDBOperationException, InternalRequestException {
@@ -311,7 +312,6 @@ public class Select extends AbstractSelector {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
       jsonRecords = aclCheckFilterReturnedRecord(request, jsonRecords, request.getReader(), app);
-      @SuppressWarnings("unchecked")
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForFullRecords(request.getId(),
               request.getClientAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), app.getNodeAddress(), jsonRecords);

@@ -488,30 +488,33 @@ public class GNSConfig {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		try {
-			selector = (AbstractSelector) (clazz.getConstructor(String[].class)
-					.newInstance());
-		} catch (InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException e) {
-			getLogger()
-					.log(Level.WARNING,
-							"{0} unable to instantiate selector {1}; using default selector",
-							new Object[] {
-									GNSConfig.class.getName(),
-									Config.getGlobalString(GNSConfig.GNSC.ABSTRACT_SELECTOR) });
-			e.printStackTrace();
-		}
+		if (clazz != null)
+			try {
+				selector = (AbstractSelector) (clazz.getConstructor()
+						.newInstance());
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException
+					| NoSuchMethodException | SecurityException e) {
+				getLogger()
+						.log(Level.WARNING,
+								"{0} unable to instantiate selector {1}; using default selector",
+								new Object[] {
+										GNSConfig.class.getName(),
+										Config.getGlobalString(GNSConfig.GNSC.ABSTRACT_SELECTOR) });
+				e.printStackTrace();
+			}
 		if (selector == null)
 			try {
 				selector = (AbstractSelector) (edu.umass.cs.gnsserver.gnsapp.Select.class
-						.getConstructor(String[].class).newInstance());
+						.getConstructor().newInstance());
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException
 					| NoSuchMethodException | SecurityException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		// default Select has default constructor
+		assert(selector!=null);
 		return selector;
 	}
 }
