@@ -32,6 +32,8 @@ import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsserver.extensions.sanitycheck.NullSanityCheck;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.utils.Config;
 
 /**
@@ -248,7 +250,22 @@ public class GNSConfig {
      * Turn off active code handling. Default is true.
      * Temporary - The use of this will go away at some point.
      */
-    DISABLE_ACTIVE_CODE(true);
+    DISABLE_ACTIVE_CODE(true),
+    /**
+     * The class name to use for doing sanity checks while updating GNS
+     * record. Must extend {@link edu.umass.cs.gnsserver.extensions.sanitycheck.AbstractSanityCheck}
+     */
+    SANITY_CHECKER(NullSanityCheck.class.getName()),
+    
+    /**
+     * This macro specifies the reconfigure on active change policy
+     * for GUIDs. {@link ReconfigurationRecord.ReconfigureUponActivesChange} 
+     * enum specifies the set of values. 
+     * The default value is {@link ReconfigurationRecord.ReconfigureUponActivesChange#DEFAULT},
+     * which means the GUIDs are not reconfigured on change of actives.
+     */
+    RECONFIGURE_ON_ACTIVE_CHANGE_POLICY(ReconfigurationRecord.ReconfigureUponActivesChange.DEFAULT)
+    ;
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;

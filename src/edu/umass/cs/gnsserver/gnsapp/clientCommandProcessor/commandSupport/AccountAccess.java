@@ -53,6 +53,7 @@ import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.ReconfigureUponActivesChange;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -812,14 +813,19 @@ public class AccountAccess {
           String verifyCode, ClientRequestHandlerInterface handler)
           throws IOException {
     try {
-
+    	
       ResponseCode returnCode;
+      
+      ReconfigureUponActivesChange activesChangePolicy = 
+    		  ReconfigureUponActivesChange.valueOf(ReconfigureUponActivesChange.class, 
+    				  Config.getGlobalString(GNSConfig.GNSC.RECONFIGURE_ON_ACTIVE_CHANGE_POLICY));
+      
       // First try to createField the HRN record to make sure this name
       // isn't already registered
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
       returnCode = handler.getInternalClient().createOrExists(
-              new CreateServiceName(name, jsonHRN.toString()));
+              new CreateServiceName(name, jsonHRN.toString(), activesChangePolicy));
 
       String boundGUID = null;
       if (!returnCode.isExceptionOrError()
@@ -854,7 +860,7 @@ public class AccountAccess {
         // set up the default read access
 
         returnCode = handler.getInternalClient().createOrExists(
-                new CreateServiceName(guid, json.toString()));
+                new CreateServiceName(guid, json.toString(), activesChangePolicy));
 
         String boundHRN = null;
         assert (returnCode != null);
@@ -1128,12 +1134,16 @@ public class AccountAccess {
 
     boolean createdName = false, createdGUID = false;
     try {
+    	ReconfigureUponActivesChange activesChangePolicy = 
+    			ReconfigureUponActivesChange.valueOf(ReconfigureUponActivesChange.class,
+    					Config.getGlobalString(GNSConfig.GNSC.RECONFIGURE_ON_ACTIVE_CHANGE_POLICY));
+    	
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
       ResponseCode code;
 
       code = handler.getInternalClient().createOrExists(
-              new CreateServiceName(name, jsonHRN.toString()));
+              new CreateServiceName(name, jsonHRN.toString(), activesChangePolicy));
 
       /* arun: Return the error if we could not createField the HRN
 			 * (alias) record and the error indicates that it is not a duplicate
@@ -1191,7 +1201,7 @@ public class AccountAccess {
       // The addGuid needs to be rolled back if the second step fails.
       ResponseCode guidCode;
       guidCode = handler.getInternalClient().createOrExists(
-              new CreateServiceName(guid, jsonGuid.toString()));
+              new CreateServiceName(guid, jsonGuid.toString(), activesChangePolicy));
 
       assert (guidCode != null);
       String boundHRN = null;
@@ -1323,8 +1333,15 @@ public class AccountAccess {
       for (String key : hrnMap.keySet()) {
         nameStates.put(key, hrnMap.get(key).toString());
       }
-      if (!(returnCode = handler.getInternalClient().createOrExists(new CreateServiceName(nameStates)))
-              .isExceptionOrError()) {
+      
+      ReconfigureUponActivesChange activesChangePolicy = 
+    		  ReconfigureUponActivesChange.valueOf(ReconfigureUponActivesChange.class, 
+    				  Config.getGlobalString(GNSConfig.GNSC.RECONFIGURE_ON_ACTIVE_CHANGE_POLICY));
+      
+      if (!(returnCode = handler.getInternalClient().createOrExists(
+    		  new CreateServiceName(nameStates, activesChangePolicy)))
+              .isExceptionOrError()) 
+      {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(header, commandPacket, accountInfo,
                 handler, true).isOKResult()) {
@@ -1332,7 +1349,8 @@ public class AccountAccess {
           for (String key : guidInfoMap.keySet()) {
             guidInfoNameStates.put(key, guidInfoMap.get(key).toString());
           }
-          handler.getInternalClient().createOrExists(new CreateServiceName(guidInfoNameStates));
+          handler.getInternalClient().createOrExists(
+        		  new CreateServiceName(guidInfoNameStates, activesChangePolicy));
 
           GNSConfig.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse(ResponseCode.NO_ERROR,
@@ -1579,12 +1597,18 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
     // insure that that name does not already exist
     try {
+    	ReconfigureUponActivesChange activesChangePolicy = 
+    			ReconfigureUponActivesChange.valueOf(ReconfigureUponActivesChange.class,
+    					Config.getGlobalString(GNSConfig.GNSC.RECONFIGURE_ON_ACTIVE_CHANGE_POLICY));
+    	
       ResponseCode returnCode;
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, accountInfo.getGuid());
       if ((returnCode
-              = handler.getInternalClient().createOrExists(new CreateServiceName(alias, jsonHRN.toString()))).isExceptionOrError()) {
-        // roll this back
+              = handler.getInternalClient().createOrExists(
+          new CreateServiceName(alias, jsonHRN.toString(), activesChangePolicy))).isExceptionOrError()) {
+        
+    	// roll this back
         accountInfo.removeAlias(alias);
         return new CommandResponse(returnCode,
                 GNSProtocol.BAD_RESPONSE.toString() + " "

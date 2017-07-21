@@ -231,7 +231,11 @@ public enum ResponseCode implements Serializable {
            * IO exception incurred either by the client or by an induced remote query.
            */
           IO_EXCEPTION(412, IOException.class.getSimpleName(),
-        		  ResponseCodeType.EXCEPTION)
+        		  ResponseCodeType.EXCEPTION),
+  /*
+   * Sanity check on a record failed.
+   */
+  SANITY_CHECK_ERROR(413, GNSProtocol.SANITY_CHECK_ERROR.toString(), ResponseCodeType.ERROR)
 
         ;
 

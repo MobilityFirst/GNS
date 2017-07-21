@@ -541,7 +541,12 @@ public enum GNSProtocol {
   /**
    * Whether an internal request was previously coordinated (at most once).
    */
-  COORD1("COORD1"),;
+  COORD1("COORD1"),
+  /**
+   * Indicates that sanity check failed
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#SANITY_CHECK_ERROR}.
+   */
+  SANITY_CHECK_ERROR("+SANITY_CHECK_ERROR+"),;
 
   final String label;
 
