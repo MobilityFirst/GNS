@@ -15,8 +15,6 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.contextservice.integration.ContextServiceGNSClient;
-import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
@@ -137,11 +135,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    * Active code handler
    */
   private ActiveCodeHandler activeCodeHandler;
-
-  /**
-   * context service interface
-   */
-  private ContextServiceGNSInterface contextServiceGNSClient;
 
   /**
    * The non-secure http server
@@ -471,22 +464,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     }
     this.activeCodeHandler = !Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE)
             ? new ActiveCodeHandler(nodeID) : null;
-
-    // context service init
-    if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_CNS)) {
-      String nodeAddressString = Config.getGlobalString(GNSConfig.GNSC.CNS_NODE_ADDRESS);
-
-      String[] parsed = nodeAddressString.split(":");
-
-      assert (parsed.length == 2);
-
-      String host = parsed[0];
-      int port = Integer.parseInt(parsed[1]);
-      GNSConfig.getLogger().fine("ContextServiceGNSClient initialization started");
-      contextServiceGNSClient = new ContextServiceGNSClient(host, port);
-      GNSConfig.getLogger().fine("ContextServiceGNSClient initialization completed");
-    }
-
+            
     constructed = true;
   }
 
@@ -822,13 +800,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   @Override
   public ClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
-  }
-
-  /**
-   * @return ContextServiceGNSInterface
-   */
-  public ContextServiceGNSInterface getContextServiceGNSClient() {
-    return contextServiceGNSClient;
   }
 
   private void startDNS() throws SecurityException, SocketException,

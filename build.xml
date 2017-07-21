@@ -253,7 +253,6 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
     <pathelement location="${lib.dir}/commons-cli-1.1.jar"/>
     <pathelement location="${lib.dir}/derby.jar"/>
     <pathelement location="${lib.dir}/log4j-1.2.16.jar"/>
-    <pathelement location="${lib.dir}/context-client-GNS.jar"/>
     <pathelement location="${lib.dir}/mongo-java-driver-2.12.1.jar"/>
     <pathelement location="${lib.dir}/android.jar"/>
     <pathelement location="${conf.dir}"/>

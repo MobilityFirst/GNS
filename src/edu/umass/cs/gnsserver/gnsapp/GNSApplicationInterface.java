@@ -19,13 +19,11 @@
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
-import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 import java.io.IOException;
 
@@ -89,11 +87,6 @@ public interface GNSApplicationInterface<NodeIDType> {
 		  throws IOException;
   
   /**
-   * @return ContextServiceGNSInterface
-   */
-  public ContextServiceGNSInterface getContextServiceGNSClient();
-  
-  /**
    * Returns the request handler.
    *
    * @return the request handler
@@ -106,5 +99,4 @@ public interface GNSApplicationInterface<NodeIDType> {
    * @return the active code handler
    */
   ActiveCodeHandler getActiveCodeHandler();
-
 }

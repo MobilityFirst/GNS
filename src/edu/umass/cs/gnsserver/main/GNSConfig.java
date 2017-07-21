@@ -220,18 +220,6 @@ public class GNSConfig {
      * requests to DNS and GNS servers.
      */
     DNS_ONLY(false),
-    //
-    // Contect Name Service
-    //
-    /**
-     * If set to true enables update forwarding to CNS
-     */
-    ENABLE_CNS(false),
-    /**
-     * Ip address:port of one node of CNS. If ENABLE_CNS is set to true then
-     * this option should definitely be set.
-     */
-    CNS_NODE_ADDRESS(NONE),
     /**
      * The alias of the private key in the java keyStore.
      */

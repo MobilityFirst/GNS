@@ -138,27 +138,6 @@ public class CommandHandler {
               new Object[]{handler.getApp(), e});
       e.printStackTrace();
     }
-
-    // reply to client is true, this means this is the active replica
-    // that recvd the request from the gnsClient. So, let's check for
-    // sending trigger to Context service here.
-    if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_CNS)) {
-      if (!doNotReplyToClient) {
-
-        if (command.getClass().getSuperclass() == AbstractUpdate.class) {
-          GNSConfig
-                  .getLogger()
-                  .log(Level.FINE,
-                          "{0} sending trigger to context service for {1}:{2}",
-                          new Object[]{handler.getApp(), command,
-                            jsonFormattedCommand});
-
-          app.getContextServiceGNSClient().sendTiggerOnGnsCommand(
-                  jsonFormattedCommand, command, false);
-        }
-      }
-    }
-
   }
 
   private static CommandPacket addMessageWithoutSignatureToCommand(
