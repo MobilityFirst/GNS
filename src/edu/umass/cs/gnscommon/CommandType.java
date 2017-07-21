@@ -673,7 +673,7 @@ public enum CommandType {
   //
 
   /**
-   *
+   * arun: Why is this deprecated??
    */
   @Deprecated
   Select(310, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select",
@@ -705,7 +705,7 @@ public enum CommandType {
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
-   *
+   * Why is this deprecated??
    */
   @Deprecated
   SelectWithin(321, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin",
