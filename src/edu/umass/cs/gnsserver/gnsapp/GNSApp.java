@@ -66,6 +66,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.PacketInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.gnsapp.selectpolicy.AbstractSelectPolicy;
 import edu.umass.cs.gnsserver.httpserver.GNSHttpServer;
 import edu.umass.cs.gnsserver.httpserver.GNSHttpsServer;
 import edu.umass.cs.gnsserver.localnameserver.LocalNameServer;
@@ -125,6 +126,27 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     public void callbackGC(Object key, Object value) {
     }
   }, DEFAULT_REQUEST_TIMEOUT);
+  
+  
+  /**
+   * This flag is controlled by {@link GNSConfig.GNSC#ENABLE_CUSTOM_SELECT}
+   * By default it is false for now.
+   * But if it is true, then a custom select implementation
+   * is used. The classpath of the custom select implementation 
+   * is given by {@link GNSConfig.GNSC#CUSTOM_SELECT_POLICY}. 
+   * If it is false then  {@link edu.umass.cs.gnsserver.gnsapp.Select}
+   * is used. 
+   */
+  private boolean enableCustomSelect;
+  
+  /**
+   * A policy for processing select requests.
+   * The object of this class is created using reflection by reading the
+   * classpath from the gigapaxosConfig file using {@link GNSConfig.GNSC#CUSTOM_SELECT_POLICY}. 
+   * This policy is used when {@link #enableCustomSelect} is true. 
+   */
+  private AbstractSelectPolicy selectPolicy;
+  
 
   /* It's silly to enqueue requests when all GNS calls are blocking anyway. We
    * now use a simpler and more sensible sendToClient method that tracks the
@@ -317,13 +339,22 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
       switch (packetType) {
         case SELECT_REQUEST:
-          Select.handleSelectRequest((SelectRequestPacket) request, this);
+          if(this.enableCustomSelect)
+        	  this.selectPolicy.handleSelectRequestAtNS((SelectRequestPacket) request);
+          else
+        	  Select.handleSelectRequest((SelectRequestPacket) request, this);
           break;
         case SELECT_RESPONSE:
-          Select.handleSelectResponse((SelectResponsePacket) request, this);
+        	if(this.enableCustomSelect)
+        		this.selectPolicy.handleSelectResponseFromNS((SelectResponsePacket) request);
+        	else
+        		Select.handleSelectResponse((SelectResponsePacket) request, this);
           break;
         case COMMAND:
-          CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
+        	if(this.enableCustomSelect && ((CommandPacket) request).getCommandType().isSelect())
+        		this.selectPolicy.handleSelectRequestFromClient((CommandPacket) request);
+        	else
+        		CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
           break;
         case ADMIN_COMMAND:
           CommandHandler.handleCommandPacket((AdminCommandPacket) request, doNotReplyToClient, this);
@@ -368,6 +399,12 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       e.printStackTrace();
     }
     return executed;
+  }
+  
+  @Override
+  public SSLMessenger<String, JSONObject> getSSLMessenger()
+  {
+	  return this.messenger;
   }
 
   @Override
@@ -485,6 +522,13 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       GNSConfig.getLogger().fine("ContextServiceGNSClient initialization started");
       contextServiceGNSClient = new ContextServiceGNSClient(host, port);
       GNSConfig.getLogger().fine("ContextServiceGNSClient initialization completed");
+    }
+    
+    this.enableCustomSelect = Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_CUSTOM_SELECT);
+    
+    if(this.enableCustomSelect)
+    {
+    	this.initializeSelectPolicy();
     }
 
     constructed = true;
@@ -868,5 +912,36 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
               + "If you want DNS run the server using sudo.");
     }
   }
-
+  
+  private void initializeSelectPolicy()
+  {
+	  String selectPolicyClassName = Config.getGlobalString(GNSConfig.GNSC.CUSTOM_SELECT_POLICY);
+	  Class<?> selectClass = null;
+	  try
+	  {
+		  selectClass = Class.forName(selectPolicyClassName);
+	  }
+	  catch (ClassNotFoundException e) 
+	  {
+		  GNSConfig.getLogger().log(Level.WARNING, 
+				  "Error in creating the select policy object for class {0}."
+						  + " The error is {1}"
+						  + "Disabling custom select "
+						  , new Object[]{selectPolicyClassName, e.getMessage()});
+		  this.enableCustomSelect = false;
+	  }
+	  if(selectClass != null)
+	  {
+		  this.selectPolicy = AbstractSelectPolicy.createSelectObject(selectClass, this);
+		  
+		  if(this.selectPolicy == null)
+		  {
+			  GNSConfig.getLogger().log(Level.WARNING, 
+					  "Failed in creating the select policy object for class {0}."
+							  + "Disabling custom select "
+							  , new Object[]{selectPolicyClassName});
+			  this.enableCustomSelect = false;
+		  }
+	  }
+  }
 }

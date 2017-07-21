@@ -605,7 +605,17 @@ public class FieldAccess {
     }
   }
 
-  private static boolean signatureCheckForSelect(String reader, String signature,
+  /**
+   * This utility method is used to perform signature check for select requests.
+   * Outside this class, this method is mainly used by custom select implementations.
+   * 
+   * @param reader
+   * @param signature
+   * @param message
+   * @param app
+   * @return
+   */
+  public static boolean signatureCheckForSelect(String reader, String signature,
           String message, GNSApplicationInterface<String> app) {
     try {
       if (signature == null || reader == null) {
