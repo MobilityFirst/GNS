@@ -66,7 +66,7 @@ public class AclTest extends DefaultGNSTest {
     if (client == null) {
       try {
         client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
+        client.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1).setForcedTimeout(DEFAULT_TIMEOUT);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }

@@ -52,7 +52,7 @@ public class AclAllFieldsSuperuser extends DefaultGNSTest {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
+        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1).setForcedTimeout(DEFAULT_TIMEOUT);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: ", e);
       }

@@ -19,31 +19,26 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-import edu.umass.cs.contextservice.client.ContextServiceClient;
-import edu.umass.cs.contextservice.config.ContextServiceConfig.PrivacySchemes;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
-
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
-import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Repeat;
-import edu.umass.cs.utils.Utils;
 import java.io.IOException;
 
 import org.hamcrest.Matchers;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import org.junit.Assert;
-
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import edu.umass.cs.contextservice.client.ContextServiceClient;
+import edu.umass.cs.contextservice.config.ContextServiceConfig.PrivacySchemes;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
+import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.Repeat;
+import edu.umass.cs.utils.Utils;
 
 /**
  * Basic test for the GNS using the UniversalTcpClient.
@@ -64,7 +59,7 @@ public class ContextServiceTest extends DefaultGNSTest {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
+        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1).setForcedTimeout(DEFAULT_TIMEOUT);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }

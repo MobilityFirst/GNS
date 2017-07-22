@@ -79,6 +79,8 @@ public class DefaultGNSTest extends DefaultTest {
 	// static but not final
 	protected static GNSClient client = null;
 	protected static boolean serversStarted = false;
+	
+	protected static final long DEFAULT_TIMEOUT = 8000; //ms
 
 	// non-static
 	private GuidEntry myAccountGUID = null;
