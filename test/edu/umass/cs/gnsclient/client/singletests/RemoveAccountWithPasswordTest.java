@@ -52,7 +52,7 @@ public class RemoveAccountWithPasswordTest extends DefaultGNSTest {
     if (clientCommands == null) {
       try {
         clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true);
+        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client in RemoveAccountWithPasswordTest: " + e);
       }

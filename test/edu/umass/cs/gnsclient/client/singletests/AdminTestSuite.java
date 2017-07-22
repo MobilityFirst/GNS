@@ -55,7 +55,7 @@ public class AdminTestSuite extends DefaultGNSTest {
 
     clientCommands = new GNSClientCommands();
     // Make all the reads be coordinated
-    clientCommands.setForceCoordinatedReads(true);
+    clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
     // arun: connectivity check embedded in GNSClient constructor
     boolean connected = clientCommands instanceof GNSClient;
     if (connected) {
