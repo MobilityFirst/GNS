@@ -56,6 +56,7 @@ public class DnsTranslator extends Thread implements Shutdownable {
    * @param addr IP to bind (0.0.0.0 is acceptable)
    * @param port port to bind (53 is default for DNS)
    * @param handler
+ * @throws SecurityException 
    *
    * @throws java.net.SocketException
    * @throws java.net.UnknownHostException

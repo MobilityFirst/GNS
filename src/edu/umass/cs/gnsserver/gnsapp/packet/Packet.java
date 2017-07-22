@@ -368,7 +368,6 @@ public class Packet {
    * @throws java.io.IOException
    * @throws org.json.JSONException *
    */
-  @SuppressWarnings("javadoc")
   private static JSONObject getJSONObjectFrame(InputStream input, int sizeOfFrame)
           throws IOException, JSONException {
     byte[] jsonByte = new byte[sizeOfFrame];

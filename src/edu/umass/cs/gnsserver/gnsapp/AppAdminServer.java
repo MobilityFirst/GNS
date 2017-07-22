@@ -48,7 +48,6 @@ import java.util.logging.Level;
  * Gets requests from Admintercessor through the AdminListener
  * looks up stuff in the database and returns the results back to the AdminListener.
  */
-@SuppressWarnings("unchecked")
 public class AppAdminServer extends Thread implements Shutdownable {
 
   /**
@@ -84,7 +83,6 @@ public class AppAdminServer extends Thread implements Shutdownable {
    */
   @Override
   public void run() {
-    int numRequest = 0;
     GNSConfig.getLogger().log(Level.INFO,
             "NS Node {0} starting Admin Request Server on port {1}",
             new Object[]{app.getNodeID(), serverSocket.getLocalPort()});
@@ -178,6 +176,7 @@ public class AppAdminServer extends Thread implements Shutdownable {
 
               }
               break;
+              default:
           }
         }
       } catch (IOException | JSONException | FailedDBOperationException | ParseException | IllegalArgumentException | SecurityException e) {

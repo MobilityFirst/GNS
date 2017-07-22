@@ -48,6 +48,9 @@ public class NSFieldMetaData {
    * @param key
    * @param database
    * @return a set of objects
+ * @throws FailedDBOperationException 
+ * @throws FieldNotFoundException 
+ * @throws RecordNotFoundException 
    */
   public static Set<Object> lookupLocally(MetaDataTypeName type, GuidInfo guidInfo, String key,
           BasicRecordMap database) 
@@ -63,6 +66,9 @@ public class NSFieldMetaData {
    * @param key
    * @param database
    * @return a set of objects
+ * @throws FailedDBOperationException 
+ * @throws FieldNotFoundException 
+ * @throws RecordNotFoundException 
    */
   public static Set<Object> lookupLocally(MetaDataTypeName type, String guid, String key,
           BasicRecordMap database) 

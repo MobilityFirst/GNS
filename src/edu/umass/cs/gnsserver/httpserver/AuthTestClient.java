@@ -42,7 +42,11 @@ public class AuthTestClient {
   private static String TRUSTSTORE = System.getProperty("javax.net.ssl.trustStore");
   private static String CLIENT_PWD = System.getProperty("javax.net.ssl.keyStorePassword");
 
-  public static void main(String[] args) throws Exception {
+  /**
+ * @param args
+ * @throws Exception
+ */
+public static void main(String[] args) throws Exception {
     AuthTestClient cl = new AuthTestClient();
     System.out.println("No keystore:");
     cl.testIt(NO_KEYSTORE);

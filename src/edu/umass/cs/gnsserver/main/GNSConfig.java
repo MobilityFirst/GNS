@@ -17,6 +17,7 @@ package edu.umass.cs.gnsserver.main;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.Key;
@@ -29,10 +30,13 @@ import java.security.cert.CertificateException;
 import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.console.commands.Select;
 import edu.umass.cs.gnsserver.extensions.sanitycheck.NullSanityCheck;
+import edu.umass.cs.gnsserver.gnsapp.AbstractSelector;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.utils.Config;
 
@@ -259,12 +263,17 @@ public class GNSConfig {
     
     /**
      * This macro specifies the reconfigure on active change policy
-     * for GUIDs. {@link ReconfigurationRecord.ReconfigureUponActivesChange} 
+     * for GUIDs. {@link edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.ReconfigureUponActivesChange} 
      * enum specifies the set of values. 
-     * The default value is {@link ReconfigurationRecord.ReconfigureUponActivesChange#DEFAULT},
+     * The default value is {@link edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.ReconfigureUponActivesChange#DEFAULT},
      * which means the GUIDs are not reconfigured on change of actives.
      */
-    RECONFIGURE_ON_ACTIVE_CHANGE_POLICY(ReconfigurationRecord.ReconfigureUponActivesChange.DEFAULT)
+    RECONFIGURE_ON_ACTIVE_CHANGE_POLICY(ReconfigurationRecord.ReconfigureUponActivesChange.DEFAULT),
+    
+    /**
+     * Class name of select implementation.
+     */
+    ABSTRACT_SELECTOR(Select.class.getCanonicalName()),
     ;
 
     final Object defaultValue;
@@ -462,4 +471,50 @@ public class GNSConfig {
     }
     return internalOpSecret;
   }
+  
+	private static AbstractSelector selector = null;
+
+	/**
+	 * @return Select implementation.
+	 */
+	public synchronized static final AbstractSelector getSelector() {
+		if (selector != null)
+			return selector;
+		// else
+		Class<?> clazz = null;
+		try {
+			clazz = (Class.forName(Config
+					.getGlobalString(GNSConfig.GNSC.ABSTRACT_SELECTOR)));
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		if (clazz != null)
+			try {
+				selector = (AbstractSelector) (clazz.getConstructor()
+						.newInstance());
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException
+					| NoSuchMethodException | SecurityException e) {
+				getLogger()
+						.log(Level.WARNING,
+								"{0} unable to instantiate selector {1}; using default selector",
+								new Object[] {
+										GNSConfig.class.getName(),
+										Config.getGlobalString(GNSConfig.GNSC.ABSTRACT_SELECTOR) });
+				e.printStackTrace();
+			}
+		if (selector == null)
+			try {
+				selector = (AbstractSelector) (edu.umass.cs.gnsserver.gnsapp.Select.class
+						.getConstructor().newInstance());
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException
+					| NoSuchMethodException | SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		// default Select has default constructor
+		assert(selector!=null);
+		return selector;
+	}
 }

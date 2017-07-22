@@ -19,18 +19,17 @@
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
+import org.json.JSONObject;
+
 import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
-import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
-
-import java.io.IOException;
-
-import java.net.InetSocketAddress;
-import org.json.JSONObject;
 
 /**
  * This encapsulates the core functionality needed by the GNS Application.
@@ -48,9 +47,7 @@ public interface GNSApplicationInterface<NodeIDType> {
   NodeIDType getNodeID();
   
   /**
-   * Returns the node address.
-   * 
-   * @return 
+   * @return Returns the node address.
    */
   InetSocketAddress getNodeAddress();
 

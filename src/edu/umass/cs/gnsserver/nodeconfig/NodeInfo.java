@@ -136,7 +136,6 @@ public class NodeInfo<NodeIDType> {
    *
    * @return a node id
    */
-  @Deprecated
   public NodeIDType getReconfiguratorID() {
     return reconfiguratorID;
   }

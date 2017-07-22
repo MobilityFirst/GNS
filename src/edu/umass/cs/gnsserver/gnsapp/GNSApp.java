@@ -15,6 +15,23 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsserver.gnsapp;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.BindException;
+import java.net.Inet4Address;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import edu.umass.cs.contextservice.integration.ContextServiceGNSClient;
 import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
@@ -26,9 +43,6 @@ import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
-import edu.umass.cs.gnsserver.database.ColumnField;
-import edu.umass.cs.gnsserver.database.MongoRecords;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
@@ -37,38 +51,33 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
+import edu.umass.cs.gnsserver.database.ColumnField;
+import edu.umass.cs.gnsserver.database.MongoRecords;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.extensions.sanitycheck.AbstractSanityCheck;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-
+import edu.umass.cs.gnsserver.gnamed.DnsTranslator;
+import edu.umass.cs.gnsserver.gnamed.UdpDnsServer;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.AdminListener;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
-import edu.umass.cs.gnsserver.gnamed.DnsTranslator;
-import edu.umass.cs.gnsserver.gnamed.UdpDnsServer;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.gnsapp.packet.PacketInterface;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.httpserver.GNSHttpServer;
 import edu.umass.cs.gnsserver.httpserver.GNSHttpsServer;
 import edu.umass.cs.gnsserver.localnameserver.LocalNameServer;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
@@ -86,17 +95,6 @@ import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.GCConcurrentHashMap;
 import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 import edu.umass.cs.utils.Util;
-
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.BindException;
-import java.net.Inet4Address;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.logging.Level;
 
 /**
  * @author Westy, arun
@@ -271,7 +269,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
    * @param doNotReplyToClient
    * @return true if the command is successfully executed
    */
-  @SuppressWarnings("unchecked")
   // we explicitly check type
   @Override
   public boolean execute(Request request, boolean doNotReplyToClient) {
@@ -317,10 +314,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
       switch (packetType) {
         case SELECT_REQUEST:
-          Select.handleSelectRequest((SelectRequestPacket) request, this);
+          GNSConfig.getSelector().handleSelectRequest((SelectRequestPacket) request, this);
           break;
         case SELECT_RESPONSE:
-          Select.handleSelectResponse((SelectResponsePacket) request, this);
+        	GNSConfig.getSelector().handleSelectResponse((SelectResponsePacket) request, this);
           break;
         case COMMAND:
           CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);

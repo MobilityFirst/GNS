@@ -20,10 +20,11 @@
 package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
 import java.net.InetSocketAddress;
-import java.util.HashSet;
 import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+
 import edu.umass.cs.reconfiguration.interfaces.ModifiableActiveConfig;
 import edu.umass.cs.reconfiguration.interfaces.ModifiableRCConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
@@ -49,7 +50,6 @@ public class LNSConsistentReconfigurableNodeConfig extends
   // need to refresh when nodeConfig changes
   private final ConsistentHashing<InetSocketAddress> CH_AR;
 
-  private Set<InetSocketAddress> reconfiguratorsSlatedForRemoval = new HashSet<InetSocketAddress>();
 
   /**
    * Create a LNSConsistentReconfigurableNodeConfig instance.

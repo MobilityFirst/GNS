@@ -24,31 +24,44 @@ package edu.umass.cs.gnsserver.gnsapp;
  * University of Massachusetts
  * All Rights Reserved
  */
-import edu.umass.cs.gigapaxos.PaxosConfig;
-import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
-import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
-import edu.umass.cs.gnscommon.packets.PacketUtils;
-
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
+import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
@@ -60,22 +73,6 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
-
-import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * This class handles select operations which have a similar semantics to an SQL SELECT.
@@ -131,9 +128,8 @@ import java.util.regex.Pattern;
  *
  * @author westy
  */
-public class Select {
+public class Select extends AbstractSelector {
 
-  private static final Logger LOGGER = Logger.getLogger(Select.class.getName());
 
   private static final Random RANDOM_ID = new Random();
   private static final ConcurrentMap<Integer, NSSelectInfo> QUERIES_IN_PROGRESS
@@ -151,7 +147,8 @@ public class Select {
    * @throws UnknownHostException
    * @throws FailedDBOperationException
    */
-  public static void handleSelectRequest(SelectRequestPacket packet,
+  @Override
+  public void handleSelectRequest(SelectRequestPacket packet,
           GNSApplicationInterface<String> replica) throws JSONException, UnknownHostException, FailedDBOperationException {
     if (packet.getNsQueryId() != -1) { // this is how we tell if it has been processed by the NS
       handleSelectRequestFromNS(packet, replica);
@@ -176,8 +173,8 @@ public class Select {
    * @throws FailedDBOperationException
    * @throws InternalRequestException
    */
-  @SuppressWarnings("unchecked")
-  public static SelectResponsePacket handleSelectRequestFromClient(InternalRequestHeader header,
+//  @Override
+  public  SelectResponsePacket handleSelectRequestFromClient(InternalRequestHeader header,
           SelectRequestPacket packet,
           GNSApplicationInterface<String> app) throws JSONException, UnknownHostException,
           FailedDBOperationException, InternalRequestException {
@@ -268,7 +265,6 @@ public class Select {
     return null;
   }
 
-  @SuppressWarnings("unchecked")
   private static SelectResponsePacket getMySelectedRecords(
           SelectRequestPacket request,
           GNSApplicationInterface<String> app) {
@@ -306,7 +302,6 @@ public class Select {
    * @param app
    * @throws JSONException
    */
-  @SuppressWarnings("unchecked")
   private static void handleSelectRequestFromNS(SelectRequestPacket request,
           GNSApplicationInterface<String> app) throws JSONException {
     LOGGER.log(Level.FINE,
@@ -317,7 +312,6 @@ public class Select {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
       jsonRecords = aclCheckFilterReturnedRecord(request, jsonRecords, request.getReader(), app);
-      @SuppressWarnings("unchecked")
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForFullRecords(request.getId(),
               request.getClientAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), app.getNodeAddress(), jsonRecords);
@@ -469,7 +463,8 @@ public class Select {
    * @throws java.io.IOException
    * @throws InternalRequestException
    */
-  public static void handleSelectResponse(SelectResponsePacket packet,
+  @Override
+  public void handleSelectResponse(SelectResponsePacket packet,
           GNSApplicationInterface<String> replica) throws JSONException, ClientException, IOException, InternalRequestException {
     LOGGER.log(Level.FINE,
             "NS {0} recvd from NS {1}",
@@ -695,70 +690,11 @@ public class Select {
   }
 
   /**
-   * Returns true if a query contains operations that are not allowed.
-   * Currently $where is not allowed as well as attempts to use
-   * internal keys.
-   *
-   * @param query
-   * @return
-   */
-  public static boolean queryContainsEvil(String query) {
-    try {
-      JSONObject jsonQuery = new JSONObject("{" + query + "}");
-      return jsonObjectKeyContains(NameRecord.VALUES_MAP.getName(), jsonQuery)
-              || jsonObjectKeyContains("$where", jsonQuery);
-    } catch (JSONException e) {
-      return false;
-    }
-  }
-
-  // Traverses the json looking for a key that contains the string
-  private static boolean jsonObjectKeyContains(String key, JSONObject jsonObject) {
-    LOGGER.log(Level.FINEST, "{0} {1}", new Object[]{key, jsonObject.toString()});
-    String[] keys = JSONObject.getNames(jsonObject);
-    if (keys != null) {
-      for (String subKey : keys) {
-        if (subKey.contains(key)) {
-          return true;
-        }
-        JSONObject subJson = jsonObject.optJSONObject(subKey);
-        if (subJson != null) {
-          if (jsonObjectKeyContains(key, subJson)) {
-            return true;
-          }
-        }
-        JSONArray subArray = jsonObject.optJSONArray(subKey);
-        if (subArray != null) {
-          if (jsonArrayKeyContains(key, subArray)) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
-  // Traverses the json looking for a key that contains the string
-  private static boolean jsonArrayKeyContains(String key, JSONArray jsonArray) {
-    LOGGER.log(Level.FINEST, "{0} {1}", new Object[]{key, jsonArray.toString()});
-    for (int i = 0; i < jsonArray.length(); i++) {
-      JSONObject subObject = jsonArray.optJSONObject(i);
-      if (subObject != null) {
-        if (jsonObjectKeyContains(key, subObject)) {
-          return true;
-        }
-      }
-      JSONArray subArray = jsonArray.optJSONArray(i);
-      if (subArray != null) {
-        if (jsonArrayKeyContains(key, subArray)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  public static void main(String[] args) throws JSONException, UnknownHostException {
+ * @param args
+ * @throws JSONException
+ * @throws UnknownHostException
+ */
+public static void main(String[] args) throws JSONException, UnknownHostException {
     String testQuery = "$or: [{~geoLocationCurrent:{"
             + "$geoIntersects:{$geometry:{\"coordinates\":"
             + "[[[-98.08,33.635],[-96.01,33.635],[-96.01,31.854],[-98.08,31.854],[-98.08,33.635]]],"

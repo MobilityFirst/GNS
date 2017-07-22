@@ -19,11 +19,21 @@
  */
 package edu.umass.cs.gnsserver.database;
 
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.BulkWriteOperation;
-import com.mongodb.BulkWriteResult;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -45,17 +55,6 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * Provides insert, updateEntireRecord, removeEntireRecord and lookupEntireRecord operations for
@@ -428,7 +427,7 @@ public class MongoRecords implements NoSQLRecords {
       }
     }
     // Maybe check the result?
-    BulkWriteResult result = unordered.execute();
+    unordered.execute();
   }
 
   @Override
@@ -720,7 +719,11 @@ public class MongoRecords implements NoSQLRecords {
     }
   }
 
-  public static String buildAndQuery(String... querys) {
+  /**
+ * @param querys
+ * @return Query string.
+ */
+public static String buildAndQuery(String... querys) {
     StringBuilder result = new StringBuilder();
     result.append("{$and: [");
     String prefix = "";

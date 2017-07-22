@@ -23,47 +23,19 @@ package edu.umass.cs.gnsserver.httpserver;
  *
  * @author westy
  */
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-
-import com.sun.net.httpserver.HttpsExchange;
-import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.main.GNSConfig;
+import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
-
-import edu.umass.cs.gnscommon.ResponseCode;
-import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnscommon.utils.CanonicalJSON;
-import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
-import edu.umass.cs.gnsserver.utils.Util;
-import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.utils.Config;
-
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,9 +43,33 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnscommon.GNSProtocol;
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsExchange;
 
-import java.io.UnsupportedEncodingException;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
+import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.Util;
+import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.utils.Config;
 
 /**
  *
