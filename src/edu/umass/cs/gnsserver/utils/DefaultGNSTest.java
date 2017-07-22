@@ -492,9 +492,10 @@ public class DefaultGNSTest extends DefaultTest {
 		String dir = getLogFileDir();
 		String logFile = getLogFile();
 		// make logs directory if it doesn't exist
+		System.out.print("Creating log file dir " + dir);
 		new File(dir).mkdirs();
 
-		System.out.print("Deleting log files " + logFile + "*");
+		System.out.print("; deleting log files " + logFile + "*");
 		for (File f : getMatchingFiles(dir, logFile))
 			f.delete();
 		System.out.println(" ...done");

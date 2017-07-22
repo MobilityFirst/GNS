@@ -561,7 +561,7 @@ public enum CommandType {
             GNSProtocol.VALUE.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{GNSProtocol.WRITER.toString()}),
+          new String[]{GNSProtocol.WRITER.toString()}, CommandFlag.MUTUAL_AUTH),
   /**
    *
    */

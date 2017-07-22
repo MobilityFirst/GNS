@@ -222,7 +222,7 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  protected static final CommandPacket fieldCreateIndex(GuidEntry GUID,
+  public static final CommandPacket fieldCreateIndex(GuidEntry GUID,
           String field, String index) throws ClientException {
     return getCommand(CommandType.CreateIndex, GUID,
             GNSProtocol.GUID.toString(), GUID.getGuid(),
@@ -692,7 +692,6 @@ public class GNSCommand extends CommandPacket {
    * @param alias
    * @return CommandPacket
    * @throws ClientException
-   * @deprecated Use guidCreate instead.
    */
   // doesn't conform to the nounVerb naming convention
   public static final CommandPacket createGUID(
