@@ -52,7 +52,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AclTest extends DefaultGNSTest {
 
-  private static GNSClientCommands clientCommands = null;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
@@ -63,10 +63,10 @@ public class AclTest extends DefaultGNSTest {
    * This test tests all manner of ACL uses.
    */
   public AclTest() {
-    if (clientCommands == null) {
+    if (client == null) {
       try {
-        clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true);
+        client = new GNSClientCommands();
+        client.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
@@ -84,8 +84,8 @@ public class AclTest extends DefaultGNSTest {
   @Test
   public void test_100_ACLCreateGuids() {
     try {
-      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
-      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
+      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (ClientException | IOException e) {
@@ -94,14 +94,14 @@ public class AclTest extends DefaultGNSTest {
     }
     try {
       // remove default read access for this test
-      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while removing ACL in ACLCreateGuids: " + e);
 
     }
     try {
       JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
-      JSONArray actual = clientCommands.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+      JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
               GNSProtocol.ENTIRE_RECORD.toString(), westyEntry.getGuid());
       JSONAssert.assertEquals(expected, actual, true);
     } catch (ClientException | IOException | JSONException e) {
@@ -116,10 +116,10 @@ public class AclTest extends DefaultGNSTest {
   @Test
   public void test_101_ACLCreateFields() {
     try {
-      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
-      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
-      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
-      clientCommands.fieldCreateOneElementList(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
+      client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
+      client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
+      client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
+      client.fieldCreateOneElementList(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while creating fields in ACLCreateFields: " + e);
 
@@ -137,7 +137,7 @@ public class AclTest extends DefaultGNSTest {
       expected.put("password", new JSONArray(new ArrayList<>(Arrays.asList("666flapJack"))));
       expected.put("ssn", new JSONArray(new ArrayList<>(Arrays.asList("000-00-0000"))));
       expected.put("address", new JSONArray(new ArrayList<>(Arrays.asList("100 Hinkledinkle Drive"))));
-      JSONObject actual = new JSONObject(clientCommands.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), masterGuid));
+      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), masterGuid));
       JSONAssert.assertEquals(expected, actual, true);
     } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception while reading all fields in ACLReadAllFields: " + e);
@@ -153,10 +153,10 @@ public class AclTest extends DefaultGNSTest {
     try {
       // read my own field
       Assert.assertEquals("work",
-              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", westyEntry));
+              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", westyEntry));
       // read another one of my fields field
       Assert.assertEquals("000-00-0000",
-              clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "ssn", westyEntry));
+              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "ssn", westyEntry));
 
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while reading fields in ACLReadMyFields: " + e);
@@ -171,7 +171,7 @@ public class AclTest extends DefaultGNSTest {
   public void test_105_ACLNotReadOtherGuidAllFieldsTest() {
     try {
       try {
-        String result = clientCommands.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), samEntry);
+        String result = client.fieldRead(westyEntry.getGuid(), GNSProtocol.ENTIRE_RECORD.toString(), samEntry);
         Utils.failWithStackTrace("Result of read of all of westy's fields by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
@@ -190,7 +190,7 @@ public class AclTest extends DefaultGNSTest {
   public void test_106_ACLNotReadOtherGuidFieldTest() {
     try {
       try {
-        String result = clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment",
+        String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment",
                 samEntry);
         Utils.failWithStackTrace("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
@@ -209,14 +209,14 @@ public class AclTest extends DefaultGNSTest {
   public void test_110_ACLPartOne() {
     try {
       try {
-        clientCommands.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Exception adding Sam to Westy's readlist: " + e);
 
       }
       try {
         Assert.assertEquals("work",
-                clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry));
+                client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry));
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Exception while Sam reading Westy's field: " + e);
 
@@ -235,7 +235,7 @@ public class AclTest extends DefaultGNSTest {
     try {
       String barneyName = "barney" + RandomString.randomString(12);
       try {
-        clientCommands.lookupGuid(barneyName);
+        client.lookupGuid(barneyName);
         Utils.failWithStackTrace(barneyName + " entity should not exist");
       } catch (ClientException e) {
         // Normal result
@@ -243,16 +243,16 @@ public class AclTest extends DefaultGNSTest {
         Utils.failWithStackTrace("Exception looking up Barney: " + e);
 
       }
-      barneyEntry = clientCommands.guidCreate(masterGuid, barneyName);
+      barneyEntry = client.guidCreate(masterGuid, barneyName);
       // remove default read access for this test
-      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
+      client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
               GNSProtocol.ENTIRE_RECORD.toString(), GNSProtocol.ALL_GUIDS.toString());
-      clientCommands.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
-      clientCommands.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
+      client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
+      client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
       try {
         // let anybody read barney's cell field
-        clientCommands.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
+        client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
                 GNSProtocol.ALL_GUIDS.toString());
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Exception creating ALLUSERS access for Barney's cell: " + e);
@@ -261,7 +261,7 @@ public class AclTest extends DefaultGNSTest {
 
       try {
         Assert.assertEquals("413-555-1234",
-                clientCommands.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", samEntry));
+                client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", samEntry));
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Exception while Sam reading Barney' cell: " + e);
 
@@ -269,14 +269,14 @@ public class AclTest extends DefaultGNSTest {
 
       try {
         Assert.assertEquals("413-555-1234",
-                clientCommands.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", westyEntry));
+                client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", westyEntry));
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Exception while Westy reading Barney' cell: " + e);
 
       }
 
       try {
-        String result = clientCommands.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address",
+        String result = client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address",
                 samEntry);
         Utils.failWithStackTrace("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
@@ -308,22 +308,22 @@ public class AclTest extends DefaultGNSTest {
     String superUserName = "superuser" + RandomString.randomString(12);
     try {
       try {
-        clientCommands.lookupGuid(superUserName);
+        client.lookupGuid(superUserName);
         Utils.failWithStackTrace(superUserName + " entity should not exist");
       } catch (ClientException e) {
       }
 
-      GuidEntry superuserEntry = clientCommands.guidCreate(masterGuid, superUserName);
+      GuidEntry superuserEntry = client.guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      clientCommands.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSProtocol.ENTIRE_RECORD.toString(), superuserEntry.getGuid());
 
       Assert.assertEquals("413-555-1234",
-              clientCommands.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
+              client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
       Assert.assertEquals("100 Main Street",
-              clientCommands.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address", superuserEntry));
+              client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address", superuserEntry));
       try {
-        clientCommands.guidRemove(masterGuid, superuserEntry.getGuid());
+        client.guidRemove(masterGuid, superuserEntry.getGuid());
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Exception while removing superuserEntry in  ACLALLFields: " + e);
       }
@@ -339,19 +339,19 @@ public class AclTest extends DefaultGNSTest {
   public void test_140_ACLCreateDeeperField() {
     try {
       try {
-        clientCommands.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
+        client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Problem updating field: " + e);
 
       }
       try {
-        clientCommands.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSProtocol.ALL_GUIDS.toString());
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSProtocol.ALL_GUIDS.toString());
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Problem adding acl: " + e);
 
       }
       try {
-        JSONArray actual = clientCommands.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+        JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
         JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(GNSProtocol.ALL_GUIDS.toString())));
         JSONAssert.assertEquals(expected, actual, true);
@@ -371,7 +371,7 @@ public class AclTest extends DefaultGNSTest {
   @Test
   public void test_142_ACLRemoveDeeperFieldACL() {
     try {
-      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
               "test.deeper.field", GNSProtocol.ALL_GUIDS.toString());
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it ACLRemoveDeeperFieldACL: " + e);
@@ -387,7 +387,7 @@ public class AclTest extends DefaultGNSTest {
     try {
       JSONArray expected = new JSONArray();
       JSONAssert.assertEquals(expected,
-              clientCommands.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+              client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
                       "test.deeper.field", masterGuid.getGuid()), true);
     } catch (ClientException | IOException | JSONException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it ACLCheckDeeperFieldEmpty: " + e);
@@ -401,7 +401,7 @@ public class AclTest extends DefaultGNSTest {
   @Test
   public void test_145_ACLRemoveDeeperFieldACLAgain() {
     try {
-      clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
               "test.deeper.field", GNSProtocol.ALL_GUIDS.toString());
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it ACLRemoveDeeperFieldACL: " + e);
@@ -415,7 +415,7 @@ public class AclTest extends DefaultGNSTest {
   @Test
   public void test_146_ACLCheckDeeperFieldACLExists() {
     try {
-      Assert.assertTrue(clientCommands.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry,
+      Assert.assertTrue(client.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry,
               "test.deeper.field"));
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception when we were not expecting it ACLCheckDeeperFieldACLExists: " + e);
@@ -430,7 +430,7 @@ public class AclTest extends DefaultGNSTest {
   public void test_148_ACLDeleteDeeperFieldACL() {
     try {
       try {
-        clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
+        client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Problem deleting acl: " + e);
 
@@ -448,7 +448,7 @@ public class AclTest extends DefaultGNSTest {
   public void test_150_CheckDeeperFieldACLExists() {
     try {
       try {
-        Assert.assertFalse(clientCommands.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
+        Assert.assertFalse(client.fieldAclExists(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field"));
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Problem checking acl exists: " + e);
 
@@ -466,7 +466,7 @@ public class AclTest extends DefaultGNSTest {
   public void test_152_ACLDeleteDeeperFieldACLAgain() {
     try {
       try {
-        clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
+        client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field");
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Problem deleting acl: " + e);
 
@@ -484,7 +484,7 @@ public class AclTest extends DefaultGNSTest {
   public void test_154_ACLRemoveFromNonexistantField() {
     try {
       try {
-        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, "NonexistantField", 
+        client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, "NonexistantField", 
                 GNSProtocol.ALL_GUIDS.toString());
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Problem removing acl: " + e);
@@ -504,7 +504,7 @@ public class AclTest extends DefaultGNSTest {
   public void test_156_ACLDeleteNonexistantField() {
     try {
       try {
-        clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "NonexistantField");
+        client.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "NonexistantField");
       } catch (ClientException | IOException e) {
         Utils.failWithStackTrace("Problem deleting acl: " + e);
 
@@ -521,9 +521,9 @@ public class AclTest extends DefaultGNSTest {
   @Test
   public void test_999_ACLTestCleanup() {
     try {
-      clientCommands.guidRemove(masterGuid, barneyEntry.getGuid());
-      clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
-      clientCommands.guidRemove(masterGuid, samEntry.getGuid());
+      client.guidRemove(masterGuid, barneyEntry.getGuid());
+      client.guidRemove(masterGuid, westyEntry.getGuid());
+      client.guidRemove(masterGuid, samEntry.getGuid());
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception during cleanup: " + e);
     }

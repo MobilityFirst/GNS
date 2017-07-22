@@ -56,7 +56,7 @@ public class AliasTest extends DefaultGNSTest {
   public AliasTest() {
     if (clientCommands == null) {
       try {
-        clientCommands = new GNSClientCommands();
+        clientCommands = (GNSClientCommands)new GNSClientCommands().setNumRetriesUponTimeout(1);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }

@@ -1928,7 +1928,7 @@ public enum CommandType {
     //return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
   }
 
-  private static String generateSwiftStructStaticConstants() {
+   static String generateSwiftStructStaticConstants() {
     StringBuilder result = new StringBuilder();
     result.append("extension CommandType {\n");
     for (CommandType commandType : CommandType.values()) {
