@@ -11,6 +11,7 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -45,7 +46,7 @@ public class TestActiveACL extends DefaultTest {
 	 */
 	@BeforeClass
 	public static void setupClientsAndGuids() throws Exception {
-		client = new GNSClientCommands();
+		client = new GNSClientCommands(new GNSClient());
 		entries = new GuidEntry[numGuid];
 		
 		// initialize three GUID

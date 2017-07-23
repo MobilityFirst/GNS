@@ -51,7 +51,7 @@ public class AdminBadAuthTest extends DefaultGNSTest {
    * to send MUTUAL_AUTH requests to the SERVER_AUTH client port.
    *
    */
-  private static class BadClient extends GNSClientCommands {
+  private static class BadClient extends GNSClient {
 
     private BadClient(Set<InetSocketAddress> reconfigurators)
             throws IOException {
@@ -86,7 +86,7 @@ public class AdminBadAuthTest extends DefaultGNSTest {
   }
 
   private static GNSClientCommands clientCommands;
-  private static BadClient badClient;
+  private static GNSClientCommands badClient;
 
   /**
    *
@@ -96,22 +96,19 @@ public class AdminBadAuthTest extends DefaultGNSTest {
   public static void setupBeforeClass() throws IOException {
     System.out.println("Starting client");
 
-    clientCommands = new GNSClientCommands();
+    clientCommands = new GNSClientCommands(client);
 
     // Make all the reads be coordinated
     clientCommands.setForceCoordinatedReads(true);
     // arun: connectivity check embedded in GNSClient constructor
-    boolean connected = clientCommands instanceof GNSClient;
-    if (connected) {
-      System.out.println("Client created and connected to server.");
-    }
+    
+    System.out.println("Client created and connected to server.");
+    
 
-    badClient = new BadClient(ReconfigurationConfig.getReconfiguratorAddresses());
+    badClient = new GNSClientCommands
+    		(new BadClient(ReconfigurationConfig.getReconfiguratorAddresses()));
     badClient.setForceCoordinatedReads(true);
-    connected = badClient instanceof GNSClient;
-    if (connected) {
       System.out.println("BadClient created and connected to server.");
-    }
   }
 
   /**

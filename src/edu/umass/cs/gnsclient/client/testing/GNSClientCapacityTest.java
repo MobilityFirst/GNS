@@ -21,7 +21,6 @@ import org.junit.runner.notification.Failure;
 
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
@@ -32,7 +31,6 @@ import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.DelayProfiler;
@@ -97,7 +95,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		executor = (ThreadPoolExecutor) Executors
 				.newFixedThreadPool(50*numClients);
 		for (int i = 0; i < numClients; i++)
-			clients[i] = new GNSClientCommands();
+			clients[i] = new GNSClient();
 		@SuppressWarnings("deprecation")
 		String gnsInstance = GNSClient.getGNSProvider();
 		accountGuidEntries = new GuidEntry[numAccountGuids];

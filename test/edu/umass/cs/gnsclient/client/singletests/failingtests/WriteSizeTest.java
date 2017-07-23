@@ -46,12 +46,9 @@ public class WriteSizeTest extends DefaultGNSTest {
    */
   public WriteSizeTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
+        clientCommands = new GNSClientCommands(client);
         clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: " + e);
-      }
+      
       try {
         masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {

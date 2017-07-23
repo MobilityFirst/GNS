@@ -1,5 +1,6 @@
 package edu.umass.cs.gnsclient.client.testing.activecode;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -23,7 +24,7 @@ public class TestUnsignedRead {
 	 */
 	public static void main(String[] args) throws Exception{
 		
-		final GNSClientCommands client = new GNSClientCommands();
+		final GNSClientCommands client = new GNSClientCommands(new GNSClient());
 		GuidEntry entry = GuidUtils.lookupOrCreateAccountGuid(
 				client, ACCOUNT_GUID, PASSWORD);
 		

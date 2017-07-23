@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -127,7 +128,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 	private ManagedDNSServiceProxy(){
 		
 		try {
-			client = new GNSClientCommands();
+			client = new GNSClientCommands(new GNSClient());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -253,7 +254,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 		System.out.println("Ready to update record for "+entry+" field:"+fieldToUpdate);
 		JSONObject recordObj = recordToCreate(ips, ttl);
 		try {
-			client.execute(GNSCommand.fieldUpdate(entry, fieldToUpdate, recordObj));
+			client.getGNSClient().execute(GNSCommand.fieldUpdate(entry, fieldToUpdate, recordObj));
 		} catch (ClientException | IOException e) {
 			// The update failed	
 			e.printStackTrace();					
@@ -266,7 +267,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 	
 	private static void deleteField(GuidEntry entry, String fieldToDelete){
 		try {
-			client.execute(GNSCommand.fieldRemove(entry, fieldToDelete));
+			client.getGNSClient().execute(GNSCommand.fieldRemove(entry, fieldToDelete));
 		} catch (ClientException | IOException e) {
 			// the delete operation failed
 			e.printStackTrace();
@@ -275,7 +276,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 	
 	private static void updateField(GuidEntry entry, String fieldToUpdate, Object obj){		
 		try {		
-			client.execute(GNSCommand.fieldUpdate(entry, fieldToUpdate, obj));
+			client.getGNSClient().execute(GNSCommand.fieldUpdate(entry, fieldToUpdate, obj));
 		} catch (ClientException | IOException e) {
 			e.printStackTrace();
 		}
@@ -292,7 +293,7 @@ public class ManagedDNSServiceProxy implements Runnable {
 	private static void updateSpecialField(GuidEntry entry, String fieldToUpdate, List<JSONArray> records, int ttl){
 		JSONObject recordObj = generateRecordWithListOfJSONArray(records, ttl);
 		try {
-			client.execute(GNSCommand.fieldUpdate(entry, fieldToUpdate, recordObj));
+			client.getGNSClient().execute(GNSCommand.fieldUpdate(entry, fieldToUpdate, recordObj));
 		} catch (ClientException | IOException e) {
 			// The update failed	
 			e.printStackTrace();					

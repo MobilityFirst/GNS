@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -59,7 +60,7 @@ public class CreateDnsRecord {
       System.out.println("Usage: edu.umass.cs.gnsclient.examples.CreateDnsRecord <host> <address>");
       System.exit(0);
     }
-    client = new GNSClientCommands();
+    client = new GNSClientCommands(new GNSClient());
     try {
       accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
     } catch (Exception e) {
