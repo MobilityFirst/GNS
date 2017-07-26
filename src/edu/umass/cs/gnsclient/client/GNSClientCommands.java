@@ -2352,6 +2352,10 @@ public class GNSClientCommands
     return gnsClient.execute(GNSCommand.dump()).getResultString();
   }
   
+  /**
+   * For documentation refer to {@link GNSClient#setForceCoordinatedReads(boolean)}
+   * @param forceCoordinatedReads
+   */
   public void setForceCoordinatedReads(boolean forceCoordinatedReads)
   {
 	  gnsClient = gnsClient.setForceCoordinatedReads(forceCoordinatedReads);

@@ -53,12 +53,7 @@ public class RemoveGuidStressTest extends DefaultGNSTest {
    */
   public RemoveGuidStressTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands(new GNSClient());
-        clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: " + e);
-      }
+        clientCommands = new GNSClientCommands(client);
     }
   }
 
