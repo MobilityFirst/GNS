@@ -61,6 +61,7 @@ import edu.umass.cs.gnsserver.gnamed.UdpDnsServer;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.AdminListener;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
@@ -613,6 +614,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         // delete
         // the record. If the record does not exists this is just a
         // noop.
+    	AccountAccess.removeEntryFromGuidInfoCache(name);
         NameRecord.removeNameRecord(nameRecordDB, name);
       } else // state does not equal null so we either create a new record
       // or update the existing one
