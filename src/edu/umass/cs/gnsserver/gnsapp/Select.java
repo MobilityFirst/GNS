@@ -510,10 +510,7 @@ public class Select extends AbstractSelector {
           SelectResponsePacket packet, NSSelectInfo info,
           GNSApplicationInterface<String> replica) throws JSONException,
           ClientException, IOException, InternalRequestException {
-    // must be done before the notify below
-    // we're done processing this select query
-    QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
-
+	  
     Set<JSONObject> allRecords = info.getResponsesAsSet();
     // Todo - clean up this use of guids further below in the group code
     Set<String> guids = extractGuidsFromRecords(allRecords);
@@ -541,7 +538,14 @@ public class Select extends AbstractSelector {
     // and let the coordinator know the value is there
     if (GNSApp.DELEGATE_CLIENT_MESSAGING) {
       synchronized (QUERIES_IN_PROGRESS) {
-        QUERIES_IN_PROGRESS.notify();
+    	  // Must be done after setting result in QUERY_RESULT,
+    	  // Otherwise, the waiting thread will wake up and 
+    	  // find the query is not in progress but will not find any result
+    	  // so will return a wrong response. A wait()
+    	  // can wake spuriously without the notify() as mentioned
+    	  // in the documentation of these functions.
+    	  QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
+          QUERIES_IN_PROGRESS.notify();
       }
     }
     // Now we update any group guid stuff
