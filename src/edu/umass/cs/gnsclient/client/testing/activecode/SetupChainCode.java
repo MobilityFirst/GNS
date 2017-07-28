@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -48,7 +49,7 @@ public class SetupChainCode {
 		
 		String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 		
-		client = new GNSClientCommands();	
+		client = new GNSClientCommands(new GNSClient());	
 		
 		for (int j=0; j<numChains; j++){
 			entries = new GuidEntry[depth];

@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -66,7 +67,7 @@ public class SimpleClientExample {
           InvalidKeyException, SignatureException, Exception {
     
     // Create the client. Connects to a default reconfigurator as specified in gigapaxos.properties file.
-    client = new GNSClientCommands();
+    client = new GNSClientCommands(new GNSClient());
     try {
       // Create an account guid if one doesn't already exists.
       // The true makes it verbosely print out what it is doing.

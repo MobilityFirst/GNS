@@ -54,12 +54,7 @@ public class UnsignedWriteTest extends DefaultGNSTest {
    */
   public UnsignedWriteTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: " + e);
-      }
+        clientCommands = new GNSClientCommands(client);
       try {
         masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {

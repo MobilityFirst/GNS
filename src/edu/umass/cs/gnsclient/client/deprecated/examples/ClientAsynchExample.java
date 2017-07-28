@@ -82,7 +82,7 @@ public class ClientAsynchExample {
           InvalidKeyException, SignatureException, Exception {
 
     // Create the client
-    GNSClientCommands client = new GNSClientCommands(null);
+    GNSClientCommands client = new GNSClientCommands(new GNSClient());
     GuidEntry accountGuidEntry = null;
     try {
       // Create a guid (which is also an account guid)
@@ -146,7 +146,7 @@ public class ClientAsynchExample {
   }
 
   // Not saying this is the best way to handle responses, but it works for this example.
-  private static void lookForResponses(GNSClient client, Set<Long> pendingIds) {
+  private static void lookForResponses(GNSClientCommands client, Set<Long> pendingIds) {
     while (true) {
       ThreadUtils.sleep(10);
       // Loop through all the ones we've sent

@@ -16,6 +16,7 @@ import org.junit.runner.notification.Failure;
 
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
@@ -71,7 +72,7 @@ public class BatchCreateOpsFail extends DefaultTest {
   private void setupClientsAndGuids() throws Exception {
     clients = new GNSClientCommands[numClients];
     for (int i = 0; i < numClients; i++) {
-      clients[i] = new GNSClientCommands();
+      clients[i] = new GNSClientCommands(new GNSClient());
     }
     String gnsInstance = clients[0].getGNSProvider();
     accountGuidEntries = new GuidEntry[numAccountGuids];
