@@ -273,7 +273,7 @@ public class GNSConfig {
     /**
      * Class name of select implementation.
      */
-    ABSTRACT_SELECTOR(Select.class.getCanonicalName()),
+    ABSTRACT_SELECTOR(edu.umass.cs.gnsserver.gnsapp.Select.class.getCanonicalName()),
     ;
 
     final Object defaultValue;
