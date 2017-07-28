@@ -210,6 +210,21 @@ public class AccountAccess {
     }
     return null;
   }
+  
+  /**
+   * Removes entry from the cache. It is mainly called from 
+   * {@link edu.umass.cs.gnsserver.gnsapp.GNSApp#restore(String, String)}.
+   * When a GUID is deleted, but this active replica is not the active
+   * replica that received the original delete request, then the gigapaxos
+   * deletes the guid by calling restore, with null state, on all 
+   * other active replicas. So, on all active replicas we need to remove 
+   * the guid info from cache, which should be called from the restore method. 
+   * @param guid
+   */
+  public static void removeEntryFromGuidInfoCache(String guid)
+  {
+	  GUID_INFO_CACHE.invalidate(guid);
+  }
 
   /**
    * If this is a subguid associated with an account, returns the guid of that
@@ -367,7 +382,7 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfoLocally(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler) {
-    return lookupGuidInfo(header, guid, handler, false);
+    return lookupGuidInfo(header, guid, handler, false, false);
   }
 
   /**
@@ -384,7 +399,7 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfoAnywhere(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler) {
-    return lookupGuidInfo(header, guid, handler, true);
+    return lookupGuidInfo(header, guid, handler, true, false);
   }
 
   /**
@@ -398,12 +413,15 @@ public class AccountAccess {
    * @return an {@link GuidInfo} instance
    */
   private static GuidInfo lookupGuidInfo(InternalRequestHeader header, String guid,
-          ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
+          ClientRequestHandlerInterface handler, boolean allowRemoteLookup, boolean noLocalCache) 
+  {
     GuidInfo result;
-    if ((result = GUID_INFO_CACHE.getIfPresent(guid)) != null) {
+    	
+    if ( !noLocalCache && (result = GUID_INFO_CACHE.getIfPresent(guid)) != null) {
       GNSConfig.getLogger().log(Level.FINE, "GuidInfo found in cache {0}", guid);
       return result;
     }
+    
     GNSConfig.getLogger().log(Level.FINE, "allowRemoteLookup is {0}",
             allowRemoteLookup);
     try {
@@ -1489,11 +1507,34 @@ public class AccountAccess {
               guidInfo.getGuid(), handler, true);
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
-        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
-                GNSProtocol.BAD_RESPONSE.toString() + " "
-                + GNSProtocol.BAD_ACCOUNT.toString() + " "
-                + guidInfo.getGuid()
-                + " does not have a primary account guid");
+        // aditya: The following error can happen and it occurs in long running tests.
+        // For GUID X, by the time we read the account guid, the guid record for GUID X 
+        // has already been deleted by a previous concurrent delete of GUID X
+        // Although, we did check this in the beginning in RemoveGuid.java.
+        // So, before sending a bad account error for GUID X
+        // we just check if the GUID X record exists or not.
+        // I also think that with this change, the Guid remove operation will become idempotent.
+    	  
+        // In ant test, In RemoveGuidTest.java. A GUID is removed twice. So, 
+        // the first removal completes when 2 out of 3 active replicas have removed the GUID.
+        // If we issue another removal, then the active replica that didn't
+        // remove the guid last time, can have two concurrent removal of the same GUID and that leads
+        // to the error mentioned above.
+    	  
+    	// we don't want to use local cache, as that can be inconsistent in case the guid was deleted.
+        if (AccountAccess.lookupGuidInfo(header, guidInfo.getGuid(), handler,  false, true) == null) 
+        {
+        	// Removing a non-existant guid is no longer an error.
+        	return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+        }
+        else
+        {
+        	return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
+	                GNSProtocol.BAD_RESPONSE.toString() + " "
+	                + GNSProtocol.BAD_ACCOUNT.toString() + " "
+	                + guidInfo.getGuid()
+	                + " does not have a primary account guid");
+        }
       }
       if ((accountInfo = lookupAccountInfoFromGuidAnywhere(header, accountGuid,
               handler)) == null) {
