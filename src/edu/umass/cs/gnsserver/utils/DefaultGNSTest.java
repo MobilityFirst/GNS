@@ -79,6 +79,8 @@ public class DefaultGNSTest extends DefaultTest {
 	// static but not final
 	protected static GNSClient client = null;
 	protected static boolean serversStarted = false;
+	
+	protected static final long DEFAULT_TIMEOUT = 8000; //ms
 
 	// non-static
 	private GuidEntry myAccountGUID = null;
@@ -490,9 +492,10 @@ public class DefaultGNSTest extends DefaultTest {
 		String dir = getLogFileDir();
 		String logFile = getLogFile();
 		// make logs directory if it doesn't exist
+		System.out.print("Creating log file dir " + dir);
 		new File(dir).mkdirs();
 
-		System.out.print("Deleting log files " + logFile + "*");
+		System.out.print("; deleting log files " + logFile + "*");
 		for (File f : getMatchingFiles(dir, logFile))
 			f.delete();
 		System.out.println(" ...done");

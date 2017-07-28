@@ -51,7 +51,7 @@ public class ClientLNSTest extends DefaultGNSTest {
         //PaxosConfig.getActives() works here because the server and client use the same properties file.
         InetAddress lnsAddress = PaxosConfig.getActives().values().iterator().next().getAddress();
         clientCommands.setGNSProxy(new InetSocketAddress(lnsAddress, 24598));
-        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
+        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1).setForcedTimeout(DEFAULT_TIMEOUT);
       } catch (IOException e) {
         Utils.failWithStackTrace("Exception creating client: " + e);
       }
