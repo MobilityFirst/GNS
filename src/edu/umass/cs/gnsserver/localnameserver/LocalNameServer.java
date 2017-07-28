@@ -311,7 +311,12 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
             Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
 
     public AsyncLNSClient(Set<InetSocketAddress> reconfigurators) throws IOException {
-      super(reconfigurators);
+    	
+    	// We don't want to check connectivity here,
+    	// because tests start LNS, and sometimes 
+    	// GNSApp starts before any reconfigurators so the 
+    	// connectivity check fails and ant test gets stuck.
+    	super(reconfigurators, false);
     }
 
     @Override
