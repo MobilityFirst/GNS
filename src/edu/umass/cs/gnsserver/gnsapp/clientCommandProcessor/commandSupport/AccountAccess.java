@@ -367,7 +367,7 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfoLocally(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler) {
-    return lookupGuidInfo(header, guid, handler, false);
+    return lookupGuidInfo(header, guid, handler, false, true);
   }
 
   /**
@@ -384,7 +384,7 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfoAnywhere(InternalRequestHeader header, String guid,
           ClientRequestHandlerInterface handler) {
-    return lookupGuidInfo(header, guid, handler, true);
+    return lookupGuidInfo(header, guid, handler, true, true);
   }
 
   /**
@@ -397,10 +397,10 @@ public class AccountAccess {
    * @param allowRemoteLookup
    * @return an {@link GuidInfo} instance
    */
-  private static GuidInfo lookupGuidInfo(InternalRequestHeader header, String guid,
-          ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
+  public static GuidInfo lookupGuidInfo(InternalRequestHeader header, String guid,
+          ClientRequestHandlerInterface handler, boolean allowRemoteLookup, boolean cacheUse) {
     GuidInfo result;
-    if ((result = GUID_INFO_CACHE.getIfPresent(guid)) != null) {
+    if ( cacheUse &&  (result = GUID_INFO_CACHE.getIfPresent(guid)) != null) {
       GNSConfig.getLogger().log(Level.FINE, "GuidInfo found in cache {0}", guid);
       return result;
     }

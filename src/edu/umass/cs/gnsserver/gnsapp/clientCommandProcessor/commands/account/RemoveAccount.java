@@ -80,7 +80,9 @@ public class RemoveAccount extends AbstractCommand {
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler)) == null) {
+    // we don't use cache in this lookup because cache on a deletion is not updated.
+    if( (guidInfo = AccountAccess.lookupGuidInfo(header, guid, handler, true, false)) == null) {
+    //if ((guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler)) == null) {
       // Removing a non-existant guid is not longer an error.
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
       //return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
@@ -90,7 +92,11 @@ public class RemoveAccount extends AbstractCommand {
       if (accountInfo != null) {
         return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
       } else {
-        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString());
+    	  // aditya: Changing from ResponseCode.BAD_ACCOUNT_ERROR to NO_ERROR. As, In RemoveAccount, we want to
+    	  // remove the account, but there is no accountInfo anywhere in the GNS, so it has already been
+    	  // deleted by a previous or concurrent remove.
+        return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString() 
+        		+ " Couldn't find the account information for "+name+" because account is already removed." );
       }
     } else {
       return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
