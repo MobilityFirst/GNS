@@ -1028,17 +1028,23 @@ public class AccountAccess {
       } catch (ClientException e) {
         responseCode = e.getCode();
       }
-      if (responseCode.isExceptionOrError()) {
-        deleteAliasesResponseCode = ResponseCode.UPDATE_ERROR;
+      // we want to send TIMEOUT errors to the GNSClient, so that the cleint can retransmit.
+      if(responseCode == ResponseCode.TIMEOUT)
+      {
+    	  deleteAliasesResponseCode = responseCode;
+      }else if (responseCode.isExceptionOrError()) {
+    	  if(deleteAliasesResponseCode != ResponseCode.TIMEOUT )
+    		  deleteAliasesResponseCode = ResponseCode.UPDATE_ERROR;
       }
     }
     // Step 3 - delete all the subGuids
     ResponseCode deleteSubGuidsResponseCode = ResponseCode.NO_ERROR;
     for (String subguid : accountInfo.getGuids()) {
       GuidInfo subGuidInfo = lookupGuidInfoAnywhere(header, subguid, handler);
-      if (subGuidInfo != null && removeGuidInternal(header, commandPacket, subGuidInfo, accountInfo, true,
-              handler).getExceptionOrErrorCode().isExceptionOrError()) {
-        deleteSubGuidsResponseCode = ResponseCode.UPDATE_ERROR;
+      
+      if (subGuidInfo != null) {
+        deleteSubGuidsResponseCode = removeGuidInternal(header, commandPacket, subGuidInfo, accountInfo, true,
+                handler).getExceptionOrErrorCode();
       }
     }
     // Step 4 - delete the HRN record
@@ -1056,7 +1062,10 @@ public class AccountAccess {
             || deleteNameResponseCode.isExceptionOrError()) {
 
       // Don't really care who caused the error, other than for debugging.
-      return new CommandResponse(ResponseCode.UPDATE_ERROR,
+      return new CommandResponse( (removedGroupLinksResponseCode  == ResponseCode.TIMEOUT || 
+    		  deleteAliasesResponseCode == ResponseCode.TIMEOUT ||
+    		  deleteSubGuidsResponseCode == ResponseCode.TIMEOUT ||
+    		  deleteNameResponseCode == ResponseCode.TIMEOUT ) ? ResponseCode.TIMEOUT:ResponseCode.UPDATE_ERROR,
               GNSProtocol.BAD_RESPONSE.toString()
               + " "
               + (removedGroupLinksResponseCode.isOKResult() ? "" : "; failed to remove links")
@@ -1489,7 +1498,16 @@ public class AccountAccess {
               guidInfo.getGuid(), handler, true);
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
-        return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
+    	  // If the GUID is already deleted, then that is the reason that we didin't find the primary GUID,
+    	  // so we should return NO_ERROR. Although, there are redundant remote lookups in lookupPrimaryGuid 
+    	  // and lookupGuidInfo. But, this case is an exception and doesn't occur frequently.
+    	  if( AccountAccess.lookupGuidInfo(header, guidInfo.getGuid(), handler, true, false) == null) 
+    	  {
+    		  // Removing a non-existant guid is not longer an error.
+    		  return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
+    	  }
+    	  else
+    		  return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR,
                 GNSProtocol.BAD_RESPONSE.toString() + " "
                 + GNSProtocol.BAD_ACCOUNT.toString() + " "
                 + guidInfo.getGuid()
@@ -1539,7 +1557,10 @@ public class AccountAccess {
             || accountInfoResponseCode.isExceptionOrError())
             || deleteNameResponseCode.isExceptionOrError()) {
       // Don't really care who caused the error, other than for debugging.
-      return new CommandResponse(ResponseCode.UPDATE_ERROR,
+      return new CommandResponse((removedGroupLinksResponseCode == ResponseCode.TIMEOUT || 
+    		  accountInfoResponseCode == ResponseCode.TIMEOUT || 
+    				  deleteNameResponseCode == ResponseCode.TIMEOUT )? ResponseCode.TIMEOUT :
+    					  ResponseCode.UPDATE_ERROR,
               GNSProtocol.BAD_RESPONSE.toString()
               + " "
               + (removedGroupLinksResponseCode.isOKResult() ? "" : "; failed to remove group links")
@@ -1755,11 +1776,18 @@ public class AccountAccess {
           GNSConfig.getLogger().log(Level.SEVERE,
                   "JSON parse error with remote query:{0}", e);
           response = ResponseCode.JSON_PARSE_ERROR;
-        } catch (ClientException | IOException | InternalRequestException e) {
+        } catch (ClientException e) {
+        	// returning the client response code. 
           GNSConfig.getLogger().log(Level.SEVERE,
                   "Problem with remote query:{0}", e);
-          response = ResponseCode.UNSPECIFIED_ERROR;
+          response = e.getCode();
         }
+        catch ( IOException | InternalRequestException e) {
+            GNSConfig.getLogger().log(Level.SEVERE,
+                    "Problem with remote query:{0}", e);
+            response = new ClientException(e).getCode();
+        }
+        
       } else {
         GNSConfig.getLogger().log(Level.FINE,
                 "Updating locally for GUID {0}:{1}<-{1}",
