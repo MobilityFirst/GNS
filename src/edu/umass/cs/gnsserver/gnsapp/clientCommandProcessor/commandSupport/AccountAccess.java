@@ -1028,7 +1028,7 @@ public class AccountAccess {
       } catch (ClientException e) {
         responseCode = e.getCode();
       }
-      // we want to send TIMEOUT errors to the GNSClient, so that the cleint can retransmit.
+      // we want to send TIMEOUT errors to the GNSClient, so that the client can retransmit.
       if(responseCode == ResponseCode.TIMEOUT)
       {
     	  deleteAliasesResponseCode = responseCode;
@@ -1040,11 +1040,16 @@ public class AccountAccess {
     // Step 3 - delete all the subGuids
     ResponseCode deleteSubGuidsResponseCode = ResponseCode.NO_ERROR;
     for (String subguid : accountInfo.getGuids()) {
-      GuidInfo subGuidInfo = lookupGuidInfoAnywhere(header, subguid, handler);
-      
+    	GuidInfo subGuidInfo = lookupGuidInfoAnywhere(header, subguid, handler);
+    	
       if (subGuidInfo != null) {
-        deleteSubGuidsResponseCode = removeGuidInternal(header, commandPacket, subGuidInfo, accountInfo, true,
-                handler).getExceptionOrErrorCode();
+    	  ResponseCode currRespCode = removeGuidInternal(header, commandPacket, 
+        		subGuidInfo, accountInfo, true, handler).getExceptionOrErrorCode();
+    	  // We want to send TIMEOUTS to the client for request retry.
+    	  if(deleteSubGuidsResponseCode != ResponseCode.TIMEOUT)
+    	  {
+    		  deleteSubGuidsResponseCode = currRespCode;
+    	  }
       }
     }
     // Step 4 - delete the HRN record
@@ -1498,9 +1503,9 @@ public class AccountAccess {
               guidInfo.getGuid(), handler, true);
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
-    	  // If the GUID is already deleted, then that is the reason that we didin't find the primary GUID,
-    	  // so we should return NO_ERROR. Although, there are redundant remote lookups in lookupPrimaryGuid 
-    	  // and lookupGuidInfo. But, this case is an exception and doesn't occur frequently.
+    	  // If we have not found the primary GUID because the GUID itself has been deleted from the GNS,
+    	  // then we should return a NO_ERROR. There are redundant remote lookups in lookupPrimaryGuid 
+    	  // and lookupGuidInfo. But, this case is an exception and doesn't occur that frequently.
     	  if( AccountAccess.lookupGuidInfo(header, guidInfo.getGuid(), handler, true, false) == null) 
     	  {
     		  // Removing a non-existant guid is not longer an error.

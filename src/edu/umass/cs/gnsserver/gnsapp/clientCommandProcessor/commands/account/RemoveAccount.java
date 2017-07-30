@@ -80,15 +80,20 @@ public class RemoveAccount extends AbstractCommand {
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     GuidInfo guidInfo;
-    // we don't use cache in this lookup because cache on a deletion is not updated.
+    // We don't use cache in this lookup because cache on a deletion is not updated. A GUID
+    // might be deleted in the database but still be present in the cache.
     if( (guidInfo = AccountAccess.lookupGuidInfo(header, guid, handler, true, false)) == null) {
-    //if ((guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler)) == null) {
       // Removing a non-existant guid is not longer an error.
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
-      //return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
     if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(header, name, handler);
+    	// We should always lookup an account info using its GUID and not the HRN.
+    	// In the account removal protocol, we delete a HRN before deleting 
+    	// the account guid record, so it may be the case that the HRN is removed
+    	// but the account guid is not removed, which will cause a retry of the 
+    	// account GUID remove operation. So, for a successful retry and for
+    	// the operation to be idempotent, we should lookup account info using the GUID.
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(header, guid, handler);
       if (accountInfo != null) {
         return AccountAccess.removeAccount(header, commandPacket, accountInfo, handler);
       } else {
