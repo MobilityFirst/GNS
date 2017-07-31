@@ -5,7 +5,8 @@ import org.json.JSONObject;
 
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.contextservice.config.ContextServiceConfig.PrivacySchemes;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
@@ -68,7 +69,7 @@ public class ContextServiceExample {
   /**
    *
    */
-  public static GNSClientCommands client;
+  public static GNSClient client;
 
   /**
    *
@@ -89,7 +90,7 @@ public class ContextServiceExample {
     String csHost = args[0];
     int csPort = Integer.parseInt(args[1]);
 
-    client = new GNSClientCommands();
+    client = new GNSClient();
     System.out.println("[Client connected to GNS]\n");
 
     try {
@@ -140,7 +141,7 @@ public class ContextServiceExample {
             + " entering the geofence specified in the search query by doing an update"
             + ", latitude=32.5 and longitude=-97.5, in GNS\n");
 
-    client.update(account_guid, userJSON);
+    client.execute(GNSCommand.update(account_guid, userJSON));
 
     // checking for trigger from context service that a new guid is added in an
     // already existing group. This call blocks until there are non zero triggers.
@@ -160,7 +161,8 @@ public class ContextServiceExample {
 
     System.out.println("\n A user with guid" + account_guid.getGuid()
             + " going out of the geofence specified in the search query by doing an update, latitude=31 and longitude=-97.5,  in GNS\n");
-    client.update(account_guid, userJSON);
+    
+    client.execute(GNSCommand.update(account_guid, userJSON));
 
     // checking for trigger from context service that the guid is removed from an
     // already existing group. This call blocks until there are non zero triggers.

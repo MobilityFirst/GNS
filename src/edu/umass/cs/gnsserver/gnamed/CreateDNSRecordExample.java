@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -22,7 +22,7 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
  */
 public class CreateDNSRecordExample {
 	
-	private static GNSClientCommands client;
+	private static GNSClient client;
 	
 	// The last dot is very important, it tells the DNS to search from the root
 	private static String DOMAIN;
@@ -74,7 +74,7 @@ public class CreateDNSRecordExample {
 		
 		// initialize client and create record for the domain
 		try {
-			client = new GNSClientCommands();
+			client = new GNSClient();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

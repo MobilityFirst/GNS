@@ -126,13 +126,7 @@ public class NSAuthentication {
         return ResponseCode.ACCESS_ERROR;
       }
     }
-    // If the signature is being checking and isn't null a null accessorGuid is also an access failure because
-    // only unsigned reads (handled above) can have a null accessorGuid
-    if (!skipSigCheck && accessorGuid == null) {
-      ClientSupportConfig.getLogger().log(Level.WARNING, "Name {0} key={1} : NULL accessorGuid",
-              new Object[]{guid, field});
-      return ResponseCode.ACCESS_ERROR;
-    }
+ 
 
     // Now we do the ACL check. By doing this now we also look up the public key as
     // side effect which we need for the signing check below.
@@ -179,7 +173,7 @@ public class NSAuthentication {
    * @param accessorGuid
    * @param access
    * @param gnsApp
-   * @return acl check result
+   * @return Result of ACL check
    * @throws FailedDBOperationException
    */
   public static AclCheckResult aclCheck(InternalRequestHeader header, String targetGuid, String field,
@@ -301,7 +295,7 @@ public class NSAuthentication {
    *
    * @param guid
    * @param gnsApp
-   * @return public key
+   * @return Public key as String.
    * @throws FailedDBOperationException
    */
   public static String lookupPublicKeyLocallyWithCacheing(String guid, GNSApplicationInterface<String> gnsApp)

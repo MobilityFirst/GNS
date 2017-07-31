@@ -59,12 +59,7 @@ public class GroupTest extends DefaultGNSTest {
    */
   public GroupTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: " + e);
-      }
+        clientCommands = new GNSClientCommands(client);
       try {
         masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {

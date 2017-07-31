@@ -19,13 +19,9 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.JSONUtils;
-import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
-import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -76,7 +72,7 @@ public class SelectTest extends DefaultGNSTest {
 //    if (clientCommands == null) {
 //      try {
 //        clientCommands = new GNSClientCommands();
-//        clientCommands.setForceCoordinatedReads(true);
+//        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
 //      } catch (IOException e) {
 //        Utils.failWithStackTrace("Exception creating client: " + e);
 //      }
@@ -96,9 +92,9 @@ public class SelectTest extends DefaultGNSTest {
     try {
       String westyName = "westy" + RandomString.randomString(12);
       String samName = "sam" + RandomString.randomString(12);
-      client.execute(GNSCommand.createGUID(masterGuid, westyName));
+      client.execute(GNSCommand.guidCreate(masterGuid, westyName));
       westyEntry = GuidUtils.getGUIDKeys(westyName);
-      client.execute(GNSCommand.createGUID(masterGuid, samName));
+      client.execute(GNSCommand.guidCreate(masterGuid, samName));
       samEntry = GuidUtils.getGUIDKeys(samName);
 //      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
 //      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
@@ -201,7 +197,7 @@ public class SelectTest extends DefaultGNSTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         String queryTestName = "queryTest-" + RandomString.randomString(12);
-        client.execute(GNSCommand.createGUID(masterGuid, queryTestName));
+        client.execute(GNSCommand.guidCreate(masterGuid, queryTestName));
         GuidEntry testEntry = GuidUtils.getGUIDKeys(queryTestName);
 
         // Remove default all fields / all guids ACL;
@@ -238,7 +234,7 @@ public class SelectTest extends DefaultGNSTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         String queryTestName = "queryTest-" + RandomString.randomString(12);
-        client.execute(GNSCommand.createGUID(masterGuid, queryTestName));
+        client.execute(GNSCommand.guidCreate(masterGuid, queryTestName));
         GuidEntry testEntry = GuidUtils.getGUIDKeys(queryTestName);
         CREATED_GUIDS.add(testEntry); // save them so we can delete them later
         JSONArray array = new JSONArray(Arrays.asList(25));
@@ -271,7 +267,7 @@ public class SelectTest extends DefaultGNSTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         String queryTestName = "queryTest-" + RandomString.randomString(12);
-        client.execute(GNSCommand.createGUID(masterGuid, queryTestName));
+        client.execute(GNSCommand.guidCreate(masterGuid, queryTestName));
         GuidEntry testEntry = GuidUtils.getGUIDKeys(queryTestName);
         // Remove default all fields / all guids ACL;
         client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
@@ -306,7 +302,7 @@ public class SelectTest extends DefaultGNSTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         String queryTestName = "queryTest-" + RandomString.randomString(12);
-        client.execute(GNSCommand.createGUID(masterGuid, queryTestName));
+        client.execute(GNSCommand.guidCreate(masterGuid, queryTestName));
         GuidEntry testEntry = GuidUtils.getGUIDKeys(queryTestName);
         // Remove default all fields / all guids ACL;
         client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
@@ -346,7 +342,7 @@ public class SelectTest extends DefaultGNSTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         String queryTestName = "queryTest-" + RandomString.randomString(12);
-        client.execute(GNSCommand.createGUID(masterGuid, queryTestName));
+        client.execute(GNSCommand.guidCreate(masterGuid, queryTestName));
         GuidEntry testEntry = GuidUtils.getGUIDKeys(queryTestName);
         // Remove default all fields / all guids ACL;
         client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
@@ -389,7 +385,7 @@ public class SelectTest extends DefaultGNSTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         String queryTestName = "queryTest-" + RandomString.randomString(12);
-        client.execute(GNSCommand.createGUID(masterGuid, queryTestName));
+        client.execute(GNSCommand.guidCreate(masterGuid, queryTestName));
         GuidEntry testEntry = GuidUtils.getGUIDKeys(queryTestName);
         // Remove default all fields / all guids ACL;
         client.execute(GNSCommand.aclRemove(AclAccessType.READ_WHITELIST, testEntry,
@@ -673,13 +669,13 @@ public class SelectTest extends DefaultGNSTest {
   public void test_999_SelectCleanup() {
     try {
       for (GuidEntry guid : CREATED_GUIDS) {
-        client.execute(GNSCommand.removeGUID(masterGuid, guid.getGuid()));
+        client.execute(GNSCommand.guidRemove(masterGuid, guid.getGuid()));
         //clientCommands.guidRemove(masterGuid, guid.getGuid());
       }
       CREATED_GUIDS.clear();
-      client.execute(GNSCommand.removeGUID(masterGuid, westyEntry.getGuid()));
+      client.execute(GNSCommand.guidRemove(masterGuid, westyEntry.getGuid()));
       //clientCommands.guidRemove(masterGuid, westyEntry.getGuid());
-      client.execute(GNSCommand.removeGUID(masterGuid, samEntry.getGuid()));
+      client.execute(GNSCommand.guidRemove(masterGuid, samEntry.getGuid()));
       //clientCommands.guidRemove(masterGuid, samEntry.getGuid());
     } catch (ClientException | IOException e) {
       Utils.failWithStackTrace("Exception during cleanup: " + e);

@@ -26,6 +26,7 @@ import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.HostSpec;
 import edu.umass.cs.gnscommon.utils.Format;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -87,7 +89,6 @@ public class GNSInstaller {
   private static final String TRUSTSTORE_FOLDER_NAME = "trustStore";
   private static final String TRUST_STORE_OPTION = "-Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks";
   private static final String KEY_STORE_OPTION = "-Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks";
-  private static final String SSL_DEBUG = "-Djavax.net.debug=ssl";
 // should make this a config parameter
   //private static final String JAVA_COMMAND = "java -ea";
 
@@ -129,7 +130,7 @@ public class GNSInstaller {
           + "cd $DIR\n";
 
   private static final String MongoRecordsClass = "edu.umass.cs.gnsserver.database.MongoRecords";
-  private static final String CassandraRecordsClass = "edu.umass.cs.gnsserver.database.CassandraRecords";
+//  private static final String CassandraRecordsClass = "edu.umass.cs.gnsserver.database.CassandraRecords";
 
   private static void loadConfig(String configName) {
 
@@ -332,6 +333,8 @@ public class GNSInstaller {
             break;
           case RESTART:
             break;
+		default:
+			break;
         }
         if (!noopTest) {
           startServers(nsId, createLNS, hostname, runAsRoot);
@@ -460,7 +463,8 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void executeScriptFileTopLevel(String hostname, String scriptFileLocation) {
+  @SuppressWarnings("unused")
+private static void executeScriptFileTopLevel(String hostname, String scriptFileLocation) {
     File keyFileName = getKeyFile();
     System.out.println("Copying script file");
     // copy the file to remote host
@@ -615,7 +619,6 @@ public class GNSInstaller {
   /**
    * Figures out the locations of the JAR and conf files.
    *
-   * @return true if it found them
    */
   private static void determineJarAndMasterPaths() {
     File jarPath = getLocalJarPath();
@@ -732,7 +735,8 @@ public class GNSInstaller {
   private static HelpFormatter formatter = new HelpFormatter();
   private static Options commandLineOptions;
 
-  private static CommandLine initializeOptions(String[] args) throws ParseException {
+  @SuppressWarnings("static-access")
+private static CommandLine initializeOptions(String[] args) throws ParseException {
     Option help = new Option("help", "Prints Usage");
     Option update = OptionBuilder.withArgName("installation name").hasArg()
             .withDescription("updates GNS files and restarts servers in a installation")

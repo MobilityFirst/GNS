@@ -222,12 +222,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 			IOException, InterruptedException {
 		DefaultGNSTest.setUpBeforeClass();
 		masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
-		clientCommands = (GNSClientCommands) new GNSClientCommands()
-				.setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
                 client = new GNSClient()
                              .setNumRetriesUponTimeout(2)
                              .setForceCoordinatedReads(true)
                              .setForcedTimeout(8000);
+                
+        clientCommands = new GNSClientCommands(client);
     
 	}
   
@@ -339,14 +339,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     int numRetries = 2;
     boolean forceCoordinated = true;
 
-    clientCommands = (GNSClientCommands) new GNSClientCommands()
-            .setNumRetriesUponTimeout(numRetries)
-            .setForceCoordinatedReads(forceCoordinated);
-
     client = new GNSClient()
             .setNumRetriesUponTimeout(numRetries)
             .setForceCoordinatedReads(forceCoordinated)
             .setForcedTimeout(8000);
+    
+    clientCommands =  new GNSClientCommands(client);
 
     System.out.println("Client created and connected to server.");
     //
@@ -3348,12 +3346,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
     // the HRN is a hash of the query
     String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne), false);
-    GuidEntry groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, GNSClientCommands.getGNSProvider());
+    GuidEntry groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, clientCommands.getGNSProvider());
     //groupGuid = client.guidCreate(masterGuid, groupGuidName + RandomString.randomString(6));
 
     // the HRN is a hash of the query
     String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo), false);
-    GuidEntry groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, GNSClientCommands.getGNSProvider());
+    GuidEntry groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, clientCommands.getGNSProvider());
     //groupTwoGuid = client.guidCreate(masterGuid, groupTwoGuidName + RandomString.randomString(6));
 
     List<GuidEntry> list = new ArrayList<>(2);

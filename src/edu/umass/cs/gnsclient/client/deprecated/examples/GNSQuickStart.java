@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -86,7 +87,7 @@ public class GNSQuickStart {
           InvalidKeyException, SignatureException, Exception {
 
     // Create a new client object
-    GNSClientCommands client = new GNSClientCommands(null);
+    GNSClientCommands client = new GNSClientCommands(new GNSClient());
     System.out.println("Client connected to GNS");
 
     // Retrive the GUID using the account id

@@ -19,50 +19,52 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.SharedGuidUtils;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
-import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
-import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsapp.Select;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.AclCheckResult;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.io.UnsupportedEncodingException;
-import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
-import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.utils.Config;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.lang3.time.DateUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.database.ColumnFieldType;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.Select;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.AclCheckResult;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.ResultValue;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.Config;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -591,7 +593,8 @@ public class FieldAccess {
       return null;
     }
 
-    SelectResponsePacket responsePacket = Select.handleSelectRequestFromClient(header, packet, app);
+    SelectResponsePacket responsePacket = GNSConfig.getSelector().
+    		handleSelectRequestFromClient(header, packet, app);
     if (responsePacket != null
             && // Fixme: probably should just have handleSelectRequestFromClient throw a clientException
             SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {

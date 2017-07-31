@@ -255,7 +255,7 @@ public class GuidInfo {
   
   /**
    * Returns true
-   * @return 
+   * @return True if this GUID is keyless, i.e., it is accessed using a different GUID.
    */
   public boolean isKeyless() {
     return publicKey.startsWith(KEYLESS_PREFIX);

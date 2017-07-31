@@ -32,17 +32,26 @@ public final class AclCheckResult {
   private final String publicKey;
   private final ResponseCode responseCode;
 
-  public AclCheckResult(String publicKey, ResponseCode responseCode) {
+  /**
+ * @param publicKey
+ * @param responseCode
+ */
+public AclCheckResult(String publicKey, ResponseCode responseCode) {
     this.publicKey = publicKey;
     this.responseCode = responseCode;
   }
 
-  public String getPublicKey() {
-    return publicKey;
-  }
+	/**
+	 * @return Public key as String.
+	 */
+	public String getPublicKey() {
+		return publicKey;
+	}
 
-  public ResponseCode getResponseCode() {
-    return responseCode;
-  }
-
+	/**
+	 * @return {@link ResponseCode} as String.
+	 */
+	public ResponseCode getResponseCode() {
+		return responseCode;
+	}
 }

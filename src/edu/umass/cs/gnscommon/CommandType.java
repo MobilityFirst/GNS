@@ -15,8 +15,6 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnscommon;
 
-import edu.umass.cs.gnsclient.client.CommandResultType;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,7 +22,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
 import org.junit.Assert;
+
+import edu.umass.cs.gnsclient.client.CommandResultType;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 
 /**
  * All the commands supported by the GNS server are listed here.
@@ -671,7 +673,7 @@ public enum CommandType {
   //
 
   /**
-   *
+   * arun: Why is this deprecated??
    */
   @Deprecated
   Select(310, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select",
@@ -703,7 +705,7 @@ public enum CommandType {
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
   /**
-   *
+   * Why is this deprecated??
    */
   @Deprecated
   SelectWithin(321, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin",
@@ -1926,7 +1928,7 @@ public enum CommandType {
     //return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
   }
 
-  private static String generateSwiftStructStaticConstants() {
+   static String generateSwiftStructStaticConstants() {
     StringBuilder result = new StringBuilder();
     result.append("extension CommandType {\n");
     for (CommandType commandType : CommandType.values()) {

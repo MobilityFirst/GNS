@@ -589,11 +589,17 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     testThings(dp);
   }
 
-  private static class LocationBasedDemandProfileTest extends DefaultTest {
+  /**
+ * @author arun
+ *
+ */
+public static class LocationBasedDemandProfileTest extends DefaultTest {
 
+    /**
+     * 
+     */
     @Test
-    public void testShouldReconfigure() {
-      LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
+    public void testReconfigure() {
 
     }
   }

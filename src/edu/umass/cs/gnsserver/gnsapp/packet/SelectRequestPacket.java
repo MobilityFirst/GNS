@@ -19,14 +19,15 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
-import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
-import edu.umass.cs.gnscommon.utils.Base64;
-
-import edu.umass.cs.gnsserver.utils.JSONUtils;
 import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
+import edu.umass.cs.gnsserver.utils.JSONUtils;
 
 /**
  * A SelectRequestPacket is like a DNS_SUBTYPE_QUERY packet without a GUID, but with a key and value.
@@ -35,7 +36,6 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-@SuppressWarnings("deprecation")
 public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
         implements ClientRequest {
 

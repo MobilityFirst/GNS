@@ -53,13 +53,8 @@ public class WriteReadBytesTest extends DefaultGNSTest {
    */
   public WriteReadBytesTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception while trying to create the client: " + e);
-      }
-
+        clientCommands = new GNSClientCommands(client);
+        
       try {
         masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {
