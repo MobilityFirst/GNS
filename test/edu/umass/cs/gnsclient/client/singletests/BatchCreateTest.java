@@ -50,7 +50,15 @@ import org.junit.runners.MethodSorters;
 public class BatchCreateTest extends DefaultGNSTest {
 
   private static GNSClientCommands clientCommands;
+  
+  /**
+   * These constants are copied from  {@link edu.umass.cs.gnsserver.gnsapp.GNSClientInternal}
+   */
+  private static final long RC_TIMEOUT = 6000;
+  // plus 1 second for every 20 names in batch creates
+  private static final double BATCH_TIMEOUT_FACTOR = 1000 / 20;
 
+  
   /**
    *
    */
@@ -61,7 +69,7 @@ public class BatchCreateTest extends DefaultGNSTest {
   }
 
   private static int numberToCreate = 2;
-
+  
   /**
    * The test set for testing batch creates. The test will create batches
    * of size 2, 4, 8,..., 128.
@@ -76,7 +84,8 @@ public class BatchCreateTest extends DefaultGNSTest {
     test_511_CreateBatch(accountGuidForBatch);
     test_512_CheckBatch(accountGuidForBatch);
     numberToCreate *= 2;
-    client.execute(GNSCommand.accountGuidRemove(accountGuidForBatch));
+    client.execute(GNSCommand.accountGuidRemove(accountGuidForBatch), 
+    		Math.max(getTimeout() , TIMEOUT));
   }
 
   /**
@@ -137,6 +146,14 @@ public class BatchCreateTest extends DefaultGNSTest {
     } catch (JSONException | ClientException | IOException e) {
       Utils.failWithStackTrace("Exception while fetching account record: ", e);
     }
+  }
+  
+  
+  private static long getTimeout() 
+  {
+	  long timeout = RC_TIMEOUT;
+	  timeout += numberToCreate * BATCH_TIMEOUT_FACTOR;
+	  return timeout;
   }
 
 }
