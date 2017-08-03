@@ -2343,12 +2343,6 @@ public class GNSClientCommands
    * if a communication error occurs
    */
   public String dump() throws ClientException, IOException {
-    //Create the admin account if it doesn't already exist.
-    try {
-      accountGuidCreate("Admin", GNSConfig.getInternalOpSecret());
-    } catch (DuplicateNameException dne) {
-      //Do nothing if it already exists.
-    }
     return gnsClient.execute(GNSCommand.dump()).getResultString();
   }
   
