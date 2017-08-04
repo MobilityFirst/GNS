@@ -98,8 +98,13 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    */
   public CommandPacket(long requestId, JSONObject command) {
     this(requestId, command, true);
+    // We don't need to set the sender address in this constructor 
+    // because this constructor is only used to construct a command.
+    // This constructor is not used to get a CommandPacket object 
+    // after receiving a command from NIO. 
   }
-
+  
+  
   /**
    * Create a CommandPacket instance.
    *
@@ -114,6 +119,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
     if (validate) {
       validateCommandType();
     }
+    // We don't need to set the sender address in this constructor 
+    // because this constructor is only used to construct a command.
+    // This constructor is not used to get a CommandPacket object 
+    // after receiving a command from NIO. 
   }
 
   /**
@@ -123,6 +132,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    * @throws JSONException
    */
   public CommandPacket(JSONObject json) throws JSONException {
+	  // for setting the  client address in BasicPacketWithClientAddress
+	  super(json);
     this.type = Packet.getPacketType(json);
 
     if (!SUPPORT_OLD_PROTOCOL) {
@@ -160,7 +171,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
    */
   public CommandPacket(byte[] bytes) throws RequestParseException {
     ByteBuffer buf = ByteBuffer.wrap(bytes);
-
+    
     /**
      * We will come here only if this class implements Byteable and the
      * sender also implements Byteable. If the sender used toJSONObject(),
@@ -179,8 +190,12 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
             (int) buf.get());
     // JSON command
     this.command = getJSONObject(buf, mode);
-
+    
     validateCommandType();
+    
+    throw new RequestParseException(new RuntimeException(
+    		"This constructor doesn't set the client address, which is needed for non-blocking selects. So, this "
+    		+ "constructor should not be used."));
   }
 
   /**

@@ -722,6 +722,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   public BasicRecordMap getDB() {
     return nameRecordDB;
   }
+  
+  @Override
+  public SSLMessenger<String, JSONObject> getSSLMessenger() {
+	  return this.messenger;
+  }
 
   /**
    *

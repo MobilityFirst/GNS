@@ -167,6 +167,29 @@ public class PacketUtils {
 						}
 						return GNSConfig.getInternalOpSecret().equals(proof);
 					}
+					
+					/**
+					 * Returns the client IP address of the client that
+					 * sent this command. This is used to process
+					 * commands in a non-blocking manner, like in a non-blocking 
+					 * custom select implementation.
+					 */
+					public String getSourceAddress() 
+					{
+						return commandPacket.getClientAddress().getAddress().getHostAddress();
+					}
+					
+					/**
+					 * Returns the client port that
+					 * sent this command. This is used to process
+					 * commands in a non-blocking manner, like in a non-blocking 
+					 * custom select implementation. 
+					 */
+					public int getSourcePort()
+					{
+						return commandPacket.getClientAddress().getPort();
+					}
+					
 				};
 	}
 
