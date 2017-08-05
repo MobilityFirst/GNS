@@ -624,8 +624,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                     valuesMap);
             NameRecord.addNameRecord(nameRecordDB, nameRecord);
           } catch (RecordExistsException | JSONException e) {
-            GNSConfig.getLogger().log(Level.SEVERE,
-                    "Problem updating state: {0}", e.getMessage());
+        	  e.printStackTrace();
+        	  GNSConfig.getLogger().log(Level.SEVERE,
+        			  "Problem updating name {0} with state {1}: {2}",
+        			  new Object[] { name, state, e });
           }
         } else { // update the existing record
           try {

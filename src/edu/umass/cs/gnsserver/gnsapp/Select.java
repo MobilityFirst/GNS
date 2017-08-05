@@ -321,7 +321,7 @@ public class Select extends AbstractSelector {
       // and send them back to the originating NS
       app.sendToAddress(request.getNSReturnAddress(), response.toJSONObject());
     } catch (FailedDBOperationException | JSONException | IOException e) {
-      LOGGER.log(Level.SEVERE, "Exception while handling select request: {0}", e);
+      LOGGER.log(Level.SEVERE, "{0} exception while handling select request {1}: {2}", new Object[]{app, request.getSummary(), e});
       SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(),
               request.getClientAddress(),
               request.getNsQueryId(), app.getNodeAddress(), e.getMessage());
