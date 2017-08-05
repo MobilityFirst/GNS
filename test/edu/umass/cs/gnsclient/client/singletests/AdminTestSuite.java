@@ -81,7 +81,7 @@ public class AdminTestSuite extends DefaultGNSTest {
    * @throws Exception
    */
   @Test
-  public void test_001_CreateEntity() throws Exception {
+  public void test_001_CreateSubGUIDofSubGUIDShouldFail() throws Exception {
     String alias = "testGUID" + RandomString.randomString(12);
     GuidEntry guidEntry = clientCommands.guidCreate(masterGuid, alias);
     Assert.assertNotNull(guidEntry);
