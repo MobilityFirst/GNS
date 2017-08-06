@@ -626,7 +626,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
           } catch (RecordExistsException | JSONException e) {
         	  e.printStackTrace();
         	  GNSConfig.getLogger().log(Level.SEVERE,
-        			  "Problem updating name {0} with state {1}: {2}",
+        			  "Problem creating name {0} with state {1}: {2}",
         			  new Object[] { name, state, e });
           }
         } else { // update the existing record
@@ -637,7 +637,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
                     .updateState(new ValuesMap(new JSONObject(state)));
           } catch (JSONException | FieldNotFoundException | RecordNotFoundException | FailedDBOperationException e) {
             GNSConfig.getLogger().log(Level.SEVERE,
-                    "Problem updating state: {0}", e.getMessage());
+                    "Problem updating name {0} with state {1}: {2}", new Object[]{name, state, e});
           }
         }
       return true;
