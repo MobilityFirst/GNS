@@ -30,6 +30,7 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
 
 /**
  * This encapsulates the core functionality needed by the GNS Application.
@@ -103,5 +104,11 @@ public interface GNSApplicationInterface<NodeIDType> {
    * @return the active code handler
    */
   ActiveCodeHandler getActiveCodeHandler();
-
+  
+  /**
+   * Returns the SSLMessenger. 
+   * @return returns the SSLMessenger.
+   */
+  public SSLMessenger<NodeIDType, JSONObject> getSSLMessenger();
+  
 }
