@@ -65,7 +65,7 @@ public class RunCommand {
 			Process process = processBuilder.redirectErrorStream(true)
 					.directory(new File(directory)).start();
 
-			if (!inheritIO)
+			if (inheritIO)
 				return gatherOutput(process);
 
 			// There should really be a timeout here.
@@ -80,19 +80,36 @@ public class RunCommand {
 			return null;
 		}
 	}
-
+	
 	private static ArrayList<String> gatherOutput(Process process)
-			throws IOException {
+	{
 		ArrayList<String> output = new ArrayList<>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				process.getInputStream()));
-		String line = null;
-		while ((line = br.readLine()) != null && output.size() < MAX_LINES) {
-			output.add(line);
+		BufferedReader br = null;
+		try
+		{
+			br = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
+			String line = null;
+			while ((line = br.readLine()) != null && output.size() < MAX_LINES) {
+				output.add(line);
+			}
+		}
+		catch(IOException ioex)
+		{
+			ioex.printStackTrace();
+		}
+		finally
+		{
+			if(br != null)
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 		return output;
 	}
-
+	
 	/**
 	 * @param args
 	 */
