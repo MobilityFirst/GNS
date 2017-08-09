@@ -73,11 +73,12 @@ public class PacketUtils {
 	}
 	/**
 	 * @param commandPacket
+	 * @param doNotReplyToClient 
 	 * @return {@link InternalRequestHeader} if {@code commandPacket} is an
 	 *         internal request.
 	 */
 	public static InternalRequestHeader getInternalRequestHeader(
-			CommandPacket commandPacket) {
+			CommandPacket commandPacket, boolean doNotReplyToClient) {
 		return commandPacket instanceof InternalRequestHeader ? (InternalRequestHeader) commandPacket
 				/* originatingGUID must be non-null for internal commands to
 				 * make sense because it is important for internal commands to
@@ -188,6 +189,15 @@ public class PacketUtils {
 					public int getSourcePort()
 					{
 						return commandPacket.getClientAddress().getPort();
+					}
+					
+					/**
+					 * Returns the value of doNotReplyToClient passed 
+					 * down from paxos execute method.
+					 */
+					@Override
+					public boolean getDoNotReplyToClient(){
+						return doNotReplyToClient;
 					}
 					
 				};

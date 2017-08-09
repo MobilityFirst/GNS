@@ -90,7 +90,7 @@ public class CommandHandler {
       // Other than this line, one below and some catches all of this
       // method is instrumentation.
       CommandResponse returnValue = executeCommand(command,
-              commandPacket, handler);
+              commandPacket, handler, doNotReplyToClient);
       
       
       // returnValue can be null in case the command is handled in a non-blocking manner. 
@@ -182,14 +182,16 @@ public class CommandHandler {
    * @param commandHandler
    * @param commandPacket
    * @param handler
+   * @param doNotReplyToClient 
    * @return Result of executing {@code commandPacket}.
    */
   public static CommandResponse executeCommand(AbstractCommand commandHandler,
-          CommandPacket commandPacket, ClientRequestHandlerInterface handler) {
+          CommandPacket commandPacket, ClientRequestHandlerInterface handler,
+          boolean doNotReplyToClient) {
     try {
       if (commandHandler != null) {
         return commandHandler.execute(getInternalHeaderAfterEnforcingChecks(commandPacket,
-                handler), commandPacket, handler);
+                handler, doNotReplyToClient), commandPacket, handler);
       } else {
         return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
                 GNSProtocol.BAD_RESPONSE.toString() + " "
@@ -211,10 +213,11 @@ public class CommandHandler {
   }
 
   private static InternalRequestHeader getInternalHeaderAfterEnforcingChecks(
-          CommandPacket commandPacket, ClientRequestHandlerInterface handler)
+          CommandPacket commandPacket, ClientRequestHandlerInterface handler,
+          boolean doNotReplyToClient)
           throws InternalRequestException {
     InternalRequestHeader header = PacketUtils
-            .getInternalRequestHeader(commandPacket);
+            .getInternalRequestHeader(commandPacket, doNotReplyToClient);
     if (header == null) {
       return header;
     }

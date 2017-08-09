@@ -109,7 +109,6 @@ public class ActiveQueryHandler {
 					app.write(header, am.getTargetGuid(), am.getAccessor(), new JSONObject(am.getValue()) );
 					response = new ActiveMessage(am.getId(), new JSONObject().toString(), null);
 				} catch (InternalRequestException | ClientException | JSONException e) {
-					e.printStackTrace();
 					response = new ActiveMessage(am.getId(), null, "Write failed");
 				}				
 			}
