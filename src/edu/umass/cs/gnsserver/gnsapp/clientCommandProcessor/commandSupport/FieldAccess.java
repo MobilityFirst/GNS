@@ -41,6 +41,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
@@ -56,6 +57,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
@@ -759,9 +762,10 @@ public class FieldAccess {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
+    	ClientException cle = new ClientException(e);
+    	return new CommandResponse(cle.getCode(), "selectQuery failed. "+cle.getMessage());
     }
-    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return null;
   }
 
   /**
@@ -830,11 +834,10 @@ public class FieldAccess {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      LOGGER.log(Level.FINE,
-              "Silently failing select for query: {0} field: {1} reader: {2} due to {3}",
-              new Object[]{guid, query, reader, e.getMessage()});
+    	ClientException cle = new ClientException(e);
+    	return new CommandResponse(cle.getCode(), "selectGroupSetupQuery failed. "+cle.getMessage());
     }
-    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return null;
   }
 
   /**
@@ -862,9 +865,10 @@ public class FieldAccess {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
+    	ClientException cle = new ClientException(e);
+    	return new CommandResponse(cle.getCode(), "selectGroupLookupQuery failed. "+cle.getMessage());
     }
-    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return null;
   }
 
   /**

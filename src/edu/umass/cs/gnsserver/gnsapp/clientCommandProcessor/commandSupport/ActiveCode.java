@@ -19,6 +19,11 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import java.util.Date;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
@@ -27,11 +32,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-
-import java.util.Date;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Contains static fields and methods that implement activecode.
@@ -57,10 +57,10 @@ public class ActiveCode {
    */
   public static final String READ_ACTION = "read";
   /**
-   * Deploy code on the write operation that needs to trigger the code 
    * Deploy code on the write operation that needs to trigger the code
    */
   public static final String WRITE_ACTION = "write";
+
 
   
   /**
@@ -96,7 +96,7 @@ public class ActiveCode {
    * @param handler
    * @return a {@link ResponseCode}
    * @throws org.json.JSONException
- * @throws IllegalArgumentException 
+   * @throws IllegalArgumentException 
    */
   public static ResponseCode setCode(InternalRequestHeader header, 
           CommandPacket commandPacket, String guid, 

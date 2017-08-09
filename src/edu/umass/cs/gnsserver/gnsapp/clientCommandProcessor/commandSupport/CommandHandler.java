@@ -86,58 +86,66 @@ public class CommandHandler {
     JSONObject jsonFormattedCommand = PacketUtils.getCommand(commandPacket);
     try {
       long receiptTime = System.currentTimeMillis(); // instrumentation
-      final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
+      final Long executeCommandStart = System.nanoTime(); // instrumentation
       // Other than this line, one below and some catches all of this
       // method is instrumentation.
       CommandResponse returnValue = executeCommand(command,
-              commandPacket, handler);
-      assert (commandPacket.getRequestType() != null) : "request type is null";
-      assert (commandPacket.getCommandType() != null) : "command type is null";
-      assert (command != null) : "command is null";
-      // instrumentation
-      DelayProfiler.updateDelay("executeCommand", executeCommandStart);
-      if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
-        DelayProfiler.updateDelay(commandPacket.getRequestType() + "."
-                + command.getCommandType(),
-                executeCommandStart);
+              commandPacket, handler, doNotReplyToClient);
+      
+      
+      // returnValue can be null in case the command is handled in a non-blocking manner. 
+      if(returnValue != null)
+      {
+	      assert (commandPacket.getRequestType() != null) : "request type is null";
+	      assert (commandPacket.getCommandType() != null) : "command type is null";
+	      assert (command != null) : "command is null";
+	      // instrumentation
+	      DelayProfiler.updateDelay("executeCommand", executeCommandStart);
+	      if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
+	        DelayProfiler.updateDelay(commandPacket.getRequestType() + "."
+	                + command.getCommandType(),
+	                executeCommandStart);
+	      }
+	      if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
+	        ClientCommandProcessorConfig
+	                .getLogger()
+	                .log(Level.FINE,
+	                        "{0} command {1} took {2}ms of execution delay (delay logging threshold={2}ms)",
+	                        new Object[]{
+	                          handler.getApp(),
+	                          command.getSummary(),
+	                          (System.currentTimeMillis() - executeCommandStart),
+	                          LONG_DELAY_THRESHOLD});
+	      }
+	      // the last arguments here in the call below are instrumentation
+	      // that the client can use to determine LNS load
+	      ResponsePacket returnPacket = new ResponsePacket(
+	              commandPacket.getRequestID(),
+	              commandPacket.getServiceName(), returnValue, 0, 0,
+	              System.currentTimeMillis() - receiptTime);
+	
+	      try {
+	        assert (returnPacket.getErrorCode() != null);
+	        ClientCommandProcessorConfig.getLogger().log(Level.FINE,
+	                "{0} handling command reply: {1}",
+	                new Object[]{handler.getApp(), returnPacket});
+	        // Possibly send the return value back to the client
+	        handleCommandReturnValuePacketForApp(commandPacket, returnPacket,
+	                doNotReplyToClient, app);
+	      } catch (IOException e) {
+	        ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
+	                "Problem replying to command: {0}", e);
+	      }
+	      
       }
-      if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
-        ClientCommandProcessorConfig
-                .getLogger()
-                .log(Level.FINE,
-                        "{0} command {1} took {2}ms of execution delay (delay logging threshold={2}ms)",
-                        new Object[]{
-                          handler.getApp(),
-                          command.getSummary(),
-                          (System.currentTimeMillis() - executeCommandStart),
-                          LONG_DELAY_THRESHOLD});
-      }
-      // the last arguments here in the call below are instrumentation
-      // that the client can use to determine LNS load
-      ResponsePacket returnPacket = new ResponsePacket(
-              commandPacket.getRequestID(),
-              commandPacket.getServiceName(), returnValue, 0, 0,
-              System.currentTimeMillis() - receiptTime);
-
-      try {
-        assert (returnPacket.getErrorCode() != null);
-        ClientCommandProcessorConfig.getLogger().log(Level.FINE,
-                "{0} handling command reply: {1}",
-                new Object[]{handler.getApp(), returnPacket});
-        // Possibly send the return value back to the client
-        handleCommandReturnValuePacketForApp(commandPacket, returnPacket,
-                doNotReplyToClient, app);
-      } catch (IOException e) {
-        ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
-                "Problem replying to command: {0}", e);
-      }
-
+      
     } catch (JSONException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
               "{0}: problem  executing command: {1}",
               new Object[]{handler.getApp(), e});
       e.printStackTrace();
     }
+    
 
     // reply to client is true, this means this is the active replica
     // that recvd the request from the gnsClient. So, let's check for
@@ -168,6 +176,7 @@ public class CommandHandler {
     return commandPacket;
   }
 
+
   /**
    * Execute the commandPacket.
    *
@@ -177,11 +186,12 @@ public class CommandHandler {
    * @return Result of executing {@code commandPacket}.
    */
   public static CommandResponse executeCommand(AbstractCommand commandHandler,
-          CommandPacket commandPacket, ClientRequestHandlerInterface handler) {
+          CommandPacket commandPacket, ClientRequestHandlerInterface handler,
+          boolean doNotReplyToClient) {
     try {
       if (commandHandler != null) {
         return commandHandler.execute(getInternalHeaderAfterEnforcingChecks(commandPacket,
-                handler), commandPacket, handler);
+                handler, doNotReplyToClient), commandPacket, handler);
       } else {
         return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
                 GNSProtocol.BAD_RESPONSE.toString() + " "
@@ -203,17 +213,18 @@ public class CommandHandler {
   }
 
   private static InternalRequestHeader getInternalHeaderAfterEnforcingChecks(
-          CommandPacket commandPacket, ClientRequestHandlerInterface handler)
+          CommandPacket commandPacket, ClientRequestHandlerInterface handler,
+          boolean doNotReplyToClient)
           throws InternalRequestException {
     InternalRequestHeader header = PacketUtils
-            .getInternalRequestHeader(commandPacket);
+            .getInternalRequestHeader(commandPacket, doNotReplyToClient);
     if (header == null) {
       return header;
     }
     // The checks below are unnecessary and are only expositionary.
 
     /* TTL expiration, but should never expire here as the sender would
-		 * have not sent an expiring request in the first place.
+     * have not sent an expiring request in the first place.
      */
     if (header.getTTL() == 0) {
       throw new InternalRequestException(
