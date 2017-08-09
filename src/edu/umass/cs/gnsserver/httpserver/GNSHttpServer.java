@@ -298,10 +298,9 @@ public class GNSHttpServer {
                     new CommandPacket((long) (Math.random() * Long.MAX_VALUE), jsonCommand, false),
                     requestHandler,
                     /**
-                     * This value "false" is a placeholder, as I need to pass it
-                     * into the CommandHandler.executeCommand. The method needs to know
-                     * whether this is paxos DB roll-forward operation based on the 
-                     * value of doNotReplyToClient.
+                     * HTTP request will not be executed during recovery,
+                     * as all HTTP requests will be translated to GNS requests
+                     * and sent out by a GNSClient.
                      * 
                      * author: gaozy
                      */
