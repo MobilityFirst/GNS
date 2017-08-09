@@ -692,7 +692,6 @@ public class GNSCommand extends CommandPacket {
    * @param alias
    * @return CommandPacket
    * @throws ClientException
-   * @deprecated Use guidCreate instead.
    */
   // doesn't conform to the nounVerb naming convention
   public static final CommandPacket createGUID(
@@ -2532,7 +2531,7 @@ public static final CommandPacket selectNear(GuidEntry reader, String field, JSO
    */
   public static final CommandPacket dump()
           throws ClientException, IOException {
-    return getCommand(CommandType.Dump, GNSProtocol.NAME.toString(), "Admin");
+    return getCommand(CommandType.Dump, GNSProtocol.NAME.toString(), "*");
   }
 
   /**

@@ -1065,7 +1065,7 @@ public enum CommandType {
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
-   *
+   * FIXME: This command should be disabled as a public key is derived from a GUID, so it can not be arbitrarily changed.
    */
   ResetKey(460, CommandCategory.UPDATE, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResetKey",
           CommandResultType.NULL, true, false,
