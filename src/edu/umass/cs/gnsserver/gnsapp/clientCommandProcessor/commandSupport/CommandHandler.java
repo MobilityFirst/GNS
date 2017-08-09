@@ -86,11 +86,11 @@ public class CommandHandler {
     JSONObject jsonFormattedCommand = PacketUtils.getCommand(commandPacket);
     try {
       long receiptTime = System.currentTimeMillis(); // instrumentation
-      final Long executeCommandStart = System.nanoTime(); // instrumentation
+      final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
       // Other than this line, one below and some catches all of this
       // method is instrumentation.
       CommandResponse returnValue = executeCommand(command,
-              commandPacket, handler, doNotReplyToClient);
+              commandPacket, handler);
       
       
       // returnValue can be null in case the command is handled in a non-blocking manner. 
@@ -176,7 +176,6 @@ public class CommandHandler {
     return commandPacket;
   }
 
-
   /**
    * Execute the commandPacket.
    *
@@ -186,12 +185,11 @@ public class CommandHandler {
    * @return Result of executing {@code commandPacket}.
    */
   public static CommandResponse executeCommand(AbstractCommand commandHandler,
-          CommandPacket commandPacket, ClientRequestHandlerInterface handler,
-          boolean doNotReplyToClient) {
+          CommandPacket commandPacket, ClientRequestHandlerInterface handler) {
     try {
       if (commandHandler != null) {
         return commandHandler.execute(getInternalHeaderAfterEnforcingChecks(commandPacket,
-                handler, doNotReplyToClient), commandPacket, handler);
+                handler), commandPacket, handler);
       } else {
         return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
                 GNSProtocol.BAD_RESPONSE.toString() + " "
@@ -213,18 +211,17 @@ public class CommandHandler {
   }
 
   private static InternalRequestHeader getInternalHeaderAfterEnforcingChecks(
-          CommandPacket commandPacket, ClientRequestHandlerInterface handler,
-          boolean doNotReplyToClient)
+          CommandPacket commandPacket, ClientRequestHandlerInterface handler)
           throws InternalRequestException {
     InternalRequestHeader header = PacketUtils
-            .getInternalRequestHeader(commandPacket, doNotReplyToClient);
+            .getInternalRequestHeader(commandPacket);
     if (header == null) {
       return header;
     }
     // The checks below are unnecessary and are only expositionary.
 
     /* TTL expiration, but should never expire here as the sender would
-     * have not sent an expiring request in the first place.
+		 * have not sent an expiring request in the first place.
      */
     if (header.getTTL() == 0) {
       throw new InternalRequestException(

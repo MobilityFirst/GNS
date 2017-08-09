@@ -296,16 +296,7 @@ public class GNSHttpServer {
           if (command != null) {
             return CommandHandler.executeCommand(command,
                     new CommandPacket((long) (Math.random() * Long.MAX_VALUE), jsonCommand, false),
-                    requestHandler,
-                    /**
-                     * FIXME: This value "false" is a placeholder, as I need to pass it
-                     * into the CommandHandler.executeCommand. The method needs to know
-                     * whether this is paxos DB roll-forward operation based on the 
-                     * value of doNotReplyToClient.
-                     * 
-                     * author: gaozy
-                     */
-                    false );
+                    requestHandler);
           }
           LOGGER.log(Level.FINE, "lookupCommand returned null for {0}", commandName);
         } catch (IllegalArgumentException e) {

@@ -29,8 +29,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaD
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.utils.DelayProfiler;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -50,15 +48,9 @@ public class NSFieldMetaData {
    * @param key
    * @param database
    * @return a set of objects
-<<<<<<< HEAD
-   * @throws FailedDBOperationException 
-   * @throws FieldNotFoundException 
-   * @throws RecordNotFoundException 
-=======
  * @throws FailedDBOperationException 
  * @throws FieldNotFoundException 
  * @throws RecordNotFoundException 
->>>>>>> upstream/master
    */
   public static Set<Object> lookupLocally(MetaDataTypeName type, GuidInfo guidInfo, String key,
           BasicRecordMap database) 
@@ -74,16 +66,14 @@ public class NSFieldMetaData {
    * @param key
    * @param database
    * @return a set of objects
-   * @throws FailedDBOperationException 
-   * @throws FieldNotFoundException 
-   * @throws RecordNotFoundException 
+ * @throws FailedDBOperationException 
+ * @throws FieldNotFoundException 
+ * @throws RecordNotFoundException 
    */
   public static Set<Object> lookupLocally(MetaDataTypeName type, String guid, String key,
           BasicRecordMap database) 
           throws FailedDBOperationException, FieldNotFoundException, RecordNotFoundException {
-	  long startTime = System.nanoTime();
     ResultValue result = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, FieldMetaData.makeFieldMetaDataKey(type, key), database);
-    DelayProfiler.updateDelayNano("lookupLocally", startTime);
     if (result != null) {
       ClientSupportConfig.getLogger().log(Level.FINE, "lookupOnThisNameServer returning {0}", result);
       return new HashSet<Object>(result);

@@ -77,7 +77,7 @@ public class PacketUtils {
 	 *         internal request.
 	 */
 	public static InternalRequestHeader getInternalRequestHeader(
-			CommandPacket commandPacket, boolean doNotReplyToClient) {
+			CommandPacket commandPacket) {
 		return commandPacket instanceof InternalRequestHeader ? (InternalRequestHeader) commandPacket
 				/* originatingGUID must be non-null for internal commands to
 				 * make sense because it is important for internal commands to
@@ -168,11 +168,6 @@ public class PacketUtils {
 						return GNSConfig.getInternalOpSecret().equals(proof);
 					}
 					
-					@Override
-					public boolean getDoNotReplyToClient(){
-						return doNotReplyToClient;
-					}
-
 					/**
 					 * Returns the client IP address of the client that
 					 * sent this command. This is used to process
