@@ -296,7 +296,15 @@ public class GNSHttpServer {
           if (command != null) {
             return CommandHandler.executeCommand(command,
                     new CommandPacket((long) (Math.random() * Long.MAX_VALUE), jsonCommand, false),
-                    requestHandler);
+                    requestHandler,
+                    /**
+                     * HTTP request will not be executed during recovery,
+                     * as all HTTP requests will be translated to GNS requests
+                     * and sent out by a GNSClient.
+                     * 
+                     * author: gaozy
+                     */
+                    false );
           }
           LOGGER.log(Level.FINE, "lookupCommand returned null for {0}", commandName);
         } catch (IllegalArgumentException e) {
