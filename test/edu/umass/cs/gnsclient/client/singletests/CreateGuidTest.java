@@ -27,6 +27,8 @@ import edu.umass.cs.utils.Utils;
 
 import java.io.IOException;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -84,7 +86,7 @@ public class CreateGuidTest extends DefaultGNSTest {
  * 
  */
 	@Test
-	public void test_02_CreateEntity() {
+	public void test_02_CreateSubGUIDofSubGUIDShouldFail() {
 		String alias1 = "testGUID" + RandomString.randomString(12);
 		String alias2 = "testGUID" + RandomString.randomString(12);
 		GuidEntry guidEntry1 = null;
@@ -111,4 +113,59 @@ public class CreateGuidTest extends DefaultGNSTest {
 				false);
 	}
 
+	/**
+	 * Tests creation, update, read, and removal of keyless GUIDs.
+	 */
+	public void test_03_CreateUpdateReadRemoveKeylessGUID() {
+
+		String keyless1 = "keyless1";
+		try {
+			client.execute(GNSCommand.guidCreateKeyless(masterGuid, keyless1));
+		} catch (ClientException | IOException e) {
+			Utils.failWithStackTrace("Keyless GUID creation of " + keyless1
+					+ " failed", e);
+		}
+
+		// Create a JSON Object to initialize our guid record
+		JSONObject json = null;
+		try {
+			json = new JSONObject("{\"occupation\":\"busboy\","
+					+ "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
+					+ "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
+					+ "\"location\":\"work\",\"name\":\"frank\"}");
+		} catch (JSONException e) {
+			Utils.failWithStackTrace(
+					"JSONException while creating update object", e);
+		}
+
+		/* Note; keyless GUIDs are fake GUIDs, i.e., they are not
+		 * self-certifying hashes of a public key, but simply the HRN itself. */
+		String keyless1GUID = null;
+		try {
+			keyless1GUID = client.execute(GNSCommand.lookupGUID(keyless1))
+					.getResultString();
+		} catch (ClientException | IOException e) {
+			Utils.failWithStackTrace("Failed to look up keyless GUID", e);
+		}
+		try {
+			client.execute(GNSCommand.update(keyless1GUID, json, masterGuid));
+		} catch (ClientException | IOException e) {
+			Utils.failWithStackTrace("Failed to update keyless GUID", e);
+		}
+
+		try {
+			JSONObject readJSON = client.execute(
+					GNSCommand.read(keyless1GUID, masterGuid))
+					.getResultJSONObject();
+			Assert.assertEquals(json.toString(), readJSON.toString());
+		} catch (ClientException | IOException e) {
+			Utils.failWithStackTrace("Failed to read keyless GUID", e);
+		}
+		try {
+			client.execute(GNSCommand.guidRemove(masterGuid, keyless1GUID));
+		} catch (ClientException | IOException e) {
+			Utils.failWithStackTrace("Failed to remove keyless GUID"
+					+ keyless1GUID, e);
+		}
+	}
 }
