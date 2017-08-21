@@ -329,6 +329,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DstopServer=false"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
       <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
       <jvmarg value="-DwaitTillAllServersReady=${waitTillAllServersReady}"/>
@@ -382,6 +383,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DstopServer=false"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
       <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
       <jvmarg value="-DwaitTillAllServersReady=${waitTillAllServersReady}"/>
@@ -435,6 +437,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-Dalias=${alias}"/>
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
       <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
       <!-- add this if you want SSL debugging enabled -->
@@ -468,6 +471,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-Djavax.net.ssl.keyStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-Dalias=${alias}"/>
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
@@ -503,6 +507,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-Djavax.net.ssl.keyStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-Dalias=${alias}"/>
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
@@ -533,6 +538,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-Dalias=${alias}"/>
       <jvmarg value="-Dpassword=${password}"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-Dcount=${count}"/>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.junit.properties"/>
@@ -731,6 +737,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-ea"/>
       <jvmarg
         value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
+      <jvmarg value="-DinheritIO=true"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
@@ -749,6 +756,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.1local.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
@@ -773,6 +781,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DfailureTest.threads=${failureTestThreads}"/>
       <jvmarg value="-DfailureTest.roundTime=${failureTestRoundTime}"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.unittest.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
       <classpath>
@@ -794,6 +803,7 @@ integration tests sequentially"
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.1local.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.unittest.properties"/>
@@ -818,6 +828,7 @@ integration tests sequentially"
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=${integrationTest.startServer}"/>
+      <jvmarg value="-DinheritIO=true"/>
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.properties"/>
