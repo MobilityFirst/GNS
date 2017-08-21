@@ -56,7 +56,7 @@ public class RunCommand {
 			if(!inheritIO)
 			{
 				throw new RuntimeException("inheritIO is false. "
-						+ "inheritIO should be true for the tests to proceed.");
+						+ "inheritIO should be true for the command to proceed.");
 			}
 			
 			ProcessBuilder processBuilder = new ProcessBuilder(new String[] {
