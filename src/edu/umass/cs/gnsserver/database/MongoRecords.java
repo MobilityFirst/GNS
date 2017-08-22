@@ -48,6 +48,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -161,9 +162,38 @@ public class MongoRecords implements NoSQLRecords {
   public void createIndex(String collectionName, String field, String index) {
     MongoCollectionSpec spec = mongoCollectionSpecs.getCollectionSpec(collectionName);
     // Prepend this because of the way we store the records.
-    DBObject index2d = BasicDBObjectBuilder.start(NameRecord.VALUES_MAP.getName() + "." + field, index).get();
+    //DBObject index2d = BasicDBObjectBuilder.start(NameRecord.VALUES_MAP.getName() + "." + field, index).get();
+    
+    DBObject index2d = BasicDBObjectBuilder.start
+    		(NameRecord.VALUES_MAP.getName() + "." + field, 
+    				isIndexInt(index)?Integer.parseInt(index):index).get();
+    
     db.getCollection(spec.getName()).createIndex(index2d);
   }
+  
+  /**
+   * This function checks if an index is an int in 
+   * the form of a string. In mongodb, there are some
+   * string indexes, and then are some int indexes like 1
+   * , -1 etc. So, we need to know which one a user
+   * has supplied. 
+   * 
+   * @param index
+   * @return
+   */
+  private boolean isIndexInt(String index)
+  {
+	  try
+	  {
+		  Integer.parseInt(index);
+		  return true;
+	  }
+	  catch(NumberFormatException  nfe)
+	  {
+		  return false;
+	  }
+  }
+  
 
   @Override
   public void insert(String collectionName, String guid, JSONObject value) throws FailedDBOperationException, RecordExistsException {
@@ -743,6 +773,15 @@ public static String buildAndQuery(String... querys) {
     result.put(NameRecord.NAME.getName(), "true");
     // Put this in so the upstream receiver knows that it is a GUID record
     result.put(NameRecord.VALUES_MAP.getName() + "." + AccountAccess.GUID_INFO, "true");
+    
+    
+    // aditya: We also read the ACL fields here. We only need to read the read acls for 
+    // select requests. Although, by reading the prefix of READ_WHITELIST we read 
+    // the full ACL. 
+    result.put(NameRecord.VALUES_MAP.getName() + "." 
+    				+ MetaDataTypeName.READ_WHITELIST.getPrefix(), "true");
+    
+    
     // Add all the fields in the projection
     for (String field : fields) {
       result.put(NameRecord.VALUES_MAP.getName() + "." + field, "true");

@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.console.commands.Select;
 import edu.umass.cs.gnsserver.extensions.sanitycheck.NullSanityCheck;
 import edu.umass.cs.gnsserver.gnsapp.AbstractSelector;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
