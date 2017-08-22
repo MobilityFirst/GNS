@@ -25,8 +25,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 
 /**
