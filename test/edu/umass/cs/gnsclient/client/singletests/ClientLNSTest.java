@@ -46,15 +46,10 @@ public class ClientLNSTest extends DefaultGNSTest {
    */
   public ClientLNSTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
+    	clientCommands = new GNSClientCommands(client);
         //PaxosConfig.getActives() works here because the server and client use the same properties file.
         InetAddress lnsAddress = PaxosConfig.getActives().values().iterator().next().getAddress();
         clientCommands.setGNSProxy(new InetSocketAddress(lnsAddress, 24598));
-        clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: " + e);
-      }
     }
   }
 
@@ -76,6 +71,8 @@ public class ClientLNSTest extends DefaultGNSTest {
         Utils.failWithStackTrace("Exception while looking up account record: " + e);
       }
     }
+    // Setting proxy to null, so that LNS is not used in later tests.
+    clientCommands.setGNSProxy(null);
   }
 
 }

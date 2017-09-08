@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -118,7 +119,7 @@ final static Random random = new Random();
 		
 		clients = new GNSClientCommands[numClients];
 		for (int i=0; i<numClients; i++){
-			clients[i] = new GNSClientCommands();
+			clients[i] = new GNSClientCommands(new GNSClient());
 		}
 	}
 	

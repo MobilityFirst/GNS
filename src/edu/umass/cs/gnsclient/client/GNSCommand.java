@@ -44,11 +44,12 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 
@@ -129,7 +130,6 @@ public class GNSCommand extends CommandPacket {
    * awaiting a response in the async client unless ENABLE_ID_TRANSFORM is
    * true.
    */
-  @SuppressWarnings("javadoc")
   private static long randomLong() {
     return (long) (Math.random() * Long.MAX_VALUE);
   }
@@ -745,11 +745,10 @@ public class GNSCommand extends CommandPacket {
    * 
    * @param accountGuid
    * @param alias
-   * @return
+   * @return CommandPacket
    * @throws ClientException
-   * @deprecated Use guidCreate instead.
    */
-  @Deprecated // doesn't conform to the nounVerb naming convention
+  // doesn't conform to the nounVerb naming convention
   public static final CommandPacket createGUID(
           GuidEntry accountGuid, String alias) throws ClientException {
     return guidCreate(accountGuid, alias);
@@ -761,8 +760,8 @@ public class GNSCommand extends CommandPacket {
    * using the accountGuid.
    * 
    * @param accountGuid
-   * @param alias
-   * @return
+   * @param alias 
+   * @return CommandPacket
    * @throws ClientException 
    */
   public static final CommandPacket guidCreateKeyless(GuidEntry accountGuid, String alias)
@@ -827,11 +826,11 @@ public class GNSCommand extends CommandPacket {
   /**
    *
    * @param targetGUID
-   * @return
+   * @return CommandPacket
    * @throws ClientException
    * @deprecated Use guidRemove instead
    */
-  @Deprecated // doesn't conform to the nounVerb naming convention
+  // doesn't conform to the nounVerb naming convention
   public static final CommandPacket removeGUID(GuidEntry targetGUID)
           throws ClientException {
     return guidRemove(targetGUID);
@@ -857,11 +856,11 @@ public class GNSCommand extends CommandPacket {
    *
    * @param accountGUID
    * @param targetGUID
-   * @return
+   * @return CommandPacket
    * @throws ClientException
    * @deprecated Use guidRemove instead.
    */
-  @Deprecated // doesn't conform to the nounVerb naming convention
+  // doesn't conform to the nounVerb naming convention
   public static final CommandPacket removeGUID(GuidEntry accountGUID,
           String targetGUID) throws ClientException {
     return guidRemove(accountGUID, targetGUID);
@@ -1852,7 +1851,8 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket select(String field, String value)
+  @SuppressWarnings("deprecation")
+public static final CommandPacket select(String field, String value)
           throws ClientException {
     return getCommand(CommandType.Select,
             GNSProtocol.FIELD.toString(), field,
@@ -1870,7 +1870,8 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket select(GuidEntry reader, String field, String value)
+  @SuppressWarnings("deprecation")
+public static final CommandPacket select(GuidEntry reader, String field, String value)
           throws ClientException {
     return getCommand(CommandType.Select, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
@@ -1893,7 +1894,8 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket selectWithin(String field, JSONArray value)
+  @SuppressWarnings("deprecation")
+public static final CommandPacket selectWithin(String field, JSONArray value)
           throws ClientException {
     return getCommand(CommandType.SelectWithin,
             GNSProtocol.FIELD.toString(), field,
@@ -1915,7 +1917,8 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket selectWithin(GuidEntry reader, String field, JSONArray value)
+  @SuppressWarnings("deprecation")
+public static final CommandPacket selectWithin(GuidEntry reader, String field, JSONArray value)
           throws ClientException {
     return getCommand(CommandType.SelectWithin, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
@@ -1939,8 +1942,9 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket selectNear(String field, JSONArray value,
-                                               Double maxDistance) throws ClientException {
+  @SuppressWarnings("deprecation")
+public static final CommandPacket selectNear(String field, JSONArray value,
+          Double maxDistance) throws ClientException {
     return getCommand(CommandType.SelectNear,
             GNSProtocol.FIELD.toString(), field,
             GNSProtocol.NEAR.toString(), value.toString(),
@@ -1962,8 +1966,9 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket selectNear(GuidEntry reader, String field, JSONArray value,
-                                               Double maxDistance) throws ClientException {
+  @SuppressWarnings("deprecation")
+public static final CommandPacket selectNear(GuidEntry reader, String field, JSONArray value,
+          Double maxDistance) throws ClientException {
     return getCommand(CommandType.SelectNear, reader,
             GNSProtocol.GUID.toString(), reader.getGuid(),
             GNSProtocol.FIELD.toString(), field,
@@ -2632,7 +2637,7 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket dump()
           throws ClientException, IOException {
-    return getCommand(CommandType.Dump, GNSProtocol.NAME.toString(), "Admin");
+    return getCommand(CommandType.Dump, GNSProtocol.NAME.toString(), "*");
   }
 
   /**

@@ -344,6 +344,14 @@ public enum GNSProtocol {
    * Represents the number of guids in a command.
    */
   GUIDCNT("guidCnt"),
+  /**
+   * Represents the ACL field in GUID info's meta data
+   */
+  MD("MD"),
+  /**
+   * Represents the metaData field in user's JSON
+   */
+  META_DATA_FIELD("nr_valuesMap"),
   //
   // Command packet fields
   //
@@ -552,7 +560,12 @@ public enum GNSProtocol {
   /**
    * Whether an internal request was previously coordinated (at most once).
    */
-  COORD1("COORD1"),;
+  COORD1("COORD1"),
+  /**
+   * Indicates that sanity check failed
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#SANITY_CHECK_ERROR}.
+   */
+  SANITY_CHECK_ERROR("+SANITY_CHECK_ERROR+"),;
 
   final String label;
 

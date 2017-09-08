@@ -232,14 +232,11 @@ public class ServerConnectTest extends DefaultTest {
 	}
     System.out.println("Starting client");
 
-    client = new GNSClientCommands();
+    client = new GNSClientCommands(new GNSClient());
     // Make all the reads be coordinated
     client.setForceCoordinatedReads(true);
     // arun: connectivity check embedded in GNSClient constructor
-    boolean connected = client instanceof GNSClient;
-    if (connected) {
       System.out.println("Client created and connected to server.");
-    }
     //
     int tries = 5;
     boolean accountCreated = false;

@@ -34,12 +34,6 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.nio.JSONDelayEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * @author Brendan
@@ -226,14 +220,11 @@ public class ServerFailureTests {
     Thread.sleep(5000);
     System.out.println("Starting client");
 
-    client = new GNSClientCommands();
+    client = new GNSClientCommands(new GNSClient());
     // Make all the reads be coordinated
     client.setForceCoordinatedReads(true);
     // arun: connectivity check embedded in GNSClient constructor
-    boolean connected = client instanceof GNSClient;
-    if (connected) {
       System.out.println("Client created and connected to server.");
-    }
     //
     int tries = 5;
     boolean accountCreated = false;

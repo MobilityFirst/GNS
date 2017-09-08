@@ -57,11 +57,8 @@ public class ActiveCode {
    */
   public static final String READ_ACTION = "read";
   /**
-<<<<<<< HEAD
    * Deploy code on the write operation that needs to trigger the code 
-=======
    * Deploy code on the write operation that needs to trigger the code
->>>>>>> upstream/master
    */
   public static final String WRITE_ACTION = "write";
 
@@ -71,6 +68,7 @@ public class ActiveCode {
    *
    * @param action
    * @return a string
+   * @throws IllegalArgumentException 
    */
   public static String getCodeField(String action) throws IllegalArgumentException {
     switch (action) {
@@ -98,6 +96,7 @@ public class ActiveCode {
    * @param handler
    * @return a {@link ResponseCode}
    * @throws org.json.JSONException
+ * @throws IllegalArgumentException 
    */
   public static ResponseCode setCode(InternalRequestHeader header, 
           CommandPacket commandPacket, String guid, 
@@ -126,6 +125,7 @@ public class ActiveCode {
    * @param timestamp
    * @param handler
    * @return a {@link ResponseCode}
+   * @throws IllegalArgumentException 
    */
   public static ResponseCode clearCode(InternalRequestHeader header, CommandPacket commandPacket, String guid, String action,
           String writer, String signature, String message,
@@ -151,6 +151,7 @@ public class ActiveCode {
    * @param timestamp
    * @param handler
    * @return a string
+   * @throws IllegalArgumentException 
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws org.json.JSONException
    */

@@ -27,7 +27,6 @@ import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Repeat;
 import edu.umass.cs.utils.Utils;
-import java.io.IOException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -51,12 +50,7 @@ public class CreateUpdateRemoveRepeatTest extends DefaultGNSTest {
    */
   public CreateUpdateRemoveRepeatTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: " + e);
-      }
+        clientCommands = new GNSClientCommands(client);
     }
     try {
       masterGuid = GuidUtils.getGUIDKeys(globalAccountName);

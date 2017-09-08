@@ -20,6 +20,8 @@
 package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
+
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.utils.StringParser;
@@ -76,7 +78,7 @@ public class Connect extends ConsoleCommand {
       }
 
       GNSClientCommands gnsClient;
-      gnsClient = new GNSClientCommands();
+      gnsClient = new GNSClientCommands(new GNSClient());
       if (!module.isSilent()) {
         console.printString("Connected to GNS.\n");
       }

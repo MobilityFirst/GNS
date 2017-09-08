@@ -59,12 +59,9 @@ public class SelectGeoTest extends DefaultGNSTest {
    */
   public SelectGeoTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
+        clientCommands = new GNSClientCommands(client);
         clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: " + e);
-      }
+      
       try {
         masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
       } catch (Exception e) {

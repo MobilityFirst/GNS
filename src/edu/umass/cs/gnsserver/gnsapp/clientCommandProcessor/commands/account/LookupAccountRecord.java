@@ -68,7 +68,8 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
     if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_ACCOUNT_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACCOUNT.toString() + " " + guid);
     }
-    if (acccountInfo != null) {
+    assert (acccountInfo != null);
+    {
       try {
         // The true below omits things we don't want to send back to the client.
         // Like the verification code or the list of guids which might be too big to send back to the client
@@ -76,8 +77,6 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
       } catch (JSONException e) {
         return new CommandResponse(ResponseCode.JSON_PARSE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.JSON_PARSE_ERROR.toString());
       }
-    } else {
-      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
   }
 

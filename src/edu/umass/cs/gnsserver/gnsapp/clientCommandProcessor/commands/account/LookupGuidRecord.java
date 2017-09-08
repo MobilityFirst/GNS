@@ -67,14 +67,13 @@ public class LookupGuidRecord extends AbstractCommand {
     if ((guidInfo = AccountAccess.lookupGuidInfoLocally(header, guid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
-    if (guidInfo != null) {
+    assert (guidInfo != null);
+    {
       try {
         return new CommandResponse(ResponseCode.NO_ERROR, guidInfo.toJSONObject().toString());
       } catch (JSONException e) {
         return new CommandResponse(ResponseCode.JSON_PARSE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.JSON_PARSE_ERROR.toString());
       }
-    } else {
-      return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guid);
     }
   }
 

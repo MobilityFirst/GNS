@@ -9,10 +9,10 @@ import java.io.PrintWriter;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
@@ -122,7 +122,7 @@ public class CapacityTestForLatencyClient{
 		
 		clients = new GNSClientCommands[numClients];
 		for (int i=0; i<numClients; i++){
-			clients[i] = new GNSClientCommands();
+			clients[i] = new GNSClientCommands(new GNSClient());
 		}
 	}
 	

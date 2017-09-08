@@ -79,10 +79,13 @@ public class RemoveGuid extends AbstractCommand {
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     GuidInfo accountGuidInfo = null;
     GuidInfo guidInfoToRemove;
-    if ((guidInfoToRemove = AccountAccess.lookupGuidInfoLocally(header, guidToRemove, handler)) == null) {
+    
+    // We don't use cache in this lookup because cache on a deletion is not updated. A GUID
+    // might be deleted in the database but still be present in the cache. 
+    if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(header, guidToRemove, handler, true, false)) == null) 
+    {
       // Removing a non-existant guid is no longer an error.
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
-      //return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + guidToRemove);
     }
     if (accountGuid != null) {
       if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accountGuid, handler)) == null) {

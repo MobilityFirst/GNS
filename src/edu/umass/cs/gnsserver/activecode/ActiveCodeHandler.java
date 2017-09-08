@@ -60,12 +60,12 @@ import edu.umass.cs.utils.DelayProfiler;
  * 2. There exists a piece of active code on the corresponding action(e.g., read or wrote)
  * 3. Active code is enabled
  * 4. The value being passed into active code is not null
+ * 5. It could not be a recovery process for paxos to roll forward its local DB
  *
  * @author Zhaoyu Gao, Westy
  */
 public class ActiveCodeHandler {
-
-
+	
   private static final Logger LOGGER = Logger.getLogger(ActiveCodeHandler.class.getName());
   
   /**
@@ -81,7 +81,18 @@ public class ActiveCodeHandler {
   private static ActiveHandler handler;
 
   private static String gigapaxoConfig = PaxosConfig.GIGAPAXOS_CONFIG_FILE_KEY;
-
+  
+  /**
+   * This variable is used to check whether this operation is an op for paxos to roll
+   * forward DB when system tries to recover from a failure.
+   * True means the recovery has already finished.
+   * False if the system is still under recovery.
+   * 
+   * The invariant here is:
+   * active code should not be executed when system is under recovery.
+   */
+  private static boolean isFirstTimeWithDoNotReplyToClientFalse = false;
+  
   /**
    * Initializes an ActiveCodeHandler
    *
@@ -176,10 +187,31 @@ public class ActiveCodeHandler {
     	// without a header, the code can misbehave without any regulation, therefore we return the value immediately if no header presents
     	return value;
     }
-
+    
+    assert(!Config.getGlobalBoolean(GNSConfig.GNSC.DISABLE_ACTIVE_CODE));
+    /**
+     * check whether this is an operation for paxos to roll forward DB: MOB-1095
+     * https://mobileinternet.atlassian.net/browse/MOB-1095
+     * 
+     * This variable needs to work together with the doNotReplyToClient variable
+     * in the header. If isFirstTimeWithDoNotReplyToClientFalse is false, we keep
+     * checking the value doNotReplyToClient in the header, until doNotReplyToClient
+     * is false. When doNotReplyToClient turns to false, we set 
+     * isFirstTimeWithDoNotReplyToClientFalse to true, and never need to check
+     * doNotReplyToClient any more.  
+     */
+    if(!isFirstTimeWithDoNotReplyToClientFalse){
+    	if(!header.getDoNotReplyToClient()){
+    		isFirstTimeWithDoNotReplyToClientFalse = true;
+    	}else{
+    		// otherwise, do not run active code, return the original value directly
+    		return value;
+    	}
+    }
+    
     long t = System.nanoTime();
     ActiveCodeHandler.getLogger().log(DEBUG_LEVEL,
-            "OOOOOOOOOOOOO handles:[guid:{0},field:{1},action:{2},value:{3},header:{4}]",
+            "OOOOOOOOOOOOO ready to handle:[guid:{0},field:{1},action:{2},value:{3},header:{4}]",
             new Object[]{guid, field, action, value, header});
     /**
      * Only execute active code for user field
@@ -204,8 +236,6 @@ public class ActiveCodeHandler {
     }
     JSONObject newResult = value;
     if (field == null || !InternalField.isInternalField(field)) {
-      //FIXME: Seems like this field lookup all could be replaced by something 
-      // like NSFieldAccess.lookupJSONFieldLocalNoAuth
       NameRecord activeCodeNameRecord = null;
       try {
         activeCodeNameRecord = NameRecord.getNameRecordMultiUserFields(db, guid,

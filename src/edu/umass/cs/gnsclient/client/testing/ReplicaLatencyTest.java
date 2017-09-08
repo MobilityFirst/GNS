@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -93,7 +94,7 @@ public class ReplicaLatencyTest {
 
     if (client == null) {
       try {
-        client = new GNSClientCommands(null);
+        client = new GNSClientCommands(new GNSClient());
       } catch (IOException e) {
         System.out.println("Unable to create client: " + e);
         e.printStackTrace();

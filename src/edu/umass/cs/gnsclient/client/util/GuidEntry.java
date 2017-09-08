@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
@@ -202,7 +203,7 @@ public static void main(String[] args) throws IOException, Exception {
     String password = "123";
     String file_name = "guid";
 
-    GNSClientCommands client = new GNSClientCommands();
+    GNSClientCommands client = new GNSClientCommands(new GNSClient());
 
     GuidEntry guidEntry = client.accountGuidCreate(name, password);
 

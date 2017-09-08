@@ -1,13 +1,11 @@
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,7 +42,7 @@ public class ClientWebACLExample {
             InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
             InvalidKeyException, SignatureException, JSONException {
 
-        client = new GNSClientCommands();
+        client = new GNSClient();
         System.out.println("[Client connected to GNS]\n");
 
         try {

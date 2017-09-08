@@ -9,7 +9,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Assert;
-import org.json.JSONException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -19,6 +18,7 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
@@ -92,7 +92,7 @@ public class SomeReadsEncryptionFails extends DefaultTest {
     executor = (ScheduledThreadPoolExecutor) Executors
             .newScheduledThreadPool(numClients);
     for (int i = 0; i < numClients; i++) {
-      clients[i] = new GNSClientCommands();
+      clients[i] = new GNSClientCommands(new GNSClient());
     }
     String gnsInstance = clients[0].getGNSProvider();
     accountGuidEntries = new GuidEntry[numAccountGuids];

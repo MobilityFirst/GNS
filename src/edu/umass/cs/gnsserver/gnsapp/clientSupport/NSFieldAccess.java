@@ -284,6 +284,7 @@ public class NSFieldAccess {
    * If allowQueryToOtherNSs is true and guid doesn't exists on this Name Server,
    * sends a read query from this Name Server to a Local Name Server.
    * Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue.
+   * @param header 
    *
    * @param guid
    * @param field

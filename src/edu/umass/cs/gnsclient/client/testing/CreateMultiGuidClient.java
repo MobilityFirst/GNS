@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -49,7 +50,7 @@ public class CreateMultiGuidClient {
 //		String code64 = Base64.encodeToString(code.getBytes("utf-8"), true);
 //		String mal_code = new String(Files.readAllBytes(Paths.get(mal_file)));		
 //		String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
-    client = new GNSClientCommands();
+    client = new GNSClientCommands(new GNSClient());
     ExecutorService executor = Executors.newFixedThreadPool(numThread);
 
     for (int i = 0; i < NUM_CLIENT; i++) {

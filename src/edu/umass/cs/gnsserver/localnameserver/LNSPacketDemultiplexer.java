@@ -181,7 +181,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     }
   }
   
-  private static CommandPacket removeSenderInfo(JSONObject json) throws JSONException {
+  @SuppressWarnings("deprecation")
+private static CommandPacket removeSenderInfo(JSONObject json) throws JSONException {
 	  json.remove(MessageNIOTransport.SNDR_IP_FIELD);
 	  json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
 	  return new CommandPacket(json);
