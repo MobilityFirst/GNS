@@ -90,7 +90,7 @@ public class AccountCreateWithCertificate extends ConsoleCommand
 
     try
     {
-      GNSClient gnsClient = module.getGnsClient();
+      GNSClient gnsClient = module.getGnsClient().getGNSClient();
 
       try
       {
