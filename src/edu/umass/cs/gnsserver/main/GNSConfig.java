@@ -274,6 +274,14 @@ public class GNSConfig {
      * Class name of select implementation.
      */
     ABSTRACT_SELECTOR(edu.umass.cs.gnsserver.gnsapp.Select.class.getCanonicalName()),
+    
+    /**
+     * If the flag is true then the update 
+     * requests are logged in the GNS logs as INFO log
+     * statements. For experiments measuring the update capacity
+     * this flag should be false. 
+     */
+    ENABLE_UPDATE_LOGGING(false),
     ;
 
     final Object defaultValue;
