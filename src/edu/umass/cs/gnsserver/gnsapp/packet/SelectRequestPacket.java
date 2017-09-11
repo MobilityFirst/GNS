@@ -25,8 +25,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 
 /**
@@ -406,13 +404,13 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    */
   @Override
   public String getServiceName() {
-    if (query != null) {
-      // FIXME: maybe cache this
-      return Base64.encodeToString(ShaOneHashFunction.getInstance().hash(this.query), false);
-    } else {
-      // FIXME:
-      return "_SelectRequest_";
-    }
+	  // aditya: all select request packets should have this name.
+	  // All select requests should have same name because edu.umass.cs.reconfiguration.ActiveReplica
+	  // stores a demand profile for each distinct name, so we tag all select requests with 
+	  // the same  name so that they have only one name and edu.umass.cs.reconfiguration.ActiveReplica
+	  // stores only one demand profile. 
+	  
+	  return "SelectRequest";
   }
 
   /**

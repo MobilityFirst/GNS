@@ -249,8 +249,14 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
    */
   @Override
   public String getServiceName() {
-    // FIXME:
-    return "SelectResponse";
+	  
+	  // aditya: all select response packets should have this name. 
+	  // All select responses should have same name because edu.umass.cs.reconfiguration.ActiveReplica
+	  // stores a demand profile for each distinct name, so we tag all select responses with 
+	  // the same  name so that they have only one name and edu.umass.cs.reconfiguration.ActiveReplica
+	  // stores only one demand profile. 
+	  
+	  return "SelectResponse";
   }
 
   /**
