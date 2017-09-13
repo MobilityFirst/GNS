@@ -520,7 +520,9 @@ public class GNSCommand extends CommandPacket {
    * an email address
    * @param password
    * @param activesSet 
-   * The set of actives for the account guid. 
+   * The set of actives for the account guid. The socket address for an active
+   * should be based on the server-server port for that active, which is also specified 
+   * in the gigapaxosConfig file.
    * A null means that the account guid will be created using the default policy.
    * @return CommandPacket
    * @throws ClientException
@@ -621,7 +623,9 @@ public class GNSCommand extends CommandPacket {
      * an email address
      * @param password
      * @param activesSet 
-     * The set of actives for the account guid. 
+     * The set of actives for the account guid. The socket address for an active
+     * should be based on the server-server port for that active, which is also specified 
+     * in the gigapaxosConfig file.
      * A null means that the account guid will be created using the default policy.
      * @return CommandPacket
      * @throws ClientException
@@ -1448,11 +1452,14 @@ public class GNSCommand extends CommandPacket {
     /**
      * Creates an alias for {@code targetGUID}. The alias can be used just like
      * the original guid.
-     *
+     * 
      * @param targetGUID
      * @param name
      * - the alias
      * @param activesSet , set of actives for the new alias.
+     * The socket address for an active
+     * should be based on the server-server port for that active, which is also specified 
+     * in the gigapaxosConfig file.
      * @return CommandPacket
      * @throws ClientException
      */
