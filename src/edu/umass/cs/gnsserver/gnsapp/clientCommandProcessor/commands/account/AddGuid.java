@@ -33,12 +33,15 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.Util;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -80,7 +83,10 @@ public class AddGuid extends AbstractCommand {
     String publicKey = json.optString(GNSProtocol.PUBLIC_KEY.toString(), null);
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
-
+    
+    Set<InetSocketAddress> activesSet = json.has(GNSProtocol.ACTIVES_SET.toString())
+    		? Util.getSocketAddresses(json.getJSONArray(GNSProtocol.ACTIVES_SET.toString())): null;
+    		
     String newGuid;
     if (publicKey != null) {
       newGuid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
@@ -104,7 +110,7 @@ public class AddGuid extends AbstractCommand {
         return new CommandResponse(ResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_GUIDS.toString());
       } else {
         CommandResponse result = AccountAccess.addGuid(header, commandPacket,
-                accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
+                accountInfo, accountGuidInfo, name, newGuid, publicKey, handler, activesSet);
         if (result.getExceptionOrErrorCode().isOKResult()) {
           // Everything is hunkey dorey so return the new guid
           return new CommandResponse(ResponseCode.NO_ERROR, newGuid);
@@ -119,5 +125,5 @@ public class AddGuid extends AbstractCommand {
     }
     //}
   }
-
+  
 }
