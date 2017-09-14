@@ -38,7 +38,9 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.commandreply.SelectHandleInfo;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsapp.selectnotification.SelectNotification;
 
 /**
  * A helper class with static methods to help construct GNS commands.
@@ -1514,6 +1516,131 @@ public class GNSCommand extends CommandPacket {
   }
 
   // *********************** SELECT *********************** 
+  
+  
+    
+    /**
+     * Sends {@code notification} to all guid records that match {@code query}. 
+     *
+     * The query syntax is described here:
+     * https://gns.name/wiki/index.php?title=Query_Syntax
+     *
+     * There are some predefined field names such as
+     * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+     * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+     * default.
+     *
+     * There are links in the wiki page above to find the exact syntax for
+     * querying spatial coordinates.
+     * 
+     * The GUIDs that have attributes queried in the query as world-readable can satisfy the query
+     * and will be notified. 
+     * 
+     * The command returns notification stats, which is a 
+     * JSONObject representation of {@link NotificationStatsToIssuer}
+     *
+     * @param query
+     * The select query being issued.
+     * @param fields
+     * The GUID fields that a user wants to be passed to the notification sending 
+     * mechanism, implemented using 
+     * {@link edu.umass.cs.gnsserver.gnsapp.selectnotification.SelectResponseProcessor}.
+     * For a GUID that satisfies the query, the field-value pairs are passed as a JSONObject in 
+     * {@link edu.umass.cs.gnsserver.gnsapp.selectnotification.SelectGUIDInfo}
+     * 
+     * @param notification
+     * The notification to send to GUIDs that satisfy query.
+     * @return CommandPacket
+     * CommandPacket contains a JSONObject representation of {@link NotificationStatsToIssuer}.
+     *  
+     * @throws ClientException
+     */
+  public static final CommandPacket selectAndNotify(String query, List<String> fields, 
+  		  												SelectNotification<?> notification)
+            throws ClientException 
+  {
+	  return getCommand(CommandType.SelectAndNotify, GNSProtocol.QUERY.toString(), query,
+			  GNSProtocol.SELECT_NOTIFICATION.toString(), notification.toString());
+  }
+  
+  
+  /**
+   * Sends {@code notification} to all guid records that match {@code query}. 
+   *
+   * The query syntax is described here:
+   * https://gns.name/wiki/index.php?title=Query_Syntax
+   *
+   * There are some predefined field names such as
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#LOCATION_FIELD_NAME} and
+   * {@link edu.umass.cs.gnscommon.GNSProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+   * default.
+   *
+   * There are links in the wiki page above to find the exact syntax for
+   * querying spatial coordinates.
+   * 
+   * The GUIDs whose read ACLs for the attributes in the query include
+   * the issuer can satisfy the query and will be notified. 
+   * 
+   * The command returns notification stats, which is a 
+   * JSONObject representation of {@link NotificationStatsToIssuer}
+   *
+   * @param issuer
+   * The GuidEntry of the issuer. 
+   * @param query
+   * The select query being issued.
+   * @param fields
+   * The GUID fields that a user wants to be passed to the notification sending 
+   * mechanism, implemented using 
+   * {@link edu.umass.cs.gnsserver.gnsapp.selectnotification.SelectResponseProcessor}.
+   * For a GUID that satisfies the query, the field-value pairs are passed as a JSONObject in 
+   * {@link edu.umass.cs.gnsserver.gnsapp.selectnotification.SelectGUIDInfo}
+   * 
+   * @param notification
+   * The notification to send to GUIDs that satisfy query.
+   * @return CommandPacket
+   * CommandPacket contains a JSONObject representation of {@link NotificationStatsToIssuer}.
+   * @throws ClientException
+   */
+  public static final CommandPacket selectAndNotify(GuidEntry issuer, String query, 
+  		  List<String> fields, SelectNotification<?> notification)
+            throws ClientException 
+  {
+	  return getCommand(CommandType.SelectAndNotify, 
+  			  issuer, 
+  			  GNSProtocol.GUID.toString(), issuer.getGuid(),
+  			  GNSProtocol.QUERY.toString(), query,
+      		  GNSProtocol.SELECT_NOTIFICATION.toString(), notification.toString());
+  }
+  
+  
+  /**
+   * The command to request the select notification status for an earlier 
+   * issued selectAndNotify request. The command takes as input the 
+   * {@link SelectHandleInfo}, which a caller gets in reply after issuing a
+   * selectAndNotify request. The command returns notification stats, which is a 
+   * JSONObject representation of {@link NotificationStatsToIssuer}.
+   * 
+   * @param selectHandle
+   * @return 
+   * CommandPacket contains a JSONObject representation of {@link NotificationStatsToIssuer}.
+   * @throws ClientException
+   */
+  public static final CommandPacket selectNotificationStatus(SelectHandleInfo selectHandle) 
+    										throws ClientException
+  {
+	  try
+  	  {
+  		  return getCommand(CommandType.SelectNotificationStatus,  null,
+  				  GNSProtocol.SELECT_NOTIFICATION_HANDLE.toString(), 
+  				  selectHandle.toJSONArray());
+  	  } catch (JSONException e) 
+  	  {
+  		  throw new ClientException(e);
+  	  }
+  }
+  
+  
+  
   /**
    * Selects all guid records that match {@code query}. The result type of the
    * execution result of this query is {@link CommandResultType#LIST}.

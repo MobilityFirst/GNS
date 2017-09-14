@@ -25,48 +25,53 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gnscommon.packets.commandreply.LocalSelectHandleInfo;
+import edu.umass.cs.gnscommon.packets.commandreply.SelectHandleInfo;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 
 /**
  * A SelectRequestPacket is like a DNS_SUBTYPE_QUERY packet without a GUID, but with a key and value.
  * The semantics is that we want to look up all the records that have a field named key with the given value.
- * We also use this to do automatic group GUID maintenence.
+ * We also use this to do automatic group GUID maintenance.
+ * 
+ * This packet also has a field to include a notification, which needs to be sent to 
+ * all GUIDs that satisfy a query in a select request.
  *
- * @author westy
+ * @author westy, aditya
  */
-public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
-        implements ClientRequest {
-
-  private final static String ID = "id";
-  private final static String KEY = "key";
-  private final static String READER = "reader";
-  private final static String VALUE = "value";
-  private final static String OTHERVALUE = "otherValue";
-  private final static String QUERY = "query";
-  private final static String PROJECTION = "projection";
-  private final static String CCPQUERYID = "ccpQueryId";
-  private final static String NSQUERYID = "nsQueryId";
-  private final static String SELECT_OPERATION = "operation";
-  private final static String GROUP_BEHAVIOR = "group";
-  private final static String GUID = "guid";
-  private final static String REFRESH = "refresh";
-
-  //
-  private long requestId;
-  private String reader;
-  private String key;
-  private Object value;
-  private Object otherValue;
-  private String query;
-  private List<String> projection;
-  private int ccpQueryId = -1; // used by the command processor to maintain state
-  private int nsQueryId = -1; // used by the name server to maintain state
-  private SelectOperation selectOperation;
-  private SelectGroupBehavior groupBehavior;
-  // for group guid
-  private String guid; // the group GUID we are maintaning or null for simple select
-  private int minRefreshInterval; // minimum time between allowed refreshes of the guid
-
+public class SelectRequestPacket extends BasicPacketWithNSReturnAddress implements ClientRequest 
+{
+	private final static String KEY 							= "key";
+	private final static String READER 							= "reader";
+	private final static String VALUE 							= "value";
+	private final static String OTHERVALUE 						= "otherValue";
+	private final static String QUERY 							= "query";
+	private final static String PROJECTION 						= "projection";
+	private final static String NSQUERYID 						= "nsQueryId";
+	private final static String SELECT_OPERATION 				= "operation";
+	private final static String NOTIFICATION_STR 				= "notifcationMesg";
+	private final static String SELECT_HANDLE 					= "selectHandle";
+	private final static String LOCAL_SELECT_HANDLE 			= "localSelectHandle";
+  
+  
+	private SelectOperation selectOperation;
+  
+	//
+	private String reader;
+	private String key;
+	private Object value;
+	private Object otherValue;
+	private String query;
+	private List<String> projection;
+	private int nsQueryId = -1; // used by the name server to maintain state
+  
+  
+	private String notificationStr = null;
+	
+	private LocalSelectHandleInfo localSelectHandle = null;
+	// used for notification status select operation. 
+	private SelectHandleInfo selectHandle = null;  
+	
   /**
    * Constructs a new SelectRequestPacket
    *
@@ -74,25 +79,20 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @param selectOperation
    * @param key
    * @param reader
-   * @param groupBehavior
    * @param value
    * @param otherValue
    */
-  public SelectRequestPacket(long id, SelectOperation selectOperation,
-          SelectGroupBehavior groupBehavior,
+  public SelectRequestPacket(SelectOperation selectOperation,
           String reader, String key, Object value, Object otherValue) {
     super();
     this.type = Packet.PacketType.SELECT_REQUEST;
-    this.requestId = id;
     this.reader = reader;
     this.key = key;
     this.value = value;
     this.otherValue = otherValue;
     this.selectOperation = selectOperation;
-    this.groupBehavior = groupBehavior;
     this.query = null;
     this.projection = null;
-    this.guid = null;
   }
 
   /*
@@ -101,28 +101,26 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @param id
    * @param lns
    * @param selectOperation
-   * @param groupOperation
    * @param query
    * @param guid
-   * @param minRefreshInterval
    */
-  private SelectRequestPacket(long id, SelectOperation selectOperation,
-          SelectGroupBehavior groupOperation,
-          String reader, String query, List<String> projection,
-          String guid, int minRefreshInterval) {
+  private SelectRequestPacket(SelectOperation selectOperation,
+          String reader, String query, List<String> projection, 
+          String notifcationStr, SelectHandleInfo selectHandle, 
+          LocalSelectHandleInfo localHandle)
+  {
     super();
     this.type = Packet.PacketType.SELECT_REQUEST;
-    this.requestId = id;
     this.reader = reader;
     this.query = query;
     this.projection = projection;
     this.selectOperation = selectOperation;
-    this.groupBehavior = groupOperation;
     this.key = null;
     this.value = null;
     this.otherValue = null;
-    this.guid = guid;
-    this.minRefreshInterval = minRefreshInterval;
+    this.notificationStr = notifcationStr;
+    this.selectHandle = selectHandle;
+    this.localSelectHandle = localHandle;
   }
 
   /**
@@ -134,77 +132,86 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    * @param projection
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket MakeQueryRequest(long id, String reader, String query, List<String> projection) {
-    return new SelectRequestPacket(id, SelectOperation.QUERY,
-            SelectGroupBehavior.NONE, reader, query, projection,
-            null, -1);
+  public static SelectRequestPacket makeQueryRequest( String reader, 
+		  String query, List<String> projection) 
+  {
+	  return new SelectRequestPacket(SelectOperation.QUERY, 
+    		reader, query, projection, null, null, null);
   }
-
+  
+  
   /**
-   * Just like a MakeQueryRequest except we're creating a new group guid to maintain results.
-   * Creates a request to search all name servers for GUIDs that match the given query.
+   * Creates a request to search name servers to compute the GUIDs that satisfy 
+   * the given query and send those the given  notification.
    *
    * @param id
    * @param reader
    * @param query
    * @param projection
-   * @param guid
-   * @param refreshInterval
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket MakeGroupSetupRequest(long id, String reader,
-          String query, List<String> projection,
-          String guid,
-          int refreshInterval) {
-    return new SelectRequestPacket(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP,
-            reader, query, projection,
-            guid, refreshInterval);
+  public static SelectRequestPacket makeSelectNotifyRequest(String reader, String query, 
+		  			List<String> projection, String notificationStr) 
+  {
+	  return new SelectRequestPacket(SelectOperation.SELECT_NOTIFY,
+			  reader, query, projection, notificationStr, null, null);
   }
-
+  
+  
   /**
-   * Just like a MakeQueryRequest except we're potentially updating the group guid to maintain results.
-   * Creates a request to search all name servers for GUIDs that match the given query.
+   * Creates a SelectRequestPacket for a NOTIFICATION_STATUS select operation. 
    *
    * @param id
    * @param reader
-   * @param guid
+   * @param selectHandle
+   * 
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket MakeGroupLookupRequest(long id, String reader, String guid) {
-    return new SelectRequestPacket(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP,
-            reader, null, guid, -1);
+  public static SelectRequestPacket makeSelectNotificationStatusRequest
+  					(String reader, SelectHandleInfo selectHandle, 
+  					LocalSelectHandleInfo localSelectHandle)
+  {
+	  return new SelectRequestPacket(SelectOperation.NOTIFICATION_STATUS,
+			  reader, null, null, null, selectHandle, localSelectHandle);
   }
-
+  
   /**
    * Constructs new SelectRequestPacket from a JSONObject
    *
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
    */
-  public SelectRequestPacket(JSONObject json) throws JSONException {
-    super(json);
-    if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
-      throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));
-    }
-    this.type = Packet.getPacketType(json);
-    this.requestId = json.getLong(ID);
-    this.reader = json.has(READER) ? json.getString(READER) : null;
-    this.key = json.has(KEY) ? json.getString(KEY) : null;
-    this.value = json.optString(VALUE, null);
-    this.otherValue = json.optString(OTHERVALUE, null);
-    this.query = json.optString(QUERY, null);
-    if (json.has(PROJECTION)) {
-      this.projection = JSONUtils.JSONArrayToArrayListString(json.getJSONArray(PROJECTION));
-    } else {
-      this.projection = null;
-    }
-    this.ccpQueryId = json.getInt(CCPQUERYID);
-    //this.nsID = new NodeIDType(json.getString(NSID));
-    this.nsQueryId = json.getInt(NSQUERYID);
-    this.selectOperation = SelectOperation.valueOf(json.getString(SELECT_OPERATION));
-    this.groupBehavior = SelectGroupBehavior.valueOf(json.getString(GROUP_BEHAVIOR));
-    this.guid = json.optString(GUID, null);
-    this.minRefreshInterval = json.optInt(REFRESH, -1);
+  public SelectRequestPacket(JSONObject json) throws JSONException 
+  {
+	  super(json);
+	  if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
+		  throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));
+	  }
+	  this.type = Packet.getPacketType(json);
+	  //this.requestId = json.getLong(ID);
+	  this.selectOperation = SelectOperation.valueOf(json.getString(SELECT_OPERATION));
+	  
+	  this.reader = json.optString(READER, null);
+	  this.key = json.optString(KEY, null);
+	  this.value = json.optString(VALUE, null);
+	  this.otherValue = json.optString(OTHERVALUE, null);
+	  this.query = json.optString(QUERY, null);
+	  if (json.has(PROJECTION)) 
+	  {
+		  this.projection = JSONUtils.JSONArrayToArrayListString(json.getJSONArray(PROJECTION));
+	  } else 
+	  {
+		  this.projection = null;
+	  }
+	  this.nsQueryId = json.getInt(NSQUERYID);
+	  
+	  this.notificationStr = json.optString(NOTIFICATION_STR, null);
+	  this.selectHandle = json.has(SELECT_HANDLE) ? 
+			  	SelectHandleInfo.fromJSONArray(json.getJSONArray(SELECT_HANDLE)):null;
+			  	
+	  this.localSelectHandle = json.has(LOCAL_SELECT_HANDLE) ?
+			  	LocalSelectHandleInfo.fromJSONObject(json.getJSONObject(LOCAL_SELECT_HANDLE)):null;
+	
   }
 
   /**
@@ -221,48 +228,47 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
   }
 
   @Override
-  public void addToJSONObject(JSONObject json) throws JSONException {
-    Packet.putPacketType(json, getType());
-    super.addToJSONObject(json);
-    json.put(ID, requestId);
-    if (reader != null) {
-      json.put(READER, reader);
-    }
-    if (key != null) {
-      json.put(KEY, key);
-    }
-    if (value != null) {
-      json.put(VALUE, value);
-    }
-    if (otherValue != null) {
-      json.put(OTHERVALUE, otherValue);
-    }
-    if (query != null) {
-      json.put(QUERY, query);
-    }
-    if (projection != null) {
-      json.put(PROJECTION, projection);
-    }
-    json.put(CCPQUERYID, ccpQueryId);
-    //json.put(NSID, nsID.toString());
-    json.put(NSQUERYID, nsQueryId);
-    json.put(SELECT_OPERATION, selectOperation.name());
-    json.put(GROUP_BEHAVIOR, groupBehavior.name());
-    if (guid != null) {
-      json.put(GUID, guid);
-    }
-    if (minRefreshInterval != -1) {
-      json.put(REFRESH, minRefreshInterval);
-    }
-  }
-
-  /**
-   * Set the CCP Query ID.
-   *
-   * @param ccpQueryId
-   */
-  public void setCCPQueryId(int ccpQueryId) {
-    this.ccpQueryId = ccpQueryId;
+  public void addToJSONObject(JSONObject json) throws JSONException 
+  {
+	  Packet.putPacketType(json, getType());
+	  super.addToJSONObject(json);
+	  json.put(NSQUERYID, nsQueryId);
+	  json.put(SELECT_OPERATION, selectOperation.name());
+    
+	  if (reader != null) 
+	  {
+		  json.put(READER, reader);
+	  }
+	  if (key != null) {
+		  json.put(KEY, key);
+	  }
+	  if (value != null) {
+		  json.put(VALUE, value);
+	  }
+	  if (otherValue != null) {
+		  json.put(OTHERVALUE, otherValue);
+	  }
+	  if (query != null) {
+		  json.put(QUERY, query);
+	  }
+	  if (projection != null) {
+		  json.put(PROJECTION, projection);
+	  }
+    
+	  if(this.notificationStr != null)
+	  {
+		  json.put(NOTIFICATION_STR, notificationStr);
+	  }
+	  
+	  if(this.selectHandle != null)
+	  {
+		  json.put(SELECT_HANDLE, selectHandle.toJSONArray());
+	  }
+	  
+	  if(this.localSelectHandle != null)
+	  {
+		  json.put(LOCAL_SELECT_HANDLE, this.localSelectHandle.toJSONObject());
+	  }
   }
 
   /**
@@ -270,35 +276,20 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    *
    * @param nsQueryId
    */
-  public void setNsQueryId(int nsQueryId) {
-    this.nsQueryId = nsQueryId;
+  public void setNsQueryId(int nsQueryId) 
+  {
+	  this.nsQueryId = nsQueryId;
   }
-
-  /**
-   * Return the ID.
-   *
-   * @return the ID
-   */
-  public long getId() {
-    return requestId;
-  }
-
-  /**
-   * Sets the request id.
-   *
-   * @param requestId
-   */
-  public void setRequestId(long requestId) {
-    this.requestId = requestId;
-  }
+  
 
   /**
    * Return the reader.
    *
    * @return the reader
    */
-  public String getReader() {
-    return reader;
+  public String getReader() 
+  {
+	  return reader;
   }
 
   /**
@@ -306,8 +297,9 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    *
    * @return the key
    */
-  public String getKey() {
-    return key;
+  public String getKey() 
+  {
+	  return key;
   }
 
   /**
@@ -315,17 +307,9 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    *
    * @return the value
    */
-  public Object getValue() {
-    return value;
-  }
-
-  /**
-   * Return the CCP query requestId.
-   *
-   * @return the CCP query requestId
-   */
-  public int getCcpQueryId() {
-    return ccpQueryId;
+  public Object getValue() 
+  {
+	  return value;
   }
 
   /**
@@ -333,8 +317,9 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    *
    * @return the NS query requestId
    */
-  public int getNsQueryId() {
-    return nsQueryId;
+  public int getNsQueryId() 
+  {
+	  return nsQueryId;
   }
 
   /**
@@ -342,17 +327,9 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    *
    * @return the select operation
    */
-  public SelectOperation getSelectOperation() {
-    return selectOperation;
-  }
-
-  /**
-   * Return the group behavior.
-   *
-   * @return the group behavior
-   */
-  public SelectGroupBehavior getGroupBehavior() {
-    return groupBehavior;
+  public SelectOperation getSelectOperation() 
+  {
+	  return selectOperation;
   }
 
   /**
@@ -360,8 +337,9 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    *
    * @return the other value
    */
-  public Object getOtherValue() {
-    return otherValue;
+  public Object getOtherValue() 
+  {
+	  return otherValue;
   }
 
   /**
@@ -369,8 +347,9 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    *
    * @return the query
    */
-  public String getQuery() {
-    return query;
+  public String getQuery() 
+  {
+	  return query;
   }
 
   /**
@@ -404,31 +383,13 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    */
   @Override
   public String getServiceName() {
-	  // aditya: all select request packets should have this name.
-	  // All select requests should have same name because edu.umass.cs.reconfiguration.ActiveReplica
-	  // stores a demand profile for each distinct name, so we tag all select requests with 
-	  // the same  name so that they have only one name and edu.umass.cs.reconfiguration.ActiveReplica
-	  // stores only one demand profile. 
+      // aditya: all select request packets should have this name. 
+ 	  // All select requests should have same name because edu.umass.cs.reconfiguration.ActiveReplica
+ 	  // stores a demand profile for each distinct name, so we tag all select requests with 
+ 	  // the same  name so that they have only one name and edu.umass.cs.reconfiguration.ActiveReplica
+ 	  // stores only one demand profile. 
 	  
 	  return "SelectRequest";
-  }
-
-  /**
-   * Return the guid.
-   *
-   * @return the guid
-   */
-  public String getGuid() {
-    return guid;
-  }
-
-  /**
-   * Get the min refresh interval.
-   *
-   * @return the min refresh interval
-   */
-  public int getMinRefreshInterval() {
-    return minRefreshInterval;
   }
 
   /**
@@ -444,26 +405,62 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress
    *
    * @return the request id
    */
-  @Override
-  public long getRequestID() {
-    return requestId;
-  }
+//  @Override
+//  public long getRequestID() {
+//    return requestId;
+//  }
 
+  /**
+   * Returns the notification string. 
+   * @return
+   */
+  public String getNotificationString()
+  {
+	  return this.notificationStr;
+  }
+  
+  /**
+   * Returns the select handle.
+   * @return
+   */
+  public SelectHandleInfo getSelectHandleInfo()
+  {
+	  return this.selectHandle;
+  }
+  
+  /**
+   * Returns a local select handle. 
+   * @return
+   */
+  public LocalSelectHandleInfo getLocalSelectHandleInfo()
+  {
+	  return this.localSelectHandle;
+  }
+  
+  
   /**
    *
    * @return the summary object
    */
   @Override
-  public Object getSummary() {
-    return new Object() {
-      @Override
-      public String toString() {
-        return getType() + ":"
-                + requestId + ":"
+  public Object getSummary() 
+  {
+	  return new Object() 
+	  {
+		  @Override
+		  public String toString() {
+			  return getType() + ":"
                 + getQuery() 
                 + getProjection()
                 + "[" + SelectRequestPacket.this.getClientAddress() + "]";
-      }
-    };
+		  }
+	  };
   }
+  
+  @Override
+  public long getRequestID() 
+  {
+	  return -1;
+  }
+  
 }
