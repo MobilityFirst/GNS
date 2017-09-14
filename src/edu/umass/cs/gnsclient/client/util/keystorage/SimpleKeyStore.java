@@ -274,16 +274,6 @@ public class SimpleKeyStore extends AbstractKeyStorage
     }
   }
 
-  private void safelyClose(PreparedStatement p) {
-    try {
-      if (p != null) {
-        p.close();
-      }
-    } catch (SQLException e) {
-      DerbyControl.printSQLException(e);
-    }
-  }
-
   private boolean tableExists(String name) {
     try {
       DatabaseMetaData dbm = conn.getMetaData();

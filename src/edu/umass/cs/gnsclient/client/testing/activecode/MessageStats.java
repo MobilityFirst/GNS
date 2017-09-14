@@ -1,6 +1,5 @@
 package edu.umass.cs.gnsclient.client.testing.activecode;
 
-import edu.umass.cs.gnsclient.examples.*;
 import java.util.ArrayList;
 
 /**

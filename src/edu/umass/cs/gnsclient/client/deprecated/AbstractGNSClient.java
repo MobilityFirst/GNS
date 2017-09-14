@@ -174,10 +174,6 @@ public abstract class AbstractGNSClient {
             GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TIMEOUT.toString() + " for command " + commandPacket.getSummary());
   }
 
-  private CommandPacket desktopSendCommmandNoWait(JSONObject command) throws IOException {
-    return this.desktopSendCommmandNoWait(command, generateNextRequestID());
-  }
-
   /**
    *
    * @return true if force coordinated reads is true

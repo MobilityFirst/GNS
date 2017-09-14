@@ -32,7 +32,6 @@ import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.CommandType;
 
-import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.util.Collections;
@@ -187,7 +186,6 @@ public class ThroughputAsynchMultiClientTest {
    * @param alias - the alias to use to create the account guid. null uses "boo@hoo.com".
    */
   public ThroughputAsynchMultiClientTest(String alias) {
-    InetSocketAddress address;
     if (alias != null) {
       accountAlias = alias;
     }
@@ -230,9 +228,6 @@ public class ThroughputAsynchMultiClientTest {
       }
 
       String alias = parser.getOptionValue("alias");
-      String host = parser.getOptionValue("host");
-      String port = parser.getOptionValue("port");
-      boolean disableSSL = parser.hasOption("disableSSL");
 
       if (parser.hasOption("op")
               && ("update".equals(parser.getOptionValue("op"))
@@ -515,8 +510,6 @@ public class ThroughputAsynchMultiClientTest {
    * WorkerTask.
    */
   public class WorkerTask implements Runnable {
-
-    private final int clientNumber;
     private final int requests;
     Random rand = new Random();
 
@@ -526,7 +519,6 @@ public class ThroughputAsynchMultiClientTest {
      * @param requests
      */
     public WorkerTask(int clientNumber, int requests) {
-      this.clientNumber = clientNumber;
       this.requests = requests;
     }
 

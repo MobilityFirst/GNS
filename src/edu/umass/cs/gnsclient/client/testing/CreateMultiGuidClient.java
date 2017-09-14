@@ -104,7 +104,6 @@ public class CreateMultiGuidClient {
 
     @Override
     public void run() {
-      String guid = guidAccount.getGuid();
 
       JSONObject json;
       try {

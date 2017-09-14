@@ -141,7 +141,6 @@ public class Util {
    * @param arguments
    * @return the new object
    */
-  @SuppressWarnings("unchecked")
   public static Object createObject(String className, Object... arguments) {
     Object object;
     Class<?>[] types = new Class<?>[arguments.length];
@@ -395,17 +394,6 @@ public class Util {
     throw new RuntimeException("Asserts not enabled; exiting");
   }
 
-  // cute little hack to show us where
-  private String stackTraceToString() {
-    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-    return (stackTrace.length > 2 ? stackTrace[2].toString() + "\n   " : "")
-            + (stackTrace.length > 3 ? stackTrace[3].toString() + "\n   " : "")
-            + (stackTrace.length > 4 ? stackTrace[4].toString() + "\n   " : "")
-            + (stackTrace.length > 5 ? stackTrace[5].toString() + "\n   " : "")
-            + (stackTrace.length > 6 ? stackTrace[6].toString() + "\n   " : "")
-            + (stackTrace.length > 7 ? stackTrace[7].toString() + "\n   " : "")
-            + (stackTrace.length > 8 ? stackTrace[8].toString() + "\n" : "");
-  }
 
   /**
    *

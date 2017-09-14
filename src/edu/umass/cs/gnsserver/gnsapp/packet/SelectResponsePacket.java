@@ -20,6 +20,8 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.packets.commandreply.NotificationStatsToIssuer;
 
 import java.net.InetSocketAddress;
 
@@ -33,38 +35,24 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddress
-        implements ClientRequest {
-
-  //
-  private final static String ID = "id";
-  private final static String RECORDS = "records";
-  private final static String GUIDS = "guids";
-  private final static String NSQUERYID = "nsQueryId";
-  private final static String RESPONSECODE = "code";
-  private final static String ERRORSTRING = "error";
+public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddress implements ClientRequest 
+{
+	//
+	private final static String ID 						= "id";
+	private final static String RECORDS 				= "records";
+	private final static String NOTIFICATION_STATS		= "notificationStats";
+	private final static String NSQUERYID 				= "nsQueryId";
+	private final static String RESPONSECODE 			= "code";
+	private final static String ERRORSTRING 			= "error";
+	
+	private long requestId;
+	private int nsQueryId;
+	private JSONArray records;
+	// Only used in SelectNotify command.
+	private NotificationStatsToIssuer notificationStats;
   
-  /**
-   * The possible response codes for select packets.
-   */
-  public enum ResponseCode {
-    /**
-     * NOERROR
-     */
-    NOERROR, 
-    /**
-     * ERROR
-     */
-    ERROR
-
-  }
-
-  private long requestId;
-  private int nsQueryId;
-  private JSONArray records;
-  private JSONArray guids;
-  private ResponseCode responseCode;
-  private String errorMessage;
+	private ResponseCode responseCode;
+	private String errorMessage;
 
   /*
    * Constructs a new SelectResponsePacket
@@ -73,16 +61,18 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
    * @param jsonObject
    */
   private SelectResponsePacket(long id, InetSocketAddress clientAddress, int nsQueryId,
-          InetSocketAddress nsAddress, JSONArray records, JSONArray guids, ResponseCode responseCode,
-          String errorMessage) {
-    super(nsAddress, clientAddress);
-    this.type = Packet.PacketType.SELECT_RESPONSE;
-    this.requestId = id;
-    this.nsQueryId = nsQueryId;
-    this.records = records;
-    this.guids = guids;
-    this.responseCode = responseCode;
-    this.errorMessage = errorMessage;
+          InetSocketAddress nsAddress, JSONArray records, 
+          NotificationStatsToIssuer notificationStats, ResponseCode responseCode,
+          String errorMessage) 
+  {
+	  super(nsAddress, clientAddress);
+	  this.type = Packet.PacketType.SELECT_RESPONSE;
+	  this.requestId = id;
+	  this.nsQueryId = nsQueryId;
+	  this.records = records;
+	  this.notificationStats = notificationStats;
+	  this.responseCode = responseCode;
+	  this.errorMessage = errorMessage;
   }
 
   /**
@@ -98,28 +88,32 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
    */
   public static SelectResponsePacket makeSuccessPacketForFullRecords(
           long id, InetSocketAddress lnsAddress,
-          long lnsQueryId,
-          int nsQueryId, InetSocketAddress nsAddress, JSONArray records) {
-    return new SelectResponsePacket(id, lnsAddress, nsQueryId, nsAddress, records, null,
-            ResponseCode.NOERROR, null);
+          int nsQueryId, InetSocketAddress nsAddress, JSONArray records) 
+  {
+	  return new SelectResponsePacket(id, lnsAddress, nsQueryId, nsAddress, records,
+			  null, ResponseCode.NO_ERROR, null);
   }
-
+  
   /**
-   * Used by a NameServer to a send response with only a list of guids back to the Local NameServer
+   * Used by a NameServer to a send response with notification stats back to 
+   * an entry-point name server. 
    *
    * @param id
    * @param lnsAddress
    * @param nsQueryId
    * @param nsAddress
-   * @param guids
+   * @param notificationStats
    * @return a SelectResponsePacket
    */
-  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(long id,
-          InetSocketAddress lnsAddress,
-          int nsQueryId, InetSocketAddress nsAddress, JSONArray guids) {
-    return new SelectResponsePacket(id, lnsAddress, nsQueryId, nsAddress,
-            null, guids, ResponseCode.NOERROR, null);
+  public static SelectResponsePacket makeSuccessPacketForNotificationStatsOnly
+  			(long id, InetSocketAddress lnsAddress,
+  					int nsQueryId, InetSocketAddress nsAddress, 
+  					NotificationStatsToIssuer notificationStats) 
+  {
+	  return new SelectResponsePacket(id, lnsAddress, nsQueryId, nsAddress,
+            null, notificationStats, ResponseCode.NO_ERROR, null);
   }
+  
 
   /**
    * Used by a NameServer to a failure response to a NameServer or Local NameServer
@@ -134,9 +128,9 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
   public static SelectResponsePacket makeFailPacket(long id, InetSocketAddress lnsAddress,
            int nsQueryId, InetSocketAddress nsAddress, String errorMessage) {
     return new SelectResponsePacket(id, lnsAddress, nsQueryId, nsAddress,
-            null, null, ResponseCode.ERROR, errorMessage);
+            null, null, ResponseCode.UNSPECIFIED_ERROR, errorMessage);
   }
-
+  
   /**
    * Constructs new SelectResponsePacket from a JSONObject
    *
@@ -156,7 +150,11 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
     this.responseCode = ResponseCode.valueOf(json.getString(RESPONSECODE));
     // either of these could be null
     this.records = json.optJSONArray(RECORDS);
-    this.guids = json.optJSONArray(GUIDS);
+    if(json.has(NOTIFICATION_STATS))
+    {
+    	this.notificationStats = NotificationStatsToIssuer.fromJSON
+    			(json.optJSONObject(NOTIFICATION_STATS));
+    }
     this.errorMessage = json.optString(ERRORSTRING, null);
 
   }
@@ -177,14 +175,16 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
     json.put(NSQUERYID, nsQueryId);
     //json.put(NAMESERVER, nameServer.toString());
     json.put(RESPONSECODE, responseCode.name());
-    if (records != null) {
-      json.put(RECORDS, records);
+    if (records != null) 
+    {
+    	json.put(RECORDS, records);
     }
-    if (guids != null) {
-      json.put(GUIDS, guids);
+    if(this.notificationStats != null)
+    {
+    	json.put(NOTIFICATION_STATS, notificationStats.toJSONObject());
     }
     if (errorMessage != null) {
-      json.put(ERRORSTRING, errorMessage);
+    	json.put(ERRORSTRING, errorMessage);
     }
     return json;
   }
@@ -194,9 +194,9 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
    *
    * @return the requestId
    */
-  public long getId() {
-    return requestId;
-  }
+//  public long getId() {
+//    return requestId;
+//  }
 
   /**
    * Return the records.
@@ -205,15 +205,6 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
    */
   public JSONArray getRecords() {
     return records;
-  }
-
-  /**
-   * Return the guids.
-   *
-   * @return the guids
-   */
-  public JSONArray getGuids() {
-    return guids;
   }
 
   /**
@@ -249,14 +240,13 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
    */
   @Override
   public String getServiceName() {
-	  
 	  // aditya: all select response packets should have this name. 
 	  // All select responses should have same name because edu.umass.cs.reconfiguration.ActiveReplica
 	  // stores a demand profile for each distinct name, so we tag all select responses with 
 	  // the same  name so that they have only one name and edu.umass.cs.reconfiguration.ActiveReplica
 	  // stores only one demand profile. 
 	  
-	  return "SelectResponse";
+    return "SelectResponse";
   }
 
   /**
@@ -275,5 +265,10 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
   @Override
   public long getRequestID() {
     return requestId;
+  }
+  
+  public NotificationStatsToIssuer getNotificationStats()
+  {
+	  return this.notificationStats;
   }
 }

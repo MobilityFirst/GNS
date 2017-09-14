@@ -25,9 +25,12 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.packets.commandreply.NotificationStatsToIssuer;
+import edu.umass.cs.gnscommon.packets.commandreply.SelectHandleInfo;
 import edu.umass.cs.gnscommon.utils.RandomString;
 
 import edu.umass.cs.gnscommon.utils.StringUtil;
+import edu.umass.cs.gnsserver.gnsapp.selectnotification.examples.TestSelectNotification;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Utils;
 import java.awt.geom.Point2D;
@@ -35,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 import java.util.Set;
@@ -68,20 +72,13 @@ public class SelectTest extends DefaultGNSTest {
   /**
    *
    */
-  public SelectTest() {
-//    if (clientCommands == null) {
-//      try {
-//        clientCommands = new GNSClientCommands();
-//        clientCommands.setForceCoordinatedReads(true).setNumRetriesUponTimeout(1);
-//      } catch (IOException e) {
-//        Utils.failWithStackTrace("Exception creating client: " + e);
-//      }
+  public SelectTest() 
+  {  
     try {
       masterGuid = GuidUtils.getGUIDKeys(globalAccountName);
     } catch (Exception e) {
       Utils.failWithStackTrace("Exception while creating account guid: " + e);
     }
-    //}
   }
 
   /**
@@ -96,8 +93,6 @@ public class SelectTest extends DefaultGNSTest {
       westyEntry = GuidUtils.getGUIDKeys(westyName);
       client.execute(GNSCommand.guidCreate(masterGuid, samName));
       samEntry = GuidUtils.getGUIDKeys(samName);
-//      westyEntry = clientCommands.guidCreate(masterGuid, "westy" + RandomString.randomString(12));
-//      samEntry = clientCommands.guidCreate(masterGuid, "sam" + RandomString.randomString(12));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (ClientException | IOException e) {
@@ -573,9 +568,10 @@ public class SelectTest extends DefaultGNSTest {
       Utils.failWithStackTrace("Exception executing empty query " + e);
     }
   }
-
+  
   /**
    * Check an empty query
+   * Empty query is also a malformed query
    */
   @Test
   public void test_091_EmptyQueryQuotes() {
@@ -584,9 +580,14 @@ public class SelectTest extends DefaultGNSTest {
       JSONArray result = client.execute(GNSCommand.selectQuery(query)).getResultJSONArray();
       for (int i = 0; i < result.length(); i++) {
         Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
-      }
-    } catch (IOException | JSONException | ClientException e) {
-      Utils.failWithStackTrace("Exception executing empty query " + e);
+      }      
+    } catch ( ClientException e) 
+    {
+    	System.out.println("Expected client exception for {} select query");
+    }
+    catch (IOException | JSONException e) 
+    {
+    	Utils.failWithStackTrace("Exception executing empty query " + e);
     }
   }
 
@@ -594,15 +595,22 @@ public class SelectTest extends DefaultGNSTest {
    * Check an empty query
    */
   @Test
-  public void test_092_EmptyQueryBrackets() {
+  public void test_092_EmptyQueryBrackets() 
+  {
     try {
       String query = "[]";
       JSONArray result = client.execute(GNSCommand.selectQuery(query)).getResultJSONArray();
       for (int i = 0; i < result.length(); i++) {
         Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
       }
-    } catch (IOException | JSONException | ClientException e) {
-      Utils.failWithStackTrace("Exception executing empty query " + e);
+    }
+    catch (ClientException e) 
+    {
+    	System.out.println("Expected client exception for [] select query");
+    }
+    catch (IOException | JSONException  e) 
+    {
+    	Utils.failWithStackTrace("Exception executing empty query " + e);
     }
   }
 
@@ -617,7 +625,12 @@ public class SelectTest extends DefaultGNSTest {
       for (int i = 0; i < result.length(); i++) {
         Assert.assertTrue(StringUtil.isValidGuidString(result.get(i).toString()));
       }
-    } catch (IOException | JSONException | ClientException e) {
+    } 
+    catch (ClientException e) 
+    {
+    	System.out.println("Expected client exception for malformed select query");
+    }
+    catch (IOException | JSONException e) {
       Utils.failWithStackTrace("Exception executing empty query " + e);
     }
   }
@@ -660,6 +673,112 @@ public class SelectTest extends DefaultGNSTest {
     } catch (ClientException e) {
       // Expected
     }
+  }
+  
+  
+  /**
+   * Checks the select notify functionality. 
+   * For this test to pass, SELECT_REPONSE_PROCESSOR macro should be 
+   * edu.umass.cs.gnsserver.gnsapp.selectnotification.PendingSelectResponseProcessor
+   */
+  @Test
+  public void test_100_SelectNotifyTest() 
+  {
+	  String fieldName = "SelectNotifyTestField";
+	  try {
+		  for (int cnt = 0; cnt < 5; cnt++) {
+			  String queryTestName = "queryTest-" + RandomString.randomString(12);
+			  client.execute(GNSCommand.guidCreate(masterGuid, queryTestName));
+			  GuidEntry testEntry = GuidUtils.getGUIDKeys(queryTestName);
+			  CREATED_GUIDS.add(testEntry); // save them so we can delete them later
+			  JSONArray array = new JSONArray(Arrays.asList(25));
+			  client.execute(GNSCommand.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry));
+	      	}
+		  waitSettle(WAIT_SETTLE);
+	    } catch (ClientException | IOException e) {
+	      Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
+	    }
+
+	    try 
+	    {
+	    	String query = "~" + fieldName + " : ($gt: 0)";
+	    	
+	    	JSONObject result = client.execute(GNSCommand.selectAndNotify
+	    			(query, new LinkedList<String>(), 
+	    					new TestSelectNotification<String>("Test notification"))).getResultJSONObject();
+	    	
+	    	NotificationStatsToIssuer stats = NotificationStatsToIssuer.fromJSON(result);
+	    	
+	    	
+	    	// Greater than or equal to 5 because of duplicate notifications 
+	    	// in REPLICATE_ALL scheme.
+	    	Assert.assertThat(stats.getTotalNotifications(), Matchers.greaterThanOrEqualTo((long)5));
+	    	Assert.assertThat(stats.getPendingNotifications(), Matchers.greaterThanOrEqualTo((long)5));
+	    	Assert.assertThat(stats.getFailedNotifications(), Matchers.equalTo((long)0));
+	    	
+	    } catch (ClientException | IOException | JSONException e) {
+	    	Utils.failWithStackTrace("Exception executing selectAndNotify: " + e);
+	    }
+  }
+  
+  
+  /**
+   * Checks the select notify functionality. 
+   * For this test to pass, SELECT_REPONSE_PROCESSOR macro should be 
+   * edu.umass.cs.gnsserver.gnsapp.selectnotification.PendingSelectResponseProcessor
+   */
+  @Test
+  public void test_101_SelectNotificationStatusTest() 
+  {
+	  String fieldName = "SelectNotificationStatusTestField";
+	  try {
+		  for (int cnt = 0; cnt < 5; cnt++) {
+			  String queryTestName = "queryTest-" + RandomString.randomString(12);
+			  client.execute(GNSCommand.guidCreate(masterGuid, queryTestName));
+			  GuidEntry testEntry = GuidUtils.getGUIDKeys(queryTestName);
+			  CREATED_GUIDS.add(testEntry); // save them so we can delete them later
+			  JSONArray array = new JSONArray(Arrays.asList(25));
+			  client.execute(GNSCommand.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry));
+	      	}
+		  waitSettle(WAIT_SETTLE);
+	    } catch (ClientException | IOException e) {
+	      Utils.failWithStackTrace("Exception while trying to create the guids: " + e);
+	    }
+
+	    try 
+	    {
+	    	String query = "~" + fieldName + " : ($gt: 0)";
+	    	
+	    	JSONObject result = client.execute(GNSCommand.selectAndNotify
+	    			(query, new LinkedList<String>(), 
+	    					new TestSelectNotification<String>("Test notification"))).getResultJSONObject();
+	    	
+	    	NotificationStatsToIssuer stats = NotificationStatsToIssuer.fromJSON(result);
+	    	
+	    	
+	    	// Greater than or equal to 5 because of duplicate notifications 
+	    	// in REPLICATE_ALL scheme.
+	    	Assert.assertThat(stats.getTotalNotifications(), Matchers.greaterThanOrEqualTo((long)5));
+	    	Assert.assertThat(stats.getPendingNotifications(), Matchers.greaterThanOrEqualTo((long)5));
+	    	Assert.assertThat(stats.getFailedNotifications(), Matchers.equalTo((long)0));
+	    	
+	    	
+	    	SelectHandleInfo selectHandle = stats.getSelectHandleInfo();
+	    	
+	    	JSONObject result1  
+		    		= client.execute(GNSCommand.selectNotificationStatus(selectHandle)).getResultJSONObject();
+		    	
+		    NotificationStatsToIssuer stats1 = NotificationStatsToIssuer.fromJSON(result1);
+		    	
+	    	// Greater than or equal to 5 because of duplicate notifications 
+	    	// in REPLICATE_ALL scheme.
+	    	Assert.assertThat(stats1.getTotalNotifications(), Matchers.greaterThanOrEqualTo((long)5));
+	    	Assert.assertThat(stats1.getPendingNotifications(), Matchers.greaterThanOrEqualTo((long)5));
+	    	Assert.assertThat(stats1.getFailedNotifications(), Matchers.equalTo((long)0));
+	    	
+	    } catch (ClientException | IOException | JSONException e) {
+	    	Utils.failWithStackTrace("Exception executing selectAndNotify: " + e);
+	    }
   }
 
   /**
@@ -727,7 +846,8 @@ public class SelectTest extends DefaultGNSTest {
             + "}";
   }
 
-  private static String buildMultipleLocationsQuery(String locationField1, String locationField2, List<Point2D> coordinates) throws JSONException {
+  @SuppressWarnings("unused")
+private static String buildMultipleLocationsQuery(String locationField1, String locationField2, List<Point2D> coordinates) throws JSONException {
     return buildOrQuery(buildLocationQuery(locationField1, coordinates),
             buildLocationQuery(locationField2, coordinates)
     );

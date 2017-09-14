@@ -326,8 +326,7 @@ public class ServerConnectTest extends DefaultTest {
   public ServerConnectTest() {
 
   }
-
-  private static final int RETRANSMISSION_INTERVAL = 100;
+  
   // arun: this should be zero
   private static final int COORDINATION_WAIT = 00;
 
