@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,7 +43,6 @@ public class BatchCreateOpsFail extends DefaultTest {
   private static GuidEntry[] accountGuidEntries;
   private static GuidEntry[] guidEntries;
   private static GNSClientCommands[] clients;
-  private static ScheduledThreadPoolExecutor executor;
 
   private static Logger log = GNSClientConfig.getLogger();
 
@@ -65,8 +62,6 @@ public class BatchCreateOpsFail extends DefaultTest {
     numGuids = Config.getGlobalInt(TC.NUM_GROUPS);
     numAccountGuids = accountGuidsOnly ? numGuids : Math.max((int) Math.ceil(numGuids * 1.0
             / numGuidsPerAccount), 1);
-    executor = (ScheduledThreadPoolExecutor) Executors
-            .newScheduledThreadPool(numClients);
   }
 
   private void setupClientsAndGuids() throws Exception {

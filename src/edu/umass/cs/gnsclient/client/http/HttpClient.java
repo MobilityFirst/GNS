@@ -34,7 +34,6 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
@@ -1827,11 +1826,7 @@ public class HttpClient {
       LOGGER.log(Level.FINE, "Canonical JSON: {0}", canonicalJSON);
 
       // Now grab the keypair for signing the canonicalJSON string
-      KeyPair keypair;
-      keypair = new KeyPair(guid.getPublicKey(), guid.getPrivateKey());
-
-      PrivateKey privateKey = keypair.getPrivate();
-      PublicKey publicKey = keypair.getPublic();
+      
       String signatureString;
       if (Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_SECRET_KEY)) {
         signatureString = CryptoUtils.signDigestOfMessageSecretKey(guid, canonicalJSON);
@@ -1848,11 +1843,11 @@ public class HttpClient {
       // This is a debugging aid so we can auto check the message part on the other side. 
       String debuggingPart = "";
       // Currently not being used.
-      if (false) {
-        debuggingPart = KEYSEP + "originalMessageBase64" + VALSEP
-                + URIEncoderDecoder.quoteIllegal(
-                        Base64.encodeToString(canonicalJSON.getBytes(GNSProtocol.CHARSET.toString()), false));
-      }
+//      if (false) {
+//        debuggingPart = KEYSEP + "originalMessageBase64" + VALSEP
+//                + URIEncoderDecoder.quoteIllegal(
+//                        Base64.encodeToString(canonicalJSON.getBytes(GNSProtocol.CHARSET.toString()), false));
+//      }
       // Finally return everything
       return encodedString.toString() + signaturePart + debuggingPart;
     } catch (JSONException | UnsupportedEncodingException e) {

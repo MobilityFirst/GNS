@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gnsclient.client.singletests.failingtests;
 
-import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;

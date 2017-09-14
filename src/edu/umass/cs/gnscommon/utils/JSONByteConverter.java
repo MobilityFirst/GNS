@@ -17,11 +17,8 @@ package edu.umass.cs.gnscommon.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,7 +33,7 @@ public class JSONByteConverter {
 	
 	//private static TypeReference<Map<String,Object>> typeRef = new TypeReference<Map<String, Object>>(){};
 	//private static TypeReference<JSONObject> typeRef = new TypeReference<JSONObject>(){};
-	private static Class<? extends JSONObject> jsonClass = new JSONObject().getClass();
+	//private static Class<? extends JSONObject> jsonClass = new JSONObject().getClass();
 	
 
 	private static final byte STRING_INDICATOR = 0;
@@ -139,6 +136,7 @@ public class JSONByteConverter {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private static final void byteJSONValue(Object value, ByteBuffer out) throws JSONException, IOException{
 		if (value instanceof JSONArray){
 			//byteJSONArray((JSONArray)value, out);

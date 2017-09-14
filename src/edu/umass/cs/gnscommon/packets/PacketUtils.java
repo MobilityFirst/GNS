@@ -90,8 +90,6 @@ public class PacketUtils {
 
 				new InternalRequestHeader() {
 
-					String mostRecentQueried = null;
-
 					@Override
 					public long getOriginatingRequestID() {
 						try {
@@ -115,7 +113,7 @@ public class PacketUtils {
 													.toString()) ? commandPacket
 									.getCommand().getString(
 											GNSProtocol.ORIGINATING_GUID
-													.toString()) : (this.mostRecentQueried =PacketUtils
+													.toString()) : (PacketUtils
 									.getOriginatingGUID(commandPacket));
 						} catch (JSONException e) {
 							return PacketUtils
@@ -125,7 +123,7 @@ public class PacketUtils {
 
 					@Override
 					public String getQueryingGUID() {
-						return this.mostRecentQueried=PacketUtils
+						return PacketUtils
 								.getOriginatingGUID(commandPacket);
 					}
 

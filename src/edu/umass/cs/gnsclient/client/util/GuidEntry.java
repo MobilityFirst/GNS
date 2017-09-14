@@ -172,6 +172,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
   }
 
 
+  @SuppressWarnings("unused")
   private static KeyPair generateKeyPair(String encodedPublic, String encodedPrivate)
           throws EncryptionException {
     byte[] encodedPublicKey = Base64.decode(encodedPublic);

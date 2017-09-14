@@ -11,7 +11,6 @@ import java.util.Set;
  * 
  * @author arun
  */
-@SuppressWarnings("deprecation")
 public class DisabledClasses {
 
 	/**

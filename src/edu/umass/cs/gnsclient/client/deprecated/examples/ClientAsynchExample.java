@@ -141,7 +141,7 @@ public class ClientAsynchExample {
       }
       // Actually send out the packet
       //client.sendCommandPacketAsynch(commandPacket);
-      ThreadUtils.sleep(100); // if you generate them too fast you'll clog things up 
+      //ThreadUtils.sleep(100); // if you generate them too fast you'll clog things up 
     }
   }
 

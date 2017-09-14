@@ -45,7 +45,6 @@ import java.util.List;
 public class Route53 {
 
   private static AmazonRoute53 route53;
-  private static final String CALLER_REFERENCE = "GNS";
   private static final String HOSTED_ZONE_ID = "Z10LUHH9502F33";
 
   /**
@@ -83,7 +82,8 @@ public class Route53 {
     }
   }
 
-  private static void createRecordSetFromHostedZone() {
+  @SuppressWarnings("unused")
+private static void createRecordSetFromHostedZone() {
 
     List<ResourceRecord> records = new ArrayList<>();
     ResourceRecord record = new ResourceRecord();

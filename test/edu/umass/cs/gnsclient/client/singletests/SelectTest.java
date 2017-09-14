@@ -846,7 +846,8 @@ public class SelectTest extends DefaultGNSTest {
             + "}";
   }
 
-  private static String buildMultipleLocationsQuery(String locationField1, String locationField2, List<Point2D> coordinates) throws JSONException {
+  @SuppressWarnings("unused")
+private static String buildMultipleLocationsQuery(String locationField1, String locationField2, List<Point2D> coordinates) throws JSONException {
     return buildOrQuery(buildLocationQuery(locationField1, coordinates),
             buildLocationQuery(locationField2, coordinates)
     );

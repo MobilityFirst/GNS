@@ -126,7 +126,6 @@ public class ReplicaLatencyTest {
       String alias = parser.getOptionValue("alias");
       String host = parser.getOptionValue("host");
       String port = parser.getOptionValue("port");
-      boolean debug = parser.hasOption("debug");
       String closeActiveReplica = parser.getOptionValue("closeAR");
       ReplicaLatencyTest test = new ReplicaLatencyTest(alias, host, port);
       // Need this on to read the which replica is responding
