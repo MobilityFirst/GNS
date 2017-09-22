@@ -129,6 +129,10 @@ public class NSSelectInfo {
     }
   }
   
+  /**
+   * Records the supplied {@code notificationStats}
+   * @param notificationStats
+   */
   public void addNotificationStat(NotificationStatsToIssuer notificationStats)
   {
 	  synchronized(notificationStatusList)
@@ -140,6 +144,11 @@ public class NSSelectInfo {
   	  }
   }
   
+  /**
+   * 
+   * @return Returns the list of all notificaiton stats recevied from the name servers, which processed
+   * the selectAndNotify GNSCommand. 
+   */
   public List<NotificationStatsToIssuer> getAllNotificationStats()
   {
 	  return this.notificationStatusList;
@@ -194,13 +203,17 @@ public class NSSelectInfo {
   
   /**
    * Returns all name servers to which this select request was sent to.
-   * @return
+   * @return The set of addresses of all name servers that processed a select request.
    */
   public Set<InetSocketAddress> getAllServers()
   {
 	  return this.allServers;
   }
   
+  /**
+   * 
+   * @return The select request packet, which was received at the entry-point name server. 
+   */
   public SelectRequestPacket getSelectRequestPacket()
   {
 	  return this.selectPacket;

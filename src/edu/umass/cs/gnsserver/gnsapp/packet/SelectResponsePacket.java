@@ -80,7 +80,6 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
    *
    * @param id
    * @param lnsAddress
-   * @param lnsQueryId
    * @param nsQueryId
    * @param nsAddress
    * @param records
@@ -266,7 +265,12 @@ public class SelectResponsePacket extends BasicPacketWithReturnAddressAndNsAddre
   public long getRequestID() {
     return requestId;
   }
-  
+
+  /**
+   * 
+   * @return an object of NotificationStatsIssuer, in case the this packet was
+   * in response to a selectAndNotify or selectNotificationStatus GNSCommand.
+   */
   public NotificationStatsToIssuer getNotificationStats()
   {
 	  return this.notificationStats;

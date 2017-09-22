@@ -17,6 +17,10 @@ public class InternalNotificationStats
 	private int numberPending;
 	private Set<String> guidsFailed;
 	
+	/**
+	 * Creates an object using the totalNotifications parameters.
+	 * @param totalNotifications
+	 */
 	public InternalNotificationStats(int totalNotifications)
 	{
 		this.totalNotifications = totalNotifications;
@@ -25,8 +29,8 @@ public class InternalNotificationStats
 	
 	
 	/**
-	 * Returns the total number of notifications.
-	 * @return
+	 * 
+	 * @return Returns the total number of notifications.
 	 */
 	public int getTotalNotifications()
 	{
@@ -34,8 +38,8 @@ public class InternalNotificationStats
 	}
 	
 	/**
-	 * Returns the number of pending notifications.
-	 * @return
+	 * 
+	 * @return Returns the number of pending notifications.
 	 */
 	public int getNumberPending()
 	{
@@ -43,8 +47,8 @@ public class InternalNotificationStats
 	}
 	
 	/**
-	 * Returns the set of GUIDs to whom the notification sending failed.
-	 * @return
+	 * 
+	 * @return Returns the set of GUIDs to whom the notification sending failed.
 	 */
 	public Set<String> getGUIDsFailed()
 	{

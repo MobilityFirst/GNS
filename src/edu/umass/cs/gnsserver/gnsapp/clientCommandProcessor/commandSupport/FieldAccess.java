@@ -458,6 +458,7 @@ public class FieldAccess {
    * Sends an update request to the server containing a JSON Object.
    *
    * @param header
+   * @param commandPacket
    * @param guid - the guid to update
    * @param json - the JSONObject to use in the update
    * @param operation - the update operation to perform... see <code>UpdateOperation</code>
@@ -467,6 +468,7 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
+   * @param timestamp 
    * @param handler
    * @return an NSResponseCode
    */
@@ -962,7 +964,20 @@ public class FieldAccess {
     return null;*/
   }
   
-  
+  /**
+   * The function to process the selectNotificationStatus GNSCommand.
+   * @param header
+   * @param commandPacket
+   * @param reader
+   * @param selectHandle
+   * @param signature
+   * @param message
+   * @param handler
+   * @return The command response or null in case of non-blocking handling of the 
+   * selectNotificationStatus GNSCommand.
+   * 
+   * @throws InternalRequestException
+   */
     public static CommandResponse selectNotificationStatus(InternalRequestHeader header, 
 		  		  CommandPacket commandPacket, String reader, SelectHandleInfo selectHandle,
 		            String signature, String message, ClientRequestHandlerInterface handler) 

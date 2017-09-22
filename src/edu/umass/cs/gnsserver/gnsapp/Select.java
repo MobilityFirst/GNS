@@ -126,6 +126,9 @@ public class Select extends AbstractSelector
 	private final ConcurrentMap<Integer, SelectResponsePacket> queryResult
           = new ConcurrentHashMap<Integer, SelectResponsePacket>();
 	
+	/**
+	 * The select constructor. 
+	 */
 	public Select()
 	{
 		initSelectResponseProcessor();
@@ -133,7 +136,10 @@ public class Select extends AbstractSelector
 		pendingNotifications = new NameServerSelectNotificationState();
 	}
 	
-	
+	/**
+	 * Initializes the select response processor using reflection. 
+	 * The class path is specified using SELECT_REPONSE_PROCESSOR macro.
+	 */
 	public void initSelectResponseProcessor()
 	{
 		Class<?> clazz = null;
@@ -440,7 +446,7 @@ public class Select extends AbstractSelector
    * 
    * This NS looks up the records and returns them.
    *
-   * @param incomingJSON
+   * @param request
    * @param app
    * @throws JSONException
    */
@@ -715,7 +721,7 @@ public class Select extends AbstractSelector
    * that the query issuer is not allowed to read. 
    *
    * @param packet
-   * @param records
+   * @param record
    * @param app
    * @return
    * The JSONObject corresponding to the record after removing private fields. Returns null
@@ -1052,8 +1058,9 @@ public class Select extends AbstractSelector
    * 
    * @param packet
    * @param info
-   * @param ar
-   * @return
+   * @param app
+   * @return Returns a SelectResponsePacket if all name servers have responded. 
+   * Otherwise, returns null for pending requests. 
    * @throws JSONException 
    */
   private SelectResponsePacket processSelectResponseForReturningGUIDs(

@@ -74,11 +74,10 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress implemen
 	
   /**
    * Constructs a new SelectRequestPacket
-   *
-   * @param id
+   * 
    * @param selectOperation
-   * @param key
    * @param reader
+   * @param key
    * @param value
    * @param otherValue
    */
@@ -125,8 +124,7 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress implemen
 
   /**
    * Creates a request to search all name servers for GUIDs that match the given query.
-   *
-   * @param id
+   * 
    * @param reader
    * @param query
    * @param projection
@@ -143,11 +141,11 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress implemen
   /**
    * Creates a request to search name servers to compute the GUIDs that satisfy 
    * the given query and send those the given  notification.
-   *
-   * @param id
+   * 
    * @param reader
    * @param query
    * @param projection
+   * @param notificationStr
    * @return a SelectRequestPacket
    */
   public static SelectRequestPacket makeSelectNotifyRequest(String reader, String query, 
@@ -160,11 +158,10 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress implemen
   
   /**
    * Creates a SelectRequestPacket for a NOTIFICATION_STATUS select operation. 
-   *
-   * @param id
+   * 
    * @param reader
    * @param selectHandle
-   * 
+   * @param localSelectHandle 
    * @return a SelectRequestPacket
    */
   public static SelectRequestPacket makeSelectNotificationStatusRequest
@@ -411,8 +408,8 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress implemen
 //  }
 
   /**
-   * Returns the notification string. 
-   * @return
+   * 
+   * @return Returns the notification string. 
    */
   public String getNotificationString()
   {
@@ -420,8 +417,8 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress implemen
   }
   
   /**
-   * Returns the select handle.
-   * @return
+   * 
+   * @return Returns the select handle.
    */
   public SelectHandleInfo getSelectHandleInfo()
   {
@@ -429,8 +426,8 @@ public class SelectRequestPacket extends BasicPacketWithNSReturnAddress implemen
   }
   
   /**
-   * Returns a local select handle. 
-   * @return
+   * 
+   * @return Returns a local select handle. 
    */
   public LocalSelectHandleInfo getLocalSelectHandleInfo()
   {

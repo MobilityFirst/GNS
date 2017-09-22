@@ -16,6 +16,12 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCom
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
+/**
+ * The command to query the status of notifications for an earlier 
+ * issued selectAndNotify GNSCommand.
+ * @author ayadav
+ *
+ */
 public class SelectNotificationStatus extends AbstractCommand
 {
 	/**

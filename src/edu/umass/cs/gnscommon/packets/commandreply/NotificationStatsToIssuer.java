@@ -15,6 +15,11 @@ import org.json.JSONObject;
  */
 public class NotificationStatsToIssuer
 {
+	/**
+	 * The keys for serialization of this object into a JSONObject.
+	 * @author ayadav
+	 *
+	 */
 	public static enum Keys
 	{
 		/**
@@ -50,7 +55,18 @@ public class NotificationStatsToIssuer
 	private final long failedNotifications;
 	private final long pendingNotifications;
 	
-	
+	/**
+	 * The constructor. 
+	 * @param selecthandle
+	 * The select handle for the issued selectAndNotify GNSCommand. The select handle is 
+	 * used to query the status of notifications. 
+	 * @param totalNotifications
+	 * The total notifications that needs to be sent for the issued selectAndNotify GNSCommand. 
+	 * @param failedNotifications
+	 * The total failed notifications.
+	 * @param pendingNotifications
+	 * The total pending notifications. 
+	 */
 	public NotificationStatsToIssuer(SelectHandleInfo selecthandle, 
 			long totalNotifications, long failedNotifications, long pendingNotifications)
 	{
@@ -60,27 +76,49 @@ public class NotificationStatsToIssuer
 		this.pendingNotifications = pendingNotifications;
 	}
 	
+	/**
+	 * 
+	 * @return The total notifications that needs to be sent for 
+	 * the selectAndNotify GNSCommand. 
+	 */
 	public long getTotalNotifications()
 	{
 		return this.totalNotifications;
 	}
 	
+	/**
+	 * 
+	 * @return The total failed notifications for 
+	 * the selectAndNotify GNSCommand.
+	 */
 	public long getFailedNotifications()
 	{
 		return this.failedNotifications;
 	}
 	
+	/**
+	 * 
+	 * @return The total pending notifications for the selectAndNotify GNSCommand.
+	 */
 	public long getPendingNotifications()
 	{
 		return this.pendingNotifications;
 	}
 	
+	/**
+	 * 
+	 * @return The select handle that can be used to query the status of notifications. 
+	 */
 	public SelectHandleInfo getSelectHandleInfo()
 	{
 		return this.selectHandle;
 	}
 	
-	
+	/**
+	 * Converts the object of this class into a JSONObject
+	 * @return The JSONObject corresponding to the object of this class. 
+	 * @throws JSONException
+	 */
 	public JSONObject toJSONObject() throws JSONException
 	{
 		JSONObject json = new JSONObject();
@@ -91,6 +129,12 @@ public class NotificationStatsToIssuer
 		return json;
 	}
 	
+	/**
+	 * To create an object of this class using the supplied JSONObject. 
+	 * @param json
+	 * @return The object of this class. 
+	 * @throws JSONException
+	 */
 	public static NotificationStatsToIssuer fromJSON(JSONObject json) throws JSONException
 	{
 		SelectHandleInfo selecthandle = SelectHandleInfo.fromJSONArray

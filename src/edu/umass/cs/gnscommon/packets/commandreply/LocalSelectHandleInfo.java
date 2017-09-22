@@ -14,6 +14,12 @@ import org.json.JSONObject;
  */
 public class LocalSelectHandleInfo
 {
+	/**
+	 * Keys for serialization of an object of this class.
+	 * 
+	 * @author ayadav
+	 *
+	 */
 	public static enum Keys
 	{
 		/**
@@ -33,14 +39,27 @@ public class LocalSelectHandleInfo
 	
 	private final InetSocketAddress serverAddress;
 	
-	
+	/**
+	 * The constructor to create an object.  
+	 * LocalSelectHandleInfo is a select handle that is identified 
+	 * by <localHandleId, serverAddress>.
+	 * 
+	 * @param localHandleId
+	 * An identifier for this handle at {@code serverAddress}
+	 * @param serverAddress
+	 * The server address for this handle. 
+	 */
 	public LocalSelectHandleInfo(long localHandleId, InetSocketAddress serverAddress)
 	{
 		this.localHandleId = localHandleId;
 		this.serverAddress = serverAddress;
 	}
 	
-	
+	/**
+	 * Serializes this object into a JSONObject
+	 * @return The serialized JSONObject
+	 * @throws JSONException
+	 */
 	public JSONObject toJSONObject() throws JSONException
 	{
 		JSONObject json = new JSONObject();
@@ -50,7 +69,12 @@ public class LocalSelectHandleInfo
 		return json;
 	}
 	
-	
+	/**
+	 * Constructs an object of this class using the supplied JSONObject.
+	 * @param json
+	 * @return The object constructed using the supplied JSONObject
+	 * @throws JSONException
+	 */
 	public static LocalSelectHandleInfo fromJSONObject(JSONObject json) throws JSONException
 	{
 		long handle = json.getLong(Keys.LOCAL_HANDLE_ID.toString());
@@ -66,7 +90,7 @@ public class LocalSelectHandleInfo
 	 * Returns the socket address of the name server 
 	 * that stores this local select handle.
 	 * 
-	 * @return
+	 * @return The name server address for this handle.
 	 */
 	public InetSocketAddress getNameServerAddress()
 	{
@@ -78,7 +102,7 @@ public class LocalSelectHandleInfo
 	 * Returns the local handleId corresponding to 
 	 * the local select handle at a name server.
 	 * 
-	 * @return
+	 * @return The identifier for this handle.
 	 */
 	public long getLocalHandleId()
 	{

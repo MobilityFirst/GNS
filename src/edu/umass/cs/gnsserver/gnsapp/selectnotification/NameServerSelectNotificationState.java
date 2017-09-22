@@ -17,7 +17,7 @@ import edu.umass.cs.utils.GCConcurrentHashMap;
  */
 public class NameServerSelectNotificationState 
 {
-	public static final long GC_TIMEOUT			= 5000; // In ms. 
+	private static final long GC_TIMEOUT			= 5000; // In ms. 
 	
 	private final HashMap<Long, List<NotificationSendingStats>> notificationInfo;
 	
@@ -29,6 +29,10 @@ public class NameServerSelectNotificationState
 	private final Object lock;
 	private final Random rand;
 	
+	/**
+	 * Creates an object that keeps the select notification state at this name server. 
+	 * Currently, all state is kept in memory, with option to garbage collect old state. 
+	 */
 	public NameServerSelectNotificationState()
 	{
 		this.notificationInfo = new HashMap<Long, List<NotificationSendingStats>>();
@@ -70,7 +74,12 @@ public class NameServerSelectNotificationState
 		}
 	}
 	
-	
+	/**
+	 * Looks up the state using the supplied local handle identifier.
+	 * @param localHandle
+	 * @return Returns a list of {@link NotificationSendingStats} associated with
+	 * this local select handle. 
+	 */
 	public List<NotificationSendingStats> lookupNotificationStats(long localHandle)
 	{
 		List<NotificationSendingStats> list = notificationInfo.get(localHandle);

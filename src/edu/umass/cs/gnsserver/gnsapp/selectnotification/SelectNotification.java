@@ -6,7 +6,7 @@ package edu.umass.cs.gnsserver.gnsapp.selectnotification;
  * 
  * @author ayadav
  *
- * @param <NotificationType>
+ * @param <NotificationType> The notification type. 
  */
 public interface SelectNotification<NotificationType>
 {

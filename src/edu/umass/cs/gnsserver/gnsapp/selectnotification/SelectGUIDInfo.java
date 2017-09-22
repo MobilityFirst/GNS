@@ -17,17 +17,30 @@ public class SelectGUIDInfo
 	private final String guid;
 	private final JSONObject keyValuePairs;
 	
+	/**
+	 * Creates the object of this class. 
+	 * @param guid
+	 * @param keyValuePairs
+	 */
 	public SelectGUIDInfo(String guid, JSONObject keyValuePairs)
 	{
 		this.guid = guid;
 		this.keyValuePairs = keyValuePairs;
 	}
 	
+	/**
+	 * 
+	 * @return The associated GUID.
+	 */
 	public String getGUID()
 	{
 		return this.guid;
 	}
 	
+	/**
+	 * 
+	 * @return The request key-value pairs in a select request. 
+	 */
 	public JSONObject getKeyValuePairs()
 	{
 		return this.keyValuePairs;

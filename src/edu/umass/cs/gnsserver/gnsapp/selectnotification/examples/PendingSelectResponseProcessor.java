@@ -18,11 +18,6 @@ import edu.umass.cs.gnsserver.gnsapp.selectnotification.SelectResponseProcessor;
  */
 public class PendingSelectResponseProcessor implements SelectResponseProcessor
 {	
-	public PendingSelectResponseProcessor()
-	{
-	}
-	
-	
 	@Override
 	public NotificationSendingStats sendNotification(List<SelectGUIDInfo> guidList, 
 			String notificationStr) 

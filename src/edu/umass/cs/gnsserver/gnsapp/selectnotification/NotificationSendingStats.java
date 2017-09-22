@@ -14,14 +14,19 @@ public class NotificationSendingStats
 {
 	private final InternalNotificationStats internalStats;
 	
+	/**
+	 * Creates an object using {@link InternalNotificationStats}.
+	 * The supplied object of {@link InternalNotificationStats} gets updated
+	 * in the background based on the notification sending progress. 
+	 * @param internalStats
+	 */
 	public NotificationSendingStats(InternalNotificationStats internalStats)
 	{
 		this.internalStats = internalStats;
 	}
 	
 	/**
-	 * Returns the total number of notifications.
-	 * @return
+	 * @return Returns the total number of notifications.
 	 */
 	public int getTotalNotifications()
 	{
@@ -29,9 +34,8 @@ public class NotificationSendingStats
 	}
 	
 	/**
-	 * Returns the number of pending notifications.
 	 * A call to this method returns the recent number of pending notifications.
-	 * @return
+	 * @return Returns the number of pending notifications.
 	 */
 	public int getNumberPending()
 	{
@@ -39,10 +43,10 @@ public class NotificationSendingStats
 	}
 	
 	/**
-	 * Returns the set of GUIDs to whom the notification sending failed.
+	 * 
 	 * A call to this method returns the recent set of guids to whom notification
 	 * sending failed. 
-	 * @return
+	 * @return Returns the set of GUIDs to whom the notification sending failed.
 	 */
 	public Set<String> getGUIDsFailed()
 	{

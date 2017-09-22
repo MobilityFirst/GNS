@@ -1537,7 +1537,7 @@ public class GNSCommand extends CommandPacket {
      * and will be notified. 
      * 
      * The command returns notification stats, which is a 
-     * JSONObject representation of {@link NotificationStatsToIssuer}
+     * JSONObject representation of {@link edu.umass.cs.gnscommon.packets.commandreply.NotificationStatsToIssuer}
      *
      * @param query
      * The select query being issued.
@@ -1551,7 +1551,7 @@ public class GNSCommand extends CommandPacket {
      * @param notification
      * The notification to send to GUIDs that satisfy query.
      * @return CommandPacket
-     * CommandPacket contains a JSONObject representation of {@link NotificationStatsToIssuer}.
+     * CommandPacket contains a JSONObject representation of {@link edu.umass.cs.gnscommon.packets.commandreply.NotificationStatsToIssuer}.
      *  
      * @throws ClientException
      */
@@ -1582,7 +1582,7 @@ public class GNSCommand extends CommandPacket {
    * the issuer can satisfy the query and will be notified. 
    * 
    * The command returns notification stats, which is a 
-   * JSONObject representation of {@link NotificationStatsToIssuer}
+   * JSONObject representation of {@link edu.umass.cs.gnscommon.packets.commandreply.NotificationStatsToIssuer}
    *
    * @param issuer
    * The GuidEntry of the issuer. 
@@ -1598,7 +1598,7 @@ public class GNSCommand extends CommandPacket {
    * @param notification
    * The notification to send to GUIDs that satisfy query.
    * @return CommandPacket
-   * CommandPacket contains a JSONObject representation of {@link NotificationStatsToIssuer}.
+   * CommandPacket contains a JSONObject representation of {@link edu.umass.cs.gnscommon.packets.commandreply.NotificationStatsToIssuer}.
    * @throws ClientException
    */
   public static final CommandPacket selectAndNotify(GuidEntry issuer, String query, 
@@ -1618,11 +1618,11 @@ public class GNSCommand extends CommandPacket {
    * issued selectAndNotify request. The command takes as input the 
    * {@link SelectHandleInfo}, which a caller gets in reply after issuing a
    * selectAndNotify request. The command returns notification stats, which is a 
-   * JSONObject representation of {@link NotificationStatsToIssuer}.
+   * JSONObject representation of {@link edu.umass.cs.gnscommon.packets.commandreply.NotificationStatsToIssuer}.
    * 
    * @param selectHandle
    * @return 
-   * CommandPacket contains a JSONObject representation of {@link NotificationStatsToIssuer}.
+   * CommandPacket contains a JSONObject representation of {@link edu.umass.cs.gnscommon.packets.commandreply.NotificationStatsToIssuer}.
    * @throws ClientException
    */
   public static final CommandPacket selectNotificationStatus(SelectHandleInfo selectHandle) 
