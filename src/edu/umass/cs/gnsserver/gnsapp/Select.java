@@ -968,35 +968,7 @@ public class Select extends AbstractSelector
 	  // if there is no error update our results list
 	  if (ResponseCode.NO_ERROR.equals(packet.getResponseCode())) 
 	  {
-		  SelectResponsePacket response = null;
-		  switch(info.getSelectOperation())
-		  {
-		  	case EQUALS:
-		  	case NEAR:
-		  	case WITHIN:
-		  	case QUERY:
-		  	{
-		  		response = processSelectResponseForReturningGUIDs(packet, info, replica);
-		  		break;
-		  	}
-		  	case SELECT_NOTIFY:
-		  	{
-		  		response = processSelectResponseForSelectNotify(packet, info, replica);
-		  		break;
-		  	}
-		  	case NOTIFICATION_STATUS:
-		  	{
-		  		response = processSelectResponseForNotificationStatus(packet, info, replica);
-		  		break;
-		  	}
-		  	default:
-		  	{
-		  		break;
-		  	}
-		  }
-		  
-		  // aditya: Message sending part needs to be made configurable, so that it can be easily made blocking
-		  // or non-blocking.
+		  SelectResponsePacket response = processSelectResponse(packet, replica,  info);
 		  
 		  // If response is non-null, the all responses have been received.
 		  // and this is the non-null response that needs to go to the client.
@@ -1051,6 +1023,49 @@ public class Select extends AbstractSelector
 	  }
   }
   
+  /**
+   * 
+   * @param packet
+   * @param replica
+   * @param info
+   * @return Returns a non-null response if all responses for the 
+   * select request have been received. 
+   * @throws JSONException
+   */
+  protected SelectResponsePacket processSelectResponse(SelectResponsePacket packet,
+          GNSApplicationInterface<String> replica,  NSSelectInfo info) throws JSONException
+  { 
+	  assert(info != null);
+	  assert(ResponseCode.NO_ERROR.equals(packet.getResponseCode()));
+	  
+	  SelectResponsePacket response = null;
+	  switch(info.getSelectOperation())
+	  {
+	  		case EQUALS:
+	  		case NEAR:
+			case WITHIN:
+			case QUERY:
+			{
+				response = processSelectResponseForReturningGUIDs(packet, info, replica);
+			  	break;
+			}
+			case SELECT_NOTIFY:
+			{
+				response = processSelectResponseForSelectNotify(packet, info, replica);
+			  	break;
+			}
+			case NOTIFICATION_STATUS:
+			{
+				response = processSelectResponseForNotificationStatus(packet, info, replica);
+			  	break;
+			}
+			default:
+			{
+				break;
+			}
+	  }
+	  return response;
+  }
   
   /**
    * Returns a SelectResponsePacket if all name servers have responded. 

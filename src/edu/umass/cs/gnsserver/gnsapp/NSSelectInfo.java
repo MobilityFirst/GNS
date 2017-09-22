@@ -50,11 +50,9 @@ public class NSSelectInfo {
 
   private final Set<InetSocketAddress> serversToBeProcessed; // the list of servers that have yet to be processed
   private final ConcurrentHashMap<String, JSONObject> recordResponses;
-  //  private final SelectGroupBehavior groupBehavior;
+  
   private final List<NotificationStatsToIssuer> notificationStatusList;
   
-
-  //private final int minRefreshInterval; // in seconds
 
   /**
    * NSSelectInfo constructor.

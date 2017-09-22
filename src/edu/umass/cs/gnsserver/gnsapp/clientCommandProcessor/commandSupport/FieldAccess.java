@@ -787,23 +787,61 @@ public class FieldAccess {
       
 		  selectResp = executeSelectHelper(header, commandPacket, packet, reader, 
     		  								signature, message, handler.getApp());
-		  if (selectResp != null )
-		  {
-			  if(selectResp.getResponseCode().equals(ResponseCode.NO_ERROR))
-				  return new CommandResponse(ResponseCode.NO_ERROR, 
-						  selectResp.getNotificationStats().toJSONObject().toString());
-			  else
-				  return new CommandResponse(selectResp.getResponseCode(), 
-						  selectResp.getErrorMessage());
-		  }
+		  
+		  return getCommandResponseForSelect(packet, selectResp);
 	  } catch (IOException | JSONException | FailedDBOperationException e) 
 	  {
 		  ClientException cle = new ClientException(e);
 		  return new CommandResponse(cle.getCode(), "selectAndNotify failed: "+cle.getMessage());
 	  }
-	  return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, "selectAndNotify failed. "
-    		+ "Null response recevied");
    }
+  
+  
+  /**
+   * A utility function to return a CommandResponse for a SelectRequestPacket and SelectResponsePacket.
+   * @param incomingSelect
+   * @param selectResponse
+   * @return
+   * @throws JSONException 
+   */
+  public static CommandResponse getCommandResponseForSelect(SelectRequestPacket incomingSelect, 
+		  	SelectResponsePacket selectResponse) throws JSONException
+  {
+	  switch(incomingSelect.getSelectOperation())
+	  {
+	  	case EQUALS:
+		case NEAR:
+		case WITHIN:
+		case QUERY:
+		{
+			if (selectResponse != null ) 
+	    	{
+	    		if( selectResponse.getResponseCode().equals(ResponseCode.NO_ERROR))
+	    			return new CommandResponse(ResponseCode.NO_ERROR, 
+	    					selectResponse.getRecords().toString());
+	    		else
+	    			return new CommandResponse(selectResponse.getResponseCode(), 
+	    					selectResponse.getErrorMessage());
+	    	}
+		}
+		case SELECT_NOTIFY:
+		case NOTIFICATION_STATUS:
+		{
+			if (selectResponse != null )
+			  {
+				  if(selectResponse.getResponseCode().equals(ResponseCode.NO_ERROR))
+					  return new CommandResponse(ResponseCode.NO_ERROR, 
+							  selectResponse.getNotificationStats().toJSONObject().toString());
+				  else
+					  return new CommandResponse(selectResponse.getResponseCode(), 
+							  selectResponse.getErrorMessage());
+			  }
+		}
+		default:
+			break;
+	  }
+	  return null;
+  }
   
 
   /**
@@ -840,22 +878,12 @@ public class FieldAccess {
       											(reader, query, projection);
       	  selectResp = executeSelectHelper(header, commandPacket, packet, reader, 
       		  										signature, message, handler.getApp());
-      	  if (selectResp != null ) 
-      	  {
-      		  if( selectResp.getResponseCode().equals(ResponseCode.NO_ERROR))
-      			return new CommandResponse(ResponseCode.NO_ERROR, 
-      							selectResp.getRecords().toString());
-      		  else
-      			return new CommandResponse(selectResp.getResponseCode(), 
-      					selectResp.getErrorMessage());
-      			
-      	  }
+      	return getCommandResponseForSelect(packet, selectResp);
       } catch (IOException | JSONException | FailedDBOperationException e) 
       {
     	  ClientException cle = new ClientException(e);
       		return new CommandResponse(cle.getCode(), "selectQuery failed. "+cle.getMessage());
       }
-      return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, "selectQuery failed. Null reponse returned.");
   }
 
   /**
@@ -992,22 +1020,13 @@ public class FieldAccess {
 	  		  selectResp = executeSelectHelper(header, commandPacket, packet, reader, 
 	      		  								signature, message, handler.getApp());
 	  		  
-	  	      if (selectResp != null)
-	  	      {
-	  	    	  if(selectResp.getResponseCode().equals(ResponseCode.NO_ERROR))
-	  	    		  return new CommandResponse(ResponseCode.NO_ERROR, 
-	  	    			  	selectResp.getNotificationStats().toJSONObject().toString());
-	  	    	  else
-	  	    		  return new CommandResponse(selectResp.getResponseCode(), 
-	  	    				  selectResp.getErrorMessage());
-	  	      }
+	  		 return getCommandResponseForSelect(packet, selectResp);
 	  	  }
 	  	  catch (IOException | JSONException | FailedDBOperationException e) 
 	  	  {
 	  		  ClientException cle = new ClientException(e);
 	  		  return new CommandResponse(cle.getCode(), "selectNotificationStatus failed: "+cle.getMessage());
 	  	  }
-	  	  return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, "selectNotificationStatus failed. ");
     }
 
   /**
