@@ -92,7 +92,7 @@ public class GNSClient {
 	 * properties without a properties file, use
 	 * {@link #GNSClient(InetSocketAddress)} that requires knowledge of at least
 	 * one reconfigurator address. If this default constructor is used and the
-	 * client is unable to find the properties file, it will attempt to connectqq
+	 * client is unable to find the properties file, it will attempt to connect
 	 * to {@code localhost}:{@link GNSConfig#DEFAULT_RECONFIGURATOR_PORT}.
 	 *
 	 * @throws IOException
