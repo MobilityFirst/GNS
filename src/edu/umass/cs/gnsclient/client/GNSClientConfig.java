@@ -21,14 +21,13 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
 import java.util.Enumeration;
 
 /**
  * Contains logging and other main utilities for the GNS client. This file
  * should be used only for client properties. Server properties are in
- * {@link GNSConfig}.
+ * {@link edu.umass.cs.gnsserver.main.GNSConfig}.
  *
  * @author westy, arun
  */

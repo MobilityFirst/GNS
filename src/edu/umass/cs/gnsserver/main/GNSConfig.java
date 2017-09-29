@@ -30,12 +30,10 @@ import java.security.cert.CertificateException;
 import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsserver.extensions.sanitycheck.NullSanityCheck;
-import edu.umass.cs.gnsserver.gnsapp.AbstractSelector;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.utils.Config;
 
@@ -272,7 +270,7 @@ public class GNSConfig {
     /**
      * Class name of select implementation.
      */
-    ABSTRACT_SELECTOR(edu.umass.cs.gnsserver.gnsapp.Select.class.getCanonicalName()),
+    ABSTRACT_SELECTOR("edu.umass.cs.gnsserver.gnsapp.Select"),
     
     /**
      * If the flag is true then the update 
@@ -478,50 +476,5 @@ public class GNSConfig {
     }
     return internalOpSecret;
   }
-  
-	private static AbstractSelector selector = null;
 
-	/**
-	 * @return Select implementation.
-	 */
-	public synchronized static final AbstractSelector getSelector() {
-		if (selector != null)
-			return selector;
-		// else
-		Class<?> clazz = null;
-		try {
-			clazz = (Class.forName(Config
-					.getGlobalString(GNSConfig.GNSC.ABSTRACT_SELECTOR)));
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		if (clazz != null)
-			try {
-				selector = (AbstractSelector) (clazz.getConstructor()
-						.newInstance());
-			} catch (InstantiationException | IllegalAccessException
-					| IllegalArgumentException | InvocationTargetException
-					| NoSuchMethodException | SecurityException e) {
-				getLogger()
-						.log(Level.WARNING,
-								"{0} unable to instantiate selector {1}; using default selector",
-								new Object[] {
-										GNSConfig.class.getName(),
-										Config.getGlobalString(GNSConfig.GNSC.ABSTRACT_SELECTOR) });
-				e.printStackTrace();
-			}
-		if (selector == null)
-			try {
-				selector = (AbstractSelector) (edu.umass.cs.gnsserver.gnsapp.Select.class
-						.getConstructor().newInstance());
-			} catch (InstantiationException | IllegalAccessException
-					| IllegalArgumentException | InvocationTargetException
-					| NoSuchMethodException | SecurityException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		// default Select has default constructor
-		assert(selector!=null);
-		return selector;
-	}
 }
