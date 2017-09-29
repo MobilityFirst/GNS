@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsserver.extensions.sanitycheck.NullSanityCheck;
-import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
 
 /**
@@ -265,7 +265,7 @@ public class GNSConfig {
      * The default value is {@link edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.ReconfigureUponActivesChange#DEFAULT},
      * which means the GUIDs are not reconfigured on change of actives.
      */
-    RECONFIGURE_ON_ACTIVE_CHANGE_POLICY(ReconfigurationRecord.ReconfigureUponActivesChange.DEFAULT),
+    RECONFIGURE_ON_ACTIVE_CHANGE_POLICY(ReconfigurationConfig.getDefaultReconfigureUponActivesChangePolicy()),
     
     /**
      * Class name of select implementation.

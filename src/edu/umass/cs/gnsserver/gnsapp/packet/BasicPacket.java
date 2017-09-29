@@ -99,7 +99,7 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
    */
   private String toReasonableString() {
     try {
-      return this.toJSONObject().toReasonableString();
+      return this.toJSONObject().toString();
     } catch (JSONException e) {
       GNSConfig.getLogger().severe("Problem converting packet to string:" + e);
       return "BasicPacket{" + "type=" + getType() + '}';
