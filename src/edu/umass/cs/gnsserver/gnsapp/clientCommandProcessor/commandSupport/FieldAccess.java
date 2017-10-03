@@ -815,7 +815,7 @@ public class FieldAccess {
         String name = Base64.encodeToString(ShaOneHashFunction.getInstance().hash(query), false);
         CommandResponse groupGuidCreateresult = AccountAccess.addGuid(header, commandPacket,
                 accountInfo, accountGuidInfo,
-                name, guid, publicKey, handler);
+                name, guid, publicKey, handler, null);
         // If there was a problem adding return that error response.
         if (!groupGuidCreateresult.getExceptionOrErrorCode().isOKResult()) {
           return groupGuidCreateresult;
