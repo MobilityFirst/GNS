@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import org.apache.commons.lang3.time.DateUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -594,7 +595,7 @@ public class FieldAccess {
       return null;
     }
 
-    SelectResponsePacket responsePacket = GNSConfig.getSelector().
+    SelectResponsePacket responsePacket = GNSApp.getSelector().
     		handleSelectRequestFromClient(header, packet, app);
     if (responsePacket != null
             && // Fixme: probably should just have handleSelectRequestFromClient throw a clientException

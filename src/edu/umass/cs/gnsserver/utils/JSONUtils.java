@@ -44,10 +44,26 @@ public class JSONUtils {
    */
   public static JSONObject copyJsonObject(JSONObject record) throws JSONException {
     JSONObject copy = new JSONObject();
-    for (String key : JSONObject.getNames(record)) {
+    for (String key : getNames(record)) {
       copy.put(key, record.get(key));
     }
     return copy;
+  }
+
+  public static String[] getNames(JSONObject jo) {
+    int length = jo.length();
+    if(length == 0) {
+      return null;
+    } else {
+      Iterator iterator = jo.keys();
+      String[] names = new String[length];
+
+      for(int i = 0; iterator.hasNext(); ++i) {
+        names[i] = (String)iterator.next();
+      }
+
+      return names;
+    }
   }
 
   /**
@@ -204,4 +220,6 @@ public class JSONUtils {
     }
     return false;
   }
+
+
 }
