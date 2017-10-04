@@ -30,13 +30,16 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -81,6 +84,10 @@ public class RegisterAccountSecured extends AbstractCommand {
     String password = json.getString(GNSProtocol.PASSWORD.toString());
     String signature = json.optString(GNSProtocol.SIGNATURE.toString(), null);
     String message = json.optString(GNSProtocol.SIGNATUREFULLMESSAGE.toString(), null);
+    
+    Set<InetSocketAddress> activesSet = json.has(GNSProtocol.ACTIVES_SET.toString())
+    		? Util.getSocketAddresses(json.getJSONArray(GNSProtocol.ACTIVES_SET.toString()))
+    				: null;
 
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
@@ -91,7 +98,7 @@ public class RegisterAccountSecured extends AbstractCommand {
       CommandResponse result = AccountAccess.addAccount(header, commandPacket,
               handler.getHttpServerHostPortString(),
               name, guid, publicKey,
-              password, false, handler);
+              password, false, handler, activesSet);
       if (result.getExceptionOrErrorCode().isOKResult()) {
         // Everything is hunkey dorey so return the new guid
         return new CommandResponse(ResponseCode.NO_ERROR, guid);

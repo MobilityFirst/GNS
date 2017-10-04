@@ -17,6 +17,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +42,7 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.commandreply.SelectHandleInfo;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.selectnotification.SelectNotification;
+import edu.umass.cs.utils.Util;
 
 /**
  * A helper class with static methods to help construct GNS commands.
@@ -505,6 +507,42 @@ public class GNSCommand extends CommandPacket {
     // FIXME: This is not correctly implemented
     return lookupGUIDRecord(targetGUID);
   }
+  
+  
+  /**
+   * Register a new account guid with the name {@code alias} and a password
+   * {@code password}. Executing this query generates a new guid and a public
+   * / private key pair. {@code password} can be used to retrieve account
+   * information if the client loses the private key corresponding to the
+   * account guid. The new account guid is created with the provided {@code activesSet}
+   * set of actives.
+   *
+   * @param alias
+   * Human readable alias for the account guid being created, e.g.,
+   * an email address
+   * @param password
+   * @param activesSet 
+   * The set of actives for the account guid. The socket address for an active
+   * should be based on the server-server port for that active, which is also specified 
+   * in the gigapaxosConfig file.
+   * A null means that the account guid will be created using the default policy.
+   * @return CommandPacket
+   * @throws ClientException
+   * @throws java.io.IOException
+   * @throws java.security.NoSuchAlgorithmException
+   */
+  //FIXME: The name this of these violates the NOUNVERB naming convention adopted
+  // almost everywhere else in here.
+  public static final CommandPacket createAccount(
+            String alias, String password, Set<InetSocketAddress> activesSet) 
+          		  	throws ClientException, IOException, NoSuchAlgorithmException 
+  {
+	  @SuppressWarnings("deprecation") // FIXME : deprecated getGNSProvider use.
+  	  GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
+  	  return accountGuidCreateInternal(alias, password, CommandType.RegisterAccount, guidEntry, activesSet);
+  }
+    
+    
 
   /**
    * Register a new account guid with the name {@code alias} and a password
@@ -526,9 +564,7 @@ public class GNSCommand extends CommandPacket {
   // almost everywhere else in here.
   public static final CommandPacket createAccount(
           String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
-    @SuppressWarnings("deprecation") // FIXME
-    GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
-    return accountGuidCreateInternal(alias, password, CommandType.RegisterAccount, guidEntry);
+	  return createAccount(alias, password, null);
   }
 
   /**
@@ -546,10 +582,7 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket createAccount(
           String alias) throws ClientException, IOException,
           NoSuchAlgorithmException {
-    @SuppressWarnings("deprecation") // FIXME
-    GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
-    return accountGuidCreateInternal(alias, null,
-            CommandType.RegisterAccount, guidEntry);
+	  return createAccount(alias, null, null);
   }
 
   /**
@@ -572,10 +605,45 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket createAccountSecure(
           String alias, String password) throws ClientException, IOException, NoSuchAlgorithmException {
-    @SuppressWarnings("deprecation")
-    GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
-    return accountGuidCreateInternal(alias, password, CommandType.RegisterAccountSecured, guidEntry);
+	  return createAccountSecure(alias, password, null);
   }
+  
+  
+    /**
+     * Register a new account guid with the name {@code alias} and a password
+     * {@code password}. Executing this query generates a new guid and a public
+     * / private key pair. {@code password} can be used to retrieve account
+     * information if the client loses the private key corresponding to the
+     * account guid.
+     * Sent on the mutual auth channel. Can only be sent from a client that
+     * has the correct ssl keys.
+     * 
+     * The new account guid is created using {@code activesSet}, the provided set of actives.
+     *
+     * @param alias
+     * Human readable alias for the account guid being created, e.g.,
+     * an email address
+     * @param password
+     * @param activesSet 
+     * The set of actives for the account guid. The socket address for an active
+     * should be based on the server-server port for that active, which is also specified 
+     * in the gigapaxosConfig file.
+     * A null means that the account guid will be created using the default policy.
+     * @return CommandPacket
+     * @throws ClientException
+     * @throws java.io.IOException
+     * @throws java.security.NoSuchAlgorithmException
+     */
+    public static final CommandPacket createAccountSecure(
+            String alias, String password, Set<InetSocketAddress> activesSet) 
+          		  		throws ClientException, IOException, NoSuchAlgorithmException 
+    {
+    	@SuppressWarnings("deprecation")
+    	GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
+    	return accountGuidCreateInternal(alias, password, CommandType.RegisterAccountSecured, 
+      				guidEntry, activesSet);
+    }
+  
 
   /**
    * Verify an account by sending the verification code back to the server.
@@ -668,24 +736,56 @@ public class GNSCommand extends CommandPacket {
    * The account guid under which the guid is being created.
    * @param alias
    * The alias assigned to the guid being created.
+   * @param activeSet
+   * The initial set of actives for the guid that will be created.
    * @return CommandPacket
    * @throws ClientException
    */
   @SuppressWarnings("deprecation") // FIXME
   public static final CommandPacket guidCreate(
-          GuidEntry accountGuid, String alias) throws ClientException {
-    try {
-      GuidEntry guidEntry = GuidUtils.createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
-
-      return getCommand(CommandType.AddGuid, accountGuid,
-              GNSProtocol.GUID.toString(), accountGuid.getGuid(),
-              GNSProtocol.NAME.toString(), alias,
-              GNSProtocol.PUBLIC_KEY.toString(), KeyPairUtils.publicKeyToBase64ForGuid(guidEntry));
-
-    } catch (NoSuchAlgorithmException e) {
+          GuidEntry accountGuid, String alias, Set<InetSocketAddress> activeSet) throws ClientException {
+    try 
+    {
+    	GuidEntry guidEntry = GuidUtils.createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
+    	
+    	if(activeSet != null)
+    	{
+    		return getCommand(CommandType.AddGuid, accountGuid,
+                        GNSProtocol.GUID.toString(), accountGuid.getGuid(),
+                        GNSProtocol.NAME.toString(), alias,
+                        GNSProtocol.PUBLIC_KEY.toString(), KeyPairUtils.publicKeyToBase64ForGuid(guidEntry)
+                        , GNSProtocol.ACTIVES_SET.toString(), Util.getJSONArray(activeSet));
+    	}
+    	else
+    	{
+    		return getCommand(CommandType.AddGuid, accountGuid,
+                        GNSProtocol.GUID.toString(), accountGuid.getGuid(),
+                        GNSProtocol.NAME.toString(), alias,
+                        GNSProtocol.PUBLIC_KEY.toString(), KeyPairUtils.publicKeyToBase64ForGuid(guidEntry));
+        }
+    } catch (NoSuchAlgorithmException | JSONException e) {
       throw new ClientException(e);
     }
   }
+  
+  
+  /**
+   * Creates a new guid associated with an account on the GNS server.
+   *
+   * The name of the GNS service instance.
+   *
+   * @param accountGuid
+   * The account guid under which the guid is being created.
+   * @param alias
+   * The alias assigned to the guid being created.
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  public static final CommandPacket guidCreate(
+            GuidEntry accountGuid, String alias) throws ClientException {
+	  return guidCreate(accountGuid, alias, null);
+  }
+  
 
   /**
    * Creates a new guid associated with an account on the GNS server.
@@ -700,7 +800,50 @@ public class GNSCommand extends CommandPacket {
           GuidEntry accountGuid, String alias) throws ClientException {
     return guidCreate(accountGuid, alias);
   }
-
+  
+  
+    
+    
+	/**
+	 * Creates a new guid associated with an account on the GNS server
+	 * that doesn't have a public/private keypair. This guid can only be accessed
+	 * using the accountGuid. The guid is created with the actives given by {@code activeSet}.
+	 * 
+	 * @param accountGuid
+	 * @param alias 
+	 * @param activeSet
+	 * The set of actives for the guid.
+	 * @return CommandPacket
+	 * @throws ClientException 
+	 */
+  public static final CommandPacket guidCreateKeyless(GuidEntry accountGuid, String alias,
+  		  Set<InetSocketAddress> activeSet)
+            throws ClientException {
+  	  if(activeSet != null)
+  	  {
+  		  try 
+  		  {
+  			  return getCommand(CommandType.AddGuid, accountGuid,
+  			            GNSProtocol.GUID.toString(), accountGuid.getGuid(),
+  			            GNSProtocol.NAME.toString(), alias,
+  			            GNSProtocol.ACTIVES_SET.toString(), Util.getJSONArray(activeSet));
+  		  }
+  		  catch (JSONException e) 
+  		  {
+  			  throw new ClientException(e);
+  		  }
+  	  }
+  	  else
+  	  {
+  		  return getCommand(CommandType.AddGuid, accountGuid,
+  				  GNSProtocol.GUID.toString(), accountGuid.getGuid(),
+  				  GNSProtocol.NAME.toString(), alias);
+  	  }
+  }
+    
+    
+  
+  
   /**
    * Creates a new guid associated with an account on the GNS server
    * that doesn't have a public/private keypair. This guid can only be accessed
@@ -713,11 +856,11 @@ public class GNSCommand extends CommandPacket {
    */
   public static final CommandPacket guidCreateKeyless(GuidEntry accountGuid, String alias)
           throws ClientException {
-    return getCommand(CommandType.AddGuid, accountGuid,
-            GNSProtocol.GUID.toString(), accountGuid.getGuid(),
-            GNSProtocol.NAME.toString(), alias);
+	  return guidCreateKeyless(accountGuid, alias, null);
   }
 
+  
+  
   /**
    * Creates a batch of GUIDs listed in {@code aliases} using gigapaxos' batch
    * creation mechanism.
@@ -732,7 +875,30 @@ public class GNSCommand extends CommandPacket {
    */
   @SuppressWarnings("deprecation") // FIXME
   public static final CommandPacket batchCreateGUIDs(
-          GuidEntry accountGUID, Set<String> aliases) throws ClientException {
+          GuidEntry accountGUID, Set<String> aliases) throws ClientException 
+  {
+	  return batchCreateGUIDs(accountGUID, aliases, null);
+  }
+  
+  
+  /**
+   * Creates a batch of GUIDs listed in {@code aliases} using gigapaxos' batch
+   * creation mechanism. The initial set of actives for all GUIDs in the batch is given 
+   * by {@code activeSet}.
+   * 
+   *
+   * @param accountGUID
+   * @param aliases
+   * The batch of names being created.
+   * @param activeSet
+   * The initial set of actives for all GUIDs in the batch.
+   * @return CommandPacket
+   * @throws ClientException
+   */
+  @SuppressWarnings("deprecation") // FIXME
+  public static final CommandPacket batchCreateGUIDs(
+          GuidEntry accountGUID, Set<String> aliases,
+          Set<InetSocketAddress> activeSet ) throws ClientException {
 
     List<String> aliasList = new ArrayList<>(aliases);
     List<String> publicKeys;
@@ -750,10 +916,27 @@ public class GNSCommand extends CommandPacket {
               false);
       publicKeys.add(publicKeyString);
     }
-
-    return getCommand(CommandType.AddMultipleGuids, accountGUID, GNSProtocol.GUID.toString(),
-            accountGUID.getGuid(), GNSProtocol.NAMES.toString(), new JSONArray(aliasList),
-            GNSProtocol.PUBLIC_KEYS.toString(), new JSONArray(publicKeys));
+    
+    
+    if(activeSet != null)
+    {
+    	try 
+    	{
+    		return getCommand(CommandType.AddMultipleGuids, accountGUID, GNSProtocol.GUID.toString(),
+    			        accountGUID.getGuid(), GNSProtocol.NAMES.toString(), new JSONArray(aliasList),
+    			        GNSProtocol.PUBLIC_KEYS.toString(), new JSONArray(publicKeys),
+    			        GNSProtocol.ACTIVES_SET.toString(), Util.getJSONArray(activeSet));
+    	} catch (JSONException e) 
+    	{
+    			throw new ClientException(e);
+    	}
+    }
+    else
+    {
+    	return getCommand(CommandType.AddMultipleGuids, accountGUID, GNSProtocol.GUID.toString(),
+                    accountGUID.getGuid(), GNSProtocol.NAMES.toString(), new JSONArray(aliasList),
+                    GNSProtocol.PUBLIC_KEYS.toString(), new JSONArray(publicKeys));
+    }
   }
 
   /**
@@ -1266,6 +1449,42 @@ public class GNSCommand extends CommandPacket {
     return getCommand(CommandType.AddAlias, targetGUID, GNSProtocol.GUID.toString(),
             targetGUID.getGuid(), GNSProtocol.NAME.toString(), name);
   }
+  
+    
+    /**
+     * Creates an alias for {@code targetGUID}. The alias can be used just like
+     * the original guid.
+     * 
+     * @param targetGUID
+     * @param name
+     * - the alias
+     * @param activesSet , set of actives for the new alias.
+     * The socket address for an active
+     * should be based on the server-server port for that active, which is also specified 
+     * in the gigapaxosConfig file.
+     * @return CommandPacket
+     * @throws ClientException
+     */
+    public static final CommandPacket addAlias(GuidEntry targetGUID, String name, 
+  		  		Set<InetSocketAddress> activesSet)
+            throws ClientException {
+  	  if(activesSet != null)
+  	  {
+  		  try {
+  			return getCommand(CommandType.AddAlias, targetGUID, GNSProtocol.GUID.toString(),
+  			            targetGUID.getGuid(), GNSProtocol.NAME.toString(), name, 
+  			            GNSProtocol.ACTIVES_SET.toString(), Util.getJSONArray(activesSet));
+  		} catch (JSONException e) {
+  			throw new ClientException(e);
+  		}
+  	  }
+  	  else
+  	  {
+  		  return getCommand(CommandType.AddAlias, targetGUID, GNSProtocol.GUID.toString(),
+  		            targetGUID.getGuid(), GNSProtocol.NAME.toString(), name);
+  	  }
+    }
+    
 
   /**
    * Removes the alias {@code name} for {@code targetGUID}.
@@ -2689,14 +2908,32 @@ public static final CommandPacket selectNear(GuidEntry reader, String field, JSO
   }
 
   private static CommandPacket accountGuidCreateInternal(String alias, String password,
-          CommandType commandType, GuidEntry guidEntry)
-          throws ClientException, NoSuchAlgorithmException {
-    return getCommand(commandType,
-            guidEntry, GNSProtocol.NAME.toString(), alias,
-            GNSProtocol.PUBLIC_KEY.toString(),
-            KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
-            GNSProtocol.PASSWORD.toString(),
-            password != null ? Password.encryptAndEncodePassword(password, alias) : "");
+          CommandType commandType, GuidEntry guidEntry, Set<InetSocketAddress> activesSet)
+          throws ClientException, NoSuchAlgorithmException 
+  {  
+	  if(activesSet != null)
+	  {
+		  try {
+			  return getCommand(commandType,
+			            guidEntry, GNSProtocol.NAME.toString(), alias,
+			            GNSProtocol.PUBLIC_KEY.toString(),
+			            KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
+			            GNSProtocol.PASSWORD.toString(),
+			            password != null ? Password.encryptAndEncodePassword(password, alias) : "",
+			            GNSProtocol.ACTIVES_SET.toString(), Util.getJSONArray(activesSet));
+			  } catch (JSONException e) {
+				  throw new ClientException(e);
+			  }
+	  }
+	  else
+	  {
+		  return getCommand(commandType,
+				  guidEntry, GNSProtocol.NAME.toString(), alias,
+				  GNSProtocol.PUBLIC_KEY.toString(),
+				  KeyPairUtils.publicKeyToBase64ForGuid(guidEntry),
+				  GNSProtocol.PASSWORD.toString(),
+				  password != null ? Password.encryptAndEncodePassword(password, alias) : "");
+	  }
   }
 
   private static CommandPacket aclAdd(String accessType,

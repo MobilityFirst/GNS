@@ -876,7 +876,7 @@ public enum CommandType {
             GNSProtocol.NAME.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -889,7 +889,7 @@ public enum CommandType {
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
-          new String[]{GNSProtocol.PUBLIC_KEY.toString(),}),
+          new String[]{GNSProtocol.PUBLIC_KEY.toString(), GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -902,7 +902,7 @@ public enum CommandType {
             GNSProtocol.PUBLIC_KEYS.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -916,7 +916,7 @@ public enum CommandType {
             GNSProtocol.GUID.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -930,7 +930,7 @@ public enum CommandType {
             GNSProtocol.GUID.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -989,7 +989,7 @@ public enum CommandType {
             GNSProtocol.PASSWORD.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -1005,7 +1005,7 @@ public enum CommandType {
             GNSProtocol.PASSWORD.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{},
+          new String[]{GNSProtocol.ACTIVES_SET.toString()},
           CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
   ),
   /**
@@ -1624,6 +1624,8 @@ public enum CommandType {
     try {
       commandClazz = Class.forName(commandClass);
     } catch (ClassNotFoundException e) {
+      // Use a dummy class so that we don't get a NPE in iOS
+      commandClazz = String.class;
       GNSConfig.getLogger().log(Level.WARNING,
               "Command class not found: {0}", commandClass);
     }
