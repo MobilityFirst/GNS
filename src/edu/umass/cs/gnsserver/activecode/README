@@ -1,3 +1,0 @@
-To test activecode, run:
-
-java -ea -Xms1024m -cp jars/GNS.jar edu.umass.cs.gnsserver.activecode.ActiveCodeHandler

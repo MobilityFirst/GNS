@@ -1,0 +1,5 @@
+{
+    "default_alias": "*/\"support@gns.name\"/*", 
+    "itestname": "*/ServerIntegrationTest/*", 
+    "gnsclient": "\n\tpublic GNSClient(String anyReconfiguratorHostName) throws IOException {\n\t\tthis(new InetSocketAddress(anyReconfiguratorHostName,\n\t\t\t\tGNSConfig.DEFAULT_RECONFIGURATOR_PORT));\n\t}//"
+}

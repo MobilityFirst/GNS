@@ -1,0 +1,22 @@
+destination: production
+markdown: kramdown
+kramdown:
+    input: GFM
+    hard_wrap: false
+    smart_quotes: ["apos", "apos", "quot", "quot"]
+gems:
+  - jekyll-sitemap
+  - jekyll-redirect-from
+  - jekyll-paginate
+
+github:
+  repo: http://github.com/MobilityFirst/GNS
+
+defaults:
+  -
+    scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "docs"
+      title: "GNS"
