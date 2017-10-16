@@ -892,4 +892,14 @@ integration tests sequentially"
     </propertyfile>
   </target>
 
+<target name="wiki" description="Generates the wiki constants file and wiki samples file"
+          depends="compile">
+    <java classname="edu.umass.cs.wiki.WikiConstantsGenerator">
+      <classpath refid="classpath.base"/>
+    </java>
+    <exec executable="python" failonerror="true">
+    <arg line="wiki/init_website.py" />
+    </exec>
+  </target>
+
 </project>
