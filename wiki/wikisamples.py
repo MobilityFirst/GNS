@@ -5,7 +5,7 @@ import re
 import json
 
 
-CONSTANTS_FILE = 'generated/wiki_samples.json'
+CONSTANTS_FILE = 'generated/_data/wiki_samples.json'
 data = {}
 count = 0
 

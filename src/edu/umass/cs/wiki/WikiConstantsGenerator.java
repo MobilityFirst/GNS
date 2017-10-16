@@ -20,7 +20,7 @@ public class WikiConstantsGenerator {
      * If the filename has to be changed, it has to be also updated in the script
      * that reads the generated file to modify wiki pages
      */
-    public static final String WIKI_CONSTANTS_FILE_PATH = "wiki"+System.getProperty("file.separator")+"wiki_constants.json";
+    public static final String WIKI_CONSTANTS_FILE_PATH = "wiki"+System.getProperty("file.separator") + "generated"+ System.getProperty("file.separator") +"_data" + System.getProperty("file.separator") + "wiki_constants.json";
 
     /**
      * The core method to generate wiki constants JSON file
