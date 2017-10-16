@@ -13,7 +13,7 @@ website_path = "website"
 
 cwd = sys.path[0]
 
-call("cp wiki/*.json  "+ cwd + os.sep + website_path + os.sep + "_data" , shell=True)
+#call("cp wiki/*.json  "+ cwd + os.sep + website_path + os.sep + "_data" , shell=True)
 
 for module in modules:
 	modulepath_src = cwd + os.sep + module
