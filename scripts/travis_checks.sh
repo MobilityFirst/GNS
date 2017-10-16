@@ -53,6 +53,12 @@ project_root=`pwd`
 # Always start clean, otherwise some files won't be compiled
 ant clean
 
+# Check changed files
+if [ -z "$TRAVIS_COMMIT_RANGE" ]
+	CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE))
+	echo $CHANGED_FILES
+fi
+
 # Captures:
 # [javac] 1069 problems (1069 warnings) 
 # or 

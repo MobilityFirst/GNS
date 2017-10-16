@@ -43,4 +43,4 @@ for module in modules:
 		os.makedirs(sidebar_dir)
 	sidebar_src = modulepath_src + os.sep + "_sidebar.txt"
 	do_sidebar(sidebar_src , sidebar_dest)
-import wikisample
+import wikisamples
