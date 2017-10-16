@@ -9,7 +9,7 @@ import subprocess
 from sidebar import do_sidebar
 
 modules = ['docs']
-website_path = "website"
+website_path = "generated"
 
 cwd = sys.path[0]
 
@@ -36,6 +36,6 @@ for module in modules:
 		call(["sed",  r"1s;^;---\n---\n\n;", "-i" , modulepath_dest + os.sep + srcfile ], stdout=FNULL, stderr=subprocess.STDOUT, close_fds=True)
 
 
-	sidebar_dest = cwd + os.sep + website_path + os.sep + "_includes" + os.sep + module + "_sidebar.html"
+	sidebar_dest = cwd + os.sep + "_sidebar.html"
 	sidebar_src = modulepath_src + os.sep + "sidebar.txt"
 	do_sidebar(sidebar_src , sidebar_dest)
