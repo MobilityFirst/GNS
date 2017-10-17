@@ -17,7 +17,6 @@ package edu.umass.cs.gnsserver.main;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.Key;
@@ -279,6 +278,20 @@ public class GNSConfig {
      * this flag should be false. 
      */
     ENABLE_UPDATE_LOGGING(false),
+    
+    /**
+     * A select request fetches SELECT_FETCH_SIZE GUID records
+     * at once from a mongodb before sending out notification to
+     * those GUIDs. 
+     */
+    SELECT_FETCH_SIZE(1000),
+        
+    /**
+     * Specifies the class name for a select response processor. 
+     * One use of a select request processor is to send notifications 
+     * to GUIDs that satisfy a select request. 
+     */
+    SELECT_REPONSE_PROCESSOR("edu.umass.cs.gnsserver.gnsapp.selectnotification.examples.PendingSelectResponseProcessor"),
     ;
 
     final Object defaultValue;
