@@ -61,7 +61,7 @@ if [ ! -z "$TRAVIS_COMMIT_RANGE" ]; then
 	# Changes in wiki/docs. Execute wiki task.
 	num_changed=`echo $CHANGED_FILES | wc -l`;
 	num_in_wiki=`echo $CHANGED_FILES | grep -io "./wiki"|wc -l`;
-
+	echo "$num_in_wiki changes in wiki out of $num_changed";
 	# If there are any changes in wiki, and this is not a PR, commit it to gh-pages
 	if [ $num_in_wiki -gt 0 ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
 		git clone -b gh-pages --single-branch https://github.com/MobilityFirst/GNS GNS_wiki
