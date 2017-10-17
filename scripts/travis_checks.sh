@@ -58,6 +58,7 @@ ant wiki
 if [ ! -z "$TRAVIS_COMMIT_RANGE" ]; then
 	echo $TRAVIS_COMMIT_RANGE
 	CHANGED_FILES=$(git diff --name-only $TRAVIS_COMMIT_RANGE)
+	echo "List of changed files:\n $CHANGED_FILES";
 	# Changes in wiki/docs. Execute wiki task.
 	num_changed=`echo $CHANGED_FILES | wc -l`;
 	num_in_wiki=`echo $CHANGED_FILES | grep -io "wiki/"|wc -l`;
