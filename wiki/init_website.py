@@ -35,7 +35,7 @@ for module in modules:
 		copyfile(modulepath_src + os.sep + srcfile, modulepath_dest + os.sep + srcfile)
 		# Add front matter
 		FNULL = open(os.devnull, 'w')
-		call(["sed", "-i ''",  r"1s;^;---\n---\n\n;" , modulepath_dest + os.sep + srcfile ],  stdout=FNULL, stderr=subprocess.STDOUT, close_fds=True)
+		call(["sed", r"1s;^;---\n---\n\n;" , "-i",  modulepath_dest + os.sep + srcfile ],  stdout=FNULL, stderr=subprocess.STDOUT, close_fds=True)
 
 	sidebar_dir = cwd + os.sep + website_path + os.sep + "_includes" 
 	sidebar_dest =  sidebar_dir + os.sep + module + "_sidebar.html"
