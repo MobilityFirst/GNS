@@ -54,7 +54,7 @@ project_root=`pwd`
 ant clean
 
 # Check changed files
-if [ -z "$TRAVIS_COMMIT_RANGE" ]
+if [ -z "$TRAVIS_COMMIT_RANGE" ]; then
 	CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE))
 	echo $CHANGED_FILES
 fi
