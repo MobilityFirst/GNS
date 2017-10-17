@@ -7,7 +7,7 @@ Download the latest, stable, binary-only package from the [GNS releases page](ht
 [//]: # (This is a comment, it will not be included)
 
 ### Single-node, local GNS server
-The GNS is a [gigapaxos](https://github.com/MobilityFirst/gigapaxos) application, which means that gigapaxos is the distributed engine responsible for replicating and reconfiguring GNS replica nodes as needed. The GNS uses mongodb as its underlying database by default, so it is necessary to have mongodb running (on localhost and its default port) before starting the GNS. If mongodb is not already running, refer to the [mongodb installation instructions page](https://docs.mongodb.com/manual/installation/) to set that up (recommended). If you prefer to not use mongodb for now, refer to the instructions further below to run the GNS in the in-memory database mode (not recommended for production use). 
+The GNS is a [gigapaxos](https://github.com/MobilityFirst/gigapaxos) appplication, which means that gigapaxos is the distributed engine responsible for replicating and reconfiguring GNS replica nodes as needed. The GNS uses mongodb as its underlying database by default, so it is necessary to have mongodb running (on localhost and its default port) before starting the GNS. If mongodb is not already running, refer to the [mongodb installation instructions page](https://docs.mongodb.com/manual/installation/) to set that up (recommended). If you prefer to not use mongodb for now, refer to the instructions further below to run the GNS in the in-memory database mode (not recommended for production use). 
 
 Start a single-node, local GNS server as: 
 
