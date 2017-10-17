@@ -64,7 +64,7 @@ if [ ! -z "$TRAVIS_COMMIT_RANGE" ]; then
 	num_in_wiki=`echo $CHANGED_FILES | grep -io "wiki/"|wc -l`;
 	echo "$num_in_wiki changes in wiki out of $num_changed";
 	# If there are any changes in wiki, and this is not a PR, commit it to gh-pages
-	if [ $num_in_wiki -gt 0 ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+	if [ $num_in_wiki -gt 0 ] && [ "$TRAVIS_PULL_REQUEST" = "false" -a "$TRAVIS_BRANCH" = "master" ]; then
 		git clone -b gh-pages --single-branch https://github.com/MobilityFirst/GNS GNS_wiki
 		rsync -av wiki/generated/_data/ GNS_wiki/_data/
 		rsync -av wiki/generated/docs/ GNS_wiki/docs/
@@ -73,6 +73,8 @@ if [ ! -z "$TRAVIS_COMMIT_RANGE" ]; then
 		git add -A; git commit -m "Wiki update from Travis CI";
 		git remote add wiki-remote https://${GIT_API_KEY}@github.com/MobilityFirst/GNS.git
 		git push wiki-remote gh-pages
+		cd ..
+		rm -rf GNS_wiki
 	fi
 
 	# If no other files, we can stop.
