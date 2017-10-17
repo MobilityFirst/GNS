@@ -1,7 +1,7 @@
 
 Prerequisites: `JRE1.8+`, `bash`, `mongodb` (optional).
 
-### Obtaining  GNS
+### Obtaining GNS
 Download the latest, stable, binary-only package from the [GNS releases page](https://github.com/MobilityFirst/GNS/releases).
 
 [//]: # (This is a comment, it will not be included)
