@@ -67,7 +67,7 @@ if [ ! -z "$TRAVIS_COMMIT_RANGE" ]; then
 	if [ $num_in_wiki -gt 0 ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
 		git clone -b gh-pages --single-branch https://github.com/MobilityFirst/GNS GNS_wiki
 		rsync -av wiki/generated/_data/ GNS_wiki/_data/
-		rsync -av wiki/generated_docs/ GNS_wiki/docs/
+		rsync -av wiki/generated/docs/ GNS_wiki/docs/
 		rsync -av wiki/generated/_includes/ GNS_wiki/_includes
 		cd GNS_wiki
 		git add -A; git commit -m "Wiki update from Travis CI";
