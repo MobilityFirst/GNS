@@ -12,12 +12,12 @@ public enum WikiConstants {
 	/**
 	 * Default single-node local properties file.
 	 */
-	GNSSERVER_1LOCAL_PROPERTIES_FILE("conf/gnsserver.1local.properties"), 
+	GNSSERVER_1LOCAL_PROPERTIES_FILE("conf/gnsserver.1local.properties"),
 	
 	/**
 	 * Default properties file.
 	 */
-	DEFAULT_PROPERTIES_FILE(GNSSERVER_1LOCAL_PROPERTIES_FILE),
+	DEFAULT_PROPERTIES_FILE(GNSSERVER_1LOCAL_PROPERTIES_FILE.getConstantValue()),
 	
 	/**
 	 * Email verification option.
@@ -25,16 +25,24 @@ public enum WikiConstants {
 	EMAIL_VERIFICATION_OPTION(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION)
 	;
 	
-	final Object name;
+	final Object value;
 	
-	WikiConstants(Object name) {
-		this.name = name;
+	WikiConstants(Object value) {
+		this.value = value;
 	}
 	
 	/**
-	 * @return Stringified name.
+	 * @return The string value corresponding to the name
 	 */
-	public String getString() {
-		return this.name.toString();
+	public String getConstantValue() {
+		return this.value.toString();
 	}
+
+    /**
+     * @return Stringified name.
+     */
+    public String getConstantName() {
+        return this.name();
+    }
+
 }
