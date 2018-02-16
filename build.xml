@@ -11,6 +11,7 @@
   <property name="test.dir" value="test" />
   <property name="build.dir" value="build"/>
   <property name="build.classes.dir" value="${build.dir}/classes"/>
+  <property name="build.androidclasses.dir" value="${build.dir}/androidclasses"/>
   <property name="build.test.classes.dir" value="${build.dir}/test/classes"/>
   <property name="build.test.dir" value="${build.dir}/test"/>
   <property name="build.jar.dir" value="jars"/>
@@ -41,6 +42,7 @@
     <tstamp/>
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${build.classes.dir}"/>
+    <mkdir dir="${build.androidclasses.dir}"/>
     <mkdir dir="${build.test.classes.dir}"/>
     <mkdir dir="logs"/>
   </target>
@@ -55,6 +57,16 @@
       <compilerarg value="-Xlint:serial"/>
       <classpath refid="classpath.base"/>
     </javac>
+
+    <javac srcdir="${src.dir}:${test.dir}" destdir="${build.androidclasses.dir}" debug="true" debuglevel="lines,vars,source"
+           includeantruntime="false">
+      <compilerarg value="-Xlint:unchecked"/>
+      <compilerarg value="-Xlint:rawtypes"/>
+      <compilerarg value="-Xlint:cast"/>
+      <compilerarg value="-Xlint:serial"/>
+      <classpath refid="classpath.base"/>
+    </javac>
+
     <javac srcdir="${test.dir}" destdir="${build.test.classes.dir}" debug="true" debuglevel="lines,vars,source"
            includeantruntime="false">
       <compilerarg value="-Xlint:unchecked"/>
@@ -102,12 +114,14 @@
       <fileset dir="${conf.dir}" includes="**" />
       <zipgroupfileset dir="${lib.dir}" 
                        includes="**/*.jar" 
-                       excludes="android.jar, hamcrest*.jar, junit*.jar"/>
+                       excludes="android.jar, hamcrest*.jar, junit*.jar, gigapaxos-android*.jar"/>
     </jar>
   </target>
   
   <fileset id="client.includes" dir="${build.classes.dir}"
            includes="**/*.class"/>
+  <fileset id="androidclient.includes" dir="${build.androidclasses.dir}"
+           includes="**/*.class"/>           
   <fileset id="test.includes" dir="${build.test.classes.dir}"
            includes="**/*.class"/>
                      
@@ -122,7 +136,11 @@
   also commons-cli and derby are already in gigapaxos
   -->
   <zipfileset id="client.lib" dir="${lib.dir}" 
-              includes="jline*.jar, commons-lang*.jar, gigapaxos*.jar"
+              includes="jline*.jar, commons-lang*.jar, gigapaxos*.jar" excludes="gigapaxos-android*.jar"
+  />
+
+    <zipfileset id="androidclient.lib" dir="${lib.dir}" 
+              includes="jline*.jar, commons-lang*.jar, gigapaxos-android*.jar" 
   />
 
   <target name="client_jarbuild" depends="compile" description="generate jar files">
@@ -144,6 +162,35 @@
       <fileset refid="test.includes"/>
       <fileset refid="client.keystore" />
       <zipgroupfileset refid="client.lib" />
+
+    </jar>
+  </target>
+
+
+  <target name="androidclient_jarbuild" depends="compile" description="generate jar files for android">
+
+    <!-- Translate classes using RetroLambda -->
+
+    <exec executable="java">
+       <arg line="-Dretrolambda.inputDir=${build.androidclasses.dir} -Dretrolambda.classpath=&quot;${lib.dir}/*&quot; -Dretrolambda.defaultMethods=true -javaagent:android/retrolambda.jar -jar android/retrolambda.jar"/>
+     </exec>
+
+    <mkdir dir="${build.jar.dir}"/>
+    <jar
+      jarfile="${build.jar.dir}/gnsclient-android-${build.major.number}.${build.minor.number}.${build.revision.number}.jar">
+      <manifest>
+        <attribute name="Built-By" value="Westy"/>
+        <attribute name="Implementation-Vendor"
+                   value="University of Massachusetts" />
+        <attribute name="Implementation-Title" value="GNS" />
+        <attribute name="Implementation-Version"
+                   value="${build.major.number}.${build.minor.number}.${build.revision.number}" />
+        <attribute name="Class-Path" value="."/>
+        <!--        <attribute name="Class-Path" value="${jar.classpath}"/>-->
+        <attribute name="Build-Version" value="${version.code}" />
+      </manifest>
+      <fileset refid="androidclient.includes"/>
+      <zipgroupfileset refid="androidclient.lib" />
 
     </jar>
   </target>
@@ -204,7 +251,7 @@ ${build.major.number}.${build.minor.number}.${build.revision.number})</h1>]]>
   </target>
     
 
-  <target name="jar" depends="server_jarbuild, client_jarbuild, client_console_jarbuild">
+  <target name="jar" depends="server_jarbuild, client_jarbuild, client_console_jarbuild, androidclient_jarbuild">
     <symlink link="${build.jar.dir}/GNS.jar" overwrite="yes"
              resource="gnsserver-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
     <symlink link="${build.jar.dir}/GNSClient.jar" overwrite="yes"
