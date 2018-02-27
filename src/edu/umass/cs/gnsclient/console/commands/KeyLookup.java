@@ -24,9 +24,9 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.StringUtil;
 import java.io.IOException;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * Lookup a Public Key for an alias or GUID
@@ -84,7 +84,7 @@ public class KeyLookup extends ConsoleCommand {
       } else {
         pk = gnsClient.publicKeyLookupFromGuid(alias);
       }
-      console.printString(alias + " public key is " + DatatypeConverter.printHexBinary(pk.getEncoded()));
+      console.printString(alias + " public key is " + ByteUtils.bytesArrayToHexString(pk.getEncoded()));
       //console.printString(alias + " public key is " + ByteUtils.toHex(pk.getEncoded()));
       console.printNewline();
     } catch (IOException | ClientException e) {

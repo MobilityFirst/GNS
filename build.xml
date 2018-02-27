@@ -171,8 +171,12 @@
 
     <!-- Translate classes using RetroLambda -->
 
+    <exec executable ="unzip">
+      <arg line="${lib.dir}/gigapaxos-*.jar -d ${build.androidclasses.dir}" />
+    </exec>
+
     <exec executable="java">
-       <arg line="-Dretrolambda.inputDir=${build.androidclasses.dir} -Dretrolambda.classpath=&quot;${lib.dir}/*&quot; -Dretrolambda.defaultMethods=true -javaagent:android/retrolambda.jar -jar android/retrolambda.jar"/>
+       <arg line="-Dretrolambda.inputDir=${build.androidclasses.dir} -Dretrolambda.classpath=&quot;${lib.dir}/*:${build.androidclasses.dir}&quot; -Dretrolambda.defaultMethods=true -javaagent:android/retrolambda.jar -jar android/retrolambda.jar"/>
      </exec>
 
     <mkdir dir="${build.jar.dir}"/>

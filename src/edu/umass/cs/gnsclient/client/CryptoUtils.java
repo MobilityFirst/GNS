@@ -3,6 +3,7 @@ package edu.umass.cs.gnsclient.client;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.SessionKeys;
 
@@ -11,7 +12,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
@@ -106,7 +106,7 @@ public class CryptoUtils {
                 // but the iOS client does as well so we need to keep it like this.
                 // Also note that the secret based method doesn't do this - it just returns a string
                 // using the ISO-8859-1 charset.
-                String result = DatatypeConverter.printHexBinary(signedString);
+                String result = ByteUtils.bytesArrayToHexString(signedString);
                 //String result = ByteUtils.toHex(signedString);
                 return result;
             }

@@ -40,7 +40,7 @@ import android.os.Environment;
 import android.util.Log;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.GNSProtocol;
-import javax.xml.bind.DatatypeConverter;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 /**
  * Class to store and retrieve key value pairs in Android.
@@ -129,8 +129,8 @@ public class KeyPairUtilsAndroid {
    */
   public static void saveKeyPairToPreferences(String gnsName, String username, String guid, KeyPair keyPair) {
     String aliasKey = gnsName + "@" + username;
-    String publicString =  DatatypeConverter.printHexBinary(keyPair.getPublic().getEncoded());
-    String privateString =  DatatypeConverter.printHexBinary(keyPair.getPrivate().getEncoded());
+    String publicString =  ByteUtils.bytesArrayToHexString(keyPair.getPublic().getEncoded());
+    String privateString =  ByteUtils.bytesArrayToHexString(keyPair.getPrivate().getEncoded());
     //String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
     //String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
 
@@ -361,8 +361,8 @@ public class KeyPairUtilsAndroid {
 
         if (aliasKey.contains(gnsName) && !publicString.isEmpty() && !privateString.isEmpty()) {
           try {
-            byte[] encodedPublicKey = DatatypeConverter.parseHexBinary(publicString);
-            byte[] encodedPrivateKey = DatatypeConverter.parseHexBinary(privateString);
+            byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
+            byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
             //byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
             //byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
             KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());
@@ -445,8 +445,8 @@ public class KeyPairUtilsAndroid {
 
           if (!publicString.isEmpty() && !privateString.isEmpty()) {
             try {
-              byte[] encodedPublicKey = DatatypeConverter.parseHexBinary(publicString);
-              byte[] encodedPrivateKey = DatatypeConverter.parseHexBinary(privateString);
+              byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
+              byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
 //              byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
 //              byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
               KeyFactory keyFactory = KeyFactory.getInstance(GNSProtocol.RSA_ALGORITHM.toString());

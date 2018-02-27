@@ -24,8 +24,11 @@ package edu.umass.cs.gnscommon.utils;
  * @author westy
  */
 public class ByteUtils {
+    // From https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
+    // for Android support
+    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
-  //---------------------------------------------------------
+    //---------------------------------------------------------
   // short / byte[] utilities
   //---------------------------------------------------------
   /**
@@ -153,6 +156,26 @@ public class ByteUtils {
     }
     return value;
   }
+
+    public static String bytesArrayToHexString(byte[] bytes) {
+      char[] hexChars = new char[bytes.length * 2];
+      for ( int j = 0; j < bytes.length; j++ ) {
+        int v = bytes[j] & 0xFF;
+        hexChars[j * 2] = hexArray[v >>> 4];
+        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+      }
+      return new String(hexChars);
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+      int len = s.length();
+      byte[] data = new byte[len / 2];
+      for (int i = 0; i < len; i += 2) {
+        data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                + Character.digit(s.charAt(i+1), 16));
+      }
+      return data;
+    }
 
 //  /**
 //   * Converts a hexidecimal string to a byte array.
