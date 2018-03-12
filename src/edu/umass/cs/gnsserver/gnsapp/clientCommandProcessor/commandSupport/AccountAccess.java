@@ -118,6 +118,14 @@ public class AccountAccess {
    */
   public static final String HRN_FIELD = InternalField
           .makeInternalFieldString("guid_info") + "." + GNSProtocol.NAME.toString();
+  
+	/**
+	 * Defines the field name in the HRN record where certificates for that HRN
+	 * are stored.
+	 */
+	public static final String CERTIFICATES = InternalField
+			.makeInternalFieldString("CERTIFICATES");
+
 
   /**
    * Obtains the account info record for the given guid if that guid was used
