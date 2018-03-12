@@ -31,13 +31,16 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCom
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.Util;
 
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -80,6 +83,11 @@ public class AddAlias extends AbstractCommand {
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
     Date timestamp = json.has(GNSProtocol.TIMESTAMP.toString()) ? Format.parseDateISO8601UTC(json.getString(GNSProtocol.TIMESTAMP.toString())) : null; // can be null on older client
+    
+    Set<InetSocketAddress> activesSet = json.has(GNSProtocol.ACTIVES_SET.toString())
+    		? Util.getSocketAddresses(json.getJSONArray(GNSProtocol.ACTIVES_SET.toString()))
+    				: null;
+    
     // Fixme: Does this really need remote access?
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(header, guid, handler);
     if (accountInfo == null) {
@@ -89,9 +97,10 @@ public class AddAlias extends AbstractCommand {
       return new CommandResponse(ResponseCode.VERIFICATION_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.VERIFICATION_ERROR.toString() + " Account not verified");
     } else if (accountInfo.getAliases().size() > Config.getGlobalInt(GNSConfig.GNSC.ACCOUNT_GUID_MAX_ALIASES)) {
       return new CommandResponse(ResponseCode.TOO_MANY_ALIASES_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_ALIASES.toString());
-    } else {
-      return AccountAccess.addAlias(header, commandPacket, 
-              accountInfo, name, guid, signature, message, timestamp, handler);
+    } else 
+    {
+    	return AccountAccess.addAlias(header, commandPacket, 
+              accountInfo, name, guid, signature, message, timestamp, handler, activesSet);
     }
   }
 }

@@ -669,9 +669,9 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.WRITER.toString()}),
   //
-  // Basic select commands
+  // Select commands
   //
-
+  
   /**
    * arun: Why is this deprecated??
    */
@@ -687,58 +687,11 @@ public enum CommandType {
           new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
-  /**
-   *
-   */
-  @Deprecated
-  SelectNear(320, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNear",
-          CommandResultType.LIST, false, false,
-          "Return the guids of all records that are within max distance of value. Key must be a GeoSpatial field. "
-          + "Value is a point specified as a JSONArray string tuple: [LONG, LAT]. Max Distance is in meters. "
-          + "Values are returned as a JSON array of guids. "
-          + "This command is a shorthand for a mongo $near query.",
-          new String[]{GNSProtocol.FIELD.toString(),
-            GNSProtocol.NEAR.toString(),
-            GNSProtocol.MAX_DISTANCE.toString()},
-          // optional parameters
-          new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
-  /**
-   * Why is this deprecated??
-   */
-  @Deprecated
-  SelectWithin(321, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin",
-          CommandResultType.LIST, false, false,
-          "Returns the guids of all records that are within value which is a bounding box specified. "
-          + "Key must be a GeoSpatial field. "
-          + "Bounding box is a nested JSONArray string tuple of paired tuples: [[LONG_BOTTOM_LEFT, LAT_BOTTOM_LEFT],[LONG_UPPER_RIGHT, LAT_UPPER_RIGHT]] "
-          + "Values are returned as a JSON array of guids. "
-          + "This command is a shorthand for a mongo $geoWithin query.",
-          new String[]{GNSProtocol.FIELD.toString(),
-            GNSProtocol.WITHIN.toString()},
-          // optional parameters
-          new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
-  /**
-   *
-   */
-  SelectQuery(322, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectQuery",
-          CommandResultType.LIST, false, false,
-          "Returns the guids of all records that satisfy the query. "
-          + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-          + "Values are returned as a JSON array of guids.",
-          new String[]{GNSProtocol.QUERY.toString()},
-          // optional parameters
-          new String[]{GNSProtocol.GUID.toString(), // the reader
-            GNSProtocol.FIELDS.toString(),
-            GNSProtocol.SIGNATURE.toString(),
-            GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+  
   //
   // Select commands that maintain a group guid
   //
-
+  
   /**
    *
    */
@@ -817,6 +770,97 @@ public enum CommandType {
           new String[]{GNSProtocol.GUID.toString(), // the reader
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+  
+  /**
+   * Select commands that also send a notification
+   */
+  SelectAndNotify(316, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectAndNotify",
+           CommandResultType.MAP, false, false,
+           "Sends a notification to all guids that satisfy the select query."
+           + "For details see http://gns.name/wiki/index.php/Query_Syntax "
+           + "The return value is a JSONObject containing various statistics like "
+           + "total number of GUIDs to whom notifications were sent, total failed notification etc.",
+           new String[]{GNSProtocol.QUERY.toString(), GNSProtocol.SELECT_NOTIFICATION.toString()},
+           // optional parameters
+           new String[]{GNSProtocol.GUID.toString(), // the reader
+             GNSProtocol.FIELDS.toString(),
+             GNSProtocol.SIGNATURE.toString(),
+             GNSProtocol.SIGNATUREFULLMESSAGE.toString(),
+             }),
+  
+  
+  /**
+   * The command to request the status of notifications for 
+   * an earlier issued select request.
+   */
+  SelectNotificationStatus(317, CommandCategory.SELECT, 
+  		"edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNotificationStatus",
+          CommandResultType.LIST, false, false,
+          " The command is used to request the status of notifications for an "
+          + "earlier issued select request by using the corresponding select notification handle. "
+          + "The return value is a JSONObject containing various statistics like "
+          + "total number of GUIDs to whom notifications were sent, total failed notification, "
+          + "total pending notifications  etc.",
+          new String[]{GNSProtocol.SELECT_NOTIFICATION_HANDLE.toString()},
+          // optional parameters
+          new String[]{GNSProtocol.GUID.toString(), // the reader
+            GNSProtocol.SIGNATURE.toString(),
+            GNSProtocol.SIGNATUREFULLMESSAGE.toString(),
+          }),
+  
+  
+  
+  
+  /**
+  *
+  */
+ @Deprecated
+ SelectNear(320, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNear",
+         CommandResultType.LIST, false, false,
+         "Return the guids of all records that are within max distance of value. Key must be a GeoSpatial field. "
+         + "Value is a point specified as a JSONArray string tuple: [LONG, LAT]. Max Distance is in meters. "
+         + "Values are returned as a JSON array of guids. "
+         + "This command is a shorthand for a mongo $near query.",
+         new String[]{GNSProtocol.FIELD.toString(),
+           GNSProtocol.NEAR.toString(),
+           GNSProtocol.MAX_DISTANCE.toString()},
+         // optional parameters
+         new String[]{GNSProtocol.GUID.toString(), // the reader
+           GNSProtocol.SIGNATURE.toString(),
+           GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+ /**
+  * Why is this deprecated??
+  */
+ @Deprecated
+ SelectWithin(321, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin",
+         CommandResultType.LIST, false, false,
+         "Returns the guids of all records that are within value which is a bounding box specified. "
+         + "Key must be a GeoSpatial field. "
+         + "Bounding box is a nested JSONArray string tuple of paired tuples: [[LONG_BOTTOM_LEFT, LAT_BOTTOM_LEFT],[LONG_UPPER_RIGHT, LAT_UPPER_RIGHT]] "
+         + "Values are returned as a JSON array of guids. "
+         + "This command is a shorthand for a mongo $geoWithin query.",
+         new String[]{GNSProtocol.FIELD.toString(),
+           GNSProtocol.WITHIN.toString()},
+         // optional parameters
+         new String[]{GNSProtocol.GUID.toString(), // the reader
+           GNSProtocol.SIGNATURE.toString(),
+           GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+ /**
+  *
+  */
+ SelectQuery(322, CommandCategory.SELECT, "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectQuery",
+         CommandResultType.LIST, false, false,
+         "Returns the guids of all records that satisfy the query. "
+         + "For details see http://gns.name/wiki/index.php/Query_Syntax "
+         + "Values are returned as a JSON array of guids.",
+         new String[]{GNSProtocol.QUERY.toString()},
+         // optional parameters
+         new String[]{GNSProtocol.GUID.toString(), // the reader
+           GNSProtocol.FIELDS.toString(),
+           GNSProtocol.SIGNATURE.toString(),
+           GNSProtocol.SIGNATUREFULLMESSAGE.toString()}),
+ 
+ 
   //
   // Account commands
   //
@@ -832,7 +876,7 @@ public enum CommandType {
             GNSProtocol.NAME.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -845,7 +889,7 @@ public enum CommandType {
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
-          new String[]{GNSProtocol.PUBLIC_KEY.toString(),}),
+          new String[]{GNSProtocol.PUBLIC_KEY.toString(), GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -858,7 +902,7 @@ public enum CommandType {
             GNSProtocol.PUBLIC_KEYS.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -872,7 +916,7 @@ public enum CommandType {
             GNSProtocol.GUID.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -886,7 +930,7 @@ public enum CommandType {
             GNSProtocol.GUID.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -945,7 +989,7 @@ public enum CommandType {
             GNSProtocol.PASSWORD.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{}),
+          new String[]{GNSProtocol.ACTIVES_SET.toString()}),
   /**
    *
    */
@@ -961,7 +1005,7 @@ public enum CommandType {
             GNSProtocol.PASSWORD.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
-          new String[]{},
+          new String[]{GNSProtocol.ACTIVES_SET.toString()},
           CommandFlag.MUTUAL_AUTH // This is important - without this the command isn't secure.
   ),
   /**
@@ -1580,6 +1624,8 @@ public enum CommandType {
     try {
       commandClazz = Class.forName(commandClass);
     } catch (ClassNotFoundException e) {
+      // Use a dummy class so that we don't get a NPE in iOS
+      commandClazz = String.class;
       GNSConfig.getLogger().log(Level.WARNING,
               "Command class not found: {0}", commandClass);
     }
@@ -1852,6 +1898,9 @@ public enum CommandType {
     SelectNear.setChain();
     SelectWithin.setChain();
     SelectQuery.setChain();
+    SelectAndNotify.setChain();
+    SelectNotificationStatus.setChain();
+    
     //
     AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned, ReadUnsigned); // what else?
     RemoveGuid.setChain(ReadUnsigned);

@@ -19,10 +19,8 @@
  */
 package edu.umass.cs.gnsserver.utils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +30,6 @@ import java.util.concurrent.TimeUnit;
  * @author westy, arun
  */
 public class RunCommand {
-	private static final int MAX_LINES = 1024;
 	private static final long PROCESS_WAIT_TIMEOUT = 30;
 
 	/**
@@ -56,17 +53,21 @@ public class RunCommand {
 	public static ArrayList<String> command(final String cmdline,
 			final String directory, boolean inheritIO) {
 		try {
+			if(!inheritIO)
+			{
+				throw new RuntimeException("inheritIO is false. "
+						+ "inheritIO should be true for the command to proceed.");
+			}
+			
 			ProcessBuilder processBuilder = new ProcessBuilder(new String[] {
 					"bash", "-c", cmdline });
+			
 			if (inheritIO)
 				processBuilder.inheritIO()
 				;
 
 			Process process = processBuilder.redirectErrorStream(true)
 					.directory(new File(directory)).start();
-
-			if (!inheritIO)
-				return gatherOutput(process);
 
 			// There should really be a timeout here.
 			if (process.waitFor(PROCESS_WAIT_TIMEOUT, TimeUnit.SECONDS)) 
@@ -79,18 +80,6 @@ public class RunCommand {
 			e.printStackTrace();
 			return null;
 		}
-	}
-
-	private static ArrayList<String> gatherOutput(Process process)
-			throws IOException {
-		ArrayList<String> output = new ArrayList<>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				process.getInputStream()));
-		String line = null;
-		while ((line = br.readLine()) != null && output.size() < MAX_LINES) {
-			output.add(line);
-		}
-		return output;
 	}
 
 	/**
@@ -115,6 +104,5 @@ public class RunCommand {
 				System.out.println(line);
 			}
 		}
-
 	}
 }
