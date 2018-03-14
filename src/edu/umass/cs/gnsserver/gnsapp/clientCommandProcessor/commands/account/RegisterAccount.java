@@ -33,10 +33,12 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +48,7 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.Util;
 
 /**
  *
@@ -81,7 +84,12 @@ public class RegisterAccount extends AbstractCommand {
     String password = json.getString(GNSProtocol.PASSWORD.toString());
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
-
+    
+    Set<InetSocketAddress> activesSet = json.has(GNSProtocol.ACTIVES_SET.toString())
+    		? Util.getSocketAddresses(json.getJSONArray(GNSProtocol.ACTIVES_SET.toString()))
+    		: null;
+    		
+    
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
       return new CommandResponse(ResponseCode.SIGNATURE_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_SIGNATURE.toString());
@@ -92,7 +100,7 @@ public class RegisterAccount extends AbstractCommand {
               name, guid, publicKey,
               password,
               Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION),
-              handler);
+              handler, activesSet);
       if (result.getExceptionOrErrorCode().isOKResult()) {
         // Everything is hunkey dorey so return the new guid
         return new CommandResponse(ResponseCode.NO_ERROR, guid);

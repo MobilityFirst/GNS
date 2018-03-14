@@ -103,7 +103,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
         GNSApplicationInterface<String>, Replicable, Reconfigurable,
         ClientMessenger, AppRequestParserBytes, Shutdownable {
 
-  private String nodeID;
+    private static AbstractSelector selector = null;
+    private String nodeID;
   private InetSocketAddress nodeAddress;
   private NodeConfig<String> nodeConfig;
   private boolean constructed = false;
@@ -191,7 +192,51 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   public GNSApp(String[] args) throws IOException {
   }
 
-  /**
+    /**
+     * @return Select implementation.
+     */
+    public synchronized static final AbstractSelector getSelector() {
+        if (selector != null)
+            return selector;
+        // else
+        Class<?> clazz = null;
+        try {
+            clazz = (Class.forName(Config
+                    .getGlobalString(GNSConfig.GNSC.ABSTRACT_SELECTOR)));
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (clazz != null)
+            try {
+                selector = (AbstractSelector) (clazz.getConstructor()
+                        .newInstance());
+            } catch (InstantiationException | IllegalAccessException
+                    | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException e) {
+                GNSConfig.getLogger()
+                        .log(Level.WARNING,
+                                "{0} unable to instantiate selector {1}; using default selector",
+                                new Object[] {
+                                        GNSConfig.class.getName(),
+                                        Config.getGlobalString(GNSConfig.GNSC.ABSTRACT_SELECTOR) });
+                e.printStackTrace();
+            }
+        if (selector == null)
+            try {
+                selector = (AbstractSelector) (Select.class
+                        .getConstructor().newInstance());
+            } catch (InstantiationException | IllegalAccessException
+                    | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        // default Select has default constructor
+        assert(selector!=null);
+        return selector;
+    }
+
+    /**
    *
    * @param messenger
    */
@@ -314,10 +359,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
       switch (packetType) {
         case SELECT_REQUEST:
-          GNSConfig.getSelector().handleSelectRequest((SelectRequestPacket) request, this);
+          getSelector().handleSelectRequest((SelectRequestPacket) request, this);
           break;
         case SELECT_RESPONSE:
-        	GNSConfig.getSelector().handleSelectResponse((SelectResponsePacket) request, this);
+        	getSelector().handleSelectResponse((SelectResponsePacket) request, this);
           break;
         case COMMAND:
           CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);

@@ -565,7 +565,20 @@ public enum GNSProtocol {
    * Indicates that sanity check failed
    * See {@link edu.umass.cs.gnscommon.ResponseCode#SANITY_CHECK_ERROR}.
    */
-  SANITY_CHECK_ERROR("+SANITY_CHECK_ERROR+"),;
+  SANITY_CHECK_ERROR("+SANITY_CHECK_ERROR+"),
+  /**
+   * The select notification key field in a command.
+   */
+  SELECT_NOTIFICATION("select_notification"),
+  
+  /**
+   * The key field for the select notification handle. 
+   */
+  SELECT_NOTIFICATION_HANDLE("select_notification_handle"),
+  /** The set of actives field in a command. This is mainly used to specify
+   *  the initial set of actives while creating an account or a guid.
+   */
+  ACTIVES_SET("activesSet"),;
 
   final String label;
 
