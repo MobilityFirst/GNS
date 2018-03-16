@@ -338,7 +338,8 @@ public class Email {
       return true;
     } catch (Exception e) {
       if (!suppressWarning) {
-        getLogger().log(Level.WARNING, "Unable to send email: {0}", e);
+        getLogger().log(Level.WARNING, "Unable to send email: {0}", new
+                Object[]{e});
       }
       return false;
     }

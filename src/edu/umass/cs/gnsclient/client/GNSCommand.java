@@ -746,6 +746,7 @@ public class GNSCommand extends CommandPacket {
           GuidEntry accountGuid, String alias, Set<InetSocketAddress> activeSet) throws ClientException {
     try 
     {
+      // FIXME: check if GUID already exists as in lookupOrCreate
     	GuidEntry guidEntry = GuidUtils.createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
     	
     	if(activeSet != null)
