@@ -553,7 +553,8 @@ public class AccountAccess {
         if (emailSent) {
           return new CommandResponse(ResponseCode.NO_ERROR,
                   GNSProtocol.OK_RESPONSE.toString());
-        } else {
+        }
+        else {
           // if we can't send the confirmation back out of the account
           // creation
           AccountInfo accountInfo = lookupAccountInfoFromGuidAnywhere(header,

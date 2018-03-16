@@ -1,17 +1,17 @@
 /* Copyright (1c) 2015 University of Massachusetts
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (1the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * Initial developer(s): Westy */
 package edu.umass.cs.gnscommon;
 
@@ -1523,6 +1523,16 @@ public enum CommandType {
             GNSProtocol.AC_ACTION.toString(),
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+
+   RegisterAccountWithCertificate(813, CommandCategory.CREATE_DELETE,
+            "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountWithCertificate",
+            CommandResultType.NULL, false, false,
+            "Creates an account guid associated with the human readable name and the supplied certificate",
+            new String[]{GNSProtocol.NAME.toString(),
+                    GNSProtocol.CERTIFICATE.toString(),
+                    GNSProtocol.PASSWORD.toString(),
+                    GNSProtocol.SIGNATURE.toString(),
+                    GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
   /**
    *
    */
@@ -1551,515 +1561,515 @@ public enum CommandType {
    */
   private boolean notForRogueClients;
 
-  /**
-   * A description of the command.
-   */
-  private final String commandDescription;
 
-  /**
-   * The required parameters of the command.
-   */
-  private final String[] commandRequiredParameters;
 
-  /**
-   * The optional parameters of the command.
-   */
-  private final String[] commandOptionalParameters;
+    /**
+     * A description of the command.
+     */
+    private final String commandDescription;
 
-  /**
-   * Other commands that may be remote-query-invoked by this command.
-   * Non-final only because we can not name enums before they are defined.
-   */
-  private CommandType[] invokedCommands;
+    /**
+     * The required parameters of the command.
+     */
+    private final String[] commandRequiredParameters;
 
-  /**
-   * The command category, that is what kind of command it is.
-   */
-  private enum CommandCategory {
     /**
-     *
+     * The optional parameters of the command.
      */
-    READ,
-    /**
-     *
-     */
-    UPDATE,
-    /**
-     *
-     */
-    CREATE_DELETE,
-    /**
-     *
-     */
-    SELECT,
-    /**
-     *
-     */
-    OTHER
-  }
+    private final String[] commandOptionalParameters;
 
-  /**
-   * Flags that describe additional command properties.
-   */
-  private enum CommandFlag {
     /**
-     *
+     * Other commands that may be remote-query-invoked by this command.
+     * Non-final only because we can not name enums before they are defined.
      */
-    MUTUAL_AUTH,
+    private CommandType[] invokedCommands;
+
     /**
-     * Miscellaneous commands that can be handled by the local server.
+     * The command category, that is what kind of command it is.
      */
-    LOCAL
-  }
-
-  private CommandType(int number, CommandCategory category, String commandClass,
-          CommandResultType returnType, boolean canBeSafelyCoordinated,
-          boolean notForRogueClients, String description,
-          String[] requiredParameters, String[] optionalParameters,
-          CommandFlag... flags) {
-    this.number = number;
-    this.category = category;
-
-    Class<?> commandClazz = null;
-    try {
-      commandClazz = Class.forName(commandClass);
-    } catch (ClassNotFoundException e) {
-      // Use a dummy class so that we don't get a NPE in iOS
-      commandClazz = String.class;
-      GNSConfig.getLogger().log(Level.WARNING,
-              "Command class not found: {0}", commandClass);
+    private enum CommandCategory {
+        /**
+         *
+         */
+        READ,
+        /**
+         *
+         */
+        UPDATE,
+        /**
+         *
+         */
+        CREATE_DELETE,
+        /**
+         *
+         */
+        SELECT,
+        /**
+         *
+         */
+        OTHER
     }
 
-    this.commandClass = commandClazz;
-    this.returnType = returnType;
-
-    this.canBeSafelyCoordinated = canBeSafelyCoordinated;
-
-    // presumably every command is currently available to thugs
-    this.notForRogueClients = notForRogueClients;
-
-    this.commandDescription = description;
-    this.commandRequiredParameters = requiredParameters;
-    this.commandOptionalParameters = optionalParameters;
-    this.flags = flags;
-
-  }
-
-  private static final Map<Integer, CommandType> map = new HashMap<>();
-  private static final Map<String, CommandType> lowerCaseCommandNameMapForHttp = new HashMap<>();
-
-  static {
-    for (CommandType type : CommandType.values()) {
-      if (!type.getCommandClass().getSimpleName().equals(type.name())) {
-        GNSConfig.getLogger().log(Level.WARNING,
-                "Enum name should be the same as implementing class: {0} vs. {1}",
-                new Object[]{type.getCommandClass().getSimpleName(), type.name()});
-      }
-      if (map.containsKey(type.getInt())) {
-        GNSConfig.getLogger().warning(
-                "**** Duplicate number for command type " + type + ": "
-                + type.getInt());
-      }
-      map.put(type.getInt(), type);
-      lowerCaseCommandNameMapForHttp.put(type.name().toLowerCase(), type);
+    /**
+     * Flags that describe additional command properties.
+     */
+    private enum CommandFlag {
+        /**
+         *
+         */
+        MUTUAL_AUTH,
+        /**
+         * Miscellaneous commands that can be handled by the local server.
+         */
+        LOCAL
     }
-  }
 
-  // In general, isCoordinated is not equivalent to isUpdate()
-  private boolean isCoordinated() {
-    return this.isUpdate();
-  }
+    private CommandType(int number, CommandCategory category, String commandClass,
+                        CommandResultType returnType, boolean canBeSafelyCoordinated,
+                        boolean notForRogueClients, String description,
+                        String[] requiredParameters, String[] optionalParameters,
+                        CommandFlag... flags) {
+        this.number = number;
+        this.category = category;
 
-  /**
-   *
-   * @return the int
-   */
-  public int getInt() {
-    return number;
-  }
-
-  /**
-   *
-   * @return the category
-   */
-  public CommandCategory getCategory() {
-    return category;
-  }
-
-  /**
-   *
-   * @return the command class
-   */
-  public Class<?> getCommandClass() {
-    return commandClass;
-  }
-
-  /**
-   *
-   * @return the result type
-   */
-  public CommandResultType getResultType() {
-    return this.returnType;
-  }
-
-  /**
-   *
-   * @return true if the command can be safely coordinated
-   */
-  public boolean isCanBeSafelyCoordinated() {
-    return canBeSafelyCoordinated;
-  }
-
-  /**
-   *
-   * @return true if the should not be executed by rogue clients
-   */
-  public boolean isNotForRogueClients() {
-    return notForRogueClients;
-  }
-
-  /**
-   *
-   * @return the command description
-   */
-  public String getCommandDescription() {
-    return commandDescription;
-  }
-
-  /**
-   *
-   * @return the required command parameters
-   */
-  public String[] getCommandRequiredParameters() {
-    return commandRequiredParameters;
-  }
-
-  /**
-   *
-   * @return the optional command parameters
-   */
-  public String[] getCommandOptionalParameters() {
-    return commandOptionalParameters;
-  }
-
-  // add isCoordinated
-  // add strictly local flag or remote flag
-  // what are the set of commands that will be invoked by this command
-  // AKA multi-transactional commands
-  /**
-   *
-   * @return true if it's a read command
-   */
-  public boolean isRead() {
-    return category.equals(CommandCategory.READ);
-  }
-
-  /**
-   *
-   * @return true if it's an update command
-   */
-  public boolean isUpdate() {
-    return category.equals(CommandCategory.UPDATE);
-  }
-
-  /**
-   *
-   * @return true if it's a create or delete command
-   */
-  public boolean isCreateDelete() {
-    return category.equals(CommandCategory.CREATE_DELETE);
-  }
-
-  /**
-   *
-   * @return true if it's a select command
-   */
-  public boolean isSelect() {
-    return category.equals(CommandCategory.SELECT);
-  }
-
-  /**
-   *
-   * @return true if it's mutual auth command
-   */
-  public boolean isMutualAuth() {
-    return Arrays.asList(flags).contains(CommandFlag.MUTUAL_AUTH);
-  }
-
-  /**
-   *
-   * @return true if this is a command any replica can handle itself
-   */
-  public boolean isLocallyHandled() {
-    return isCreateDelete() || isSelect() || Arrays.asList(flags).contains(CommandFlag.LOCAL);
-  }
-
-  /**
-   *
-   * @param number
-   * @return the command type
-   */
-  public static CommandType getCommandType(int number) {
-    return map.get(number);
-  }
-
-  /**
-   * Returns the command that corresponds to the name ignoring case.
-   *
-   * @param name
-   * @return the command
-   */
-  public static CommandType getCommandForHttp(String name) {
-    return lowerCaseCommandNameMapForHttp.get(name.toLowerCase());
-  }
-
-  private void setChain(CommandType... invokedCommands) {
-    if (this.invokedCommands == null) {
-      this.invokedCommands = invokedCommands;
-    } else {
-      throw new RuntimeException("Can set command chain exactly once");
-    }
-  }
-
-  /**
-   * The chain of any command must contain a list
-   * of all commands that the execution of that command MAY invoke. For
-   * example, if AddGuid may (not necessarily every time) invoke LookupGuid as
-   * a step, LookupGuid belongs to AddGuid's chain. The list interpretation is
-   * somewhat loose as the call chain is really a DAG, but it is good to
-   * flatten the DAG in breadth-first order, e.g., if A->B and B->C and B->D
-   * and D->E, where "->" means "invokes", the chain of A is {B,C,D,E}. It is
-   * okay to stop recursively unraveling a chain, e.g., stop at A->B, if what
-   * follows is identical to B's chain.
-   *
-   * Hopefully there are no cycles in these chains. Assume standard execution
-   * for all commands, i.e., with no active code enabled, while listing chains.
-   */
-  static {
-    Read.setChain(ReadUnsigned);
-    ReadSecured.setChain(ReadUnsigned);
-    ReadUnsigned.setChain();
-    ReadMultiField.setChain(ReadUnsigned);
-    ReadMultiFieldUnsigned.setChain(ReadUnsigned);
-    ReadArray.setChain(ReadUnsigned);
-    ReadArrayOne.setChain(ReadUnsigned);
-    ReadArrayOneUnsigned.setChain();
-    ReadArrayUnsigned.setChain();
-    // Every command that is a subclass of AbstractUpdate could potentially call ReadUnsigned 
-    // because of the group guid check in NSAuthentication.signatureAndACLCheck.
-    // Add to that all the other commands that call NSAuthentication.signatureAndACLCheck
-    // which is most of them.
-    Append.setChain(ReadUnsigned);
-    AppendList.setChain(ReadUnsigned);
-    AppendListUnsigned.setChain(ReadUnsigned);
-    AppendListWithDuplication.setChain(ReadUnsigned);
-    AppendListWithDuplicationUnsigned.setChain(ReadUnsigned);
-    AppendOrCreate.setChain(ReadUnsigned);
-    AppendOrCreateList.setChain(ReadUnsigned);
-    AppendOrCreateListUnsigned.setChain(ReadUnsigned);
-    AppendOrCreateUnsigned.setChain(ReadUnsigned);
-    AppendUnsigned.setChain(ReadUnsigned);
-    AppendWithDuplication.setChain(ReadUnsigned);
-    AppendWithDuplicationUnsigned.setChain(ReadUnsigned);
-    Clear.setChain(ReadUnsigned);
-    ClearUnsigned.setChain(ReadUnsigned);
-    Create.setChain(ReadUnsigned);
-    CreateEmpty.setChain(ReadUnsigned);
-    CreateList.setChain(ReadUnsigned);
-    Remove.setChain(ReadUnsigned);
-    RemoveList.setChain(ReadUnsigned);
-    RemoveListUnsigned.setChain(ReadUnsigned);
-    RemoveUnsigned.setChain(ReadUnsigned);
-    Replace.setChain(ReadUnsigned);
-    ReplaceList.setChain(ReadUnsigned);
-    ReplaceListUnsigned.setChain(ReadUnsigned);
-    ReplaceOrCreate.setChain(ReadUnsigned);
-    ReplaceOrCreateList.setChain(ReadUnsigned);
-    ReplaceOrCreateListUnsigned.setChain(ReadUnsigned);
-    ReplaceOrCreateUnsigned.setChain(ReadUnsigned);
-    ReplaceUnsigned.setChain(ReadUnsigned);
-    ReplaceUserJSON.setChain(ReadUnsigned);
-    ReplaceUserJSONUnsigned.setChain(ReadUnsigned);
-    CreateIndex.setChain(ReadUnsigned);
-    Substitute.setChain(ReadUnsigned);
-    SubstituteList.setChain(ReadUnsigned);
-    SubstituteListUnsigned.setChain(ReadUnsigned);
-    SubstituteUnsigned.setChain(ReadUnsigned);
-    RemoveField.setChain(ReadUnsigned);
-    RemoveFieldUnsigned.setChain(ReadUnsigned);
-    Set.setChain(ReadUnsigned);
-    SetFieldNull.setChain(ReadUnsigned);
-    //
-    Select.setChain();
-    SelectGroupLookupQuery.setChain();
-    SelectGroupSetupQueryWithGuid.setChain();
-    SelectGroupSetupQueryWithGuidAndInterval.setChain();
-    SelectGroupSetupQueryWithInterval.setChain();
-    SelectNear.setChain();
-    SelectWithin.setChain();
-    SelectQuery.setChain();
-    SelectAndNotify.setChain();
-    SelectNotificationStatus.setChain();
-    
-    //
-    AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned, ReadUnsigned); // what else?
-    RemoveGuid.setChain(ReadUnsigned);
-    RemoveAccount.setChain(ReadUnsigned);
-    RemoveAccountWithPassword.setChain(ReadUnsigned);
-    RemoveAccountSecured.setChain(ReadUnsigned);
-    SelectGroupSetupQuery.setChain(ReadUnsigned);
-    VerifyAccount.setChain(ReplaceUserJSONUnsigned);
-
-    AddAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
-    AddMultipleGuids.setChain(ReadUnsigned);
-    AddMultipleGuidsFast.setChain(ReadUnsigned);
-    AddMultipleGuidsFastRandom.setChain(ReadUnsigned);
-    // Fixme: Some inconsistencies in the way these account commands are implmented
-    // insofar as whether they go remote or not.
-    LookupAccountRecord.setChain();
-    LookupRandomGuids.setChain();
-    LookupGuid.setChain();
-    LookupPrimaryGuid.setChain(ReadUnsigned);
-    LookupGuidRecord.setChain();
-    RegisterAccount.setChain(ReadUnsigned);
-    RegisterAccountSecured.setChain(ReadUnsigned);
-    ResendAuthenticationEmail.setChain();
-    RemoveAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
-    RemoveGuidNoAccount.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
-    RetrieveAliases.setChain(ReadUnsigned);
-    SetPassword.setChain(ReadUnsigned);
-    ResetKey.setChain(ReadUnsigned);
-    //
-    AclAdd.setChain(ReadUnsigned);
-    AclAddSecured.setChain(ReadUnsigned);
-    AclAddSelf.setChain(ReadUnsigned);
-    AclRemoveSelf.setChain(ReadUnsigned);
-    AclRetrieveSelf.setChain(ReadUnsigned);
-    AclRetrieve.setChain(ReadUnsigned);
-    AclRetrieveSecured.setChain(ReadUnsigned);
-    AclRemove.setChain(ReadUnsigned);
-    AclRemoveSecured.setChain(ReadUnsigned);
-    FieldCreateAcl.setChain(ReadUnsigned);
-    FieldDeleteAcl.setChain(ReadUnsigned);
-    FieldAclExists.setChain(ReadUnsigned);
-    //
-    AddMembersToGroup.setChain(AppendListUnsigned);
-    AddToGroup.setChain(AppendListUnsigned);
-    GetGroupMembers.setChain(ReadUnsigned);
-    GetGroups.setChain(ReadUnsigned);
-    RemoveFromGroup.setChain(RemoveUnsigned);
-    RemoveMembersFromGroup.setChain(RemoveUnsigned);
-    //
-    SetCode.setChain();
-    ClearCode.setChain();
-    GetCode.setChain();
-    // admin
-    Help.setChain();
-    HelpTcp.setChain();
-    HelpTcpWiki.setChain();
-    Dump.setChain();
-    ConnectionCheck.setChain();
-    Unknown.setChain();
-
-  }
-
-  /**
-   *
-   * @return the command classes
-   */
-  public static List<Class<?>> getCommandClasses() {
-    List<Class<?>> result = new ArrayList<>();
-    for (CommandType commandType : values()) {
-      result.add(commandType.getCommandClass());
-    }
-    return result;
-    // Android doesn't like Lambdas (there's one hidden here) - 9/16
-    //return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
-  }
-
-   static String generateSwiftStructStaticConstants() {
-    StringBuilder result = new StringBuilder();
-    result.append("extension CommandType {\n");
-    for (CommandType commandType : CommandType.values()) {
-      result.append("  static let ");
-      result.append(commandType.toString());
-      result.append(" = CommandType(\"");
-      result.append(commandType.toString());
-      result.append("\"");
-      result.append(", ");
-      result.append(commandType.getInt());
-      result.append(")");
-      result.append("\n");
-    }
-    result.append("  static let allValues = [");
-    String prefix = "";
-    for (CommandType commandType : CommandType.values()) {
-      result.append(prefix);
-      result.append(commandType.toString());
-      prefix = ", ";
-    }
-    result.append("]\n");
-    result.append("}");
-    return result.toString();
-  }
-
-  /**
-   * *
-   * Run all checks on Command Type enums.
-   */
-  public static void enforceChecks() {
-    HashSet<CommandType> curLevel, nextLevel = new HashSet<>(), cumulative = new HashSet<>();
-
-    for (CommandType ctype : CommandType.values()) {
-      curLevel = new HashSet<CommandType>(Arrays.asList(ctype));
-      nextLevel.clear();
-      cumulative.clear();
-
-      while (!curLevel.isEmpty()) {
-        nextLevel.clear();
-
-        for (CommandType curLevelType : curLevel) {
-          if (curLevelType.invokedCommands != null) {
-            nextLevel.addAll(new HashSet<CommandType>(Arrays.asList(curLevelType.invokedCommands)));
-          } else {
-            Assert.fail("!!!!! Need to add " + curLevelType.name() + ".setChain(); !!!!!");
-          }
-        }
-        curLevel = nextLevel;
-        cumulative.addAll(nextLevel);
-        if (curLevel.size() > 256) {
-          Assert.fail("Likely cycle in chain for command " + ctype);
+        Class<?> commandClazz = null;
+        try {
+            commandClazz = Class.forName(commandClass);
+        } catch (ClassNotFoundException e) {
+            GNSConfig.getLogger().log(Level.WARNING,
+                    "Command class not found: {0}", commandClass);
         }
 
-        GNSConfig.getLogger().log(Level.FINE,
-                "{0} expanding next level {1}",
-                new Object[]{ctype, nextLevel});
-      }
-      GNSConfig.getLogger().log(Level.INFO,
-              "Cumulative chain for {0} = {1}",
-              new Object[]{ctype, cumulative});
+        this.commandClass = commandClazz;
+        this.returnType = returnType;
 
-      for (CommandType downstream : cumulative) {
-        if ((ctype.isUpdate() && downstream.isCoordinated())) {
-          Assert.fail("Coordinated " + ctype
-                  + " is invoking another coordinated command "
-                  + downstream);
-        }
-      }
+        this.canBeSafelyCoordinated = canBeSafelyCoordinated;
+
+        // presumably every command is currently available to thugs
+        this.notForRogueClients = notForRogueClients;
+
+        this.commandDescription = description;
+        this.commandRequiredParameters = requiredParameters;
+        this.commandOptionalParameters = optionalParameters;
+        this.flags = flags;
 
     }
-  }
 
-  /**
-   *
-   * @param args
-   */
-  public static void main(String args[]) {
-    //CommandType.enforceChecks();
-    //System.out.println(generateSwiftEnum());
-    //System.out.println(generateSwiftStructStaticConstants());
-    //System.out.println(generateEmptySetChains());
-    //System.out.println(generateSwiftConstants());
-    //System.out.println(generateCommandTypeCode());
-  }
+    private static final Map<Integer, CommandType> map = new HashMap<>();
+    private static final Map<String, CommandType> lowerCaseCommandNameMapForHttp = new HashMap<>();
+
+    static {
+        for (CommandType type : CommandType.values()) {
+            if (!type.getCommandClass().getSimpleName().equals(type.name())) {
+                GNSConfig.getLogger().log(Level.WARNING,
+                        "Enum name should be the same as implementing class: {0} vs. {1}",
+                        new Object[]{type.getCommandClass().getSimpleName(), type.name()});
+            }
+            if (map.containsKey(type.getInt())) {
+                GNSConfig.getLogger().warning(
+                        "**** Duplicate number for command type " + type + ": "
+                                + type.getInt());
+            }
+            map.put(type.getInt(), type);
+            lowerCaseCommandNameMapForHttp.put(type.name().toLowerCase(), type);
+        }
+    }
+
+    // In general, isCoordinated is not equivalent to isUpdate()
+    private boolean isCoordinated() {
+        return this.isUpdate();
+    }
+
+    /**
+     *
+     * @return the int
+     */
+    public int getInt() {
+        return number;
+    }
+
+    /**
+     *
+     * @return the category
+     */
+    public CommandCategory getCategory() {
+        return category;
+    }
+
+    /**
+     *
+     * @return the command class
+     */
+    public Class<?> getCommandClass() {
+        return commandClass;
+    }
+
+    /**
+     *
+     * @return the result type
+     */
+    public CommandResultType getResultType() {
+        return this.returnType;
+    }
+
+    /**
+     *
+     * @return true if the command can be safely coordinated
+     */
+    public boolean isCanBeSafelyCoordinated() {
+        return canBeSafelyCoordinated;
+    }
+
+    /**
+     *
+     * @return true if the should not be executed by rogue clients
+     */
+    public boolean isNotForRogueClients() {
+        return notForRogueClients;
+    }
+
+    /**
+     *
+     * @return the command description
+     */
+    public String getCommandDescription() {
+        return commandDescription;
+    }
+
+    /**
+     *
+     * @return the required command parameters
+     */
+    public String[] getCommandRequiredParameters() {
+        return commandRequiredParameters;
+    }
+
+    /**
+     *
+     * @return the optional command parameters
+     */
+    public String[] getCommandOptionalParameters() {
+        return commandOptionalParameters;
+    }
+
+    // add isCoordinated
+    // add strictly local flag or remote flag
+    // what are the set of commands that will be invoked by this command
+    // AKA multi-transactional commands
+    /**
+     *
+     * @return true if it's a read command
+     */
+    public boolean isRead() {
+        return category.equals(CommandCategory.READ);
+    }
+
+    /**
+     *
+     * @return true if it's an update command
+     */
+    public boolean isUpdate() {
+        return category.equals(CommandCategory.UPDATE);
+    }
+
+    /**
+     *
+     * @return true if it's a create or delete command
+     */
+    public boolean isCreateDelete() {
+        return category.equals(CommandCategory.CREATE_DELETE);
+    }
+
+    /**
+     *
+     * @return true if it's a select command
+     */
+    public boolean isSelect() {
+        return category.equals(CommandCategory.SELECT);
+    }
+
+    /**
+     *
+     * @return true if it's mutual auth command
+     */
+    public boolean isMutualAuth() {
+        return Arrays.asList(flags).contains(CommandFlag.MUTUAL_AUTH);
+    }
+
+    /**
+     *
+     * @return true if this is a command any replica can handle itself
+     */
+    public boolean isLocallyHandled() {
+        return isCreateDelete() || isSelect() || Arrays.asList(flags).contains(CommandFlag.LOCAL);
+    }
+
+    /**
+     *
+     * @param number
+     * @return the command type
+     */
+    public static CommandType getCommandType(int number) {
+        return map.get(number);
+    }
+
+    /**
+     * Returns the command that corresponds to the name ignoring case.
+     *
+     * @param name
+     * @return the command
+     */
+    public static CommandType getCommandForHttp(String name) {
+        return lowerCaseCommandNameMapForHttp.get(name.toLowerCase());
+    }
+
+    private void setChain(CommandType... invokedCommands) {
+        if (this.invokedCommands == null) {
+            this.invokedCommands = invokedCommands;
+        } else {
+            throw new RuntimeException("Can set command chain exactly once");
+        }
+    }
+
+    /**
+     * The chain of any command must contain a list
+     * of all commands that the execution of that command MAY invoke. For
+     * example, if AddGuid may (not necessarily every time) invoke LookupGuid as
+     * a step, LookupGuid belongs to AddGuid's chain. The list interpretation is
+     * somewhat loose as the call chain is really a DAG, but it is good to
+     * flatten the DAG in breadth-first order, e.g., if A->B and B->C and B->D
+     * and D->E, where "->" means "invokes", the chain of A is {B,C,D,E}. It is
+     * okay to stop recursively unraveling a chain, e.g., stop at A->B, if what
+     * follows is identical to B's chain.
+     *
+     * Hopefully there are no cycles in these chains. Assume standard execution
+     * for all commands, i.e., with no active code enabled, while listing chains.
+     */
+    static {
+        Read.setChain(ReadUnsigned);
+        ReadSecured.setChain(ReadUnsigned);
+        ReadUnsigned.setChain();
+        ReadMultiField.setChain(ReadUnsigned);
+        ReadMultiFieldUnsigned.setChain(ReadUnsigned);
+        ReadArray.setChain(ReadUnsigned);
+        ReadArrayOne.setChain(ReadUnsigned);
+        ReadArrayOneUnsigned.setChain();
+        ReadArrayUnsigned.setChain();
+        // Every command that is a subclass of AbstractUpdate could potentially call ReadUnsigned
+        // because of the group guid check in NSAuthentication.signatureAndACLCheck.
+        // Add to that all the other commands that call NSAuthentication.signatureAndACLCheck
+        // which is most of them.
+        Append.setChain(ReadUnsigned);
+        AppendList.setChain(ReadUnsigned);
+        AppendListUnsigned.setChain(ReadUnsigned);
+        AppendListWithDuplication.setChain(ReadUnsigned);
+        AppendListWithDuplicationUnsigned.setChain(ReadUnsigned);
+        AppendOrCreate.setChain(ReadUnsigned);
+        AppendOrCreateList.setChain(ReadUnsigned);
+        AppendOrCreateListUnsigned.setChain(ReadUnsigned);
+        AppendOrCreateUnsigned.setChain(ReadUnsigned);
+        AppendUnsigned.setChain(ReadUnsigned);
+        AppendWithDuplication.setChain(ReadUnsigned);
+        AppendWithDuplicationUnsigned.setChain(ReadUnsigned);
+        Clear.setChain(ReadUnsigned);
+        ClearUnsigned.setChain(ReadUnsigned);
+        Create.setChain(ReadUnsigned);
+        CreateEmpty.setChain(ReadUnsigned);
+        CreateList.setChain(ReadUnsigned);
+        Remove.setChain(ReadUnsigned);
+        RemoveList.setChain(ReadUnsigned);
+        RemoveListUnsigned.setChain(ReadUnsigned);
+        RemoveUnsigned.setChain(ReadUnsigned);
+        Replace.setChain(ReadUnsigned);
+        ReplaceList.setChain(ReadUnsigned);
+        ReplaceListUnsigned.setChain(ReadUnsigned);
+        ReplaceOrCreate.setChain(ReadUnsigned);
+        ReplaceOrCreateList.setChain(ReadUnsigned);
+        ReplaceOrCreateListUnsigned.setChain(ReadUnsigned);
+        ReplaceOrCreateUnsigned.setChain(ReadUnsigned);
+        ReplaceUnsigned.setChain(ReadUnsigned);
+        ReplaceUserJSON.setChain(ReadUnsigned);
+        ReplaceUserJSONUnsigned.setChain(ReadUnsigned);
+        CreateIndex.setChain(ReadUnsigned);
+        Substitute.setChain(ReadUnsigned);
+        SubstituteList.setChain(ReadUnsigned);
+        SubstituteListUnsigned.setChain(ReadUnsigned);
+        SubstituteUnsigned.setChain(ReadUnsigned);
+        RemoveField.setChain(ReadUnsigned);
+        RemoveFieldUnsigned.setChain(ReadUnsigned);
+        Set.setChain(ReadUnsigned);
+        SetFieldNull.setChain(ReadUnsigned);
+        //
+        Select.setChain();
+        SelectGroupLookupQuery.setChain();
+        SelectGroupSetupQueryWithGuid.setChain();
+        SelectGroupSetupQueryWithGuidAndInterval.setChain();
+        SelectGroupSetupQueryWithInterval.setChain();
+        SelectNear.setChain();
+        SelectWithin.setChain();
+        SelectQuery.setChain();
+        SelectAndNotify.setChain();
+        SelectNotificationStatus.setChain();
+        //
+        AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned, ReadUnsigned); // what else?
+        RemoveGuid.setChain(ReadUnsigned);
+        RemoveAccount.setChain(ReadUnsigned);
+        RemoveAccountWithPassword.setChain(ReadUnsigned);
+        RemoveAccountSecured.setChain(ReadUnsigned);
+        SelectGroupSetupQuery.setChain(ReadUnsigned);
+        VerifyAccount.setChain(ReplaceUserJSONUnsigned);
+
+        AddAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
+        AddMultipleGuids.setChain(ReadUnsigned);
+        AddMultipleGuidsFast.setChain(ReadUnsigned);
+        AddMultipleGuidsFastRandom.setChain(ReadUnsigned);
+        // Fixme: Some inconsistencies in the way these account commands are implmented
+        // insofar as whether they go remote or not.
+        LookupAccountRecord.setChain();
+        LookupRandomGuids.setChain();
+        LookupGuid.setChain();
+        LookupPrimaryGuid.setChain(ReadUnsigned);
+        LookupGuidRecord.setChain();
+        RegisterAccount.setChain(ReadUnsigned);
+        RegisterAccountWithCertificate.setChain(ReadUnsigned);
+        RegisterAccountSecured.setChain(ReadUnsigned);
+        ResendAuthenticationEmail.setChain();
+        RemoveAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
+        RemoveGuidNoAccount.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
+        RetrieveAliases.setChain(ReadUnsigned);
+        SetPassword.setChain(ReadUnsigned);
+        ResetKey.setChain(ReadUnsigned);
+        //
+        AclAdd.setChain(ReadUnsigned);
+        AclAddSecured.setChain(ReadUnsigned);
+        AclAddSelf.setChain(ReadUnsigned);
+        AclRemoveSelf.setChain(ReadUnsigned);
+        AclRetrieveSelf.setChain(ReadUnsigned);
+        AclRetrieve.setChain(ReadUnsigned);
+        AclRetrieveSecured.setChain(ReadUnsigned);
+        AclRemove.setChain(ReadUnsigned);
+        AclRemoveSecured.setChain(ReadUnsigned);
+        FieldCreateAcl.setChain(ReadUnsigned);
+        FieldDeleteAcl.setChain(ReadUnsigned);
+        FieldAclExists.setChain(ReadUnsigned);
+        //
+        AddMembersToGroup.setChain(AppendListUnsigned);
+        AddToGroup.setChain(AppendListUnsigned);
+        GetGroupMembers.setChain(ReadUnsigned);
+        GetGroups.setChain(ReadUnsigned);
+        RemoveFromGroup.setChain(RemoveUnsigned);
+        RemoveMembersFromGroup.setChain(RemoveUnsigned);
+        //
+        SetCode.setChain();
+        ClearCode.setChain();
+        GetCode.setChain();
+        // admin
+        Help.setChain();
+        HelpTcp.setChain();
+        HelpTcpWiki.setChain();
+        Dump.setChain();
+        ConnectionCheck.setChain();
+        Unknown.setChain();
+
+    }
+
+    /**
+     *
+     * @return the command classes
+     */
+    public static List<Class<?>> getCommandClasses() {
+        List<Class<?>> result = new ArrayList<>();
+        for (CommandType commandType : values()) {
+            result.add(commandType.getCommandClass());
+        }
+        return result;
+        // Android doesn't like Lambdas (there's one hidden here) - 9/16
+        //return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
+    }
+
+    private static String generateSwiftStructStaticConstants() {
+        StringBuilder result = new StringBuilder();
+        result.append("extension CommandType {\n");
+        for (CommandType commandType : CommandType.values()) {
+            result.append("  static let ");
+            result.append(commandType.toString());
+            result.append(" = CommandType(\"");
+            result.append(commandType.toString());
+            result.append("\"");
+            result.append(", ");
+            result.append(commandType.getInt());
+            result.append(")");
+            result.append("\n");
+        }
+        result.append("  static let allValues = [");
+        String prefix = "";
+        for (CommandType commandType : CommandType.values()) {
+            result.append(prefix);
+            result.append(commandType.toString());
+            prefix = ", ";
+        }
+        result.append("]\n");
+        result.append("}");
+        return result.toString();
+    }
+
+    /**
+     * *
+     * Run all checks on Command Type enums.
+     */
+    public static void enforceChecks() {
+        HashSet<CommandType> curLevel, nextLevel = new HashSet<>(), cumulative = new HashSet<>();
+
+        for (CommandType ctype : CommandType.values()) {
+            curLevel = new HashSet<CommandType>(Arrays.asList(ctype));
+            nextLevel.clear();
+            cumulative.clear();
+
+            while (!curLevel.isEmpty()) {
+                nextLevel.clear();
+
+                for (CommandType curLevelType : curLevel) {
+                    if (curLevelType.invokedCommands != null) {
+                        nextLevel.addAll(new HashSet<CommandType>(Arrays.asList(curLevelType.invokedCommands)));
+                    } else {
+                        Assert.fail("!!!!! Need to add " + curLevelType.name() + ".setChain(); !!!!!");
+                    }
+                }
+                curLevel = nextLevel;
+                cumulative.addAll(nextLevel);
+                if (curLevel.size() > 256) {
+                    Assert.fail("Likely cycle in chain for command " + ctype);
+                }
+
+                GNSConfig.getLogger().log(Level.FINE,
+                        "{0} expanding next level {1}",
+                        new Object[]{ctype, nextLevel});
+            }
+            GNSConfig.getLogger().log(Level.INFO,
+                    "Cumulative chain for {0} = {1}",
+                    new Object[]{ctype, cumulative});
+
+            for (CommandType downstream : cumulative) {
+                if ((ctype.isUpdate() && downstream.isCoordinated())) {
+                    Assert.fail("Coordinated " + ctype
+                            + " is invoking another coordinated command "
+                            + downstream);
+                }
+            }
+
+        }
+    }
+
+    /**
+     *
+     * @param args
+     */
+    public static void main(String args[]) {
+        //CommandType.enforceChecks();
+        //System.out.println(generateSwiftEnum());
+        //System.out.println(generateSwiftStructStaticConstants());
+        //System.out.println(generateEmptySetChains());
+        //System.out.println(generateSwiftConstants());
+        //System.out.println(generateCommandTypeCode());
+    }
 }

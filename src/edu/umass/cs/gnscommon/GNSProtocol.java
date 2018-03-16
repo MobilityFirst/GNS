@@ -72,6 +72,21 @@ public enum GNSProtocol {
    * See {@link edu.umass.cs.gnscommon.ResponseCode#VERIFICATION_ERROR}.
    */
   VERIFICATION_ERROR("+VERIFICATIONERROR+"),
+
+  /**
+   * Indiactes name mismatch error has occured while registering the account 
+   */
+  NAME_MISMATCH_ERROR("+NAMEMISMATCHERROR+"),
+
+  /**
+   *  Indicates certificate has not been signed by trusted root.
+   */
+  TRUST_INVALID_ERROR("+TRUSTINVALIDERROR+"),
+
+  /**
+   *  Indicates certificate has expired or still not yet ready for use
+   */
+  TIME_INVALID_ERROR("+TIMEINVALIDERROR+"),
   /**
    * Indicates that an account has already been verified.
    */
@@ -274,6 +289,10 @@ public enum GNSProtocol {
    * The password field in a command.
    */
   PASSWORD("password"),
+  /**
+   * The certificate field in a commad
+   */
+  CERTIFICATE("certificate"),
   /**
    * The code field in a command. Used for account verification.
    */

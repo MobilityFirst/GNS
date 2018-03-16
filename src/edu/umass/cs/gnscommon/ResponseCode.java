@@ -235,8 +235,24 @@ public enum ResponseCode implements Serializable {
   /*
    * Sanity check on a record failed.
    */
-  SANITY_CHECK_ERROR(413, GNSProtocol.SANITY_CHECK_ERROR.toString(), ResponseCodeType.ERROR)
+  SANITY_CHECK_ERROR(413, GNSProtocol.SANITY_CHECK_ERROR.toString(), ResponseCodeType.ERROR),
 
+  /**
+   * Unable to validate certificate due to trust mismatch while registering the account
+   *
+   */
+  TRUST_INVALID_CERTIFICATE(414, GNSProtocol.TRUST_INVALID_ERROR.toString(),ResponseCodeType.ERROR),
+
+  /**
+   * Unable to validate certificate due to validity while registering the account
+   *
+   */
+  TIME_INVALID_CERTIFICATE(415, GNSProtocol.TIME_INVALID_ERROR.toString(),ResponseCodeType.ERROR),
+  
+  /**
+   * An error occurred to name mismatch while registering the account
+   */
+   NAME_MISMATCH_CERTIFICATE(416, GNSProtocol.NAME_MISMATCH_ERROR.toString(),ResponseCodeType.ERROR)
         ;
 
   // stash the codes in a lookup table

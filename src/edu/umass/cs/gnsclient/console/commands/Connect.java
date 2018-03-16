@@ -24,6 +24,7 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnscommon.utils.StringParser;
 
 /**
  * Command that connects to the server
@@ -70,7 +71,7 @@ public class Connect extends ConsoleCommand {
   @Override
   public void parse(String commandText) throws Exception {
     try {
-      StringTokenizer st = new StringTokenizer(commandText);
+      StringParser st = new StringParser(commandText.trim());
       if (st.countTokens() > 0) {
         console.printString("THE USE OF host, port and disableSSL is obsolete.\n"
                 + "   See instead gigapaxos.properties.\n");

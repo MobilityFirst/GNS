@@ -27,6 +27,21 @@ import javax.xml.bind.DatatypeConverter;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+// rt imports
+import java.security.cert.*;
+import java.io.*;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.security.Principal;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.KeyFactory;
+import java.io.ByteArrayInputStream;
+
 /**
  *
  * @author westy
@@ -161,5 +176,127 @@ public class SharedGuidUtils {
    */
   public static boolean publicKeyListContainsGuid(String guid, Set<String> publicKeys) {
     return findPublicKeyForGuid(guid, publicKeys) != null;
+  }
+
+
+   /**
+ * Helper function get common name from certificate object
+ * 
+ * @param cert
+ * @return commonName
+ */
+  public static String getNameFromCertificate(X509Certificate cert) {
+    Principal principal = cert.getSubjectDN();
+    String unformatted_string = principal.getName();
+    String[] split = unformatted_string.split(",");
+    String alias = "";
+    for (String x : split) {
+      if (x.contains("CN=")) {
+        alias = x.replace("CN=","");
+      }
+    }
+    return alias;
+  }
+
+  /**
+   * Helper function to get public key from certifcate
+   * @param cert
+   * @return publickey 
+   */
+  public static PublicKey getPublicKeyFromCertificate(X509Certificate cert) {
+
+    PublicKey publicKey = cert.getPublicKey();
+    return publicKey;
+  }
+
+
+  /**
+   * Helper function to load private key from file 
+   * 
+   * @param privateKeyFileName
+   * @return privateKeyObject 
+   */
+  public static PrivateKey loadPrivateKeyFromFile(String privateKeyFileName) throws FileNotFoundException, IOException,
+                    NoSuchAlgorithmException, InvalidKeySpecException {
+    
+    // read private key from file 
+    InputStream inputStream = new FileInputStream(privateKeyFileName);
+    BufferedReader buf = new BufferedReader(new InputStreamReader(inputStream));
+
+    String line = buf.readLine();
+    StringBuilder sb = new StringBuilder();
+
+    while(line != null) {
+      sb.append(line).append("\n");
+      line = buf.readLine();
+    }
+    
+    // remove header and footer of private key 
+    String privateKeyHeader = "-----BEGIN PRIVATE KEY-----\n";
+    String privateKeyFooter = "\n-----END PRIVATE KEY-----\n";
+
+    String privateKey = sb.toString();
+    privateKey = privateKey.replace(privateKeyHeader, "");
+    privateKey = privateKey.replace(privateKeyFooter, "");
+
+    // decode base64 data 
+    byte [] encoded = Base64.decode(privateKey);
+
+    //get private  key object 
+    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+    KeyFactory kf = KeyFactory.getInstance("RSA");
+    PrivateKey privKey = kf.generatePrivate(keySpec);
+
+    return privKey;
+  }
+
+  /**
+   * Helper function to  load certificate from file 
+   * 
+   * @param certificateFileName
+   * @return certificateObject
+   * @throws CertificateException
+   * @throws FileNotFoundException
+   * @throws IOException
+   */
+  public static X509Certificate loadCertificateFromFile(String certificatePath) throws CertificateException, FileNotFoundException, IOException {
+    
+    // get template of certifcate which will be loaded 
+    CertificateFactory factory  = CertificateFactory.getInstance("X.509");
+    
+    // read certificate from file 
+    FileInputStream inputStream = new FileInputStream (certificatePath);
+
+    // lget certifcate object by reading input from file 
+    X509Certificate cer = (X509Certificate) factory.generateCertificate(inputStream);
+
+    inputStream.close();
+
+    return cer;
+  }
+
+
+  public static X509Certificate getCertificateFromString(String cert_string)
+                  throws IOException, CertificateException {
+
+    byte []cert_bytes = DatatypeConverter.parseBase64Binary(cert_string);
+
+    CertificateFactory factory  = CertificateFactory.getInstance("X.509");
+
+    InputStream inputStream = new ByteArrayInputStream(cert_bytes);
+
+    // get certifcate object by reading input from file 
+    X509Certificate cer = (X509Certificate) factory.generateCertificate(inputStream);
+
+    inputStream.close();
+
+    return cer;
+
+  }
+
+  public static String getPublicKeyString(PublicKey publicKey) {
+    byte[] encodedPublicKey = publicKey.getEncoded();
+    String b64PublicKey = Base64.encodeToString(encodedPublicKey,true);
+    return b64PublicKey;
   }
 }

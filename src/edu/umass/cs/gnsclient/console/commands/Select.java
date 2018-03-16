@@ -21,6 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
 
+import edu.umass.cs.gnscommon.utils.StringParser;
 import org.json.JSONArray;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -73,7 +74,7 @@ public class Select extends ConsoleCommand {
     try {
       GNSClientCommands gnsClient = module.getGnsClient();
 
-      StringTokenizer st = new StringTokenizer(commandText.trim());
+      StringParser st = new StringParser(commandText.trim());
       GuidEntry guidEntry;
       switch (st.countTokens()) {
         case 2:

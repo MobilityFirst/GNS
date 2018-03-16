@@ -709,6 +709,8 @@ public class GNSClientCommands
     return guidEntry;
   }
 
+
+
   /**
    * Register a new account guid with the corresponding alias on the GNS
    * server. This generates a new guid and a public / private key pair.

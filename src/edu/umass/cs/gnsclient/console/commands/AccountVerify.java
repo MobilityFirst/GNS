@@ -27,6 +27,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
+import edu.umass.cs.gnscommon.utils.StringParser;
 
 /**
  * Updates the account verification status
@@ -71,7 +72,7 @@ public class AccountVerify extends ConsoleCommand {
     try {
       GNSClientCommands client = module.getGnsClient();
 
-      StringTokenizer st = new StringTokenizer(commandText.trim());
+      StringParser st = new StringParser(commandText.trim());
       if (st.countTokens() != 2) {
         wrongArguments();
         return;

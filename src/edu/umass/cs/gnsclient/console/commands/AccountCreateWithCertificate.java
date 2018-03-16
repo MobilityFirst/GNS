@@ -19,21 +19,25 @@
  */
 package edu.umass.cs.gnsclient.console.commands;
 
-import java.security.PublicKey;
 
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
+
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
-import edu.umass.cs.gnscommon.utils.StringParser;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 
+
+import java.security.cert.X509Certificate;
 import java.util.StringTokenizer;
+import edu.umass.cs.gnscommon.utils.StringParser;
 
 /**
  * Create a new account
  */
-public class AccountCreate extends ConsoleCommand
+public class AccountCreateWithCertificate extends ConsoleCommand
 {
 
   /**
@@ -41,7 +45,7 @@ public class AccountCreate extends ConsoleCommand
    * 
    * @param module
    */
-  public AccountCreate(ConsoleModule module)
+  public AccountCreateWithCertificate(ConsoleModule module)
   {
     super(module);
   }
@@ -49,40 +53,48 @@ public class AccountCreate extends ConsoleCommand
   @Override
   public String getCommandDescription()
   {
-    return "Create a new account which includes a GUID, associates it with the alias and register it in the GNS.";
+    return "Create a new account which includes a GUID, a human readable name , certificate associates it with the alias and register it in the GNS.";
   }
 
   @Override
   public String getCommandName()
   {
-    return "account_create";
+    return "account_create_with_certificate";
   }
 
   @Override
   public String getCommandParameters()
   {
-    return "alias password";
+    return "certificatepath privatekeypath password";
   }
 
   @Override
   public void parse(String commandText) throws Exception
   {
       StringParser st = new StringParser(commandText.trim());
-      if ((st.countTokens() != 2))
+      printString("I am here \n");
+      if ((st.countTokens() != 3))
       {
         wrongArguments();
         return;
       }
-      String aliasName = st.nextToken();
+      String certificatePath = st.nextToken();
+
+      String privateKeyPath = st.nextToken();
+
       String password = st.nextToken();
+
+      X509Certificate cert = SharedGuidUtils.loadCertificateFromFile(certificatePath);
+      String aliasName = SharedGuidUtils.getNameFromCertificate(cert);
+
 
     try
     {
-      GNSClientCommands gnsClient = module.getGnsClient();
+      GNSClient gnsClient = module.getGnsClient().getGNSClient();
 
       try
       {
-        gnsClient.lookupGuid(aliasName);
+        gnsClient.execute(GNSCommand.lookupGUID(aliasName)).getResultString();
         if (!module.isSilent())
         {
           printString("Alias " + aliasName + " already exists.\n");
@@ -93,30 +105,7 @@ public class AccountCreate extends ConsoleCommand
       {
         // The alias does not exists, that's good, let's create it
       }
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
-      if (myGuid != null)
-      {
-        try
-        {
-          PublicKey pk = gnsClient.publicKeyLookupFromGuid(myGuid.getGuid());
-          if (myGuid.getPublicKey().equals(pk))
-          { // We already have the key but the alias is missing in the GNS,
-            // re-add the alias
-            printString("Alias info found locally but missing in GNS, re-adding alias to the GNS\n");
-            gnsClient.guidCreate(myGuid, aliasName);
-          }
-          else
-          {
-            printString("Old certificates found locally and not matching key in GNS, deleting local keys\n");
-            KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
-          }
-        }
-        catch (InvalidGuidException e)
-        {
-          KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
-        }
-      }
-      myGuid = gnsClient.accountGuidCreate(aliasName, password);
+      GuidEntry myGuid =  GuidUtils.accountGuidCreateWithCertificate(gnsClient, password,certificatePath, privateKeyPath );
 
       if (!module.isSilent())
       {

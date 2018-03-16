@@ -21,6 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
 
+import edu.umass.cs.gnscommon.utils.StringParser;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -76,7 +77,7 @@ public class GroupMemberList extends ConsoleCommand {
   public void parse(String commandText) throws Exception {
     GNSClientCommands gnsClient = module.getGnsClient();
     try {
-      StringTokenizer st = new StringTokenizer(commandText.trim());
+      StringParser st = new StringParser(commandText.trim());
       String groupGuid;
       switch (st.countTokens()) {
         case 0:
