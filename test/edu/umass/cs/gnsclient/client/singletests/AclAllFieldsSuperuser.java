@@ -50,12 +50,7 @@ public class AclAllFieldsSuperuser extends DefaultGNSTest {
    */
   public AclAllFieldsSuperuser() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: ", e);
-      }
+    	clientCommands = new GNSClientCommands(client);
     }
   }
 

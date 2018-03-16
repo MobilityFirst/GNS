@@ -1,9 +1,5 @@
 package edu.umass.cs.gnsclient.client.testing.activecode;
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -15,6 +11,7 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -22,6 +19,8 @@ import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * This test checks when a GNS user does not remove his ALL_FIELD ACL,
@@ -47,7 +46,7 @@ public class TestActiveACL extends DefaultTest {
 	 */
 	@BeforeClass
 	public static void setupClientsAndGuids() throws Exception {
-		client = new GNSClientCommands();
+		client = new GNSClientCommands(new GNSClient());
 		entries = new GuidEntry[numGuid];
 		
 		// initialize three GUID
@@ -140,7 +139,7 @@ public class TestActiveACL extends DefaultTest {
 		System.out.println("The public key of GUID_1 is "+entries[1].getPublicKeyString());
 		*/
 		
-		client.activeCodeSet(entries[0].getGuid(), ActiveCode.ON_READ, allowed_code.getBytes("UTF-8"), entries[0]);
+		client.activeCodeSet(entries[0].getGuid(), ActiveCode.ON_READ, allowed_code, entries[0]);
 		
 		/**
 		 * Test 1: A is in L, and C allows A to access F, then A should be able to access F
@@ -153,7 +152,7 @@ public class TestActiveACL extends DefaultTest {
 		 * Test 2: A is in L, and C does not allow A to access F, then A should not be able to access F
 		 */
 		// First, update the code		
-		client.activeCodeSet(entries[0].getGuid(), ActiveCode.ON_READ, unallowed_code.getBytes("UTF-8"), entries[0]);
+		client.activeCodeSet(entries[0].getGuid(), ActiveCode.ON_READ, unallowed_code, entries[0]);
 		try{
 			String response2 = client.fieldRead(entries[0].getGuid(), someField, entries[2]);
 			fail("GUID_1 should not be able to access to the field GUID_0_FIELD and see the response :\""+response2+"\"");
@@ -168,7 +167,7 @@ public class TestActiveACL extends DefaultTest {
 		 */
 		
 		// First, remove GUID_1 from the whitelist		
-		client.activeCodeSet(entries[0].getGuid(), ActiveCode.ON_READ, allowed_code.getBytes("UTF-8"), entries[0]);
+		client.activeCodeSet(entries[0].getGuid(), ActiveCode.ON_READ, allowed_code, entries[0]);
 		client.aclRemove(AclAccessType.READ_WHITELIST, entries[0], someField, entries[1].getGuid());
 		Thread.sleep(1000);
 		

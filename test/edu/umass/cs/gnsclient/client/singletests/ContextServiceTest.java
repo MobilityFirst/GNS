@@ -25,15 +25,11 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.DefaultGNSTest;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Repeat;
 import edu.umass.cs.utils.Utils;
-import java.io.IOException;
 
 import org.hamcrest.Matchers;
 import org.json.JSONArray;
@@ -62,12 +58,7 @@ public class ContextServiceTest extends DefaultGNSTest {
    */
   public ContextServiceTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
-        clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: " + e);
-      }
+        clientCommands = new GNSClientCommands(client);
     }
     try {
       masterGuid = GuidUtils.getGUIDKeys(globalAccountName);

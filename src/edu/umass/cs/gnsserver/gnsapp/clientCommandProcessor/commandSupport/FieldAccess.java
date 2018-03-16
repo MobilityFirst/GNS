@@ -19,50 +19,53 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.SharedGuidUtils;
-import edu.umass.cs.gnscommon.GNSProtocol;
-import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
-import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
-import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsapp.Select;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.AclCheckResult;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.io.UnsupportedEncodingException;
-import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
-import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.utils.Config;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import org.apache.commons.lang3.time.DateUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.commandreply.SelectHandleInfo;
+import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.database.ColumnFieldType;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.Select;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.AclCheckResult;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.ResultValue;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.Config;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -75,8 +78,8 @@ import org.apache.commons.lang3.time.DateUtils;
 public class FieldAccess {
 
   private final static Logger LOGGER = Logger.getLogger(FieldAccess.class.getName());
-
-  private static final String EMPTY_JSON_ARRAY_STRING = new JSONArray().toString();
+  
+  
   private static final String EMPTY_STRING = "";
 
   /* false means that even single field queries will return a JSONObject response
@@ -456,6 +459,7 @@ public class FieldAccess {
    * Sends an update request to the server containing a JSON Object.
    *
    * @param header
+   * @param commandPacket
    * @param guid - the guid to update
    * @param json - the JSONObject to use in the update
    * @param operation - the update operation to perform... see <code>UpdateOperation</code>
@@ -465,6 +469,7 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
+   * @param timestamp 
    * @param handler
    * @return an NSResponseCode
    */
@@ -570,59 +575,65 @@ public class FieldAccess {
   ///
   /// SELECT METHODS
   ///
-  private static JSONArray executeSelect(InternalRequestHeader header, CommandPacket commandPacket,
+  private static SelectResponsePacket executeSelect(InternalRequestHeader header, CommandPacket commandPacket,
           SelectOperation operation,
           String reader, String key, Object value, Object otherValue,
           String signature, String message,
           GNSApplicationInterface<String> app)
-          throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
-    SelectRequestPacket packet = new SelectRequestPacket(-1, operation,
-            SelectGroupBehavior.NONE, reader, key, value, otherValue);
-    return executeSelectHelper(header, commandPacket, packet, reader, signature, message, app);
+          throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException 
+  {
+	  SelectRequestPacket packet = new SelectRequestPacket(operation, 
+			  reader, key, value, otherValue);
+	  return executeSelectHelper(header, commandPacket, packet, reader, signature, message, app);
   }
-
-  private static JSONArray executeSelectHelper(InternalRequestHeader header, CommandPacket commandPacket,
-          SelectRequestPacket packet,
-          String reader, String signature, String message,
-          GNSApplicationInterface<String> app)
-          throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException {
-    // First do a signature check 
-    if (!signatureCheckForSelect(reader, signature, message, app)) {
-      return null;
-    }
-
-    SelectResponsePacket responsePacket = Select.handleSelectRequestFromClient(header, packet, app);
-    if (responsePacket != null
-            && // Fixme: probably should just have handleSelectRequestFromClient throw a clientException
-            SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
-      JSONArray guids = responsePacket.getGuids();
-      return guids;
-    } else {
-      return null;
-    }
+  
+  private static SelectResponsePacket executeSelectHelper(InternalRequestHeader header, 
+		  CommandPacket commandPacket, SelectRequestPacket packet,
+		  String reader, String signature, String message,
+		  GNSApplicationInterface<String> app)
+				  throws FailedDBOperationException, JSONException, UnknownHostException, InternalRequestException 
+  {
+	  // First do a signature check 
+	  if (!signatureCheckForSelect(reader, signature, message, app)) 
+	  {
+		  return null;
+	  }
+	  
+	  return  GNSApp.getSelector().
+		       		handleSelectRequestFromClient(header, packet, app);
   }
 
   private static boolean signatureCheckForSelect(String reader, String signature,
-          String message, GNSApplicationInterface<String> app) {
-    try {
-      if (signature == null || reader == null) {
-        // Return true... later check will catch fields that aren't world readable
-        LOGGER.log(Level.FINE, "Signature check for select: reader={0} signature={1}",
+          String message, GNSApplicationInterface<String> app) 
+  {
+	  try 
+	  {
+		  if (signature == null || reader == null) 
+		  {
+			  // Return true... later check will catch fields that aren't world readable
+			  LOGGER.log(Level.FINE, "Signature check for select: reader={0} signature={1}",
                 new Object[]{reader, signature});
-        return true;
-      }
-      boolean result = NSAccessSupport.verifySignature(
-              NSAuthentication.lookupPublicKeyLocallyWithCacheing(reader, app), signature, message);
-      LOGGER.log(Level.FINE, "Signature check for select: reader={0} result={1}",
-              new Object[]{reader, result});
-      return result;
-    } catch (FailedDBOperationException | InvalidKeyException | SignatureException | UnsupportedEncodingException | InvalidKeySpecException e) {
-      LOGGER.log(Level.FINE, "Signature check for select: reader={0} error={1}",
-              new Object[]{reader, e.getMessage()});
-      return false;
-    }
-  }
 
+			  return true;
+		  }
+		  boolean result = NSAccessSupport.verifySignature(
+              NSAuthentication.lookupPublicKeyLocallyWithCacheing(reader, app), signature, message);
+
+      
+		  LOGGER.log(Level.FINE, "Signature check for select: reader={0} result={1}",
+              new Object[]{reader, result});
+
+		  return result;
+	  } catch (FailedDBOperationException | InvalidKeyException | SignatureException | 
+    		UnsupportedEncodingException | InvalidKeySpecException e) 
+	  {
+		  LOGGER.log(Level.FINE, "Signature check for select: reader={0} error={1}",
+              new Object[]{reader, e.getMessage()});
+		  return false;
+	  }
+  }
+  
+  
   /**
    * Sends a select request to the server to retrieve all the guids matching the request.
    *
@@ -640,20 +651,28 @@ public class FieldAccess {
   public static CommandResponse select(InternalRequestHeader header, CommandPacket commandPacket,
           String reader, String key, Object value,
           String signature, String message,
-          ClientRequestHandlerInterface handler) throws InternalRequestException {
-    JSONArray result;
-    try {
-      result = executeSelect(header, commandPacket, SelectOperation.EQUALS, reader, key, value, null,
+          
+          ClientRequestHandlerInterface handler) throws InternalRequestException 
+  {
+	  SelectResponsePacket selectResp;
+	  try 
+	  {
+		  selectResp = executeSelect(header, commandPacket, SelectOperation.EQUALS, reader, key, value, null,
               signature, message, handler.getApp());
-      if (result != null) {
-        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
-      }
-    } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
-    }
-    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+
+		  if (selectResp != null && selectResp.getResponseCode().equals(ResponseCode.NO_ERROR)) 
+		  {
+			  return new CommandResponse(ResponseCode.NO_ERROR, selectResp.getRecords().toString());
+		  }
+	  } catch (IOException | JSONException | FailedDBOperationException e) 
+	  {
+		  return new CommandResponse(new ClientException(e).getCode(), 
+				  "Unspecified error in select: "+e.getMessage());
+	  }
+	  return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, "Unspecified error in select");
   }
 
+  
   /**
    * Sends a select request to the server to retrieve all the guids within an area specified by a bounding box.
    *
@@ -672,20 +691,26 @@ public class FieldAccess {
           String reader,
           String key, String value,
           String signature, String message,
-          ClientRequestHandlerInterface handler) throws InternalRequestException {
-    JSONArray result;
-    try {
-      result = executeSelect(header, commandPacket, SelectOperation.WITHIN, reader, key, value, null,
+          ClientRequestHandlerInterface handler) throws InternalRequestException 
+  {
+	  SelectResponsePacket selectResp;
+	  try 
+	  {
+		  selectResp = executeSelect(header, commandPacket, SelectOperation.WITHIN, reader, key, value, null,
               signature, message,
               handler.getApp());
-      if (result != null) {
-        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
-      }
-    } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
-    }
-    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
 
+		  if (selectResp != null && selectResp.getResponseCode().equals(ResponseCode.NO_ERROR)) 
+		  {
+			  return new CommandResponse(ResponseCode.NO_ERROR, 
+					  			selectResp.getRecords().toString());
+		  }
+	  } catch (IOException | JSONException | FailedDBOperationException e) 
+	  {
+		  return new CommandResponse(new ClientException(e).getCode(),
+				  "Unspecified error in selectWithin: "+e.getMessage());
+	  }
+	  return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, "Unspecified error in selectWithin");
   }
 
   /**
@@ -706,20 +731,119 @@ public class FieldAccess {
   public static CommandResponse selectNear(InternalRequestHeader header, CommandPacket commandPacket,
           String reader, String key, String value, String maxDistance,
           String signature, String message,
-          ClientRequestHandlerInterface handler) throws InternalRequestException {
-    JSONArray result;
-    try {
-      result = executeSelect(header, commandPacket, SelectOperation.NEAR, reader, key, value, maxDistance,
-              signature, message,
-              handler.getApp());
-      if (result != null) {
-        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
-      }
-    } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
-    }
-    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+          ClientRequestHandlerInterface handler) throws InternalRequestException 
+  {
+	  SelectResponsePacket selectResp;
+	  try 
+	  {
+		  selectResp = executeSelect(header, commandPacket, SelectOperation.NEAR, 
+				  reader, key, value, maxDistance, signature, message, handler.getApp());
+		  
+		  if (selectResp != null && selectResp.getResponseCode().equals(ResponseCode.NO_ERROR))
+		  {
+			  return new CommandResponse(ResponseCode.NO_ERROR, selectResp.getRecords().toString());
+		  }
+	  } catch (IOException | JSONException | FailedDBOperationException e) 
+	  {
+		  return new CommandResponse(new ClientException(e).getCode(), 
+				  "Unspecified error in selectNear:"+e.getMessage());
+	  }
+	  return new CommandResponse(ResponseCode.UNSPECIFIED_ERROR, "Unspecified error in selectNear");
   }
+  
+  /**
+   * Sends a select request to servers to compute GUIDs that satisfy the 
+   * {@code query} and send the {@code notificationStr} to those GUIDs..
+   *
+   * @param header
+   * @param commandPacket
+   * @param reader
+   * @param query
+   * @param projection
+   * @param signature
+   * @param message
+   * @param notificationStr
+   * 
+   * @param handler
+   * @return a command response
+   * @throws InternalRequestException
+   */
+  public static CommandResponse selectAndNotify(InternalRequestHeader header, 
+		  CommandPacket commandPacket, String reader, String query, List<String> projection,
+          String signature, String message, String notificationStr, 
+          ClientRequestHandlerInterface handler) throws InternalRequestException 
+  {
+	  if (Select.queryContainsEvil(query)) 
+	  {
+		  return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
+               GNSProtocol.BAD_RESPONSE.toString() + " "
+               + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
+               + " Bad query operators in " + query);
+	  }
+	  SelectResponsePacket selectResp;
+	  try
+	  {
+		  SelectRequestPacket packet = SelectRequestPacket.makeSelectNotifyRequest(
+    		  reader, query, projection, notificationStr);
+      
+		  selectResp = executeSelectHelper(header, commandPacket, packet, reader, 
+    		  								signature, message, handler.getApp());
+		  
+		  return getCommandResponseForSelect(packet, selectResp);
+	  } catch (IOException | JSONException | FailedDBOperationException e) 
+	  {
+		  ClientException cle = new ClientException(e);
+		  return new CommandResponse(cle.getCode(), "selectAndNotify failed: "+cle.getMessage());
+	  }
+   }
+  
+  
+  /**
+   * A utility function to return a CommandResponse for a SelectRequestPacket and SelectResponsePacket.
+   * @param incomingSelect
+   * @param selectResponse
+   * @return
+   * @throws JSONException 
+   */
+  public static CommandResponse getCommandResponseForSelect(SelectRequestPacket incomingSelect, 
+		  	SelectResponsePacket selectResponse) throws JSONException
+  {
+	  switch(incomingSelect.getSelectOperation())
+	  {
+	  	case EQUALS:
+		case NEAR:
+		case WITHIN:
+		case QUERY:
+		{
+			if (selectResponse != null ) 
+	    	{
+	    		if( selectResponse.getResponseCode().equals(ResponseCode.NO_ERROR))
+	    			return new CommandResponse(ResponseCode.NO_ERROR, 
+	    					selectResponse.getRecords().toString());
+	    		else
+	    			return new CommandResponse(selectResponse.getResponseCode(), 
+	    					selectResponse.getErrorMessage());
+	    	}
+		}
+		case SELECT_NOTIFY:
+		case NOTIFICATION_STATUS:
+		{
+			if (selectResponse != null )
+			  {
+				  if(selectResponse.getResponseCode().equals(ResponseCode.NO_ERROR))
+					  return new CommandResponse(ResponseCode.NO_ERROR, 
+							  selectResponse.getNotificationStats().toJSONObject().toString());
+				  else
+					  return new CommandResponse(selectResponse.getResponseCode(), 
+							  selectResponse.getErrorMessage());
+			  }
+		}
+		default:
+			break;
+	  }
+	  return null;
+  }
+  
 
   /**
    * Sends a select request to the server to retrieve all the guid matching the query.
@@ -728,33 +852,39 @@ public class FieldAccess {
    * @param commandPacket
    * @param reader
    * @param query
+   * @param projection
    * @param signature
    * @param message
    * @param handler
    * @return a command response
    * @throws InternalRequestException
    */
-  public static CommandResponse selectQuery(InternalRequestHeader header, CommandPacket commandPacket,
-          String reader, String query,
-          String signature, String message,
-          ClientRequestHandlerInterface handler) throws InternalRequestException {
-    if (Select.queryContainsEvil(query)) {
-      return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
-              GNSProtocol.BAD_RESPONSE.toString() + " "
-              + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
-              + " Bad query operators in " + query);
-    }
-    JSONArray result;
-    try {
-      SelectRequestPacket packet = SelectRequestPacket.MakeQueryRequest(-1, reader, query);
-      result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
-      if (result != null) {
-        return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
+  public static CommandResponse selectQuery(InternalRequestHeader header, 
+		  		  CommandPacket commandPacket,
+		            String reader, String query, List<String> projection,
+		             String signature, String message,
+		             ClientRequestHandlerInterface handler) throws InternalRequestException 
+  {
+	  if (Select.queryContainsEvil(query)) 
+	  {
+		  return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
+				  GNSProtocol.BAD_RESPONSE.toString() + " "
+						  + GNSProtocol.OPERATION_NOT_SUPPORTED.toString()
+						  + " Bad query operators in " + query);
+	  }
+      SelectResponsePacket selectResp;
+      try 
+      {
+    	  SelectRequestPacket packet = SelectRequestPacket.makeQueryRequest
+      											(reader, query, projection);
+      	  selectResp = executeSelectHelper(header, commandPacket, packet, reader, 
+      		  										signature, message, handler.getApp());
+      	return getCommandResponseForSelect(packet, selectResp);
+      } catch (IOException | JSONException | FailedDBOperationException e) 
+      {
+    	  ClientException cle = new ClientException(e);
+      		return new CommandResponse(cle.getCode(), "selectQuery failed. "+cle.getMessage());
       }
-    } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
-    }
-    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -806,26 +936,28 @@ public class FieldAccess {
         String name = Base64.encodeToString(ShaOneHashFunction.getInstance().hash(query), false);
         CommandResponse groupGuidCreateresult = AccountAccess.addGuid(header, commandPacket,
                 accountInfo, accountGuidInfo,
-                name, guid, publicKey, handler);
+                name, guid, publicKey, handler, null);
         // If there was a problem adding return that error response.
         if (!groupGuidCreateresult.getExceptionOrErrorCode().isOKResult()) {
           return groupGuidCreateresult;
         }
       }
     }
-    JSONArray result;
+    /*JSONArray result;
 
     try {
-      SelectRequestPacket packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
-              reader, query, guid, interval);
+      SelectRequestPacket packet = SelectRequestPacket.makeGroupSetupRequest(-1,
+              reader, query, null, guid, interval);
       result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
       if (result != null) {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
+    	ClientException cle = new ClientException(e);
+    	return new CommandResponse(cle.getCode(), "selectGroupSetupQuery failed. "+cle.getMessage());
     }
-    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return null;*/
+    throw new RuntimeException("selectGroupSetupQuery not supported");
   }
 
   /**
@@ -844,8 +976,10 @@ public class FieldAccess {
   public static CommandResponse selectGroupLookupQuery(InternalRequestHeader header, CommandPacket commandPacket,
           String reader, String accountGuid,
           String signature, String message,
-          ClientRequestHandlerInterface handler) throws InternalRequestException {
-    JSONArray result;
+          ClientRequestHandlerInterface handler) throws InternalRequestException 
+  {
+	  throw new RuntimeException("selectGroupLookupQuery not supported");
+    /*JSONArray result;
     try {
       SelectRequestPacket packet = SelectRequestPacket.MakeGroupLookupRequest(-1, reader, accountGuid);
       result = executeSelectHelper(header, commandPacket, packet, reader, signature, message, handler.getApp());
@@ -853,10 +987,48 @@ public class FieldAccess {
         return new CommandResponse(ResponseCode.NO_ERROR, result.toString());
       }
     } catch (IOException | JSONException | FailedDBOperationException e) {
-      // FIXME: why silently fail?
+    	ClientException cle = new ClientException(e);
+    	return new CommandResponse(cle.getCode(), "selectGroupLookupQuery failed. "+cle.getMessage());
     }
-    return new CommandResponse(ResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+    return null;*/
   }
+  
+  /**
+   * The function to process the selectNotificationStatus GNSCommand.
+   * @param header
+   * @param commandPacket
+   * @param reader
+   * @param selectHandle
+   * @param signature
+   * @param message
+   * @param handler
+   * @return The command response or null in case of non-blocking handling of the 
+   * selectNotificationStatus GNSCommand.
+   * 
+   * @throws InternalRequestException
+   */
+    public static CommandResponse selectNotificationStatus(InternalRequestHeader header, 
+		  		  CommandPacket commandPacket, String reader, SelectHandleInfo selectHandle,
+		            String signature, String message, ClientRequestHandlerInterface handler) 
+		          		  throws InternalRequestException 
+    {
+	  	  SelectResponsePacket selectResp;
+	  	  try 
+	  	  {
+	  		  SelectRequestPacket packet = SelectRequestPacket.makeSelectNotificationStatusRequest
+	  				  									(reader, selectHandle, null);
+	  		  
+	  		  selectResp = executeSelectHelper(header, commandPacket, packet, reader, 
+	      		  								signature, message, handler.getApp());
+	  		  
+	  		 return getCommandResponseForSelect(packet, selectResp);
+	  	  }
+	  	  catch (IOException | JSONException | FailedDBOperationException e) 
+	  	  {
+	  		  ClientException cle = new ClientException(e);
+	  		  return new CommandResponse(cle.getCode(), "selectNotificationStatus failed: "+cle.getMessage());
+	  	  }
+    }
 
   /**
    *

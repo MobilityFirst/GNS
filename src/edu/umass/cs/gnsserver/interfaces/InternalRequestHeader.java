@@ -1,5 +1,7 @@
 package edu.umass.cs.gnsserver.interfaces;
 
+import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 
 /**
@@ -18,7 +20,7 @@ public interface InternalRequestHeader {
 	/**
 	 * The default number of TTL hops.
 	 */
-	public static final int DEFAULT_TTL = 5;
+	public static final int DEFAULT_TTL = 10;
 
 	/**
 	 * @return The request ID corresponding to the request that originated the
@@ -76,5 +78,48 @@ public interface InternalRequestHeader {
 	 */
 	default boolean verifyInternal() {
 		return false;
-	}	
+	}
+	
+	/**
+	 * @return source IP address
+	 */
+	default String getSourceAddress() {
+		return null;
+	}
+	
+	/**
+	 * Returns the source port.
+	 * {@link #getSourceAddress()} and {@link #getSourcePort()} 
+	 * methods are separate to maintain the backward compatibility, i.e.,
+	 * at many places in the GNS
+	 * only {@link #getSourceAddress()} is used.
+	 * 
+	 * @return Returns the source port.
+	 */
+	default int getSourcePort()
+	{
+		return -1;
+	}
+	
+	/**
+	 * The variable doNotReplyToClient is a parameter in Replicable.execute method,
+	 * and here is its document quoted from Replicable:
+	 * 			  "If true, the application is expected to not send a response
+	 *            back to the originating client (say, because this request is
+	 *            part of a post-crash roll-forward or only the "entry replica"
+	 *            that received the request from the client is expected to
+	 *            respond back. If false, the application is expected to either
+	 *            send a response (if any) back to the client via the
+	 *            {@link ClientMessenger} interface or delegate response
+	 *            messaging to paxos via the {@link ClientRequest#getResponse()}
+	 *            interface."
+	 * We use this variable to check whether this is a recovery operation for
+	 * active code. If the system is under a recovery from a failure, then we
+	 * do not run active code. Otherwise, we need to run active code.      
+	 * 
+	 * @return the value of doNotReplyToClient
+	 */
+	default boolean getDoNotReplyToClient(){
+		return false;
+	}
 }

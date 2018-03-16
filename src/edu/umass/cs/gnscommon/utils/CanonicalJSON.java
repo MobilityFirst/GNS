@@ -110,7 +110,7 @@ public class CanonicalJSON {
           try {
             object = ((JSONString) x).toJSONString();
           } catch (Exception e) {
-            throw new JSONException(e);
+            throw new JSONException(e.getMessage());
           }
           if (object instanceof String) {
             return (String) object;

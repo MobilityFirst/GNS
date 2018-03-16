@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
@@ -34,12 +33,15 @@ import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.Util;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -78,13 +80,21 @@ public class AddGuid extends AbstractCommand {
     JSONObject json = commandPacket.getCommand();
     String name = json.getString(GNSProtocol.NAME.toString());
     String accountGuid = json.getString(GNSProtocol.GUID.toString());
-    String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());
+    String publicKey = json.optString(GNSProtocol.PUBLIC_KEY.toString(), null);
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
-
-    String newGuid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
-//    byte[] publicKeyBytes = Base64.decode(publicKey);
-//    String newGuid = SharedGuidUtils.createGuidStringFromPublicKey(publicKeyBytes);
+    
+    Set<InetSocketAddress> activesSet = json.has(GNSProtocol.ACTIVES_SET.toString())
+    		? Util.getSocketAddresses(json.getJSONArray(GNSProtocol.ACTIVES_SET.toString())): null;
+    		
+    String newGuid;
+    if (publicKey != null) {
+      newGuid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
+    } else {
+      // add a fake public key
+      publicKey = GuidInfo.KEYLESS_PREFIX + name;
+      newGuid = SharedGuidUtils.createGuidStringFromPublicKey(publicKey.getBytes());
+    }
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accountGuid, handler)) == null) {
       return new CommandResponse(ResponseCode.BAD_GUID_ERROR, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_GUID.toString() + " " + accountGuid);
@@ -100,7 +110,7 @@ public class AddGuid extends AbstractCommand {
         return new CommandResponse(ResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.TOO_MANY_GUIDS.toString());
       } else {
         CommandResponse result = AccountAccess.addGuid(header, commandPacket,
-                accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
+                accountInfo, accountGuidInfo, name, newGuid, publicKey, handler, activesSet);
         if (result.getExceptionOrErrorCode().isOKResult()) {
           // Everything is hunkey dorey so return the new guid
           return new CommandResponse(ResponseCode.NO_ERROR, newGuid);
@@ -115,5 +125,5 @@ public class AddGuid extends AbstractCommand {
     }
     //}
   }
-
+  
 }

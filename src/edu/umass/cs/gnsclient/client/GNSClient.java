@@ -345,9 +345,10 @@ public class GNSClient {
 				response = defaultHandleResponse(this.sendSyncInternal(packet,
 						timeout));
 			} catch (ClientException ce) {
-				if (ce.getCode() == ResponseCode.TIMEOUT)
+				// iOS client doesn't support empty body "if" statements
+				//if (ce.getCode() == ResponseCode.TIMEOUT)
 					// do nothing
-					;
+				//	;
 			}
 		} while ((count++ < this.numRetriesUponTimeout && (response == null || response
 				.getErrorCode() == ResponseCode.TIMEOUT)));
@@ -596,6 +597,17 @@ public class GNSClient {
 				throws RequestParseException {
 			return GNSAppUtil.getRequestStatic(bytes, header, unstringer);
 		}
+		
+		/**
+		 * Sets the maximum outstanding app requests in the {@link GNSClient},
+		 * which internally sets the maximum outstanding app requests in 
+		 * {@link ReconfigurableAppClientAsync}
+		 * @param n The maximum number of outstanding app requests to allow.
+		 */
+		public void setMaximumOutstandingAppRequests(int n)
+		{
+			ReconfigurableAppClientAsync.setMaxOutstandingAppRequests(n);
+		}
 	} // End of AsyncClient
 
 	/**
@@ -612,6 +624,17 @@ public class GNSClient {
 	 */
 	public void setGNSProxy(InetSocketAddress LNS) {
 		this.GNSProxy = LNS;
+	}
+	
+	/**
+	 * Sets the maximum outstanding app requests in the {@link GNSClient},
+	 * which internally sets the maximum outstanding app requests in 
+	 * {@link ReconfigurableAppClientAsync}
+	 * @param n The maximum number of outstanding app requests to allow.
+	 */
+	public void setMaximumOutstandingAppRequests(int n)
+	{
+		asyncClient.setMaximumOutstandingAppRequests(n);
 	}
 
 	private long forcedTimeout = 0;

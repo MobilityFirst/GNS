@@ -56,12 +56,8 @@ public class CreateAccountTest extends DefaultGNSTest {
    */
   public CreateAccountTest() {
     if (clientCommands == null) {
-      try {
-        clientCommands = new GNSClientCommands();
+        clientCommands = new GNSClientCommands(client);
         clientCommands.setForceCoordinatedReads(true);
-      } catch (IOException e) {
-        Utils.failWithStackTrace("Exception creating client: " + e);
-      }
     }
   }
 

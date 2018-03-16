@@ -25,6 +25,7 @@ import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
+
 import edu.umass.cs.aws.support.AMIRecord;
 import edu.umass.cs.aws.support.AMIRecordType;
 import edu.umass.cs.aws.support.AWSEC2;
@@ -33,6 +34,7 @@ import edu.umass.cs.aws.support.RegionRecord;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.GEOLocator;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
+
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -43,8 +45,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -202,13 +206,6 @@ public class EC2Runner {
           //          + "yum --quiet --assumeyes install dsc12\n"
           //          + "cassandra\n"
           ;
-  // older one used to install mySQL
-  private static final String mySQLInstallScript
-          = "yum --quiet --assumeyes install mysql mysql-server\n"
-          + "/etc/init.d/mysqld start\n"
-          + "/usr/bin/mysql_install_db \n"
-          + "/usr/bin/mysqladmin -u root password 'toorbar'\n"
-          + "mysqladmin -u root --password=toorbar -v create gns\n";
 
   /**
    * This is called to initialize an EC2 host for use as A GNS server in a region. It starts the host, loads all the necessary
@@ -306,8 +303,8 @@ public class EC2Runner {
     }
   }
 
-  private static final String MongoRecordsClass = "edu.umass.cs.gnsserver.database.MongoRecords";
-  private static final String CassandraRecordsClass = "edu.umass.cs.gnsserver.database.CassandraRecords";
+//  private static final String MongoRecordsClass = "edu.umass.cs.gnsserver.database.MongoRecords";
+//  private static final String CassandraRecordsClass = "edu.umass.cs.gnsserver.database.CassandraRecords";
 
   /**
    * Terminates all the hosts in the named run set.
@@ -411,7 +408,8 @@ public class EC2Runner {
   private static HelpFormatter formatter = new HelpFormatter();
   private static Options commandLineOptions;
 
-  private static CommandLine initializeOptions(String[] args) throws ParseException {
+  @SuppressWarnings("static-access")
+private static CommandLine initializeOptions(String[] args) throws ParseException {
     Option help = new Option("help", "Prints Usage");
 
     Option terminate = OptionBuilder.withArgName("runSet name").hasArg()
@@ -468,7 +466,6 @@ public class EC2Runner {
 
   private static boolean showDialog(String message, final long timeout) {
     try {
-      int dialog = JOptionPane.YES_NO_OPTION;
       JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE,
               JOptionPane.YES_NO_OPTION);
       final JDialog dlg = optionPane.createDialog("Error");

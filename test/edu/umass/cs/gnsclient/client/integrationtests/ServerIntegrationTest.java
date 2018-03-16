@@ -222,12 +222,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
 			IOException, InterruptedException {
 		DefaultGNSTest.setUpBeforeClass();
 		masterGuid = GuidUtils.getGUIDKeys(accountAlias = globalAccountName);
-		clientCommands = (GNSClientCommands) new GNSClientCommands()
-				.setNumRetriesUponTimeout(2).setForceCoordinatedReads(true);
                 client = new GNSClient()
                              .setNumRetriesUponTimeout(2)
                              .setForceCoordinatedReads(true)
                              .setForcedTimeout(8000);
+                
+        clientCommands = new GNSClientCommands(client);
     
 	}
   
@@ -339,14 +339,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     int numRetries = 2;
     boolean forceCoordinated = true;
 
-    clientCommands = (GNSClientCommands) new GNSClientCommands()
-            .setNumRetriesUponTimeout(numRetries)
-            .setForceCoordinatedReads(forceCoordinated);
-
     client = new GNSClient()
             .setNumRetriesUponTimeout(numRetries)
             .setForceCoordinatedReads(forceCoordinated)
             .setForcedTimeout(8000);
+    
+    clientCommands =  new GNSClientCommands(client);
 
     System.out.println("Client created and connected to server.");
     //
@@ -512,7 +510,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
   public void test_010_CreateEntity() throws Exception {
     // CHECKED FOR VALIDITY
     String alias = "testGUID" + RandomString.randomString(12);
-    String createdGUID = client.execute(GNSCommand.createGUID(masterGuid, alias))
+    String createdGUID = client.execute(GNSCommand.guidCreate(masterGuid, alias))
             .getResultString();
     Assert.assertEquals(alias, GuidUtils.getGUIDKeys(alias).entityName);
     Assert.assertEquals(createdGUID, GuidUtils.getGUIDKeys(alias).guid);
@@ -531,7 +529,7 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     // CHECKED FOR VALIDITY
     String alias = "testGUID" + RandomString.randomString(12);
     String createdGUID = client.execute(
-            GNSCommand.createGUID(masterGuid, alias)).getResultString();
+            GNSCommand.guidCreate(masterGuid, alias)).getResultString();
     GuidEntry createdGUIDEntry = GuidUtils.getGUIDKeys(alias);
     String key = "key1", value = "value1";
     client.execute(GNSCommand.update(createdGUID,
@@ -577,8 +575,8 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     //CHECKED FOR VALIDITY
     String testGuidName = "testGUID" + RandomString.randomString(12);
 
-    String testGUID = client.execute(GNSCommand.createGUID(masterGuid, testGuidName)).getResultString();
-    client.execute(GNSCommand.removeGUID(GuidUtils.getGUIDKeys(testGuidName)));
+    String testGUID = client.execute(GNSCommand.guidCreate(masterGuid, testGuidName)).getResultString();
+    client.execute(GNSCommand.guidRemove(GuidUtils.getGUIDKeys(testGuidName)));
 //    GuidEntry testGuid = clientCommands.guidCreate(masterGuid, testGuidName);
 //    clientCommands.guidRemove(testGuid);
 
@@ -3348,12 +3346,12 @@ public class ServerIntegrationTest extends DefaultGNSTest {
     }
     // the HRN is a hash of the query
     String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne), false);
-    GuidEntry groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, GNSClientCommands.getGNSProvider());
+    GuidEntry groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, clientCommands.getGNSProvider());
     //groupGuid = client.guidCreate(masterGuid, groupGuidName + RandomString.randomString(6));
 
     // the HRN is a hash of the query
     String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo), false);
-    GuidEntry groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, GNSClientCommands.getGNSProvider());
+    GuidEntry groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, clientCommands.getGNSProvider());
     //groupTwoGuid = client.guidCreate(masterGuid, groupTwoGuidName + RandomString.randomString(6));
 
     List<GuidEntry> list = new ArrayList<>(2);

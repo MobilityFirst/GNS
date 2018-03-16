@@ -18,7 +18,6 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -53,14 +52,10 @@ public class AdminTestSuite extends DefaultGNSTest {
   public static void setupBeforeClass() throws IOException {
     System.out.println("Starting client");
 
-    clientCommands = new GNSClientCommands();
-    // Make all the reads be coordinated
-    clientCommands.setForceCoordinatedReads(true);
-    // arun: connectivity check embedded in GNSClient constructor
-    boolean connected = clientCommands instanceof GNSClient;
-    if (connected) {
-      System.out.println("Client created and connected to server.");
-    }
+    clientCommands = new GNSClientCommands(client);
+    
+    System.out.println("Client created and connected to server.");
+    
     //
     int tries = 5;
     boolean accountCreated = false;
@@ -86,7 +81,7 @@ public class AdminTestSuite extends DefaultGNSTest {
    * @throws Exception
    */
   @Test
-  public void test_001_CreateEntity() throws Exception {
+  public void test_001_CreateSubGUIDofSubGUIDShouldFail() throws Exception {
     String alias = "testGUID" + RandomString.randomString(12);
     GuidEntry guidEntry = clientCommands.guidCreate(masterGuid, alias);
     Assert.assertNotNull(guidEntry);

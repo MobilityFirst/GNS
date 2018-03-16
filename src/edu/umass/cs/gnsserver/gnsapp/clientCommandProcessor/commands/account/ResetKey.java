@@ -41,6 +41,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class ResetKey extends AbstractCommand {
 
   /**

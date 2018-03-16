@@ -199,7 +199,7 @@ public class ThroughputAsynchMultiClientTest {
     chosen = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
     try {
       for (int i = 0; i < numberOfClients; i++) {
-        clients[i] = new GNSClientCommands(null);
+        clients[i] = new GNSClientCommands(new GNSClient());
       }
     } catch (IOException e) {
       System.out.println("Unable to create client: " + e);
@@ -264,11 +264,11 @@ public class ThroughputAsynchMultiClientTest {
       for (int clientIndex = 0; clientIndex < numberOfClients; clientIndex++) {
         for (int i = 0; i < numberOfGuids; i++) {
           if (doingReads) {
-            commmandPackets[i][clientIndex] = createReadCommandPacket(clients[clientIndex], subGuids[i], updateField, masterGuid);
+            commmandPackets[i][clientIndex] = createReadCommandPacket(clients[clientIndex].getGNSClient(), subGuids[i], updateField, masterGuid);
           } else {
             JSONObject json = new JSONObject();
             json.put(updateField, updateValue);
-            commmandPackets[i][clientIndex] = createUpdateCommandPacket(clients[clientIndex], subGuids[i], json, masterGuid);
+            commmandPackets[i][clientIndex] = createUpdateCommandPacket(clients[clientIndex].getGNSClient(), subGuids[i], json, masterGuid);
           }
         }
       }
@@ -325,7 +325,7 @@ public class ThroughputAsynchMultiClientTest {
         try {
           JSONObject command = createCommand(CommandType.LookupRandomGuids,
                   GNSProtocol.GUID.toString(), masterGuid.getGuid(), GNSProtocol.GUIDCNT.toString(), numberOfGuids);
-					String result = clients[0].execute(
+					String result = clients[0].getGNSClient().execute(
 							new CommandPacket(
 									(long) (Math.random() * Long.MAX_VALUE),
 									command)).getResultString();// checkResponse(clients[0].sendCommandAndWait(command));

@@ -15,6 +15,7 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnsclient.examples;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -64,7 +65,7 @@ public class GNSClientCommandsExample {
 
     /* Create the client that connects to a default reconfigurator as
 		 * specified in gigapaxos properties file. */
-    client = new GNSClientCommands();
+    client = new GNSClientCommands(new GNSClient() );
     System.out.println("[Client connected to GNS]\n");
 
     try {

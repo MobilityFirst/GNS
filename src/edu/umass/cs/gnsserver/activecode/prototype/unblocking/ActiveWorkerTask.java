@@ -8,6 +8,9 @@ import javax.script.ScriptException;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 
 /**
+ * This task is the task that truly executes the user code by calling ActiveRunner's runCode method.
+ * It catches code execution failure and generate response accordingly.
+ * 
  * @author gaozy
  *
  */
@@ -28,8 +31,7 @@ public class ActiveWorkerTask implements Callable<ActiveMessage>  {
 			response = new ActiveMessage(request.getId(), 
 					runner.runCode(request.getGuid(), request.getAccessor(), request.getCode(), request.getValue(), request.getTtl(), request.getId()),
 					null);
-		} catch (NoSuchMethodException | ScriptException e) {	
-			//e.printStackTrace();
+		} catch (NoSuchMethodException | ScriptException e) {
 			ActiveNonBlockingWorker.getLogger().log(Level.FINE, 
 					"get an exception {0} when executing request {1} with code {2}", 
 					new Object[]{e, request, request.getCode()});

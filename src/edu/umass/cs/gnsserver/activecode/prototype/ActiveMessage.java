@@ -13,6 +13,9 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 
 /**
+ * This is an implementation of Message interface, i.e., the real
+ * message being sent back and forth between ActiveClient and ActiveWorker.
+ * 
  * @author gaozy
  *
  */
@@ -250,7 +253,6 @@ public class ActiveMessage implements Message{
 			length = 5*Integer.BYTES // type, ttl, guid length, accessor length, targetGuid length
 			+ Long.BYTES // id
 			+ guid.length()
-			+ accessor.length()
 			+ targetGuid.length();
 			break;
 			
@@ -358,12 +360,6 @@ public class ActiveMessage implements Message{
 			bbuf.put(guidBytes);
 			exactLength += (Integer.BYTES + guidBytes.length);
 			
-			// put field, can't be null, ~100ns
-			assert(accessor != null):"field can't be null for read query";
-			accessorBytes = accessor.getBytes(CHARSET);
-			bbuf.putInt(accessorBytes.length);
-			bbuf.put(accessorBytes);
-			exactLength += (Integer.BYTES + accessorBytes.length);
 			
 			// put targetGuid, can't be null, ~100ns
 			assert(targetGuid != null):"targetGuid can't be null for read query";
@@ -485,12 +481,6 @@ public class ActiveMessage implements Message{
 			guidBytes = new byte[length];
 			bbuf.get(guidBytes);
 			guid = new String(guidBytes, CHARSET);
-			
-			// get field
-			length = bbuf.getInt();
-			accessorBytes = new byte[length];
-			bbuf.get(accessorBytes);
-			accessor = new String(accessorBytes, CHARSET);
 			
 			// get targetGuid
 			length = bbuf.getInt();

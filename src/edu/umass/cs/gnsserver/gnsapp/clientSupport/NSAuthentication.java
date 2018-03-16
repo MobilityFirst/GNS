@@ -19,27 +19,35 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
-import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.SharedGuidUtils;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 /**
  *
@@ -54,7 +62,7 @@ public class NSAuthentication {
    * Does access and signature checking for a field OR fields in a guid.
    * For explicit multi-field access all fields must be accessible or
    * ACL check fails.
-   *
+   * @param header - the request header that contains the information as shown in {@link InternalRequestHeader}
    * @param guid - the guid containing the field being accessed
    * @param field - the field being accessed (one of this or fields should be non-null)
    * @param fields - or the fields being accessed (one of this or field should be non-null)
@@ -86,7 +94,7 @@ public class NSAuthentication {
    * Does access and signature checking for a field OR fields in a guid.
    * For explicit multi-field access all fields must be accessible or
    * ACL check fails.
-   *
+   * @param header - the request header that contains the information as shown in {@link InternalRequestHeader}
    * @param guid - the guid containing the field being accessed
    * @param field - the field being accessed (one of this or fields should be non-null)
    * @param fields - or the fields being accessed (one of this or field should be non-null)
@@ -96,6 +104,9 @@ public class NSAuthentication {
    * @param access - the type of access
    * @param gnsApp
    * @param skipSigCheck
+   * @param alreadyReadNRs, an array of already read name records, 
+   * so that they are not re-read from the DB again.
+   * 
    * @return an {@link ResponseCode}
    * @throws InvalidKeyException
    * @throws InvalidKeySpecException
@@ -108,12 +119,14 @@ public class NSAuthentication {
           String field, List<String> fields,
           String accessorGuid, String signature,
           String message, MetaDataTypeName access,
-          GNSApplicationInterface<String> gnsApp, boolean skipSigCheck)
+          GNSApplicationInterface<String> gnsApp, boolean skipSigCheck
+          , NameRecord... alreadyReadNRs)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
           FailedDBOperationException, UnsupportedEncodingException {
+	  
     // Do a check for unsigned reads if there is no signature
     if ((!skipSigCheck && signature == null) || accessorGuid == null) {
-      if (NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp)) {
+      if (NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp, alreadyReadNRs)) {
         return ResponseCode.NO_ERROR;
       } else {
         ClientSupportConfig.getLogger().log(Level.FINE, "Name {0} key={1} : ACCESS_ERROR",
@@ -121,27 +134,21 @@ public class NSAuthentication {
         return ResponseCode.ACCESS_ERROR;
       }
     }
-    // If the signature is being checking and isn't null a null accessorGuid is also an access failure because
-    // only unsigned reads (handled above) can have a null accessorGuid
-    if (!skipSigCheck && accessorGuid == null) {
-      ClientSupportConfig.getLogger().log(Level.WARNING, "Name {0} key={1} : NULL accessorGuid",
-              new Object[]{guid, field});
-      return ResponseCode.ACCESS_ERROR;
-    }
+ 
 
     // Now we do the ACL check. By doing this now we also look up the public key as
     // side effect which we need for the signing check below.
     AclCheckResult aclResult = null;
     if (field != null) {
       // Remember that field can also be GNSProtocol.ENTIRE_RECORD.toString()
-      aclResult = aclCheck(header, guid, field, accessorGuid, access, gnsApp);
+      aclResult = aclCheck(header, guid, field, accessorGuid, access, gnsApp, alreadyReadNRs);
       if (aclResult.getResponseCode().isExceptionOrError()) {
         return aclResult.getResponseCode();
       }
     } else if (fields != null) {
       // Check each field individually; if any field doesn't pass the entire access fails.
       for (String aField : fields) {
-        aclResult = aclCheck(header, guid, aField, accessorGuid, access, gnsApp);
+        aclResult = aclCheck(header, guid, aField, accessorGuid, access, gnsApp, alreadyReadNRs);
         if (aclResult.getResponseCode().isExceptionOrError()) {
           return aclResult.getResponseCode();
         }
@@ -174,33 +181,46 @@ public class NSAuthentication {
    * @param accessorGuid
    * @param access
    * @param gnsApp
-   * @return
+   * @return Result of ACL check
    * @throws FailedDBOperationException
    */
   public static AclCheckResult aclCheck(InternalRequestHeader header, String targetGuid, String field,
           String accessorGuid, MetaDataTypeName access,
-          GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+          GNSApplicationInterface<String> gnsApp, 
+          NameRecord... alreadyReadNRs) throws FailedDBOperationException {
     ClientSupportConfig.getLogger().log(Level.FINE,
             "@@@@@@@@@@@@@@@@ACL Check guid={0} key={1} accessor={2} access={3}",
             new Object[]{targetGuid, field, accessorGuid, access});
-
     // This method attempts to look up the public key as well as check for ACL access.
     String publicKey;
     if (accessorGuid.equals(targetGuid)) {
       // This handles the base case where we're accessing our own guid. 
       // Access to all of our fields is always allowed to our own guid so we just need to get
       // the public key out of the guid - possibly from the cache.
-      publicKey = lookupPublicKeyLocallyWithCacheing(targetGuid, gnsApp);
+      publicKey = lookupPublicKeyLocallyWithCacheing(targetGuid, gnsApp, alreadyReadNRs);
       // Return an error immediately here because if we can't find the public key 
       // the guid must not be local which is a problem.
       if (publicKey == null) {
         return new AclCheckResult("", ResponseCode.BAD_GUID_ERROR);
       }
     } else {
+    	/**
+    	 * In order to not fetch the entire record multiple times,
+    	 * we fetch it here and let lookupPublicKeyInACL to get the public key from it.
+    	 */
+    	JSONObject metaData = NSAccessSupport.getMetaDataForACLCheck(targetGuid, gnsApp.getDB(),
+    			alreadyReadNRs);
+    	if(metaData == null){
+    		// this is a bad GUID as its meta data can not be fetched
+    		ClientSupportConfig.getLogger().log(Level.WARNING, "User {0} access problem for {1}'s {2} field: no meta data exists",
+    	              new Object[]{targetGuid, field, access.toString() });
+    		return new AclCheckResult("", ResponseCode.BAD_GUID_ERROR);
+    	}
+    	   	
       // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
       // accesssed.
       // Note that field can be GNSProtocol.ENTIRE_RECORD.toString() here
-      publicKey = lookupPublicKeyInACL(header, targetGuid, field, accessorGuid, access, gnsApp);
+    	publicKey = lookupPublicKeyFromMetaData(header, targetGuid, field, accessorGuid, access, metaData, gnsApp);
     }
     // Handle the one final case: the accessorGuid is a member of a group guid and
     // that group guid is in the ACL
@@ -229,7 +249,7 @@ public class NSAuthentication {
       return new AclCheckResult(publicKey, ResponseCode.NO_ERROR);
     }
   }
-
+  
   /**
    * Attempts to look up the public key for a accessorGuid using the
    * ACL of the guid for the given field.
@@ -245,20 +265,24 @@ public class NSAuthentication {
    * @return the public key
    * @throws FailedDBOperationException
    */
-  private static String lookupPublicKeyInACL(InternalRequestHeader header, String guid, String field, String accessorGuid,
-          MetaDataTypeName access, GNSApplicationInterface<String> gnsApp)
+  private static String lookupPublicKeyFromMetaData(InternalRequestHeader header, String guid, String field, String accessorGuid,
+          MetaDataTypeName access, JSONObject metaData, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
-    String publicKey;
+	  List<String> fields = null;
+	if(field.contains("."))  
+		fields = Arrays.asList(field.split("."));
+	else
+		fields = Arrays.asList(field);
     // Field could also be GNSProtocol.ENTIRE_RECORD.toString() here 
-    Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, gnsApp.getDB());
-    publicKey = SharedGuidUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
+    JSONArray publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, fields, metaData);
+    String publicKey = SharedGuidUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
     ClientSupportConfig.getLogger().log(Level.FINE,
             "================> {0} lookup for {1} returned: {2} public keys={3}",
             new Object[]{access.toString(), field, publicKey,
               publicKeys});
     // See if public keys contains GNSProtocol.EVERYONE.toString() which means we need to go old school and lookup the guid 
     // explicitly because it's not going to have an entry in the ACL
-    if (publicKey == null && publicKeys.contains(GNSProtocol.EVERYONE.toString())) {
+    if (publicKey == null && NSAccessSupport.indexOfItemInJSONArray(publicKeys, GNSProtocol.EVERYONE.toString())>=0) {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header, accessorGuid, gnsApp.getRequestHandler())) != null) {
         ClientSupportConfig.getLogger().log(Level.FINE,
@@ -272,6 +296,7 @@ public class NSAuthentication {
               "================> Public key not found: accessor={0} guid={1} field={2} public keys={3}",
               new Object[]{accessorGuid, guid, field, publicKeys});
     }
+    
     return publicKey;
   }
 
@@ -280,12 +305,17 @@ public class NSAuthentication {
    *
    * @param guid
    * @param gnsApp
-   * @return
+   * @return Public key as String.
    * @throws FailedDBOperationException
    */
-  public static String lookupPublicKeyLocallyWithCacheing(String guid, GNSApplicationInterface<String> gnsApp)
+  public static String lookupPublicKeyLocallyWithCacheing(String guid, 
+		  GNSApplicationInterface<String> gnsApp, NameRecord... alreadyReadNRs)
           throws FailedDBOperationException {
-    String result;
+	  String result = lookupPublicKeyFromReadRecords(guid, alreadyReadNRs);
+	  
+	  if(result != null)
+		  return result;
+	  
     if ((result = PUBLIC_KEY_CACHE.getIfPresent(guid)) != null) {
       return result;
     }
@@ -299,5 +329,30 @@ public class NSAuthentication {
       return result;
     }
   }
-
+  
+  
+  private static String lookupPublicKeyFromReadRecords(String guid, NameRecord... readRecords)
+  
+  {
+	  if(readRecords == null)
+		  return null;
+	  
+	  for(NameRecord nr : readRecords)
+	  {
+		  try {
+				  if( nr.getName().compareToIgnoreCase(guid) == 0 )
+				  {
+					  GuidInfo  result = new GuidInfo(nr.getValuesMap().getJSONObject
+								  												(AccountAccess.GUID_INFO));
+					  if(result != null)
+						  return result.getPublicKey();
+				  }
+			  } catch (FieldNotFoundException | JSONException | ParseException e) 
+		  		{
+				  // We ignore the exceptions here and continue with the iterator.
+		  		}
+  	  }
+  	  return null;
+    }
+  
 }

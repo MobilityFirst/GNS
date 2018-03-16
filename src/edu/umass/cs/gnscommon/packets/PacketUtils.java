@@ -1,5 +1,6 @@
 package edu.umass.cs.gnscommon.packets;
 
+import edu.umass.cs.gnscommon.utils.JSONCommonUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -72,11 +73,12 @@ public class PacketUtils {
 	}
 	/**
 	 * @param commandPacket
+	 * @param doNotReplyToClient 
 	 * @return {@link InternalRequestHeader} if {@code commandPacket} is an
 	 *         internal request.
 	 */
 	public static InternalRequestHeader getInternalRequestHeader(
-			CommandPacket commandPacket) {
+			CommandPacket commandPacket, boolean doNotReplyToClient) {
 		return commandPacket instanceof InternalRequestHeader ? (InternalRequestHeader) commandPacket
 				/* originatingGUID must be non-null for internal commands to
 				 * make sense because it is important for internal commands to
@@ -166,6 +168,38 @@ public class PacketUtils {
 						}
 						return GNSConfig.getInternalOpSecret().equals(proof);
 					}
+					
+					/**
+					 * Returns the client IP address of the client that
+					 * sent this command. This is used to process
+					 * commands in a non-blocking manner, like in a non-blocking 
+					 * custom select implementation.
+					 */
+					public String getSourceAddress() 
+					{
+						return commandPacket.getClientAddress().getAddress().getHostAddress();
+					}
+					
+					/**
+					 * Returns the client port that
+					 * sent this command. This is used to process
+					 * commands in a non-blocking manner, like in a non-blocking 
+					 * custom select implementation. 
+					 */
+					public int getSourcePort()
+					{
+						return commandPacket.getClientAddress().getPort();
+					}
+					
+					/**
+					 * Returns the value of doNotReplyToClient passed 
+					 * down from paxos execute method.
+					 */
+					@Override
+					public boolean getDoNotReplyToClient(){
+						return doNotReplyToClient;
+					}
+					
 				};
 	}
 
@@ -179,7 +213,7 @@ public class PacketUtils {
 		try {
 			if (command instanceof JSONObject) {
 				JSONObject o = ((JSONObject) command);
-				for (String key : JSONObject.getNames(o))
+				for (String key : JSONCommonUtils.getNames(o))
 					length += key.length() + getLengthEstimate(o.get(key));
 			} else if (command instanceof JSONArray) {
 				JSONArray a = ((JSONArray) command);

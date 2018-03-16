@@ -106,61 +106,8 @@ public class Admintercessor {
     adminResult = new ConcurrentHashMap<>(10, 0.75f, 3);
   }
 
-  /**
-   * Sends the clear cache command.
-   *
-   * @param handler
-   * @return true if we were successful
-   */
-  // Keep this around for future use.
-  public boolean sendClearCache(ClientRequestHandlerInterface handler) {
-//    try {
-//      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject(), handler);
-//      return true;
-//    } catch (JSONException | IOException e) {
-//      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending CLEARCACHE request: {0}", e);
-//    }
-    return false;
-  }
 
-  /**
-   * Sends the dump cache command.
-   *
-   * @param handler
-   * @return a string containing the cache
-   */
-  // Keep this around for future use.
-  public String sendDumpCache(ClientRequestHandlerInterface handler) {
-//    int id = nextAdminRequestID();
-//    try {
-//      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject(), handler);
-//      waitForAdminResponse(id);
-//      JSONObject json = adminResult.get(id);
-//      if (json != null) {
-//        return json.getString("CACHE");
-//      } else {
-//        return null;
-//      }
-//    } catch (JSONException | IOException e) {
-//      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending DUMPCACHE request: {0}", e);
-//      return null;
-//    }
-    return "Currently not supported.";
-  }
 
-  private void waitForAdminResponse(int id) {
-    try {
-      ClientCommandProcessorConfig.getLogger().log(Level.FINER, "Waiting for admin response id: {0}", id);
-      synchronized (adminResponseMonitor) {
-        while (!adminResult.containsKey(id)) {
-          adminResponseMonitor.wait();
-        }
-      }
-      ClientCommandProcessorConfig.getLogger().log(Level.FINER, "Admin response id received: {0}", id);
-    } catch (InterruptedException x) {
-      ClientCommandProcessorConfig.getLogger().log(Level.SEVERE, "Wait for return packet was interrupted {0}", x);
-    }
-  }
 
   /**
    * Processes incoming AdminResponse packets.
@@ -186,6 +133,8 @@ public class Admintercessor {
             ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Parse error during admin response processing: {0}", e);
           }
           break;
+	default:
+		break;
       }
     } catch (JSONException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "JSON error while getting packet type: {0}", e);
@@ -246,7 +195,6 @@ public class Admintercessor {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private String formatDumpRecords(Map<String, TreeSet<NameRecord>> recordsMap,
           ClientRequestHandlerInterface handler) {
     // now process all the records we received
@@ -340,6 +288,8 @@ public class Admintercessor {
             ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "JSON error during dump sentinel processing: {0}", e);
           }
           break;
+	default:
+		break;
       }
     } catch (JSONException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "JSON error while getting packet type: {0}", e);
@@ -411,14 +361,6 @@ public class Admintercessor {
     do {
       id = randomID.nextInt();
     } while (dumpResult.containsKey(id));
-    return id;
-  }
-
-  private int nextAdminRequestID() {
-    int id;
-    do {
-      id = randomID.nextInt();
-    } while (adminResult.containsKey(id));
     return id;
   }
 }

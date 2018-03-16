@@ -33,8 +33,10 @@ import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.Util;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -46,6 +48,8 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -83,6 +87,19 @@ public class AddMultipleGuids extends AbstractCommand {
     JSONArray publicKeys = json.optJSONArray(GNSProtocol.PUBLIC_KEYS.toString());
     String signature = json.getString(GNSProtocol.SIGNATURE.toString());
     String message = json.getString(GNSProtocol.SIGNATUREFULLMESSAGE.toString());
+    
+    
+    Set<InetSocketAddress> activesSet = json.has
+    	(GNSProtocol.ACTIVES_SET.toString())? Util.getSocketAddresses
+    			(json.getJSONArray(GNSProtocol.ACTIVES_SET.toString())): null;
+    
+    //aditya: not supported yet, because there is no suitable public CreateServiceName constructor 
+    // to do this.
+	if(activesSet != null)
+	{
+		throw new RuntimeException("Batch creation with custom set of actives is not "
+				+ "supported yet.");
+	}
 
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(header,guid, handler)) == null) {

@@ -346,7 +346,8 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public AbstractRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) {
+  public AbstractRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, 
+          String query, List<String> projection) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -356,7 +357,7 @@ public class CassandraRecords implements NoSQLRecords {
     if (spec != null) {
       String query = "DELETE FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
       DatabaseConfig.getLogger().log(Level.FINER, "Executing query {0}", query);
-      ResultSet results = session.execute(query);
+      session.execute(query);
     } else {
       DatabaseConfig.getLogger().log(Level.SEVERE, "CASSANDRA DB: No table named: {0}", tableName);
     }

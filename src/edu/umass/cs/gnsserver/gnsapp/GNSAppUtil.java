@@ -23,6 +23,9 @@ import java.nio.ByteBuffer;
  */
 
 
+/**
+ *
+ */
 public class GNSAppUtil {
     /**
      * This method avoids an unnecessary restringification (as is the case with

@@ -136,7 +136,7 @@ public class LookupWorker implements Runnable {
    */
   private Message generateReply(Message query) {
     long startTime = System.currentTimeMillis();
-    NameResolution.getLogger().log(Level.FINE, "Incoming request: {0}", query.toString());
+    NameResolution.getLogger().log(Level.FINE, "Incoming request:\n {0}", query.toString());
 
     // If it's not a query we just ignore it.
     if (query.getHeader().getFlag(Flags.QR)) {
@@ -153,7 +153,7 @@ public class LookupWorker implements Runnable {
 
     // If we're not consulting the DNS server as well just send the query to GNS.
     if (dnsServer == null) {
-      Message result = NameResolution.lookupGnsServer(query, handler);
+      Message result = NameResolution.lookupGnsServer(incomingPacket.getAddress(), query, handler);
       DelayProfiler.updateDelay("generateReply", startTime);
       return result;
     }
@@ -198,7 +198,7 @@ public class LookupWorker implements Runnable {
     Message successResponse = null;
     Message errorResponse = null;
     // loop throught the tasks getting results as they complete
-    for (LookupTask task : tasks) { // this is just doing things twice btw
+    for (int i=0; i<tasks.size(); i++) { // this is just doing things twice btw
       try {
         Message result = completionService.take().get();
         if (result.getHeader().getRcode() == Rcode.NOERROR) {

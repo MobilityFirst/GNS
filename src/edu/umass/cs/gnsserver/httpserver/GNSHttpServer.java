@@ -23,46 +23,19 @@ package edu.umass.cs.gnsserver.httpserver;
  *
  * @author westy
  */
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-
-import com.sun.net.httpserver.HttpsExchange;
-import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.main.GNSConfig;
+import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
-
-import edu.umass.cs.gnscommon.ResponseCode;
-import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnscommon.utils.CanonicalJSON;
-import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
-import edu.umass.cs.gnsserver.utils.Util;
-import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.utils.Config;
-
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,9 +43,33 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnscommon.GNSProtocol;
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsExchange;
 
-import java.io.UnsupportedEncodingException;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
+import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.Util;
+import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.utils.Config;
 
 /**
  *
@@ -107,18 +104,16 @@ public class GNSHttpServer {
   public GNSHttpServer(int port, ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
-    if (!Config.getGlobalBoolean(GNSC.DISABLE_MULTI_SERVER_HTTP)) {
-      try {
-        this.client = new GNSClient() {
-          @Override
-          public String getLabel() {
-            return GNSHttpServer.class.getSimpleName();
-          }
-        };
-      } catch (IOException e) {
-        LOGGER.log(Level.SEVERE, "Unable to start GNS client:{0}", 
-                e.getMessage());
-      }
+    try {
+      this.client = new GNSClient() {
+        @Override
+        public String getLabel() {
+          return GNSHttpServer.class.getSimpleName();
+        }
+      };
+    } catch (IOException e) {
+      LOGGER.log(Level.SEVERE, "Unable to start GNS client:{0}",
+              e.getMessage());
     }
     runServer(port);
   }
@@ -181,6 +176,7 @@ public class GNSHttpServer {
    * The default handler.
    */
   protected class DefaultHttpHandler implements HttpHandler {
+
     /**
      *
      * @param exchange
@@ -194,6 +190,9 @@ public class GNSHttpServer {
           String host = requestHeaders.getFirst("Host");
           Headers responseHeaders = exchange.getResponseHeaders();
           responseHeaders.set("Content-Type", "text/plain");
+          if (Config.getGlobalBoolean(GNSClientConfig.GNSCC.ENABLE_CROSS_ORIGIN_REQUESTS)) {
+            responseHeaders.set("Access-Control-Allow-Origin", "*");
+          }
           exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
 
           try (OutputStream responseBody = exchange.getResponseBody()) {
@@ -203,9 +202,9 @@ public class GNSHttpServer {
                     new Object[]{exchange.getRemoteAddress().getHostName(), uri.toString()});
             String path = uri.getPath();
             String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
-            
+
             String commandName = path.replaceFirst("/" + GNS_PATH + "/", "");
-            
+
             CommandResponse response;
             if (!commandName.isEmpty()) {
               LOGGER.log(Level.FINE, "Action: {0} Query:{1}", new Object[]{commandName, query});
@@ -248,7 +247,7 @@ public class GNSHttpServer {
     // the signature, and the message signed.
     try {
       // Note that the commandName is not part of the queryString string here so
-      // it doesn't end up in the jsonCommand. Also see below where we put the 
+      // it doesn't end up in the jsonCommand. Also see below where we put the
       // command integer into the jsonCommand.
       JSONObject jsonCommand = Util.parseURIQueryStringIntoJSONObject(queryString);
       // If the signature exists it is Base64 encoded so decode it now.
@@ -273,7 +272,7 @@ public class GNSHttpServer {
       }
 
       // The client currently just uses the command name (which is not part of the
-      // query string above) so we need to stuff 
+      // query string above) so we need to stuff
       // in the Command integer for the signature check and execution.
       jsonCommand.put(GNSProtocol.COMMAND_INT.toString(), commandType.getInt());
       // Optionally does some sanity checking on the message if that was enabled at the client.
@@ -290,14 +289,22 @@ public class GNSHttpServer {
         try {
           command = commandModule.lookupCommand(commandType);
           // Do some work to get the signature and message into the command for
-          // signature checking that happens later on. 
-          // This only happens for local execution because remote handling (in the 
+          // signature checking that happens later on.
+          // This only happens for local execution because remote handling (in the
           // other side of the if) already does this.
           processSignature(jsonCommand);
           if (command != null) {
             return CommandHandler.executeCommand(command,
                     new CommandPacket((long) (Math.random() * Long.MAX_VALUE), jsonCommand, false),
-                    requestHandler);
+                    requestHandler,
+                    /**
+                     * HTTP request will not be executed during recovery,
+                     * as all HTTP requests will be translated to GNS requests
+                     * and sent out by a GNSClient.
+                     * 
+                     * author: gaozy
+                     */
+                    false );
           }
           LOGGER.log(Level.FINE, "lookupCommand returned null for {0}", commandName);
         } catch (IllegalArgumentException e) {
@@ -312,7 +319,7 @@ public class GNSHttpServer {
           LOGGER.log(Level.FINE, "Sending command out to a remote server: {0}", jsonCommand);
           CommandPacket commandResponsePacket = getResponseUsingGNSClient(client, jsonCommand);
           return new CommandResponse(ResponseCode.NO_ERROR,
-                  // Some crap here to make single field reads return just the value for backward compatibility 
+                  // Some crap here to make single field reads return just the value for backward compatibility
                   // There is similar code to this other places.
                   specialCaseSingleFieldRead(commandResponsePacket.getResultString(),
                           commandType, jsonCommand));
@@ -339,10 +346,10 @@ public class GNSHttpServer {
       jsonCommand.remove("originalMessageBase64");
       String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
       if (!originalMessage.equals(commandSansSignature)) {
-        LOGGER.log(Level.SEVERE, "signature message mismatch! original: {0} computed for signature: {1}", 
+        LOGGER.log(Level.SEVERE, "signature message mismatch! original: {0} computed for signature: {1}",
                 new Object[]{originalMessage, commandSansSignature});
       } else {
-        LOGGER.log(Level.FINE, "######## original: {0}", 
+        LOGGER.log(Level.FINE, "######## original: {0}",
                 originalMessage);
       }
     }
@@ -364,7 +371,7 @@ public class GNSHttpServer {
     }
   }
 
-  //make single field reads return just the value for backward compatibility 
+  //make single field reads return just the value for backward compatibility
   private static String specialCaseSingleFieldRead(String response, CommandType commandType,
           JSONObject jsonFormattedArguments) {
     try {
@@ -424,7 +431,7 @@ public class GNSHttpServer {
           Headers requestHeaders = exchange.getRequestHeaders();
           Set<String> keySet = requestHeaders.keySet();
           Iterator<String> iter = keySet.iterator();
-          
+
           String buildVersion = GNSConfig.readBuildVersion();
           String buildVersionInfo = "Build Version: Unable to lookup!";
           if (buildVersion != null) {
@@ -458,7 +465,7 @@ public class GNSHttpServer {
           responseBody.write("<br>".getBytes());
           responseBody.write(secureString.getBytes());
           responseBody.write("<br>".getBytes());
-          
+
           responseBody.write(recordsClass.getBytes());
           responseBody.write("<br>".getBytes());
           responseBody.write("<br>".getBytes());

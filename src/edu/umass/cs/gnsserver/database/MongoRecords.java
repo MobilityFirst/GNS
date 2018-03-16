@@ -19,11 +19,21 @@
  */
 package edu.umass.cs.gnsserver.database;
 
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.BulkWriteOperation;
-import com.mongodb.BulkWriteResult;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -38,6 +48,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -45,17 +56,6 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * Provides insert, updateEntireRecord, removeEntireRecord and lookupEntireRecord operations for
@@ -129,10 +129,13 @@ public class MongoRecords implements NoSQLRecords {
       initializeIndexes();
     } catch (UnknownHostException e) {
       fatalException = true;
-      DatabaseConfig.getLogger().severe("Unable to open Mongo DB: " + e);
+      DatabaseConfig.getLogger().log(Level.SEVERE, "{0} Unable to open Mongo DB: {1}",
+              new Object[]{dbName, e.getMessage()});
     } catch (com.mongodb.MongoServerSelectionException msse) {
       fatalException = true;
-      DatabaseConfig.getLogger().severe("Fatal exception while trying to initialize Mongo DB: " + msse);
+      DatabaseConfig.getLogger().log(Level.SEVERE,
+              "{0} Fatal exception while trying to initialize Mongo DB: {1}",
+              new Object[]{dbName, msse});
     } finally {
       if (fatalException) {
         Util.suicide("Mongo DB initialization failed likely because a mongo DB server is not listening at the expected port; exiting.");
@@ -152,16 +155,45 @@ public class MongoRecords implements NoSQLRecords {
     for (BasicDBObject index : spec.getOtherIndexes()) {
       db.getCollection(spec.getName()).createIndex(index);
     }
-    DatabaseConfig.getLogger().fine("Indexes initialized");
+    DatabaseConfig.getLogger().log(Level.FINE, "{0} Indexes initialized", dbName);
   }
 
   @Override
   public void createIndex(String collectionName, String field, String index) {
     MongoCollectionSpec spec = mongoCollectionSpecs.getCollectionSpec(collectionName);
     // Prepend this because of the way we store the records.
-    DBObject index2d = BasicDBObjectBuilder.start(NameRecord.VALUES_MAP.getName() + "." + field, index).get();
+    //DBObject index2d = BasicDBObjectBuilder.start(NameRecord.VALUES_MAP.getName() + "." + field, index).get();
+    
+    DBObject index2d = BasicDBObjectBuilder.start
+    		(NameRecord.VALUES_MAP.getName() + "." + field, 
+    				isIndexInt(index)?Integer.parseInt(index):index).get();
+    
     db.getCollection(spec.getName()).createIndex(index2d);
   }
+  
+  /**
+   * This function checks if an index is an int in 
+   * the form of a string. In mongodb, there are some
+   * string indexes, and then are some int indexes like 1
+   * , -1 etc. So, we need to know which one a user
+   * has supplied. 
+   * 
+   * @param index
+   * @return
+   */
+  private boolean isIndexInt(String index)
+  {
+	  try
+	  {
+		  Integer.parseInt(index);
+		  return true;
+	  }
+	  catch(NumberFormatException  nfe)
+	  {
+		  return false;
+	  }
+  }
+  
 
   @Override
   public void insert(String collectionName, String guid, JSONObject value) throws FailedDBOperationException, RecordExistsException {
@@ -170,12 +202,20 @@ public class MongoRecords implements NoSQLRecords {
       db.requestEnsureConnection();
 
       DBCollection collection = db.getCollection(collectionName);
-      DBObject dbObject = (DBObject) JSON.parse(value.toString());
+      DBObject dbObject;
+      try {
+        dbObject = (DBObject) JSON.parse(value.toString());
+      } catch (Exception e) {
+        throw new FailedDBOperationException(collectionName, guid,
+                "Unable to parse json" + e.getMessage());
+      }
       try {
         collection.insert(dbObject);
       } catch (DuplicateKeyException e) {
         throw new RecordExistsException(collectionName, guid);
       } catch (MongoException e) {
+        DatabaseConfig.getLogger().log(Level.FINE, "{0} insert failed: {1}",
+                new Object[]{dbName, e.getMessage()});
         throw new FailedDBOperationException(collectionName, dbObject.toString(),
                 "Original mongo exception:" + e.getMessage());
       }
@@ -213,17 +253,19 @@ public class MongoRecords implements NoSQLRecords {
         // older style
         int lookupTime = (int) (System.currentTimeMillis() - startTime);
         if (lookupTime > 20) {
-          DatabaseConfig.getLogger().log(Level.FINE, " mongoLookup Long delay {0}", lookupTime);
+          DatabaseConfig.getLogger().log(Level.FINE, "{0} mongoLookup Long delay {1}",
+                  new Object[]{dbName, lookupTime});
         }
         return json;
       } else {
         throw new RecordNotFoundException(guid);
       }
     } catch (JSONException e) {
-      DatabaseConfig.getLogger().log(Level.WARNING,
-              "Unable to parse JSON: {0}", e);
+      DatabaseConfig.getLogger().log(Level.WARNING, "{0} Unable to parse JSON: {1}",
+              new Object[]{dbName, e.getMessage()});
       return null;
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} lookupEntireRecord failed: {1}", new Object[]{dbName, e.getMessage()});
       throw new FailedDBOperationException(collectionName, guid,
               "Original mongo exception:" + e.getMessage());
     } finally {
@@ -236,7 +278,7 @@ public class MongoRecords implements NoSQLRecords {
           String guid, ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
     if (guid == null) {
-      DatabaseConfig.getLogger().log(Level.FINE, "GUID is null: {0}", new Object[]{guid});
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} GUID is null: {1}", new Object[]{dbName, guid});
       throw new RecordNotFoundException(guid);
     }
     db.requestStart();
@@ -264,7 +306,7 @@ public class MongoRecords implements NoSQLRecords {
         // first we pull all the user values from the dbObject and put in a bson object
         // FIXME: Why not convert this to a JSONObject right now? We know that's what it is.
         BasicDBObject bson = (BasicDBObject) dbObject.get(valuesMapField.getName());
-        DatabaseConfig.getLogger().log(Level.FINER, "@@@@@@@@ {0}", new Object[]{bson});
+        DatabaseConfig.getLogger().log(Level.FINER, "{0} @@@@@@@@ {1}", new Object[]{dbName, bson});
         // then we run thru each userkey in the valuesMapKeys and pull the
         // value put stuffing it into the values map
         ValuesMap valuesMap = new ValuesMap();
@@ -272,7 +314,7 @@ public class MongoRecords implements NoSQLRecords {
           String userKey = valuesMapKeys.get(i).getName();
           if (containsFieldDotNotation(userKey, bson) == false) {
             DatabaseConfig.getLogger().log(Level.FINE,
-                    "DBObject doesn't contain {0}", new Object[]{userKey});
+                    "{0} DBObject doesn't contain {1}", new Object[]{dbName, userKey});
 
             continue;
           }
@@ -281,7 +323,7 @@ public class MongoRecords implements NoSQLRecords {
               case USER_JSON:
                 Object value = getWithDotNotation(userKey, bson);
                 DatabaseConfig.getLogger().log(Level.FINE,
-                        "Object is {0}", new Object[]{value.toString()});
+                        "{0} Object is {1}", new Object[]{dbName, value.toString()});
                 valuesMap.put(userKey, value);
                 break;
               case LIST_STRING:
@@ -290,12 +332,12 @@ public class MongoRecords implements NoSQLRecords {
                 break;
               default:
                 DatabaseConfig.getLogger().log(Level.SEVERE,
-                        "ERROR: Error: User keys field {0} is not a known type:{1}",
-                        new Object[]{userKey, valuesMapKeys.get(i).type()});
+                        "{0} ERROR: Error: User keys field {1} is not a known type: {2}",
+                        new Object[]{dbName, userKey, valuesMapKeys.get(i).type()});
                 break;
             }
           } catch (JSONException e) {
-            DatabaseConfig.getLogger().log(Level.SEVERE, "Error parsing json: {0}", e);
+            DatabaseConfig.getLogger().log(Level.SEVERE, "{0} Error parsing json: {1}", new Object[]{dbName, e.getMessage()});
             e.printStackTrace();
           }
         }
@@ -303,6 +345,7 @@ public class MongoRecords implements NoSQLRecords {
       }
       return hashMap;
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} lookupSomeFields failed: {1}", new Object[]{dbName, e.getMessage()});
       throw new FailedDBOperationException(collectionName, guid,
               "Original mongo exception:" + e.getMessage());
     } finally {
@@ -348,6 +391,7 @@ public class MongoRecords implements NoSQLRecords {
       DBCursor cursor = collection.find(query);
       return cursor.hasNext();
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} contains failed: {1}", new Object[]{dbName, e.getMessage()});
       throw new FailedDBOperationException(collectionName, guid,
               "Original mongo exception:" + e.getMessage());
     } finally {
@@ -363,6 +407,7 @@ public class MongoRecords implements NoSQLRecords {
       BasicDBObject query = new BasicDBObject(primaryKey, guid);
       collection.remove(query);
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} removeEntireRecord failed: {1}", new Object[]{dbName, e.getMessage()});
       throw new FailedDBOperationException(collectionName, guid,
               "Original mongo exception:" + e.getMessage());
     }
@@ -372,7 +417,12 @@ public class MongoRecords implements NoSQLRecords {
   public void updateEntireRecord(String collectionName, String guid, ValuesMap valuesMap)
           throws FailedDBOperationException {
     BasicDBObject updates = new BasicDBObject();
-    updates.append(NameRecord.VALUES_MAP.getName(), JSON.parse(valuesMap.toString()));
+    try {
+      updates.append(NameRecord.VALUES_MAP.getName(), JSON.parse(valuesMap.toString()));
+    } catch (Exception e) {
+      throw new FailedDBOperationException(collectionName, guid,
+              "Unable to parse json" + e.getMessage());
+    }
     doUpdate(collectionName, guid, updates);
   }
 
@@ -394,14 +444,20 @@ public class MongoRecords implements NoSQLRecords {
       BasicDBObject query = new BasicDBObject(primaryKey, entry.getKey());
       JSONObject value = entry.getValue();
       if (value != null) {
-        DBObject document = (DBObject) JSON.parse(value.toString());
+        DBObject document;
+        try {
+          document = (DBObject) JSON.parse(value.toString());
+        } catch (Exception e) {
+          throw new FailedDBOperationException(collectionName, "bulkUpdate",
+                  "Unable to parse json" + e.getMessage());
+        }
         unordered.find(query).upsert().replaceOne(document);
       } else {
         unordered.find(query).removeOne();
       }
     }
     // Maybe check the result?
-    BulkWriteResult result = unordered.execute();
+    unordered.execute();
   }
 
   @Override
@@ -423,7 +479,8 @@ public class MongoRecords implements NoSQLRecords {
             break;
           default:
             DatabaseConfig.getLogger().log(Level.WARNING,
-                    "Ignoring unknown format: {0}", valuesMapKeys.get(i).type());
+                    "{0} Ignoring unknown format: {1}",
+                    new Object[]{dbName, valuesMapKeys.get(i).type()});
             break;
         }
       }
@@ -441,7 +498,8 @@ public class MongoRecords implements NoSQLRecords {
       try {
         collection.update(query, new BasicDBObject("$set", updates));
       } catch (MongoException e) {
-        DatabaseConfig.getLogger().severe("Update failed: " + e);
+        DatabaseConfig.getLogger().log(Level.SEVERE, "{0} doUpdate failed: {1}",
+                new Object[]{dbName, e.getMessage()});
         throw new FailedDBOperationException(collectionName, updates.toString(),
                 "Original mongo exception:" + e.getMessage());
       }
@@ -449,7 +507,7 @@ public class MongoRecords implements NoSQLRecords {
       long finishTime = System.currentTimeMillis();
       if (finishTime - startTime > 10) {
         DatabaseConfig.getLogger().log(Level.FINE,
-                "Long latency mongoUpdate {0}", (finishTime - startTime));
+                "{0} Long latency mongoUpdate {1}", new Object[]{dbName, (finishTime - startTime)});
       }
     }
   }
@@ -480,9 +538,12 @@ public class MongoRecords implements NoSQLRecords {
     }
     if (updates.keySet().size() > 0) {
       try {
-        DatabaseConfig.getLogger().fine("<============>unset" + updates.toString() + "<============>");
+        DatabaseConfig.getLogger().log(Level.FINE, "{0} <============>unset{1}<============>",
+                new Object[]{dbName, updates.toString()});
         collection.update(query, new BasicDBObject("$unset", updates));
       } catch (MongoException e) {
+        DatabaseConfig.getLogger().log(Level.FINE, "{0} removeMapKeys failed: {1}",
+                new Object[]{dbName, e.getMessage()});
         throw new FailedDBOperationException(collectionName, updates.toString(),
                 "Original mongo exception:" + e.getMessage());
       }
@@ -528,6 +589,8 @@ public class MongoRecords implements NoSQLRecords {
     try {
       cursor = collection.find(query);
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} selectRecords failed: {1}",
+              new Object[]{dbName, e.getMessage()});
       throw new FailedDBOperationException(collectionName, fieldName,
               "Original mongo exception:" + e.getMessage());
     }
@@ -557,6 +620,8 @@ public class MongoRecords implements NoSQLRecords {
     try {
       cursor = collection.find(query);
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} selectRecordsWithin failed: {1}",
+              new Object[]{dbName, e.getMessage()});
       throw new FailedDBOperationException(collectionName, fieldName,
               "Original mongo exception:" + e.getMessage());
     }
@@ -579,7 +644,9 @@ public class MongoRecords implements NoSQLRecords {
       box.add(box1);
       box.add(box2);
     } catch (JSONException e) {
-      DatabaseConfig.getLogger().severe("Unable to parse JSON: " + e);
+      DatabaseConfig.getLogger().log(Level.SEVERE,
+              "{0} Unable to parse JSON: {1}",
+              new Object[]{dbName, e.getMessage()});
     }
     return box;
   }
@@ -604,7 +671,8 @@ public class MongoRecords implements NoSQLRecords {
       tuple.add(json.getDouble(0));
       tuple.add(json.getDouble(1));
     } catch (JSONException e) {
-      DatabaseConfig.getLogger().severe("Unable to parse JSON: " + e);
+      DatabaseConfig.getLogger().log(Level.SEVERE, "{0} Unable to parse JSON: {1}",
+              new Object[]{dbName, e.getMessage()});
     }
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject nearClause = new BasicDBObject("$near", tuple).append("$maxDistance", maxDistanceInRadians);
@@ -613,6 +681,8 @@ public class MongoRecords implements NoSQLRecords {
     try {
       cursor = collection.find(query);
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} selectNear failed: {1}",
+              new Object[]{dbName, e.getMessage()});
       throw new FailedDBOperationException(collectionName, fieldName,
               "Original mongo exception:" + e.getMessage());
     }
@@ -623,17 +693,29 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   @Override
-  public MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) throws FailedDBOperationException {
-    return selectRecordsQuery(collectionName, valuesMapField, query, false);
+  public MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField,
+          String query, List<String> projection) throws FailedDBOperationException {
+    return selectRecordsQuery(collectionName, valuesMapField, query, projection, false);
   }
 
-  private MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query, boolean explain) throws FailedDBOperationException {
+  private MongoRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField,
+          String query, List<String> projection, boolean explain) throws FailedDBOperationException {
     db.requestEnsureConnection();
     DBCollection collection = db.getCollection(collectionName);
     DBCursor cursor = null;
     try {
-      cursor = collection.find(parseMongoQuery(query, valuesMapField));
+      if (projection == null
+              // this handles the special case of the user wanting all fields 
+              // in the projection
+              || (!projection.isEmpty()
+              && projection.get(0).equals(GNSProtocol.ENTIRE_RECORD.toString()))) {
+        cursor = collection.find(parseMongoQuery(query, valuesMapField));
+      } else {
+        cursor = collection.find(parseMongoQuery(query, valuesMapField), generateProjection(projection));
+      }
     } catch (MongoException e) {
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} selectRecordsQuery failed: {1}",
+              new Object[]{dbName, e.getMessage()});
       throw new FailedDBOperationException(collectionName, query,
               "Original mongo exception:" + e.getMessage());
     }
@@ -652,14 +734,26 @@ public class MongoRecords implements NoSQLRecords {
     edittedQuery = edittedQuery.replace(")", "}");
     edittedQuery = edittedQuery.replace("~", valuesMapField.getName() + ".");
     // Filter out HRN records
-    String guidFilter = "{" + NameRecord.VALUES_MAP.getName() + "." + AccountAccess.GUID_INFO + ": { $exists: true}}";
+    String guidFilter = "{" + NameRecord.VALUES_MAP.getName()
+            + "." + AccountAccess.GUID_INFO + ": { $exists: true}}";
     edittedQuery = buildAndQuery(guidFilter, edittedQuery);
-    DatabaseConfig.getLogger().log(Level.FINE, "Edited query = {0}", edittedQuery);
-    DBObject parse = (DBObject) JSON.parse(edittedQuery);
-    return parse;
+    try {
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} Edited query = {1}",
+              new Object[]{dbName, edittedQuery});
+      DBObject parse = (DBObject) JSON.parse(edittedQuery);
+      DatabaseConfig.getLogger().log(Level.FINE, "{0} Parse = {1}",
+              new Object[]{dbName, parse.toString()});
+      return parse;
+    } catch (Exception e) {
+      throw new MongoException("Unable to parse query", e);
+    }
   }
-  
-  public static String buildAndQuery(String... querys) {
+
+  /**
+ * @param querys
+ * @return Query string.
+ */
+public static String buildAndQuery(String... querys) {
     StringBuilder result = new StringBuilder();
     result.append("{$and: [");
     String prefix = "";
@@ -670,6 +764,29 @@ public class MongoRecords implements NoSQLRecords {
     }
     result.append("]}");
     return result.toString();
+  }
+
+  private DBObject generateProjection(List<String> fields) {
+    // produces { field1: true, field2: true ... }
+    DBObject result = new BasicDBObject();
+    // Always return the guid
+    result.put(NameRecord.NAME.getName(), "true");
+    // Put this in so the upstream receiver knows that it is a GUID record
+    result.put(NameRecord.VALUES_MAP.getName() + "." + AccountAccess.GUID_INFO, "true");
+    
+    
+    // aditya: We also read the ACL fields here. We only need to read the read acls for 
+    // select requests. Although, by reading the prefix of READ_WHITELIST we read 
+    // the full ACL. 
+    result.put(NameRecord.VALUES_MAP.getName() + "." 
+    				+ MetaDataTypeName.READ_WHITELIST.getPrefix(), "true");
+    
+    
+    // Add all the fields in the projection
+    for (String field : fields) {
+      result.put(NameRecord.VALUES_MAP.getName() + "." + field, "true");
+    }
+    return result;
   }
 
   @Override
@@ -709,7 +826,7 @@ public class MongoRecords implements NoSQLRecords {
       mongoClient = new MongoClient("localhost");
     } catch (UnknownHostException e) {
       DatabaseConfig.getLogger().log(Level.SEVERE,
-              "Unable to open Mongo DB: {0}", e);
+              "Unable to open Mongo DB: {0}", e.getMessage());
       return;
     }
     String dbName = DBROOTNAME + sanitizeDBName(nodeID);

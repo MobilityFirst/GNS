@@ -10,5 +10,8 @@ notifications:
     on_failure: never
 before_script:
   ant
+before_install:
+- sudo apt-get update -qq
+- sudo apt-get install -qq ant-optional
 script:
   scripts/travis_checks.sh

@@ -38,6 +38,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -79,7 +81,7 @@ public class BatchCreateTest {
    */
   public BatchCreateTest(String accountGuidAlias, int numberToCreate, int writeTo) {
     try {
-      client = new GNSClientCommands(null);
+      client = new GNSClientCommands(new GNSClient());
     } catch (IOException e) {
       System.out.println("Unable to create client: " + e);
       e.printStackTrace();
@@ -160,7 +162,7 @@ public class BatchCreateTest {
       try {
         command = createCommand(CommandType.LookupRandomGuids,
                 GNSProtocol.GUID.toString(), masterGuid.getGuid(), GNSProtocol.GUIDCNT.toString(), writeTo);
-        result = client.execute(new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command)).getResultString();
+        result = client.getGNSClient().execute(new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command)).getResultString();
         //checkResponse(client.sendCommandAndWait(command));
         if (!result.startsWith(GNSProtocol.BAD_RESPONSE.toString())) {
           randomGuids = new JSONArray(result);

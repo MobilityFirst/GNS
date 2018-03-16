@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.localnameserver;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolEvent;
@@ -30,8 +31,10 @@ import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
+
 import java.net.InetSocketAddress;
 import java.util.logging.Level;
+
 import org.json.JSONObject;
 
 /**
@@ -103,7 +106,8 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
    *
    * @return the task
    */
-  @Override
+  @SuppressWarnings("deprecation")
+@Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     InetSocketAddress address = handler.getClosestReplica(actives, activesAlreadyContacted);
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.

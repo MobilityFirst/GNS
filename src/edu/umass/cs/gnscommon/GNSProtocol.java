@@ -325,6 +325,14 @@ public enum GNSProtocol {
    * Represents the number of guids in a command.
    */
   GUIDCNT("guidCnt"),
+  /**
+   * Represents the ACL field in GUID info's meta data
+   */
+  MD("MD"),
+  /**
+   * Represents the metaData field in user's JSON
+   */
+  META_DATA_FIELD("nr_valuesMap"),
   //
   // Command packet fields
   //
@@ -533,7 +541,25 @@ public enum GNSProtocol {
   /**
    * Whether an internal request was previously coordinated (at most once).
    */
-  COORD1("COORD1"),;
+  COORD1("COORD1"),
+  /**
+   * Indicates that sanity check failed
+   * See {@link edu.umass.cs.gnscommon.ResponseCode#SANITY_CHECK_ERROR}.
+   */
+  SANITY_CHECK_ERROR("+SANITY_CHECK_ERROR+"),
+  /**
+   * The select notification key field in a command.
+   */
+  SELECT_NOTIFICATION("select_notification"),
+  
+  /**
+   * The key field for the select notification handle. 
+   */
+  SELECT_NOTIFICATION_HANDLE("select_notification_handle"),
+  /** The set of actives field in a command. This is mainly used to specify
+   *  the initial set of actives while creating an account or a guid.
+   */
+  ACTIVES_SET("activesSet"),;
 
   final String label;
 

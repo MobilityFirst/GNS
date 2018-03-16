@@ -30,12 +30,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import edu.umass.cs.utils.UtilServer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
+import org.junit.rules.Timeout;
 import org.junit.runner.Description;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
@@ -68,6 +70,9 @@ public class DefaultGNSTest extends DefaultTest {
 	private static final String HOME = System.getProperty("user.home");
 	private static final String GNS_DIR = "GNS";
 	private static final String GNS_HOME = HOME + "/" + GNS_DIR + "/";
+	
+	//aditya: added for timeout rule
+	private static final int PER_TEST_TIMEOUT	= 300; // in seconds.
 
 	protected static final String RANDOM_PASSWORD = "password"
 			+ RandomString.randomString(12);
@@ -113,6 +118,13 @@ public class DefaultGNSTest extends DefaultTest {
 			System.exit(1);
 		}
 	};
+	
+	/**
+	 * Per test timeout so that no tests blocks indefinitely. Although, GNSClient
+	 * timeout is also setup. If there is a long test then PER_TEST_TIMEOUT needs to be changed accordingly.
+	 */
+	@Rule
+	public Timeout globalTimeout = Timeout.seconds(PER_TEST_TIMEOUT);
 
 	protected static enum DefaultProps {
 		SERVER_COMMAND("server.command", GP_SERVER, true),
@@ -279,7 +291,7 @@ public class DefaultGNSTest extends DefaultTest {
 			numServersUp = 0;
 			for (File f : files) {
                            if (!f.isDirectory()) {
-				numServersUp += Util.readFileAsString(f.getAbsolutePath())
+				numServersUp += UtilServer.readFileAsString(f.getAbsolutePath())
 						.contains("server ready") ? 1 : 0;
                            }
                         }

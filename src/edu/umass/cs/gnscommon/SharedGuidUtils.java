@@ -128,6 +128,29 @@ public class SharedGuidUtils {
     }
     return null;
   }
+  
+  /**
+   * Finds a public key that corresponds to a guid in a set of public keys.
+   *
+   * @param guid
+   * @param publicKeys
+   * @return a public key
+   */
+  public static String findPublicKeyForGuid(String guid, JSONArray publicKeys) {
+    if (guid != null && publicKeys != null) {
+      for (int i=0; i<publicKeys.length(); i++) {    	 
+        try {
+        	String publicKey = publicKeys.getString(i);
+	        if (guid.equals(createGuidStringFromBase64PublicKey(publicKey))) {
+	          return publicKey;
+	        }
+        } catch (IllegalArgumentException | JSONException e) {
+          // ignore any bogus publicKeys
+        }
+      }
+    }
+    return null;
+  }
 
   /**
    * Returns true if a public key that corresponds to a guid is in a set of public keys.

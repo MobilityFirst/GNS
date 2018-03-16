@@ -282,7 +282,7 @@ public class Packet {
           try {
             return new edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket(json);
           } catch (ParseException e) {
-            throw new JSONException(e);
+            throw new JSONException(e.getMessage());
           }
         // select
         case SELECT_REQUEST:
@@ -368,7 +368,6 @@ public class Packet {
    * @throws java.io.IOException
    * @throws org.json.JSONException *
    */
-  @SuppressWarnings("javadoc")
   private static JSONObject getJSONObjectFrame(InputStream input, int sizeOfFrame)
           throws IOException, JSONException {
     byte[] jsonByte = new byte[sizeOfFrame];

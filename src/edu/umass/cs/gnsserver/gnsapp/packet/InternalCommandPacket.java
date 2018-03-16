@@ -7,7 +7,6 @@ import org.junit.Test;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -38,7 +37,7 @@ public class InternalCommandPacket extends CommandPacket implements
 	 * "charged" for all of the resources (transitively) consumed by the
 	 * originating request. This GUID is set when a {@link CommandPacket} is
 	 * first received by any GNS server via
-	 * {@link GNSApp#execute(edu.umass.cs.gigapaxos.interfaces.Request)} and
+	 * {@link edu.umass.cs.gnsserver.gnsapp.GNSApp#execute(edu.umass.cs.gigapaxos.interfaces.Request)} and
 	 * remains unchanged until the corresponding response goes back to the
 	 * end-client that originated the {@link CommandPacket}.
 	 * 
@@ -48,7 +47,7 @@ public class InternalCommandPacket extends CommandPacket implements
 	/**
 	 * The request ID that originated this active request chain. This ID is set
 	 * when a {@link CommandPacket} is first received by any GNS server via
-	 * {@link GNSApp#execute(edu.umass.cs.gigapaxos.interfaces.Request)} and
+	 * {@link edu.umass.cs.gnsserver.gnsapp.GNSApp#execute(edu.umass.cs.gigapaxos.interfaces.Request)} and
 	 * remains unchanged until the corresponding response goes back to the
 	 * end-client that originated the {@link CommandPacket}.
 	 * 
