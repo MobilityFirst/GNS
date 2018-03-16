@@ -289,7 +289,7 @@ public class RegisterAccountWithCertificate extends AbstractCommand {
 
             CommandResponse result = AccountAccess.addAccount(header, commandPacket, handler.getHttpServerHostPortString(),
                     name, guid, publicKeyString, password, Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_EMAIL_VERIFICATION),
-                    handler);
+                    handler, null);
             if (result.getExceptionOrErrorCode().isOKResult()) {
                 // Everything is hunkey dorey so return the new guid
                 return new CommandResponse(ResponseCode.NO_ERROR, guid);

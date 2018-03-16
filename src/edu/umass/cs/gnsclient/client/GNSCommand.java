@@ -637,14 +637,7 @@ public class GNSCommand extends CommandPacket {
   public static final CommandPacket createAccount(
           String alias) throws ClientException, IOException,
           NoSuchAlgorithmException {
-<<<<<<< HEAD
-    @SuppressWarnings("deprecation") // FIXME
-            GuidEntry guidEntry = lookupOrCreateGuidEntry(GNSClient.getGNSProvider(), alias);
-    return accountGuidCreateInternal(alias, null,
-            CommandType.RegisterAccount, guidEntry);
-=======
 	  return createAccount(alias, null, null);
->>>>>>> gnsmaster/master
   }
 
   /**
