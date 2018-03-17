@@ -181,17 +181,6 @@ public class KeyPairUtils {
     keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
   }
 
-  public static void saveKeyPair(String gnsName, String username, String guid, PublicKey publicKey, PrivateKey privateKey) {
-    createSingleton();
-
-    String publicString =  DatatypeConverter.printHexBinary(publicKey.getEncoded());
-    String privateString =  DatatypeConverter.printHexBinary(privateKey.getEncoded());
-    
-    keyStorageObj.put(generateKey(gnsName, username, PUBLIC), publicString);
-    keyStorageObj.put(generateKey(gnsName, username, PRIVATE), privateString);
-    keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
-  }
-
   /**
    * A useful tool when you want to use an existing guid with another gns server.
    *
