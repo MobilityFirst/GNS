@@ -270,7 +270,7 @@ public class NSAuthentication {
           throws FailedDBOperationException {
 	  List<String> fields = null;
 	if(field.contains("."))  
-		fields = Arrays.asList(field.split("."));
+		fields = Arrays.asList(field.split("\\."));
 	else
 		fields = Arrays.asList(field);
     // Field could also be GNSProtocol.ENTIRE_RECORD.toString() here 
