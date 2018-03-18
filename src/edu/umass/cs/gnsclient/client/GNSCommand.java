@@ -1592,7 +1592,7 @@ public class GNSCommand extends CommandPacket {
 
     String guid = SharedGuidUtils.createGuidStringFromPublicKey(publicKey.getEncoded());
     GuidEntry guidEntry = new GuidEntry(gnsInstance, guid, publicKey, privateKey);
-    KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, publicKey, privateKey);
+    KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, new KeyPair(publicKey, privateKey));
 
     return guidEntry;
   }
