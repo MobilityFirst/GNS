@@ -19,6 +19,9 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl;
 
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
@@ -32,6 +35,8 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import java.security.InvalidKeyException;
@@ -42,6 +47,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -69,8 +75,7 @@ public class AclAdd extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException, JSONException, NoSuchAlgorithmException, SignatureException, ParseException, FailedDBOperationException, FieldNotFoundException {
     JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.getString(GNSProtocol.FIELD.toString());
@@ -100,6 +105,9 @@ public class AclAdd extends AbstractCommand {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
     }
+
+    NSFieldAccess.enforceFieldExists(header, guid, field, handler.getApp());
+
     // This is where we update the ACL. Put the public key of the accessing guid in the appropriate ACL list.
     ResponseCode responseCode;
     if (!(responseCode = FieldMetaData.add(header, commandPacket,

@@ -289,8 +289,10 @@ public class CommandUtils {
       case BAD_ACCOUNT_ERROR:
         throw new InvalidGuidException(code, errorSummary);
 
-      case FIELD_NOT_FOUND_ERROR:
-        throw new FieldNotFoundException(code, errorSummary);
+		case FIELD_NOT_FOUND_ERROR:
+		case FIELD_NOT_FOUND_EXCEPTION:
+			throw new FieldNotFoundException(code, errorSummary);
+
       case ACCESS_ERROR:
         throw new AclException(code, errorSummary);
       case VERIFICATION_ERROR:

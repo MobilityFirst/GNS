@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl;
 
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -31,6 +33,8 @@ import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
+
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import java.security.InvalidKeyException;
@@ -69,8 +73,7 @@ public class AclRetrieve extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException, JSONException, NoSuchAlgorithmException, SignatureException, ParseException, FailedDBOperationException, FieldNotFoundException {
     JSONObject json = commandPacket.getCommand();
     String guid = json.getString(GNSProtocol.GUID.toString());
     String field = json.getString(GNSProtocol.FIELD.toString());
@@ -88,7 +91,10 @@ public class AclRetrieve extends AbstractCommand {
               GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
-    JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(
+
+    NSFieldAccess.enforceFieldExists(header, guid, field, handler.getApp());
+
+	  JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(
             new JSONArray(FieldMetaData.lookup(header, commandPacket,
             access,
             guid, field, reader, signature, message, timestamp, handler)));

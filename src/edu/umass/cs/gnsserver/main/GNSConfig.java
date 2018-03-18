@@ -118,6 +118,16 @@ public class GNSConfig {
     //
     // ACCOUNT GUIDS
     //
+
+    /**
+     * If true, an account can not be created via {@CommandType#RegisterAccount}
+     * but can only be created if a verifiable certificate is supplied via
+     * {@CommandType#RegisterAccountWithCertificate}. The mutually authenticated
+     * admin command {@CommandType#RegisterAccountSecured} can always be used
+     * to create an account irrespective of this flag.
+     */
+    CREATE_ACCOUNT_REQUIRES_CERTIFICATE (false),
+
     /**
      * The maximum number of subguids allowed in an account guid. The upper
      * limit on this is currently dictated by mongo's 16MB document limit.

@@ -8,6 +8,9 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -73,8 +76,6 @@ public interface CommandInterface {
  * @throws InternalRequestException 
    */
   public CommandResponse execute(InternalRequestHeader internalHeader, CommandPacket commandPacket,
-          ClientRequestHandlerInterface handler) throws InvalidKeyException,
-          InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-          SignatureException, UnsupportedEncodingException, ParseException, InternalRequestException;
+          ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException, JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException, ParseException, InternalRequestException, OperationNotSupportedException, FailedDBOperationException, FieldNotFoundException;
 
 }

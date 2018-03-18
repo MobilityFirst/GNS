@@ -16,6 +16,9 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
+import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.AbstractCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
@@ -189,27 +192,45 @@ public class CommandHandler {
           CommandPacket commandPacket, ClientRequestHandlerInterface handler,
           boolean doNotReplyToClient) {
     try {
+    	InternalRequestHeader header;
       if (commandHandler != null) {
-        return commandHandler.execute(getInternalHeaderAfterEnforcingChecks(commandPacket,
+        return commandHandler.execute
+			(header=getInternalHeaderAfterEnforcingChecks(commandPacket,
                 handler, doNotReplyToClient), commandPacket, handler);
       } else {
         return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
                 GNSProtocol.BAD_RESPONSE.toString() + " "
-                + GNSProtocol.OPERATION_NOT_SUPPORTED.toString() + " - Don't understand "
+                + GNSProtocol.OPERATION_NOT_SUPPORTED.toString() + ": "
                 + PacketUtils.getCommand(commandPacket));
       }
     } catch (JSONException e) {
-      // e.printStackTrace();
-      return new CommandResponse(ResponseCode.JSON_PARSE_ERROR,
-              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.JSON_PARSE_ERROR.toString() + " " + e
-              + " while executing command.");
-    } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
-      return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
-              GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol.QUERY_PROCESSING_ERROR.toString() + " " + e);
-    } catch (InternalRequestException e) {
-      return new CommandResponse(e.getCode(), GNSProtocol.BAD_RESPONSE.toString() + " "
-              + ResponseCode.INTERNAL_REQUEST_EXCEPTION + " " + e);
-    }
+		return new CommandResponse(ResponseCode.JSON_PARSE_ERROR, GNSProtocol
+			.BAD_RESPONSE.toString() + " " + GNSProtocol.JSON_PARSE_ERROR
+			.toString() + " " + e.getMessage() + ": " + PacketUtils.getCommand
+			(commandPacket));
+	} catch (NoSuchAlgorithmException | InvalidKeySpecException |
+		ParseException | SignatureException | InvalidKeyException |
+		UnsupportedEncodingException e) {
+		return new CommandResponse(ResponseCode.QUERY_PROCESSING_ERROR,
+			GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol
+				.QUERY_PROCESSING_ERROR.toString() + " " + e.getMessage());
+	} catch (InternalRequestException e) {
+		return new CommandResponse(e.getCode(), GNSProtocol.BAD_RESPONSE
+			.toString() + " " + ResponseCode.INTERNAL_REQUEST_EXCEPTION + " "
+			+ e.getMessage() + ": " + commandPacket.getSummary());
+	} catch (OperationNotSupportedException e) {
+		return new CommandResponse(ResponseCode.OPERATION_NOT_SUPPORTED,
+			GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol
+				.OPERATION_NOT_SUPPORTED.toString() + " " + e.getMessage());
+	} catch (FailedDBOperationException e) {
+		return new CommandResponse(ResponseCode.DATABASE_OPERATION_ERROR,
+			GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol
+				.DATABASE_OPERATION_ERROR.toString() + " " + e.getMessage());
+	} catch (FieldNotFoundException e) {
+		return new CommandResponse(ResponseCode.FIELD_NOT_FOUND_EXCEPTION,
+			GNSProtocol.BAD_RESPONSE.toString() + " " + GNSProtocol
+				.FIELD_NOT_FOUND.toString() + " " + e.getMessage());
+	}
   }
 
   private static InternalRequestHeader getInternalHeaderAfterEnforcingChecks(

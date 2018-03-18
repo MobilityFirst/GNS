@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -352,5 +353,25 @@ public class NSFieldAccess {
     }
     return result;
   }
+
+	/**
+	 * Check that the field itself exists at all.
+	 * This check doesn't have to pass signature or ACL checks because its
+	 * purpose is only to verify that an ACL is not attempted at being set on a
+	 * non-existent field so as to minimize garbage data in the record. This
+	 * method is reusable at various places and was first created in order
+	 * to systematically ensure that ACLs can be set or unset only on fields
+	 * that exist in the first place.
+	 */
+	public static void enforceFieldExists(InternalRequestHeader header, String
+		guid, String field, GNSApplicationInterface<String> app) throws
+		FailedDBOperationException, FieldNotFoundException {
+
+		ValuesMap values;
+		if ((values = NSFieldAccess.lookupJSONFieldLocally(header, guid,
+			field, app)) == null || !values.keys().hasNext())
+			throw new FieldNotFoundException(ResponseCode
+				.FIELD_NOT_FOUND_EXCEPTION, field);
+	}
 
 }

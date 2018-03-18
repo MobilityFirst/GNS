@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
+import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
@@ -39,6 +40,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,6 +51,9 @@ import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
+import redis.clients.jedis.Protocol;
+
+import javax.xml.ws.Response;
 
 /**
  *
@@ -75,9 +80,19 @@ public class RegisterAccount extends AbstractCommand {
   }
 
   @Override
-  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException,
-          InternalRequestException {
+  public CommandResponse execute(InternalRequestHeader header, CommandPacket commandPacket, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException, JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException, InternalRequestException, OperationNotSupportedException {
+    if(Config.getGlobalBoolean(GNSConfig.GNSC
+            .CREATE_ACCOUNT_REQUIRES_CERTIFICATE)) {
+      GNSConfig.getLogger().log(Level.WARNING, "Received unauthorized " +
+              "command {0}: {1}", new Object[]{CommandType.RegisterAccount,
+              commandPacket});
+      throw new OperationNotSupportedException(ResponseCode
+              .OPERATION_NOT_SUPPORTED, CommandType.RegisterAccount + " is " +
+              "not permitted in this system configuration; use " +
+              CommandType.RegisterAccountWithCertificate + " or " + CommandType
+              .RegisterAccountSecured + " instead for creating accounts");
+    }
+
     JSONObject json = commandPacket.getCommand();
     String name = json.getString(GNSProtocol.NAME.toString());
     String publicKey = json.getString(GNSProtocol.PUBLIC_KEY.toString());

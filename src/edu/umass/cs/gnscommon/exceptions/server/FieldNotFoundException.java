@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnscommon.exceptions.server;
 
+import edu.umass.cs.gnscommon.ResponseCode;
 import edu.umass.cs.gnsserver.database.ColumnField;
 
 /**
@@ -30,8 +31,13 @@ import edu.umass.cs.gnsserver.database.ColumnField;
 public class FieldNotFoundException extends ServerException{
 
   private static final long serialVersionUID = 1L;
-  private final ColumnField missingField;
+  private final Object missingField;
 
+  public FieldNotFoundException(ResponseCode code, String
+	  field) {
+  	super(code, "Field " + field + " does not exist");
+  	this.missingField = field;
+  }
   /**
    * Create a FieldNotFoundException instance.
    * 
