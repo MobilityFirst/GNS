@@ -1636,6 +1636,8 @@ public enum CommandType {
         try {
             commandClazz = Class.forName(commandClass);
         } catch (ClassNotFoundException e) {
+            // Assign a fake class for iOS client to work
+            commandClazz = String.class;
             GNSConfig.getLogger().log(Level.WARNING,
                     "Command class not found: {0}", commandClass);
         }
