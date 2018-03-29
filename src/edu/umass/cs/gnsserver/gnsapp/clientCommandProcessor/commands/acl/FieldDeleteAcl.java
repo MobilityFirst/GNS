@@ -91,6 +91,8 @@ public class FieldDeleteAcl extends AbstractCommand {
     }
 	  NSFieldAccess.enforceFieldExists(header, guid, field, handler.getApp());
 
+	  // arun: Need to propagate effect of deleted ACL up the tree
+
 	  ResponseCode responseCode;
     if (!(responseCode
             = FieldMetaData.deleteField(header, commandPacket,

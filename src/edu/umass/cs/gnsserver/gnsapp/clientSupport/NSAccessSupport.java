@@ -247,25 +247,30 @@ public class NSAccessSupport {
    * @return true if the accessor has access
    * @throws FailedDBOperationException
    */
-  public static boolean hierarchicalAccessGroupCheck(MetaDataTypeName accessType, String guid,
-          String field, Set<String> groups,
-          GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", field);
-    try {
-      return checkForGroupAccess(accessType, guid, field, groups, activeReplica);
-    } catch (FieldNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{field});
-    }
-    // otherwise go up the hierarchy and check
-    if (field.contains(".")) {
-      return hierarchicalAccessGroupCheck(accessType, guid, field.substring(0, field.lastIndexOf(".")),
-              groups, activeReplica);
-    } else if (!GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
-      return hierarchicalAccessGroupCheck(accessType, guid, GNSProtocol.ENTIRE_RECORD.toString(), groups, activeReplica);
-    } else {
-      // check all the way up and there is no access
-      return false;
-    }
+  public static boolean hierarchicalAccessGroupCheck(MetaDataTypeName accessType, String guid, String field, Set<String> groups, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+	  ClientSupportConfig.getLogger().log(Level.FINE, "{0} checking " +
+		  "group-based access for field={1}", new Object[]{getName(), field});
+	  try {
+		  return checkForGroupAccess(accessType, guid, field, groups,
+			  activeReplica);
+	  } catch (FieldNotFoundException e) {
+		  ClientSupportConfig.getLogger().log(Level.FINE, "{0} couldn't find "
+			  + "group-based access for field={1}; going up", new
+			  Object[]{getName(), field});
+	  }
+	  // otherwise go up the hierarchy and check
+	  if (field.contains(".")) {
+		  return hierarchicalAccessGroupCheck(accessType, guid, field
+			  .substring(0, field.lastIndexOf(".")), groups, activeReplica);
+	  }
+	  else if (!GNSProtocol.ENTIRE_RECORD.toString().equals(field)) {
+		  return hierarchicalAccessGroupCheck(accessType, guid, GNSProtocol
+			  .ENTIRE_RECORD.toString(), groups, activeReplica);
+	  }
+	  else {
+		  // check all the way up and there is no access
+		  return false;
+	  }
   }
 
   /**
@@ -275,33 +280,37 @@ public class NSAccessSupport {
    * @param accessType
    * @param guid
    * @param field
-   * @param accessorGuid
    * @param activeReplica
    * @return true if access is allowed
    * @throws FailedDBOperationException
    */
   private static boolean checkForGroupAccess(MetaDataTypeName accessType,
-          String guid, String field, Set<String> groups,
-          GNSApplicationInterface<String> activeReplica)
-          throws FieldNotFoundException, FailedDBOperationException {
-    try {
-      // FIXME: Tidy this mess up.
-      @SuppressWarnings("unchecked")
-      Set<String> allowedUsers = (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(accessType,
-              guid, field, activeReplica.getDB());
-      ClientSupportConfig.getLogger().log(Level.FINE, "{0} allowed users of {1} : {2}",
-              new Object[]{guid, field, allowedUsers});
-      return !Sets.intersection(SharedGuidUtils.convertPublicKeysToGuids(allowedUsers), groups).isEmpty();
-    } catch (RecordNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.WARNING,
-              "User {0} access problem for {2} field: {3}",
-              new Object[]{guid, field, e});
-      return false;
-    }
+											 String guid, String field,
+											 Set<String> groups,
+											 GNSApplicationInterface<String>
+												 activeReplica) throws
+	  FieldNotFoundException, FailedDBOperationException {
+	  try {
+		  // FIXME: Tidy this mess up.
+		  @SuppressWarnings("unchecked") Set<String> allowedUsers =
+			  (Set<String>) (Set<?>) NSFieldMetaData.lookupLocally(accessType,
+				  guid, field, activeReplica.getDB());
+		  ClientSupportConfig.getLogger().log(Level.FINE, "{0}: {1} allowed "
+			  + "users of {2} : {3}", new Object[]{getName(), guid, field,
+			  allowedUsers});
+		  return !Sets.intersection(SharedGuidUtils.convertPublicKeysToGuids
+			  (allowedUsers), groups).isEmpty();
+	  } catch (RecordNotFoundException e) {
+		  ClientSupportConfig.getLogger().log(Level.WARNING, "{0}: User {1} " +
+			  "access problem for field {2}: {3}", new Object[]{getName(),
+			  guid, field, e});
+		  return false;
+	  }
   }
 
    /**
-	 * return the first index of item in arr, -1 means not found the item in arr
+	 * return the first index of item in arr, -1 means not found the item in
+	* arr
 	 * 
 	 * @param arr
 	 * @param item
@@ -371,11 +380,26 @@ public class NSAccessSupport {
 	 return false;
   }
 
-  /**
-   * @param guid
-   * @param basicRecordMap
-   * @return meta data
-   */
+	/**
+	 * Used by FieldMetaData to adjust ACLs hierarchically upon an ACL remove
+	 * operation.
+	 *
+	 * @param guid
+	 * @param basicRecordMap
+	 * @param alreadyReadRecords
+	 * @return
+	 */
+	public static JSONObject getMetaDataForHierarchicalACLFix(String guid,
+													  BasicRecordMap
+		basicRecordMap, NameRecord... alreadyReadRecords )
+	{
+		return getMetaDataForACLCheck(guid, basicRecordMap, alreadyReadRecords);
+	}
+		/**
+		 * @param guid
+		 * @param basicRecordMap
+		 * @return meta data
+		 */
   protected static JSONObject getMetaDataForACLCheck(String guid, BasicRecordMap basicRecordMap, 
 		  NameRecord... alreadyReadRecords )
   {
@@ -422,8 +446,14 @@ public class NSAccessSupport {
 	  }
 	  return metaData;
   }
-  
+
+  private static String getName() {
+  	return NSAccessSupport.class.getSimpleName();
+  }
   /**
+   * arun: Cleaned up poorly written previous version that needlessly relied
+   * on exceptions and recursion and was hard to read.
+   *
    * Looks up the public key for a guid using the acl of a field.
    * Handles fields that uses dot notation. Recursively goes up the tree
    * towards the root (GNSProtocol.ENTIRE_RECORD.toString()) node.
@@ -435,36 +465,37 @@ public class NSAccessSupport {
    * @return a set of public keys
    * @throws FailedDBOperationException
    */
-  public static JSONArray lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, List<String> fields,
-          JSONObject metaData) throws FailedDBOperationException {
-    ClientSupportConfig.getLogger().log(Level.FINE, "###fields={0}", new Object[]{fields});
-    try {
-    	JSONObject fieldACL = metaData.getJSONObject(access.getPrefix())
-				.getJSONObject(access.name());
-    	for(String field:fields){
-    		fieldACL = fieldACL.getJSONObject(field);
-    	}
-    	return fieldACL.getJSONArray(GNSProtocol.MD.toString()); 
-	} catch (JSONException e) {
-		ClientSupportConfig.getLogger().log(Level.FINE, "###field NOT FOUND={0}.. GOING UP", new Object[]{fields});
-	}
-	
-    // otherwise go up the hierarchy and check
-    if (fields.size() > 0) {
-      return lookupPublicKeysFromAcl(access, guid, fields.subList(0, fields.size()-1), metaData);      
-    } else if (fields.size() == 0) {
-    // One last check at the root (GNSProtocol.ENTIRE_RECORD.toString()) field.
-	    try {
-			return metaData.getJSONObject(access.getPrefix())
-					.getJSONObject(access.name()).getJSONObject(GNSProtocol.ENTIRE_RECORD.toString())
-					.getJSONArray(GNSProtocol.MD.toString());
-		} catch (JSONException e) {
-			// No ACL exists for root (GNSProtocol.ENTIRE_RECORD.toString()) field
-			return null;
-		}
-    } else {
-      return null;
-    }
+  public static JSONArray lookupPublicKeysFromAcl(MetaDataTypeName access,
+												  String guid, List<String>
+													  fields, JSONObject
+													  metaData) throws
+	  FailedDBOperationException {
+	  ClientSupportConfig.getLogger().log(Level.FINE, "{0} looking " + "up " +
+		  "keys for fields={1}", new Object[]{getName(), fields});
+	  try {
+
+		  JSONObject fieldACL = metaData.getJSONObject(access.getPrefix())
+			  .getJSONObject(access.name());
+
+		  boolean found = false;
+		  // go as deep as possible
+		  for (String field : fields) {
+			  if (fieldACL.has(field)) {
+				  fieldACL = fieldACL.getJSONObject(field); found = true;
+			  }
+			  else break;
+		  } if (found) return fieldACL.getJSONArray(GNSProtocol.MD.toString());
+
+		  // One last check at the root (GNSProtocol.ENTIRE_RECORD.toString())
+		  return metaData.getJSONObject(access.getPrefix()).getJSONObject
+			  (access.name()).getJSONObject(GNSProtocol.ENTIRE_RECORD.toString
+			  ()).getJSONArray(GNSProtocol.MD.toString());
+
+	  } catch (JSONException e) {
+		  ClientSupportConfig.getLogger().log(Level.FINE, "{0}: {1}", new
+			  Object[]{getName(), fields});
+		  return null;
+	  }
   }
 
   /**

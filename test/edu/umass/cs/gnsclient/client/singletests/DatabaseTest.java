@@ -345,10 +345,14 @@ public class DatabaseTest extends DefaultGNSTest {
   public void test_44_WriteAccess() {
     String fieldName = "whereAmI";
     try {
+    	// arun: the expected behavior for ACL operations on a non-existent
+		// field is an exception
       try {
         clientCommands.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, fieldName, samEntry.getGuid());
       } catch (IOException | ClientException e) {
-        Utils.failWithStackTrace("Exception adding Sam to Westy's writelist: " + e);
+        //Utils.failWithStackTrace("Exception adding Sam to Westy's " +"writelist: " + e);
+		  System.out.print("This was expected for trying to update an ACL for"
+			  + " " + "a " + "non-existent field;" + e);
 
       }
       // write my own field
@@ -360,7 +364,17 @@ public class DatabaseTest extends DefaultGNSTest {
       }
       // now check the value
       Assert.assertEquals("shopping", clientCommands.fieldReadArrayFirstElement(westyEntry.getGuid(), fieldName, westyEntry));
-      // someone else write my field
+
+		// grant write permissions to other
+		try {
+			clientCommands.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry,
+				fieldName, samEntry.getGuid());
+		} catch (IOException | ClientException e) {
+			Utils.failWithStackTrace("Exception adding Sam to Westy's " +
+				"writelist: " + e);
+		}
+
+		// someone else write my field
       try {
         clientCommands.fieldReplaceFirstElement(westyEntry.getGuid(), fieldName, "driving", samEntry);
       } catch (IOException | ClientException e) {

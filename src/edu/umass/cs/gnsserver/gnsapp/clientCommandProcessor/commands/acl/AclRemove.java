@@ -108,14 +108,28 @@ public class AclRemove extends AbstractCommand {
     }
 	  NSFieldAccess.enforceFieldExists(header, guid, field, handler.getApp());
 
+	  // arun: FIXME: Need to propagate effect of removed member up the tree
+	  /**
+	   * In case of ACLs, we must remove the GUID from the ACLs of
+	   * every parent field, otherwise reading a parent field with a more
+	   * liberal ACL will violate the ACL of a more restrictive ACL of a
+	   * child field.
+	   */
+
 	  if (!(responseCode = FieldMetaData.removeValue(header, commandPacket,
-            access,
-            guid, accesser, field, accessorPublicKey,
-            writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
-    } else {
-      return new CommandResponse(responseCode, responseCode.getProtocolCode());
-    }
+		  access, guid, accesser, field, accessorPublicKey, writer, signature,
+		  message, timestamp, handler)).isExceptionOrError()
+
+		  && !(responseCode = FieldMetaData.removeACLHierarchically(header,
+		  commandPacket, access, guid, field, writer, signature, message,
+		  timestamp, handler)).isExceptionOrError()) {
+		  return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol
+			  .OK_RESPONSE.toString());
+	  }
+	  else {
+		  return new CommandResponse(responseCode, responseCode
+			  .getProtocolCode());
+	  }
   }
 
   

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
+import edu.umass.cs.gnscommon.utils.JSONDotNotation;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -271,6 +272,7 @@ public class NSAuthentication {
 	  List<String> fields = null;
 	if(field.contains("."))  
 		fields = Arrays.asList(field.split("\\."));
+	//JSONDotNotation.getDottedParents(field);
 	else
 		fields = Arrays.asList(field);
     // Field could also be GNSProtocol.ENTIRE_RECORD.toString() here 

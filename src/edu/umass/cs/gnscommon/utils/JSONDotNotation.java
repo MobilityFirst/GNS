@@ -17,6 +17,7 @@ package edu.umass.cs.gnscommon.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -24,7 +25,7 @@ import org.json.JSONObject;
 
 /**
  *
- * @author westy
+ * @author westy, arun
  */
 public class JSONDotNotation {
 
@@ -180,5 +181,33 @@ public class JSONDotNotation {
     System.out.println(getWithDotNotation("flapjack", json));
 
   }
+
+
+	/**
+	 * arun: The utility methods below are needed to get all the dotted parent
+	 * fields of a dotted field in order to correctly check ACLs. (The previous
+	 * code to check ACLs up the hierarchy was utterly broken.)
+	 *
+	 * @param s
+	 * @return
+	 */
+
+
+	public static String getDotParent(String s) {
+		return s.replaceFirst("\\.[^\\.]*$", "");
+	}
+
+	public static List<String> getDottedParents(String s, ArrayList<String>
+		parents) {
+		String parent; parents.add(s);
+		if (!s.equals(parent = getDotParent(s))) {
+			getDottedParents(parent, parents);
+		} return parents;
+	}
+
+	public static List<String> getDottedParents(String s) {
+		return getDottedParents(s, new ArrayList<String>());
+	}
+
 
 }

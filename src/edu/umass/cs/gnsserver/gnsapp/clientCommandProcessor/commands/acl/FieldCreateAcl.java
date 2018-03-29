@@ -91,15 +91,32 @@ public class FieldCreateAcl extends AbstractCommand {
     }
 	  NSFieldAccess.enforceFieldExists(header, guid, field, handler.getApp());
 
+    /* arun: Should disallow creation of ACL for a field that already has an
+	ACL, otherwise the existing ACL will get wiped out with a (no-access)
+    empty ACL.
+     */
+	  if (FieldMetaData.fieldExists(access, guid, field, writer, signature,
+		  message, timestamp, handler))
+		  return new CommandResponse(ResponseCode.DUPLICATE_FIELD_EXCEPTION,
+			  GNSProtocol.DUPLICATE_FIELD.toString() + ": ACL already exists "
+				  + "for field " + field);
+
+
+	  // arun: Need to propagate created empty ACL up the tree
+
 	  ResponseCode responseCode;
-    if (!(responseCode
-            = FieldMetaData.createField(header, commandPacket,
-                    access, guid, field, writer,
-                    signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
-    } else {
-      return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());
-    }
+	  if (!(responseCode = FieldMetaData.createField(header, commandPacket,
+		  access, guid, field, writer, signature, message, timestamp, handler)
+	  ).isExceptionOrError()
+		  // constrain ancestral ACLs accordingly
+		  && (!(responseCode = FieldMetaData.addACLHierarchically(header,
+		  commandPacket, access, guid, field, writer, signature, message,
+		  timestamp, handler)).isExceptionOrError()))
+		  return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol
+			  .OK_RESPONSE.toString());
+	  else
+		  return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE
+			  .toString() + " " + responseCode.getProtocolCode());
   }
 
 }

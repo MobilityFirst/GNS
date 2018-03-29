@@ -239,21 +239,7 @@ public class NSFieldAccess {
    */
   public static ResultValue lookupListFieldLocallySafe(String guid, String field,
           BasicRecordMap database) {
-    ResultValue result = null;
-    try {
-      result = lookupListFieldLocallyNoAuth(guid, field, database);
-    } catch (FieldNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE,
-              "Field not found {0} : {1}", new Object[]{guid, field});
-    } catch (RecordNotFoundException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE,
-              "Record not found {0} : {1}",
-              new Object[]{guid, field});
-    } catch (FailedDBOperationException e) {
-      ClientSupportConfig.getLogger().log(Level.FINE,
-              "Failed DB operation {0} : {1}",
-              new Object[]{guid, field});
-    }
+    ResultValue result = lookupListFieldLocallySafeAsIs(guid, field, database);
     if (result != null) {
       return result;
     } else {
@@ -261,7 +247,42 @@ public class NSFieldAccess {
     }
   }
 
-  /**
+	/**
+	 * Looks up the value of an old-style list field
+	 * in the guid in the local replica. Differs from lookupListFieldLocally
+	 * in that it doesn't throw any exceptions and just returns an empty result
+	 * if there are exceptions.
+	 * Returns the value of a field in a GNSProtocol.GUID.toString() as a ResultValue or
+	 * an empty ResultValue if field cannot be found.
+	 *
+	 * @param guid
+	 * @param field
+	 * @param database
+	 * @return ResultValue
+	 */
+	public static ResultValue lookupListFieldLocallySafeAsIs(String guid, String
+		field,
+														 BasicRecordMap database) {
+		ResultValue result = null;
+		try {
+			result = lookupListFieldLocallyNoAuth(guid, field, database);
+		} catch (FieldNotFoundException e) {
+			ClientSupportConfig.getLogger().log(Level.FINE,
+				"Field not found {0} : {1}", new Object[]{guid, field});
+		} catch (RecordNotFoundException e) {
+			ClientSupportConfig.getLogger().log(Level.FINE,
+				"Record not found {0} : {1}",
+				new Object[]{guid, field});
+		} catch (FailedDBOperationException e) {
+			ClientSupportConfig.getLogger().log(Level.FINE,
+				"Failed DB operation {0} : {1}",
+				new Object[]{guid, field});
+		}
+		return result;
+	}
+
+
+	/**
    * Looks up the first element of field in the guid on this NameServer as a String.
    * Returns null if the field or the record cannot be found.
    *

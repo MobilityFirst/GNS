@@ -108,15 +108,23 @@ public class AclAdd extends AbstractCommand {
 
     NSFieldAccess.enforceFieldExists(header, guid, field, handler.getApp());
 
-    // This is where we update the ACL. Put the public key of the accessing guid in the appropriate ACL list.
-    ResponseCode responseCode;
-    if (!(responseCode = FieldMetaData.add(header, commandPacket,
-            access, guid, field,
-            accessorPublicKey, writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
-    } else {
-      return new CommandResponse(responseCode, responseCode.getProtocolCode());
-    }
+	  // This is where we update the ACL. Put the public key of the accessing
+	  // guid in the appropriate ACL list.
+	  ResponseCode responseCode;
+	  if (!(responseCode = FieldMetaData.add(header, commandPacket, access,
+		  guid, field, accessorPublicKey, writer, signature, message,
+		  timestamp, handler)).isExceptionOrError()
+		  // constrain ancestral ACLs accordingly
+		  && !(responseCode = FieldMetaData.addACLHierarchically(header,
+		  commandPacket, access, guid, field, writer, signature, message,
+		  timestamp, handler)).isExceptionOrError()) {
+		  return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol
+			  .OK_RESPONSE.toString());
+	  }
+	  else {
+		  return new CommandResponse(responseCode, responseCode
+			  .getProtocolCode());
+	  }
   }
 
 }

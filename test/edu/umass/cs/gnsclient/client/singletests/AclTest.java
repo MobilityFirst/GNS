@@ -473,43 +473,49 @@ public class AclTest extends DefaultGNSTest {
 
     }
   }
-  
-  /**
-   * Try to delete it again
-   */
+
+	/**
+	 * Try to delete it again.
+	 *
+	 * arun: Should get an exception for trying to remove a
+	 * non-existent field.
+	 */
   @Test
   public void test_154_ACLRemoveFromNonexistantField() {
-    try {
-      try {
-        clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, "NonexistantField", 
-                GNSProtocol.ALL_GUIDS.toString());
-      } catch (ClientException | IOException e) {
-        Utils.failWithStackTrace("Problem removing acl: " + e);
+	  try {
+		  clientCommands.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
+			  "NonexistantField", GNSProtocol.ALL_GUIDS.toString());
+	  } catch (ClientException e) {
+		  //Utils.failWithStackTrace("Problem removing acl: " + e);
+		  System.out.print("This was expected for trying to remove an ACL for " +
+			  "a " + "non-existent field;" + e);
 
-      }
-    } catch (Exception e) {
-      Utils.failWithStackTrace("Exception when we were not expecting it ACLRemoveFromNonexistantField: " + e);
-
-    }
+	  } catch (Exception e) {
+		  Utils.failWithStackTrace("Exception when we were not expecting it "
+		   +"ACLRemoveFromNonexistantField: " + e);
+	  }
   }
 
   
   /**
-   * Try to delete it again
+   * Try to delete it again.
+   *
+   * arun: Should get an exception for trying to remove a
+   * non-existent field.
    */
   @Test
   public void test_156_ACLDeleteNonexistantField() {
-    try {
-      try {
-        clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST, westyEntry, "NonexistantField");
-      } catch (ClientException | IOException e) {
-        Utils.failWithStackTrace("Problem deleting acl: " + e);
+	  try {
+		  clientCommands.fieldDeleteAcl(AclAccessType.READ_WHITELIST,
+			  westyEntry, "NonexistantField");
+	  } catch (ClientException e) {
+		  System.out.print("This was expected for trying to delete an ACL for"
+			  + " " + "a " + "non-existent field;" + e);
+	  } catch (Exception e) {
+		  Utils.failWithStackTrace("Exception when we were not expecting it " +
+			  "ACLDeleteNonexistantField: " + e);
 
-      }
-    } catch (Exception e) {
-      Utils.failWithStackTrace("Exception when we were not expecting it ACLDeleteNonexistantField: " + e);
-
-    }
+	  }
   }
 
   /**

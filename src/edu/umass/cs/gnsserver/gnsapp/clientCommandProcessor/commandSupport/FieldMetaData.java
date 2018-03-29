@@ -25,15 +25,22 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.utils.JSONDotNotation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldMetaData;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implements metadata on fields.
@@ -77,7 +84,147 @@ public class FieldMetaData {
             timestamp, handler);
   }
 
-  /**
+	/**
+	 * Adds a value to the metadata of the field in the guid.
+	 *
+	 * @param header
+	 * @param commandPacket
+	 * @param type
+	 * @param guid
+	 * @param key
+	 * @param writer
+	 * @param signature
+	 * @param message
+	 * @param timestamp
+	 * @param handler
+	 * @return a {@link ResponseCode}
+	 */
+	public static ResponseCode removeACLHierarchically(InternalRequestHeader
+														header, CommandPacket
+		commandPacket, MetaDataTypeName type, String guid, String key, String
+		writer, String signature, String message, Date timestamp,
+													ClientRequestHandlerInterface handler) throws JSONException {
+
+		/* Proceed if no exception or error. We don't need to check signature
+		 as that would've already been done above. First read that to which
+		 we just wrote above.
+		  */
+		Set<String> baseACL = NSFieldAccess.lookupListFieldLocallySafeAsIs(guid,
+			makeFieldMetaDataKey(type, key), handler.getApp().getDB())
+			.toStringSet();
+
+		String field = key;
+		// Proceed up the tree
+		while (field.contains(".") ||
+			// adjust top-level ACL for entire GUID record
+			(field = GNSProtocol.ALL_GUIDS.toString()) != null) {
+			if (field.contains("."))
+				field = field.substring(0, field.lastIndexOf("."));
+			String parentField = makeFieldMetaDataKey(type, field);
+			Set<String> parentACL;
+			parentACL = NSFieldAccess.lookupListFieldLocallySafeAsIs(guid,
+				parentField, handler.getApp().getDB()).toStringSet();
+			parentACL = intersect(parentACL, baseACL);
+
+			ResponseCode code = FieldAccess.updateUserJSON(header,
+				commandPacket, guid, new JSONObject().put(parentField,
+					parentACL),
+				// setting writer to internal will obviate signature checks
+				GNSProtocol.INTERNAL_QUERIER.toString(), signature, message,
+				timestamp, handler);
+			if (code.isExceptionOrError()) return code;
+
+			if (field.equals(GNSProtocol.ALL_GUIDS.toString())) break;
+		} return ResponseCode.NO_ERROR;
+	}
+
+	public static ResponseCode addACLHierarchically(InternalRequestHeader
+														header, CommandPacket
+														commandPacket, MetaDataTypeName type, String guid, String key, String
+														writer, String signature, String message, Date timestamp,
+													ClientRequestHandlerInterface handler) throws JSONException {
+
+		/* Proceed if no exception or error. We don't need to check signature
+		 as that would've already been done above.
+		  */
+
+
+		JSONObject metadata = NSAccessSupport
+			.getMetaDataForHierarchicalACLFix(guid, handler.getApp().getDB
+				());
+
+		String field = key;
+		// Proceed up the tree
+		while (field.contains(".") ||
+			// adjust top-level ACL for entire GUID record
+			(field = GNSProtocol.ALL_GUIDS.toString()) != null) {
+			if (field.contains("."))
+				field = field.substring(0, field.lastIndexOf("."));
+			String parentField = makeFieldMetaDataKey(type, field);
+			Set<String> parentACL;
+
+			JSONObject curMetadata = (JSONObject) JSONDotNotation.getWithDotNotation
+				(parentField.replaceFirst("\\.MD$", "").replaceFirst("\\" +
+						".[^\\.]*$", ""),
+					metadata);
+
+			Set<String> acl = null;
+			// intersect over immediate children's ACLs
+			Iterator<String> iter = curMetadata.keys(); while (iter.hasNext
+				()) {
+				String childKey = iter.next();
+				if(childKey.equals(GNSProtocol.MD.toString())) continue;
+				Set<String> childACL = curMetadata.getJSONObject(childKey).has
+					(GNSProtocol.MD.toString()) ? toStringSet(curMetadata
+					.getJSONObject(childKey).getJSONArray(GNSProtocol.MD
+						.toString())) : null;
+				acl = intersect(acl, childACL);
+			}
+
+			// replace parent's ACL if any with that computed above
+			parentACL = acl;
+
+
+			ResponseCode code = FieldAccess.updateUserJSON(header,
+				commandPacket, guid, new JSONObject().put(parentField,
+					parentACL),
+				// setting writer to internal will obviate signature checks
+				GNSProtocol.INTERNAL_QUERIER.toString(), signature, message,
+				timestamp, handler);
+			if (code.isExceptionOrError()) return code;
+
+			if (field.equals(GNSProtocol.ALL_GUIDS.toString())) break;
+		} return ResponseCode.NO_ERROR;
+	}
+
+	private static Set<String> compact(Set<String> acl) {
+		return acl==null ? acl : // compact if contains +ALL+
+			acl.contains(GNSProtocol.ALL_GUIDS.toString()) ?
+				new HashSet<String>(Arrays.asList(GNSProtocol.ALL_GUIDS
+					.toString())) : acl;
+	}
+	private static boolean permitsAll(Set<String> acl) {
+		return acl == null || // null means +ALL+
+			acl.contains(GNSProtocol.ALL_GUIDS.toString());
+	}
+
+	private static Set<String> intersect(Set<String> acl, Set<String>
+		childACL) {
+		if (permitsAll(childACL)) return compact(acl);
+		else if (permitsAll(acl)) return compact(childACL);
+		// else
+		acl.retainAll(childACL); return compact(acl);
+	}
+
+	private static Set<String> toStringSet(JSONArray jsonArray) throws
+		JSONException {
+		HashSet<String> set = new HashSet<String>();
+		for(int i=0; i<jsonArray.length(); i++)
+			set.add((String)jsonArray.get(i));
+		return set;
+	}
+
+	/**
    * Create an empty metadata field in the guid.
    *
    * @param header
@@ -181,7 +328,7 @@ public class FieldMetaData {
     }
     ResultValue result = NSFieldAccess.lookupListFieldLocallySafe(guid, field,
             handler.getApp().getDB());
-    return new HashSet<>(result.toStringSet());
+    return result.toStringSet();
   }
 
   /**
@@ -217,6 +364,7 @@ public class FieldMetaData {
         return ResponseCode.NO_ERROR;
       }
     }
+
     return FieldAccess.update(header, commandPacket, guid, makeFieldMetaDataKey(type, key), 
             accessorPublicKey, null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, timestamp, handler);
