@@ -116,10 +116,13 @@ public class AclRemove extends AbstractCommand {
 	   * child field.
 	   */
 
-	  if (!(responseCode = FieldMetaData.removeValue(header, commandPacket,
+	  if (
+	  	// update current field ACL
+	  	!(responseCode = FieldMetaData.removeValue(header, commandPacket,
 		  access, guid, accesser, field, accessorPublicKey, writer, signature,
 		  message, timestamp, handler)).isExceptionOrError()
 
+		  // relax ancestral ACLs accordingly
 		  && !(responseCode = FieldMetaData.removeACLHierarchically(header,
 		  commandPacket, access, guid, field, writer, signature, message,
 		  timestamp, handler)).isExceptionOrError()) {

@@ -89,19 +89,28 @@ public class FieldDeleteAcl extends AbstractCommand {
               + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
+
+	  // arun: throw an exception if field non-existent
 	  NSFieldAccess.enforceFieldExists(header, guid, field, handler.getApp());
 
-	  // arun: Need to propagate effect of deleted ACL up the tree
-
 	  ResponseCode responseCode;
-    if (!(responseCode
-            = FieldMetaData.deleteField(header, commandPacket,
-                    access, guid, field, writer,
-                    signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
-    } else {
-      return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());
-    }
+	  if (
+		  // remove ACL from current field
+		  !(responseCode = FieldMetaData.deleteField(header, commandPacket,
+			  access, guid, field, writer, signature, message, timestamp,
+			  handler)).isExceptionOrError()
+
+			  // constrain ancestral ACLs accordingly
+			  && !(responseCode = FieldMetaData.removeACLHierarchically
+			  (header, commandPacket, access, guid, field, writer, signature,
+				  message, timestamp, handler)).isExceptionOrError()) {
+		  return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol
+			  .OK_RESPONSE.toString());
+	  }
+	  else {
+		  return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE
+			  .toString() + " " + responseCode.getProtocolCode());
+	  }
   }
 
 }

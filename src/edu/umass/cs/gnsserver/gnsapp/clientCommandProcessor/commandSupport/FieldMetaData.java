@@ -109,33 +109,42 @@ public class FieldMetaData {
 		 as that would've already been done above. First read that to which
 		 we just wrote above.
 		  */
-		Set<String> baseACL = NSFieldAccess.lookupListFieldLocallySafeAsIs(guid,
-			makeFieldMetaDataKey(type, key), handler.getApp().getDB())
-			.toStringSet();
+		ResultValue resultValue = null;
+		Set<String> baseACL = ((resultValue = NSFieldAccess
+			.lookupListFieldLocallySafeAsIs(guid, makeFieldMetaDataKey(type,
+				key), handler.getApp().getDB()))!=null ? resultValue
+			.toStringSet() : null);
 
 		String field = key;
-		// Proceed up the tree
-		while (field.contains(".") ||
-			// adjust top-level ACL for entire GUID record
-			(field = GNSProtocol.ALL_GUIDS.toString()) != null) {
-			if (field.contains("."))
-				field = field.substring(0, field.lastIndexOf("."));
-			String parentField = makeFieldMetaDataKey(type, field);
-			Set<String> parentACL;
-			parentACL = NSFieldAccess.lookupListFieldLocallySafeAsIs(guid,
-				parentField, handler.getApp().getDB()).toStringSet();
-			parentACL = intersect(parentACL, baseACL);
+		if (!field.equals(GNSProtocol.ALL_GUIDS.toString
+			()))
+			// Proceed up the tree
+			while (field.contains(".") ||
+				// adjust top-level ACL for entire GUID record
+				(field = GNSProtocol.ALL_GUIDS.toString()) != null) {
+				if (field.contains("."))
+					field = field.substring(0, field.lastIndexOf("."));
+				String parentField = makeFieldMetaDataKey(type, field);
+				Set<String> parentACL;
+				parentACL = ((resultValue = NSFieldAccess
+					.lookupListFieldLocallySafeAsIs(guid, parentField, handler
+						.getApp().getDB())) != null ? resultValue.toStringSet
+					() : null);
+				parentACL = intersect(parentACL, baseACL);
+				if (parentACL == null)
+					parentACL = new HashSet<String>(Arrays.asList(GNSProtocol
+						.ENTIRE_RECORD.toString()));
 
-			ResponseCode code = FieldAccess.updateUserJSON(header,
-				commandPacket, guid, new JSONObject().put(parentField,
-					parentACL),
-				// setting writer to internal will obviate signature checks
-				GNSProtocol.INTERNAL_QUERIER.toString(), signature, message,
-				timestamp, handler);
-			if (code.isExceptionOrError()) return code;
+				ResponseCode code = FieldAccess.updateUserJSON(header,
+					commandPacket, guid, new JSONObject().put(parentField,
+						parentACL),
+					// setting writer to internal will obviate signature checks
+					GNSProtocol.INTERNAL_QUERIER.toString(), signature,
+					message, timestamp, handler);
+				if (code.isExceptionOrError()) return code;
 
-			if (field.equals(GNSProtocol.ALL_GUIDS.toString())) break;
-		} return ResponseCode.NO_ERROR;
+				if (field.equals(GNSProtocol.ALL_GUIDS.toString())) break;
+			} return ResponseCode.NO_ERROR;
 	}
 
 	public static ResponseCode addACLHierarchically(InternalRequestHeader
@@ -153,48 +162,52 @@ public class FieldMetaData {
 			.getMetaDataForHierarchicalACLFix(guid, handler.getApp().getDB
 				());
 
-		String field = key;
-		// Proceed up the tree
-		while (field.contains(".") ||
-			// adjust top-level ACL for entire GUID record
-			(field = GNSProtocol.ALL_GUIDS.toString()) != null) {
-			if (field.contains("."))
-				field = field.substring(0, field.lastIndexOf("."));
-			String parentField = makeFieldMetaDataKey(type, field);
-			Set<String> parentACL;
+		String field = key; if (!field.equals(GNSProtocol.ALL_GUIDS.toString()))
+			// Proceed up the tree
+			while (field.contains(".") ||
+				// adjust top-level ACL for entire GUID record
+				(field = GNSProtocol.ALL_GUIDS.toString()) != null) {
+				if (field.contains("."))
+					field = field.substring(0, field.lastIndexOf("."));
+				String parentField = makeFieldMetaDataKey(type, field);
+				Set<String> parentACL;
 
-			JSONObject curMetadata = (JSONObject) JSONDotNotation.getWithDotNotation
-				(parentField.replaceFirst("\\.MD$", "").replaceFirst("\\" +
-						".[^\\.]*$", ""),
-					metadata);
+				JSONObject curMetadata = (JSONObject) JSONDotNotation
+					.getWithDotNotation(parentField.replaceFirst("\\.MD$", "")
+						.replaceFirst("\\" + ".[^\\.]*$", ""), metadata);
 
-			Set<String> acl = null;
-			// intersect over immediate children's ACLs
-			Iterator<String> iter = curMetadata.keys(); while (iter.hasNext
-				()) {
-				String childKey = iter.next();
-				if(childKey.equals(GNSProtocol.MD.toString())) continue;
-				Set<String> childACL = curMetadata.getJSONObject(childKey).has
-					(GNSProtocol.MD.toString()) ? toStringSet(curMetadata
-					.getJSONObject(childKey).getJSONArray(GNSProtocol.MD
-						.toString())) : null;
-				acl = intersect(acl, childACL);
-			}
+				Set<String> acl = null;
+				// intersect over immediate children's ACLs
+				Iterator<String> iter = curMetadata.keys();
+				while (iter.hasNext()) {
+					String childKey = iter.next();
+					if (childKey.equals(GNSProtocol.MD.toString())) continue;
+					Set<String> childACL = curMetadata.getJSONObject(childKey)
+						.has(GNSProtocol.MD.toString()) ? toStringSet
+						(curMetadata.getJSONObject(childKey).getJSONArray
+							(GNSProtocol.MD.toString())) : null;
+					acl = intersect(acl, childACL);
+				}
 
-			// replace parent's ACL if any with that computed above
-			parentACL = acl;
+				// replace parent's ACL if any with that computed above
+				parentACL = acl;
 
+			/* No point adjusting further if we reach null or equivalently
+			+ALL+ because the only reason the intersect operation can return
+			+ALL+ upon an add is if no change is needed to the ACL.
+			 */
+				if (parentACL == null) break;
 
-			ResponseCode code = FieldAccess.updateUserJSON(header,
-				commandPacket, guid, new JSONObject().put(parentField,
-					parentACL),
-				// setting writer to internal will obviate signature checks
-				GNSProtocol.INTERNAL_QUERIER.toString(), signature, message,
-				timestamp, handler);
-			if (code.isExceptionOrError()) return code;
+				ResponseCode code = FieldAccess.updateUserJSON(header,
+					commandPacket, guid, new JSONObject().put(parentField,
+						parentACL),
+					// setting writer to internal will obviate signature checks
+					GNSProtocol.INTERNAL_QUERIER.toString(), signature,
+					message, timestamp, handler);
+				if (code.isExceptionOrError()) return code;
 
-			if (field.equals(GNSProtocol.ALL_GUIDS.toString())) break;
-		} return ResponseCode.NO_ERROR;
+				if (field.equals(GNSProtocol.ALL_GUIDS.toString())) break;
+			} return ResponseCode.NO_ERROR;
 	}
 
 	private static Set<String> compact(Set<String> acl) {

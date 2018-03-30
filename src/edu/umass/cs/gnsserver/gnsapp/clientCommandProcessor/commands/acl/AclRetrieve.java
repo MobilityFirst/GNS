@@ -92,6 +92,7 @@ public class AclRetrieve extends AbstractCommand {
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
 
+    // arun: throw an exception if field non-existent
     NSFieldAccess.enforceFieldExists(header, guid, field, handler.getApp());
 
 	  JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(

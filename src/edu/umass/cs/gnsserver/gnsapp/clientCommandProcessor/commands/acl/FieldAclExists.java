@@ -89,6 +89,8 @@ public class FieldAclExists extends AbstractCommand {
               + " " + GNSProtocol.BAD_ACL_TYPE.toString()
               + "Should be one of " + Arrays.toString(MetaDataTypeName.values()));
     }
+
+	  // arun: throw an exception if field non-existent
 	  NSFieldAccess.enforceFieldExists(header, guid, field, handler.getApp());
 
 	  return new CommandResponse(

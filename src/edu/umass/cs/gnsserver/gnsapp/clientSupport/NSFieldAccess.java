@@ -389,8 +389,9 @@ public class NSFieldAccess {
 		FailedDBOperationException, FieldNotFoundException {
 
 		ValuesMap values;
-		if ((values = NSFieldAccess.lookupJSONFieldLocally(header, guid,
-			field, app)) == null || !values.keys().hasNext())
+		if (field == null || (!field.equals(GNSProtocol.ENTIRE_RECORD.toString
+			()) && ((values = NSFieldAccess.lookupJSONFieldLocally(header,
+			guid, field, app)) == null || !values.keys().hasNext())))
 			throw new FieldNotFoundException(ResponseCode
 				.FIELD_NOT_FOUND_EXCEPTION, field);
 	}
