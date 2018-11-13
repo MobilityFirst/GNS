@@ -340,10 +340,10 @@ public class GNSHttpServer {
 
   private static void sanityCheckMessage(JSONObject jsonCommand) throws JSONException,
           UnsupportedEncodingException {
-    if (jsonCommand.has("originalMessageBase64")) {
-      String originalMessage = new String(Base64.decode(jsonCommand.getString("originalMessageBase64")),
+    if (jsonCommand.has(GNSProtocol.ORIGINAL_MESSAGE_BASE64.toString())) {
+      String originalMessage = new String(Base64.decode(jsonCommand.getString(GNSProtocol.ORIGINAL_MESSAGE_BASE64.toString())),
               GNSProtocol.CHARSET.toString());
-      jsonCommand.remove("originalMessageBase64");
+      jsonCommand.remove(GNSProtocol.ORIGINAL_MESSAGE_BASE64.toString());
       String commandSansSignature = CanonicalJSON.getCanonicalForm(jsonCommand);
       if (!originalMessage.equals(commandSansSignature)) {
         LOGGER.log(Level.SEVERE, "signature message mismatch! original: {0} computed for signature: {1}",
