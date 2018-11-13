@@ -377,6 +377,6 @@ public class SimpleKeyStore extends AbstractKeyStorage
   @Override
   public String toString() 
   {
-	  return this.toString();
+	  return this.getClass().getSimpleName();
   }
 }

@@ -1,5 +1,6 @@
 package edu.umass.cs.gnsclient.examples.scratch;
 
+import edu.umass.cs.gnsclient.client.http.GNSHTTPProxy;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,13 +26,17 @@ public class Scratch {
 	}
 
 	public static void main(String[] args) throws JSONException {
-		String s = "level1.level2.level3";
-		System.out.println(getDottedParents(s));
-		System.out.println(s.substring(0, s.lastIndexOf(".")));
-		Set<String> set = new HashSet<String>();
-		System.out.println(new JSONArray(new HashSet<String>(set)));
-		System.out.println("_GNS_ACL.READ_WHITELIST.+ALL+.MD".replaceAll("\\" +
-			".MD$","").replaceFirst("\\.[^\\.]*$",""));
-		System.out.println(new JSONObject().put("key", (Set<String>)null));
+		JSONObject json = new JSONObject().put("key1", "value1").put("key2",
+			97);
+		String[] array = {"fsdf", "fsdfdsfsfs", "ewrewrw"};
+		System.out.println((json.put("key3", array)));
+		if(json.get("key3") instanceof JSONArray)
+			System.out.println("yes");
+		System.out.println(json.get("key3").getClass());
+		Properties props = new Properties();
+		props.setProperty("key1", "val1");
+		props.setProperty("key2", "hello");
+		System.out.println(props);
+
 	}
 }

@@ -470,4 +470,32 @@ public class KeyPairUtilsAndroid {
 
     return null;
   }
+
+	protected static String getName(String gnsName, String guid) {
+		File gnsFolder = new File(GNS_KEY_DIR);
+		// Save the path as a string value
+		String extStorageDirectory = gnsFolder.toString();
+
+		File file = new File(extStorageDirectory, GNS_KEYS_FILENAME);
+		String aliasKey = guid;
+
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String line=null, prevLine=null;
+
+			while ((prevLine==null || (prevLine=line)!=null) && (line = br
+				.readLine()) != null) {
+
+				if (line.equals(aliasKey)) {
+					return prevLine.replaceAll(gnsName+"@","");
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			// You'll need to add proper error handling here
+		}
+
+		return null;
+	}
+
 }

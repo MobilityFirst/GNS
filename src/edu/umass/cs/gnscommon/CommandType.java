@@ -1533,6 +1533,20 @@ public enum CommandType {
                     GNSProtocol.PASSWORD.toString(),
                     GNSProtocol.SIGNATURE.toString(),
                     GNSProtocol.SIGNATUREFULLMESSAGE.toString()}, new String[]{}),
+
+	/**
+	 * Mutual auth admin command that produces a certificate that can be
+	 * subsequently used by {@link CommandType#RegisterAccountWithCertificate}
+	 * to create an account.
+	 */
+	SignCertificate(814, CommandCategory.OTHER,
+		"edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured.SignCertificate",
+		CommandResultType.STRING, true, true,
+		"Signs a certificate given a name and a (possibly wildcard) public key",
+		new String[]{GNSProtocol.NAME.toString()},
+		new String[]{GNSProtocol.PUBLIC_KEY.toString()},
+		CommandFlag.MUTUAL_AUTH),
+
   /**
    *
    */
@@ -1746,6 +1760,13 @@ public enum CommandType {
         return commandRequiredParameters;
     }
 
+    public boolean requiresSignature() {
+    	for(String s : this.commandRequiredParameters)
+    		if(GNSProtocol.SIGNATURE.toString().equals(s))
+    			return true;
+    	return false;
+	}
+
     /**
      *
      * @return the optional command parameters
@@ -1934,6 +1955,7 @@ public enum CommandType {
         LookupGuidRecord.setChain();
         RegisterAccount.setChain(ReadUnsigned);
         RegisterAccountWithCertificate.setChain(ReadUnsigned);
+        SignCertificate.setChain();
         RegisterAccountSecured.setChain(ReadUnsigned);
         ResendAuthenticationEmail.setChain();
         RemoveAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);

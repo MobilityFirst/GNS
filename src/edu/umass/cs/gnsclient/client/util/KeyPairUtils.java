@@ -69,7 +69,8 @@ public class KeyPairUtils {
   private static final String GUID = "GU";
   private static final String PUBLIC = "PU";
   private static final String PRIVATE = "PR";
-  private static final String DEFAULT_GUID = "D_GUID";
+	private static final String USER = "US";
+	private static final String DEFAULT_GUID = "D_GUID";
   private static final String DEFAULT_GNS = "D_GNS";
 
   private static final Object SINGLETON_OBJ_LOCK = new Object();
@@ -118,6 +119,27 @@ public class KeyPairUtils {
     }
   }
 
+	/**
+	 * This method translates from a GUID to a name. Currently used only by
+	 * GNSHTTPProxy. All other places, if we know the GUID, we already have a
+	 * GuidEntry.
+	 *
+	 * @param gnsName
+	 * @param guid
+	 * @return
+	 */
+	public static String getName(String gnsName, String guid) {
+		if (guid == null) return null;
+
+		if (IS_ANDROID) {
+			return KeyPairUtilsAndroid.getName(gnsName, guid);
+		}
+
+		createSingleton();
+
+		return keyStorageObj.get(generateKey(gnsName, guid, USER), null);
+	}
+
 
   /**
    * Remove the public/private key pair from preferences for the given user.
@@ -133,9 +155,12 @@ public class KeyPairUtils {
 
     createSingleton();
 
+    String guid = keyStorageObj.get(generateKey(gnsName, username, GUID), USER);
+
     keyStorageObj.remove(generateKey(gnsName, username, PUBLIC));
     keyStorageObj.remove(generateKey(gnsName, username, PRIVATE));
     keyStorageObj.remove(generateKey(gnsName, username, GUID));
+    keyStorageObj.remove(generateKey(gnsName, guid, USER));
   }
 
   /**
@@ -179,6 +204,8 @@ public class KeyPairUtils {
     keyStorageObj.put(generateKey(gnsName, username, PUBLIC), publicString);
     keyStorageObj.put(generateKey(gnsName, username, PRIVATE), privateString);
     keyStorageObj.put(generateKey(gnsName, username, GUID), guid);
+    keyStorageObj.put(generateKey(gnsName, guid, USER), username);
+
   }
 
   /**

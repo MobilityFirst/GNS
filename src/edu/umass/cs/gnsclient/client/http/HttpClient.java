@@ -1849,7 +1849,7 @@ public class HttpClient {
       String debuggingPart = "";
       // Currently not being used.
       if (false) {
-        debuggingPart = KEYSEP + "originalMessageBase64" + VALSEP
+        debuggingPart = KEYSEP + GNSProtocol.ORIGINAL_MESSAGE_BASE64.toString() + VALSEP
                 + URIEncoderDecoder.quoteIllegal(
                         Base64.encodeToString(canonicalJSON.getBytes(GNSProtocol.CHARSET.toString()), false));
       }

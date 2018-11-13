@@ -62,6 +62,11 @@ public class SharedGuidUtils {
     //return ByteUtils.toHex(publicKeyDigest);
   }
 
+	public static final int HASH_LENGTH = 40; // SHA1
+	public static boolean couldBeGUID(String s) {
+  	return s.toUpperCase().matches("[0-9A-F]*") && s.length()==HASH_LENGTH;
+  }
+
   /**
    * Creates a hexidecimal guid string by hashing a public key.
    * The input string is assumed to base64 encoded.

@@ -1,6 +1,10 @@
 package edu.umass.cs.gnscommon;
 
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
+
+
+import edu.umass.cs.utils.Config;
 
 /**
  * An enum class for all the constants used by GNS wireline protocol.
@@ -301,6 +305,12 @@ public enum GNSProtocol {
    * The signature field in a command.
    */
   SIGNATURE("signature"),
+
+	/**
+	 * Original message without signature
+	 */
+	ORIGINAL_MESSAGE_BASE64 ("originalMessageBase64"),
+
   // select commands
   /**
    * The signature field in a command. Used for select within.
@@ -548,7 +558,8 @@ public enum GNSProtocol {
   /**
    * The name carried in requests not directed to any particular GUID.
    */
-  UNKNOWN_NAME("unknown"),
+  UNKNOWN_NAME(Config.getGlobalString(ReconfigurationConfig.RC.SPECIAL_NAME))
+	, // arun: changed this from "unknown"
   /**
    * Error code carried in {@link edu.umass.cs.gnscommon.packets.ResponsePacket}.
    */

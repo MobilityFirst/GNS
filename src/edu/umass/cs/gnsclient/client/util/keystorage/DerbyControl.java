@@ -20,6 +20,8 @@
 package edu.umass.cs.gnsclient.client.util.keystorage;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.util.EnvUtils;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -68,7 +70,8 @@ public class DerbyControl {
      * user can connect to your database using any password. To enable
      * authentication, see the Derby Developer's Guide.
      */
-    String dbName = "clientKeyDB"; // the name of the database
+	  String dbName = System.getProperty(EnvUtils.DefaultClientProps
+		  .CLIENT_KEY_DB.getkey());
 
     /*
      * This connection specifies create=true in the connection URL to
