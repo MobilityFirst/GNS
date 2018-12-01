@@ -88,6 +88,8 @@ public class GNSClientConfig {
      */
     LOCAL_NAME_SERVER_PORT(24398),
 
+	  DEFAULT_GNS_HTTP_PROXY_PORT (5678),
+
     ENABLE_CROSS_ORIGIN_REQUESTS(false);
     
     final Object defaultValue;

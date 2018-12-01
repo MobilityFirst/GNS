@@ -4,6 +4,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.SessionKeys;
 
 import javax.crypto.BadPaddingException;
@@ -12,13 +13,12 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.xml.bind.DatatypeConverter;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.Signature;
-import java.security.SignatureException;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.logging.Level;
 
 
@@ -177,5 +177,23 @@ public class CryptoUtils {
             throw new ClientException("Error encoding message message (using secretkey)", e);
         }
     }
+
+	public static final PrivateKey getPrivateKey() throws KeyStoreException,
+		NoSuchAlgorithmException, CertificateException, IOException,
+		UnrecoverableKeyException {
+		String keyStoreFile = System.getProperty("javax.net.ssl.keyStore");
+		String keyStorePassword = System
+			.getProperty("javax.net.ssl.keyStorePassword");
+		FileInputStream is = new FileInputStream(keyStoreFile);
+
+		KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+		keystore.load(is, keyStorePassword.toCharArray());
+		String alias = Config.getGlobalString(GNSConfig.GNSC.PRIVATE_KEY_ALIAS);
+		Key key = keystore.getKey(alias, keyStorePassword.toCharArray());
+		if (key instanceof PrivateKey) {
+			return (PrivateKey) key;
+		}
+		return null;
+	}
 
 }

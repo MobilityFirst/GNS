@@ -89,8 +89,15 @@ public class GNSHttpsServer extends GNSHttpServer {
           // get the default parameters
           SSLParameters sslParameters = context.getDefaultSSLParameters();
           sslParameters.setNeedClientAuth(true);
-          parameters.setNeedClientAuth(true);
-          parameters.setSSLParameters(sslParameters);
+          /* Requiring client authentication is unnecessary below because
+          this HTTPS server is a server-side HTTP proxy for (non-mutual-auth)
+           client-facing requests. Mutual auth admin requests should be sent
+           either to the default server port or should be supported via a
+           third HTTP proxy that is mutual auth (separate from the HTTP and
+           HTTPS client-facing proxies).
+           */
+          //parameters.setNeedClientAuth(true);
+          //parameters.setSSLParameters(sslParameters);
         }
       });
 

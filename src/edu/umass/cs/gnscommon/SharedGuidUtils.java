@@ -19,8 +19,12 @@
  */
 package edu.umass.cs.gnscommon;
 
+import edu.umass.cs.gnsclient.client.CryptoUtils;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
+
+
+import java.security.*;
 import java.util.HashSet;
 import java.util.Set;
 import javax.xml.bind.DatatypeConverter;
@@ -34,12 +38,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.security.Principal;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.KeyFactory;
 import java.io.ByteArrayInputStream;
 
 /**
@@ -304,4 +303,36 @@ public class SharedGuidUtils {
     String b64PublicKey = Base64.encodeToString(encodedPublicKey,true);
     return b64PublicKey;
   }
+
+	/**
+	 * Generate a certificate binding name and publicKey signed by
+	 * certAuthority.
+	 *
+	 * @param name
+	 * @param publicKey
+	 * @param certAuthority
+	 * @return
+	 */
+  public X509Certificate generateCertificate(String name, PublicKey
+	  publicKey, PrivateKey certAuthority) {
+  	throw new RuntimeException("Unimplemented");
+  }
+
+	/**
+	 * Generate a certificate binding name and publicKey signed by the
+	 * private key in the default keystore.
+	 *
+	 * @param name
+	 * @param publicKey
+	 * @return
+	 */
+	public X509Certificate generateCertificate(String name, PublicKey
+		publicKey) throws UnrecoverableKeyException, CertificateException,
+		NoSuchAlgorithmException, KeyStoreException, IOException {
+
+		return generateCertificate(name, publicKey, CryptoUtils.getPrivateKey
+			());
+
+	}
+
 }

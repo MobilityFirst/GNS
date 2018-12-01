@@ -1187,8 +1187,10 @@ public class AccountAccess {
       jsonHRN.put(HRN_GUID, guid);
       ResponseCode code;
 
-      code = handler.getInternalClient().createOrExists(
-              new CreateServiceName(name, jsonHRN.toString(), activesSet, activesChangePolicy));
+      code = name!=null ? handler.getInternalClient().createOrExists(
+              new CreateServiceName(name, jsonHRN.toString(), activesSet, activesChangePolicy))
+	  :
+	  ResponseCode.NO_ERROR;
 
       /* arun: Return the error if we could not createField the HRN
 			 * (alias) record and the error indicates that it is not a duplicate

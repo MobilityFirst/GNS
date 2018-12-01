@@ -24,6 +24,7 @@ package edu.umass.cs.gnsclient.client.http;
  */
 
 import com.sun.net.httpserver.*;
+import com.sun.org.apache.xpath.internal.operations.Number;
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
@@ -689,6 +690,15 @@ public class GNSHTTPProxy {
 	}
 
 	public static void main(String[] args) throws IOException {
-		new GNSHTTPProxy(5678, true);
+		int port = Config.getGlobalInt(GNSClientConfig.GNSCC.DEFAULT_GNS_HTTP_PROXY_PORT);
+		if(args.length>0) {
+			try {
+				port = Integer.parseInt(args[0]);
+			} catch(NumberFormatException nfe) {
+				System.err.println("Unable to parse and ignoring argument " +
+					args[0] + ": " + nfe);
+			}
+		}
+		new GNSHTTPProxy(port, true);
 	}
 }

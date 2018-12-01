@@ -890,6 +890,8 @@ public enum CommandType {
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           // optional parameters
           new String[]{GNSProtocol.PUBLIC_KEY.toString(), GNSProtocol.ACTIVES_SET.toString()}),
+
+
   /**
    *
    */
@@ -931,6 +933,48 @@ public enum CommandType {
             GNSProtocol.SIGNATURE.toString(),
             GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
           new String[]{GNSProtocol.ACTIVES_SET.toString()}),
+
+	/**
+	 * Experimental: Unclear if this command is really needed anywhere. This
+	 * will literally create a nameless GUID. Unlike keyless GUIDs that still
+	 * consist of an HRN and a made-up GUID, this command will create a
+	 * no-name GUID. It doesn't yet fully implement exception cases or GUID
+	 * removal methods.
+	 */
+	AddGuidNameless(415, CommandCategory.CREATE_DELETE, "edu.umass.cs" +
+		".gnsserver.gnsapp.clientCommandProcessor.commands.account" +
+		".AddGuidNameless",
+		CommandResultType.NULL, false, false,
+		"Adds a guid to the account associated with the GUID. Must be signed by the guid. "
+			+ "Returns +BADGUID+ if the guid has not been registered.",
+		new String[]{GNSProtocol.PUBLIC_KEY.toString(),
+			GNSProtocol.GUID.toString(),
+			GNSProtocol.SIGNATURE.toString(),
+			GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+		// optional parameters
+		new String[]{GNSProtocol.ACTIVES_SET.toString()}),
+
+		/**
+		 * This command allows adding a subGUID to an account without
+		 * requiring the signature of the account GUID but instead relying on
+		 * a certificate binding the supplied name and public key provided
+		 * that name is a formatted suffix of the account GUID's name.
+		 */
+		AddGuidWithCertificate(416, CommandCategory.CREATE_DELETE, "edu.umass.cs" +
+			".gnsserver.gnsapp.clientCommandProcessor.commands.account.AddGuid",
+			CommandResultType.NULL, false, false,
+			"Adds a guid to the account associated with the GUID. Must be " +
+				"accompanied with a certificate binding the supplied name to " +
+				"the supplied public key and the account GUID's name should " +
+				"be a prefix of the supplied name. "
+				+ "Returns +BADGUID+ if the guid has not been registered.",
+			new String[]{GNSProtocol.NAME.toString(),
+				GNSProtocol.GUID.toString(),
+				GNSProtocol.PUBLIC_KEY.toString(),
+			GNSProtocol.CERTIFICATE.toString()},
+			// optional parameters
+			new String[]{GNSProtocol.ACTIVES_SET
+				.toString()}),
   /**
    *
    */
@@ -1935,7 +1979,9 @@ public enum CommandType {
         SelectNotificationStatus.setChain();
         //
         AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned, ReadUnsigned); // what else?
-        RemoveGuid.setChain(ReadUnsigned);
+		AddGuidNameless.setChain(LookupGuid, ReplaceUserJSONUnsigned, ReadUnsigned);
+		AddGuidWithCertificate.setChain(LookupGuid, ReplaceUserJSONUnsigned, ReadUnsigned);
+		RemoveGuid.setChain(ReadUnsigned);
         RemoveAccount.setChain(ReadUnsigned);
         RemoveAccountWithPassword.setChain(ReadUnsigned);
         RemoveAccountSecured.setChain(ReadUnsigned);
