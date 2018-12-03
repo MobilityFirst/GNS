@@ -801,8 +801,7 @@ public class GNSCommand extends CommandPacket {
           GuidEntry accountGuid, String alias, Set<InetSocketAddress> activeSet) throws ClientException {
     try 
     {
-      // FIXME: check if GUID already exists as in lookupOrCreate
-    	GuidEntry guidEntry = GuidUtils.createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
+    	GuidEntry guidEntry = GuidUtils.lookupOrCreateGuidEntry(alias, GNSClient.getGNSProvider());
     	
     	if(activeSet != null)
     	{
@@ -962,7 +961,7 @@ public class GNSCommand extends CommandPacket {
     for (String alias : aliasList) {
       GuidEntry entry;
       try {
-        entry = GuidUtils.createAndSaveGuidEntry(alias, GNSClient.getGNSProvider());
+        entry = GuidUtils.lookupOrCreateGuidEntry(alias, GNSClient.getGNSProvider());
       } catch (NoSuchAlgorithmException e) {
         // FIXME: Do we need to roll back created keys?
         throw new ClientException(e);
@@ -972,7 +971,7 @@ public class GNSCommand extends CommandPacket {
               false);
       publicKeys.add(publicKeyString);
     }
-    
+
     
     if(activeSet != null)
     {

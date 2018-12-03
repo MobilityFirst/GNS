@@ -78,7 +78,14 @@ public class GNSTestingConfig {
      *
      * Code-breaking if enabled. Meant only for instrumentation.
      */
-    EXECUTE_NOOP_ENABLED(false),;
+    EXECUTE_NOOP_ENABLED(false),
+
+	  /**
+	   * Will cleanup all created state (but not paxos logs) by default.
+	   */
+	  CLEANUP (true),
+
+	  ;
 
     final Object defaultValue;
 

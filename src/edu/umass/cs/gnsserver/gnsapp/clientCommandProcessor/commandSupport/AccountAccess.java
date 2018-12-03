@@ -1382,22 +1382,36 @@ public class AccountAccess {
       ReconfigureUponActivesChange activesChangePolicy = 
     		  ReconfigureUponActivesChange.valueOf(ReconfigureUponActivesChange.class, 
     				  Config.getGlobalString(GNSConfig.GNSC.RECONFIGURE_ON_ACTIVE_CHANGE_POLICY));
-      
+
+      long t1 = System.currentTimeMillis();
       if (!(returnCode = handler.getInternalClient().createOrExists(
     		  new CreateServiceName(nameStates, activesChangePolicy)))
               .isExceptionOrError()) 
       {
+      	DelayProfiler.updateDelay("batchInsertNames", t1);
+      	GNSConfig.getLogger().log(Level.INFO, "batchInsertNames took {0}ms",
+			new Object[]{System.currentTimeMillis()-t1});
+      	long t2 = System.currentTimeMillis();
         // now we update the account info
         if (updateAccountInfoNoAuthentication(header, commandPacket, accountInfo,
                 handler, true).isOKResult()) {
-          HashMap<String, String> guidInfoNameStates = new HashMap<>();
+			DelayProfiler.updateDelay("batchUpdateAccountInfo", t2);
+			GNSConfig.getLogger().log(Level.INFO, "batchUpdateAccountInfo " +
+					"took {0}ms",
+				new Object[]{System.currentTimeMillis()-t2});
+			HashMap<String, String> guidInfoNameStates = new HashMap<>();
           for (String key : guidInfoMap.keySet()) {
             guidInfoNameStates.put(key, guidInfoMap.get(key).toString());
           }
+          long t3 = System.currentTimeMillis();
           handler.getInternalClient().createOrExists(
         		  new CreateServiceName(guidInfoNameStates, activesChangePolicy));
+			DelayProfiler.updateDelay("batchInsertGUIDs", t2);
+			GNSConfig.getLogger().log(Level.INFO, "batchInsertGUIDs took " +
+					"{0}ms",
+				new Object[]{System.currentTimeMillis()-t3});
 
-          GNSConfig.getLogger().info(DelayProfiler.getStats());
+			GNSConfig.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse(ResponseCode.NO_ERROR,
                   GNSProtocol.OK_RESPONSE.toString());
         }
