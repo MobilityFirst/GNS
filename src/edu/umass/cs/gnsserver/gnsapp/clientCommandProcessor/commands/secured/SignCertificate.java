@@ -1,10 +1,8 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.secured;
 
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.ResponseCode;
-import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
@@ -26,7 +24,6 @@ import org.json.JSONObject;
 import sun.misc.BASE64Encoder;
 import sun.security.provider.X509Factory;
 
-import javax.xml.ws.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.*;

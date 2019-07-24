@@ -24,8 +24,6 @@ package edu.umass.cs.gnsclient.client.http;
  */
 
 import com.sun.net.httpserver.*;
-import com.sun.org.apache.xpath.internal.operations.Number;
-import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSCommand;

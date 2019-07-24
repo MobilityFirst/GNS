@@ -55,7 +55,7 @@ import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
-import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.ReconfigureUponActivesChange;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.ReconfigureUponActivesChange;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
