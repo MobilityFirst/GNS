@@ -5,8 +5,8 @@ import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
-import sun.security.tools.keytool.CertAndKeyGen;
-import sun.security.x509.X500Name;
+//import sun.security.tools.keytool.CertAndKeyGen;
+//import sun.security.x509.X500Name;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,6 +54,7 @@ public class CertificateSigning {
 		// read private key from keyStore
 		PrivateKey caPrivateKey = GNSConfig.getPrivateKey();
 
+		/*
 		CertAndKeyGen certGen = new CertAndKeyGen("RSA", "SHA256WithRSA",
 			null);
 		certGen.generate(CERT_BITLENGTH);
@@ -64,7 +65,10 @@ public class CertificateSigning {
 		X509Certificate cert = certGen.getSelfCertificate(
 			// enter your details according to your application
 			new X500Name(certInfo), validSecs);
+
 		return cert;
+		*/
+		return null;
 	}
 
 	private static String genCertInfoString(String hrName, PublicKey
