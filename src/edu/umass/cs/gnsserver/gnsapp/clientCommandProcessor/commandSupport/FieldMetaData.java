@@ -60,6 +60,11 @@ public class FieldMetaData {
     return metaDataType.getFieldPath() + "." + key + ".MD";
   }
 
+	public static String getKeyFromFieldMetaData(String metaDataField, MetaDataTypeName metaDataType) {
+		return metaDataField.replaceFirst("\\.MD$","").replaceFirst
+			(metaDataType.getFieldPath()+"\\.","");
+	}
+
   /**
    * Adds a value to the metadata of the field in the guid.
    *
@@ -162,11 +167,11 @@ public class FieldMetaData {
 			.getMetaDataForHierarchicalACLFix(guid, handler.getApp().getDB
 				());
 
-		String field = key; if (!field.equals(GNSProtocol.ALL_GUIDS.toString()))
+		String field = key; if (!field.equals(GNSProtocol.ENTIRE_RECORD.toString()))
 			// Proceed up the tree
 			while (field.contains(".") ||
 				// adjust top-level ACL for entire GUID record
-				(field = GNSProtocol.ALL_GUIDS.toString()) != null) {
+				(field = GNSProtocol.ENTIRE_RECORD.toString()) != null) {
 				if (field.contains("."))
 					field = field.substring(0, field.lastIndexOf("."));
 				String parentField = makeFieldMetaDataKey(type, field);
@@ -206,7 +211,7 @@ public class FieldMetaData {
 					message, timestamp, handler);
 				if (code.isExceptionOrError()) return code;
 
-				if (field.equals(GNSProtocol.ALL_GUIDS.toString())) break;
+				if (field.equals(GNSProtocol.ENTIRE_RECORD.toString())) break;
 			} return ResponseCode.NO_ERROR;
 	}
 
@@ -383,4 +388,43 @@ public class FieldMetaData {
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, timestamp, handler);
   }
 
+	/**
+	 *
+	 * @param header
+	 * @param commandPacket
+	 * @param guid
+	 * @param fields
+	 * @param notifieePublicKey
+	 * @param notifiee
+	 * @param signature
+	 * @param message
+	 * @param timestamp
+	 * @param handler
+	 */
+	public static ResponseCode addTrigger(InternalRequestHeader header,
+										  CommandPacket commandPacket, String
+											  guid, ArrayList<String> fields,
+										  String notifieePublicKey, String
+											  notifiee, JSONObject
+											  triggerInfo, String signature,
+										  String message, Date timestamp,
+										  ClientRequestHandlerInterface
+											  handler) {
+
+		assert (fields != null);
+
+		ResponseCode responseCode = null;
+
+		for (String field : fields)
+			if ((responseCode = FieldAccess.update(header, commandPacket,
+				guid, makeFieldMetaDataKey(MetaDataTypeName.valueOf
+					(MetaDataTypeName.TRIGGER_LIST.name()), field), new ResultValue
+					(Arrays.asList(triggerInfo)), null, -1, UpdateOperation
+					.SINGLE_FIELD_APPEND_OR_CREATE, notifiee,
+				MetaDataTypeName.TRIGGER_LIST, signature,
+				message, timestamp, handler)).isExceptionOrError())
+				return responseCode;
+
+		return ResponseCode.NO_ERROR;
+	}
 }

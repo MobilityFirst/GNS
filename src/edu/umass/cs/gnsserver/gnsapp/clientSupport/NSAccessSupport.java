@@ -474,7 +474,7 @@ public class NSAccessSupport {
 		  "keys for fields={1}", new Object[]{getName(), fields});
 	  try {
 
-		  JSONObject fieldACL = metaData.getJSONObject(access.getPrefix())
+ 		  JSONObject fieldACL = metaData.getJSONObject(access.getPrefix())
 			  .getJSONObject(access.name());
 
 		  boolean found = false;

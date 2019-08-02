@@ -252,8 +252,13 @@ public enum ResponseCode implements Serializable {
   /**
    * An error occurred to name mismatch while registering the account
    */
-   NAME_MISMATCH_CERTIFICATE(416, GNSProtocol.NAME_MISMATCH_ERROR.toString(),ResponseCodeType.ERROR)
-        ;
+   NAME_MISMATCH_CERTIFICATE(416, GNSProtocol.NAME_MISMATCH_ERROR.toString(),
+	  ResponseCodeType.ERROR),
+
+	UNSUPPORTED_TRIGGER_PROTOCOL(500, GNSProtocol.UNSUPPORTED_TRIGGER_PROTOCOL
+		.toString(), ResponseCodeType.ERROR)
+
+	;
 
   // stash the codes in a lookup table
   private static final Map<Integer, ResponseCode> responseCodes = new HashMap<>();

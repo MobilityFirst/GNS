@@ -964,7 +964,8 @@ public enum CommandType {
 		 * that name is a formatted suffix of the account GUID's name.
 		 */
 		AddGuidWithCertificate(416, CommandCategory.CREATE_DELETE, "edu.umass.cs" +
-			".gnsserver.gnsapp.clientCommandProcessor.commands.account.AddGuid",
+			".gnsserver.gnsapp.clientCommandProcessor.commands.account" +
+			".AddGuidWithCertificate",
 			CommandResultType.NULL, false, false,
 			"Adds a guid to the account associated with the GUID. Must be " +
 				"accompanied with a certificate binding the supplied name to " +
@@ -1593,6 +1594,40 @@ public enum CommandType {
 		new String[]{GNSProtocol.NAME.toString()},
 		new String[]{GNSProtocol.PUBLIC_KEY.toString()},
 		CommandFlag.MUTUAL_AUTH),
+
+	/**
+	 * Command allowing a sender to insert a trigger requesting to be notified
+	 * when the specified field(s) change.
+	 */
+	AddTrigger(815, CommandCategory.UPDATE,
+		"edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.triggers.AddTrigger",
+		CommandResultType.STRING, true, true,
+		"Adds a trigger for the specified field(s)",
+		new String[]{GNSProtocol.GUID.toString(),
+		GNSProtocol.FIELDS.toString(),
+		GNSProtocol.WRITER.toString(),
+		GNSProtocol.SIGNATURE.toString(),
+		GNSProtocol.SIGNATUREFULLMESSAGE.toString(),
+			GNSProtocol.TRIGGER_IP.toString(),
+			GNSProtocol.TRIGGER_PORT.toString()},
+
+		new String[]{GNSProtocol.TRIGGER_PROTOCOL.toString(),
+		}),
+
+	/**
+	 * Command allowing a sender to remove a trigger requesting to be notified
+	 * when the specified field(s) change.
+	 */
+	RemoveTrigger(816, CommandCategory.UPDATE,
+		"edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.triggers.RemoveTrigger",
+		CommandResultType.STRING, true, true,
+		"Adds a trigger for the specified field(s)",
+		new String[]{GNSProtocol.GUID.toString(),
+			GNSProtocol.FIELDS.toString(),
+			GNSProtocol.WRITER.toString(),
+			GNSProtocol.SIGNATURE.toString(),
+			GNSProtocol.SIGNATUREFULLMESSAGE.toString()},
+		new String[]{}),
 
   /**
    *

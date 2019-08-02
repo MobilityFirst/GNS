@@ -2986,7 +2986,35 @@ public static final CommandPacket selectNear(GuidEntry reader, String field, JSO
     return getCommand(CommandType.Dump, GNSProtocol.NAME.toString(), "*");
   }
 
-  /**
+	/**
+	 *
+	 * Insert a trigger to be notified about any updates to the specified
+	 * {@code fields} of {@code targetGUID}.
+	 *
+	 * @param targetGUID
+	 * @param querierGUID
+	 * @param fields
+	 * @param notificationIP
+	 * @param notificationPort
+	 * @return
+	 * @throws ClientException
+	 */
+	public static final CommandPacket addTrigger(String targetGUID, GuidEntry
+		querierGUID, String[] fields, String notificationIP, int notificationPort)
+		throws ClientException {
+		return getCommand(CommandType.AddTrigger, querierGUID, GNSProtocol
+				.GUID.toString(), targetGUID,
+			GNSProtocol.WRITER.toString(), querierGUID.getGuid(),
+			GNSProtocol
+				.FIELDS.toString(), fields, GNSProtocol.TRIGGER_IP.toString(),
+			notificationIP, GNSProtocol.TRIGGER_PORT.toString(), notificationPort);
+	}
+
+	public static final CommandPacket removeTrigger() {
+  	throw new RuntimeException("Unimplemented");
+	}
+
+	/**
    * @return The {@link CommandResultType} type of the result obtained by
    * executing this query.
    */

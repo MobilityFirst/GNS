@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import java.util.Arrays;
+
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField.makeInternalFieldString;
 
 /**
@@ -46,12 +48,20 @@ public enum MetaDataTypeName {
   /**
    * The blacklist for writing.
    */
-  WRITE_BLACKLIST("ACL"), 
+  WRITE_BLACKLIST("ACL"),
+
 
   /**
    * A timestamp. Currently unused.
    */
-  TIMESTAMP("MD");
+  TIMESTAMP("MD"),
+
+	/**
+	 * Notification trigger.
+	 */
+	TRIGGER_LIST ("TL"),
+
+	;
   
   private String prefix;
 
@@ -75,6 +85,10 @@ public enum MetaDataTypeName {
    */
   public String getFieldPath() {
     return prefix + "." + name();
+  }
+
+  public static void main(String[] args) {
+  	System.out.println(Arrays.asList(MetaDataTypeName.values()));
   }
  
 }

@@ -302,7 +302,8 @@ public class GNSConfig {
      * to GUIDs that satisfy a select request. 
      */
     SELECT_REPONSE_PROCESSOR("edu.umass.cs.gnsserver.gnsapp.selectnotification.examples.PendingSelectResponseProcessor"),
-    ;
+
+	  ENABLE_TRIGGERS(true);
 
     final Object defaultValue;
     final boolean unsafeTestingOnly;

@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import edu.umass.cs.gnscommon.utils.JSONDotNotation;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport
+	.FieldMetaData;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -217,6 +219,14 @@ public class NSAuthentication {
     	              new Object[]{targetGuid, field, access.toString() });
     		return new AclCheckResult("", ResponseCode.BAD_GUID_ERROR);
     	}
+
+
+    	// If you can read it, you can install triggers for it.
+    	if(access.equals(MetaDataTypeName.TRIGGER_LIST)) {
+    		field = FieldMetaData.getKeyFromFieldMetaData(field,
+				MetaDataTypeName.TRIGGER_LIST);
+    		access = MetaDataTypeName.READ_WHITELIST;
+		}
     	   	
       // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
       // accesssed.

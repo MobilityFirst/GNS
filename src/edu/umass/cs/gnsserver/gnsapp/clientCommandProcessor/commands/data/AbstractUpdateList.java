@@ -89,7 +89,8 @@ public abstract class AbstractUpdateList extends AbstractCommand {
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
             argument,
             getUpdateOperation(),
-            writer, signature, message, timestamp, handler)).isExceptionOrError()) {
+            writer, signature, message, timestamp, handler))
+		.isExceptionOrError()) {
       return new CommandResponse(ResponseCode.NO_ERROR, GNSProtocol.OK_RESPONSE.toString());
     } else {
       return new CommandResponse(responseCode, GNSProtocol.BAD_RESPONSE.toString() + " " + responseCode.getProtocolCode());

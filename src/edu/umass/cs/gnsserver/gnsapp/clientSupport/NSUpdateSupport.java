@@ -16,10 +16,7 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.*;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
@@ -30,6 +27,8 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.Config;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -39,6 +38,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -79,7 +79,8 @@ public class NSUpdateSupport {
    * @throws edu.umass.cs.gnscommon.exceptions.server.InternalRequestException
    */
   public static ResponseCode executeUpdateLocal(InternalRequestHeader header, CommandPacket commandPacket, String guid, String field,
-          String writer, String signature, String message, Date timestamp,
+          String writer, MetaDataTypeName access, String signature, String
+													message, Date timestamp,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
           ValuesMap userJSON, GNSApplicationInterface<String> app, boolean doNotReplyToClient)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException,
@@ -87,6 +88,7 @@ public class NSUpdateSupport {
           RecordNotFoundException, FieldNotFoundException, InternalRequestException {
     ResponseCode errorCode = ResponseCode.NO_ERROR;
     assert (header != null);
+    if(access==null) access = MetaDataTypeName.WRITE_WHITELIST;
     // No checks for local non-auth commands like verifyAccount or for mutual auth
     if (!GNSProtocol.INTERNAL_QUERIER.toString().equals(writer)
             && !commandPacket.getCommandType().isMutualAuth()) {
@@ -94,10 +96,10 @@ public class NSUpdateSupport {
         // This the standard auth check for most updates
         if (field != null) {
           errorCode = NSAuthentication.signatureAndACLCheck(header, guid, field, null,
-                  writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
+                  writer, signature, message, access, app);
         } else if (userJSON != null) {
           errorCode = NSAuthentication.signatureAndACLCheck(header, guid, null, userJSON.getKeys(),
-                  writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
+                  writer, signature, message, access, app);
         } else {
           ClientSupportConfig.getLogger().log(Level.FINE,
                   "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
@@ -184,9 +186,101 @@ public class NSUpdateSupport {
     // This is for MOB-893 - logging updates
     if(Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_UPDATE_LOGGING))
     	writeUpdateLog(guid, field, updateValue, newValue, operation);
+
+	  // START: Check for triggers
+	  {
+	  	// gather fields being updated
+		  String[] fields = (field != null ? new String[]{field} : null);
+		  try {
+			  if (fields == null && userJSON != null)
+				  fields = userJSON.getKeys().toArray(new String[0]);
+		  } catch (JSONException je) {
+			  je.printStackTrace();
+		  }
+
+		  // for each field, check for a corresponding trigger
+		  if (fields != null) for (String updatedField : fields)
+			  if (Config.getGlobalBoolean(GNSConfig.GNSC.ENABLE_TRIGGERS)) {
+				  JSONObject metadata = NSAccessSupport.getMetaDataForACLCheck
+					  (guid, db);
+				  if (!updatedField.contains(MetaDataTypeName.TRIGGER_LIST
+					  .getFieldPath())) {
+				  	// field corresponding to trigger list
+					  String key = FieldMetaData.makeFieldMetaDataKey
+						  (MetaDataTypeName.TRIGGER_LIST, updatedField)
+						  .replaceFirst("\\.MD$", "");
+
+					  String[] parts = key.split("\\.");
+					  boolean found = false;
+
+					  try {
+					  	// match field being updated as deeply as possible
+						  // with matching trigger list
+						  for (String part : parts) {
+							  if (metadata.has(part)) {
+								  metadata = metadata.getJSONObject(part);
+								  found = true;
+							  }
+							  else break;
+						  }
+						  if (found) {
+							  // found match; notify
+							  JSONArray notifieesInfo = metadata.getJSONArray
+								  (GNSProtocol.MD.toString());
+							  sendNotifications(guid, updatedField,
+								  notifieesInfo);
+						  }
+
+					  } catch (JSONException je) {
+						  je.printStackTrace();
+						  //notification is best effort, so just move on
+					  }
+				  }
+			  }
+	  } // END: check for triggers
+
   }
 
-  // This is for MOB-893 - logging updates
+  private static DatagramSocket udpSocket = null;
+  private static final int TRIGGERED_RESPONSE_SIZE = 128;
+  private static final String TRIGGERED_RESPONSE_ENCODING = "ISO-8859-1";
+
+  private static synchronized void initUDPSocket() throws SocketException {
+  	if(udpSocket==null)
+  		udpSocket = new DatagramSocket();
+  }
+
+	// send triggered notifications
+	private static void sendNotifications(String guid, String field, JSONArray
+		notifieesInfo) {
+		try {
+			initUDPSocket();
+			JSONObject response = new JSONObject().put(GNSProtocol.GUID
+				.toString(), guid).put(GNSProtocol.FIELD.toString(), field)
+				.put(GNSProtocol.ASYNC_RESPONSE_TYPE.toString(), GNSProtocol
+					.TRIGGERED_NOTIFICATION.toString());
+
+			for (int i = 0; i < notifieesInfo.length(); i++) {
+				JSONObject notifiee = notifieesInfo.getJSONObject(i);
+				byte[] responseBytes = notifiee.toString().getBytes
+					(TRIGGERED_RESPONSE_ENCODING);
+				DatagramPacket datagramPacket = new DatagramPacket
+					(responseBytes, 0, responseBytes.length);
+				datagramPacket.setAddress(InetAddress.getByName(notifiee
+					.getString(GNSProtocol.TRIGGER_IP.toString())));
+				datagramPacket.setPort(notifiee.getInt(GNSProtocol
+					.TRIGGER_PORT.toString()));
+				udpSocket.send(datagramPacket);
+			}
+		}            // notification is best effort, so move on for now
+		catch (IOException se) {
+			se.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// This is for MOB-893 - logging updates
   private static void writeUpdateLog(String guid, String field,
           ResultValue updateValue, ValuesMap userJSON,
           UpdateOperation operation) {

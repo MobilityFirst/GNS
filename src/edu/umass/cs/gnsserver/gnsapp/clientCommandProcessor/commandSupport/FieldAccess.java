@@ -435,12 +435,14 @@ public class FieldAccess {
   public static ResponseCode update(InternalRequestHeader header, CommandPacket commandPacket, String guid, String key,
           ResultValue value, ResultValue oldValue,
           int argument, UpdateOperation operation,
-          String writer, String signature, String message,
+          String writer, MetaDataTypeName access, String signature, String
+										message,
           Date timestamp,
           ClientRequestHandlerInterface handler) {
 
     try {
-      return NSUpdateSupport.executeUpdateLocal(header, commandPacket, guid, key, writer, signature, message,
+      return NSUpdateSupport.executeUpdateLocal(header, commandPacket, guid,
+		  key, writer, access, signature, message,
               timestamp,
               operation,
               value, oldValue, argument, null, handler.getApp(), false);
@@ -455,6 +457,20 @@ public class FieldAccess {
     }
   }
 
+	public static ResponseCode update(InternalRequestHeader header,
+									  CommandPacket commandPacket, String
+										  guid, String key, ResultValue value,
+									  ResultValue oldValue, int argument,
+									  UpdateOperation operation, String
+										  writer,
+									  String signature, String message, Date
+										  timestamp,
+									  ClientRequestHandlerInterface handler) {
+		return update(header, commandPacket, guid, key, value, oldValue,
+			argument,
+			operation, writer, MetaDataTypeName.WRITE_WHITELIST, signature,
+			message, timestamp, handler);
+	}
   /**
    * Sends an update request to the server containing a JSON Object.
    *
@@ -480,7 +496,7 @@ public class FieldAccess {
           Date timestamp, ClientRequestHandlerInterface handler) {
     try {
       return NSUpdateSupport.executeUpdateLocal(header, commandPacket, guid, null,
-              writer, signature, message, timestamp, operation,
+              writer, null, signature, message, timestamp, operation,
               null, null, -1, new ValuesMap(json), handler.getApp(), false);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
             SignatureException | JSONException | IOException | InternalRequestException |
@@ -542,7 +558,8 @@ public class FieldAccess {
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     return update(header, commandPacket, guid, key, value, null, -1,
-            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message,
+            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature,
+		message,
             timestamp, handler);
   }
 

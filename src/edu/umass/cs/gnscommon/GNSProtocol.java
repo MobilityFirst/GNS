@@ -34,6 +34,7 @@ public enum GNSProtocol {
    *
    */
   BAD_RESPONSE("+NO+"),
+
   /**
    * Indicates that a command resulted in an error of some no specified type.
    * Should be use sparingly if at all. Uses should replaced with a more specific code
@@ -182,7 +183,15 @@ public enum GNSProtocol {
    * See {@link edu.umass.cs.gnscommon.ResponseCode#ACTIVE_REPLICA_EXCEPTION}.
    */
   ACTIVE_REPLICA_EXCEPTION(ClientReconfigurationPacket.ResponseCodes.ACTIVE_REPLICA_EXCEPTION.toString()),
-  //
+
+
+	/**
+	 * Indicates that a trigger protocol specified is not supported.
+	 * Currently only UDP and HTTP are supported.
+	 */
+	UNSUPPORTED_TRIGGER_PROTOCOL("+UNSUPPORTED_TRIGGER_PROTOCOL+"),
+
+	//
   // End of Response codes
   //
   /**
@@ -589,7 +598,47 @@ public enum GNSProtocol {
   /** The set of actives field in a command. This is mainly used to specify
    *  the initial set of actives while creating an account or a guid.
    */
-  ACTIVES_SET("activesSet"),;
+  ACTIVES_SET("activesSet"),
+
+	/**
+	 * The protocol to be used to send notifications when inserted triggers
+	 * are activated.
+	 */
+
+	TRIGGER_PROTOCOL("triggerProtocol"),
+
+	/**
+	 * The IP address to which triggered notifications are to be sent.
+	 */
+	TRIGGER_IP("triggerIP"),
+
+	/**
+	 * The port number to which triggered notifications are to be sent.
+	 */
+	TRIGGER_PORT("triggerPort"),
+
+	/**
+	 * String constant to denote the key for a response not one-one matched
+	 * with a corresponding request.
+	 */
+	ASYNC_RESPONSE_TYPE("responseType"),
+
+	/**
+	 * String constant.
+	 */
+	TRIGGERED_NOTIFICATION("triggeredNotification"),
+
+	/**
+	 * String constant.
+	 */
+	UDP ("UDP"),
+
+	/**
+	 * String constant.
+	 */
+	HTTP("HTTP"),
+
+	;
 
   final String label;
 
@@ -601,7 +650,7 @@ public enum GNSProtocol {
   public String toString() {
     return this.label;
   }
-  
+
   private static String generateSwiftConstants() {
     StringBuilder result = new StringBuilder();
     for (GNSProtocol entry : GNSProtocol.values()) {
